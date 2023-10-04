@@ -1,32 +1,32 @@
 import { auth } from '$lib/server/lucia';
 import { fail, redirect } from '@sveltejs/kit';
+import { z } from 'zod';
+import { message, superValidate } from 'sveltekit-superforms/server';
 
 import type { PageServerLoad, Actions } from './$types';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
+const signUpSchema = z.object({
+	username: z.string().min(1).max(31),
+	password: z.string().min(6).max(255)
+});
+
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.auth.validate();
 	if (session) throw redirect(302, '/');
-	return {};
+
+	const form = await superValidate(signUpSchema);
+	return { form };
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		const formData = await request.formData();
-		const username = formData.get('username');
-		const password = formData.get('password');
+		const form = await superValidate(request, signUpSchema);
 
-		// basic check
-		if (typeof username !== 'string' || username.length < 4 || username.length > 31) {
-			return fail(400, {
-				message: 'Invalid username'
-			});
-		}
-		if (typeof password !== 'string' || password.length < 6 || password.length > 255) {
-			return fail(400, {
-				message: 'Invalid password'
-			});
-		}
+		if (!form.valid) return fail(400, { form });
+
+		const { username, password } = form.data;
+
 		try {
 			const user = await auth.createUser({
 				key: {
@@ -44,16 +44,11 @@ export const actions: Actions = {
 			});
 			locals.auth.setSession(session); // set session cookie
 		} catch (e) {
-			console.error(e);
 			// check for unique constraint error in user table
 			if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
-				return fail(400, {
-					message: 'Username already taken'
-				});
+				return message(form, 'Username already taken');
 			}
-			return fail(500, {
-				message: 'An unknown error occurred'
-			});
+			return message(form, 'An unknown error occurred');
 		}
 		// redirect to
 		// make sure you don't throw inside a try/catch block!

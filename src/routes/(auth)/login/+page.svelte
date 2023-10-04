@@ -15,6 +15,7 @@
 {#if $message}
 	<Alert>{$message}</Alert>
 {/if}
+
 <form method="post" use:enhance>
 	<div class="grid gap-6 mb-6">
 		<div>
