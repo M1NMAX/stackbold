@@ -5,8 +5,13 @@ import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.auth.validate();
+
 	if (!session) throw redirect(302, '/login');
-	console.log(session);
+
+	const user = await auth.getUser(session.user.userId);
+
+	console.log('hell');
+	console.table(user);
 	return {
 		userId: session.user.userId,
 		username: session.username
