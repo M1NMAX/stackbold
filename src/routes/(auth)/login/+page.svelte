@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Input, Label, Button, Alert, Helper } from 'flowbite-svelte';
 	import { superForm } from 'sveltekit-superforms/client';
-	import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
+	// import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
 	import type { PageData } from './$types';
 
@@ -9,7 +9,7 @@
 	const { form, message, errors, enhance } = superForm(data.form);
 </script>
 
-<SuperDebug data={$form} />
+<!-- <SuperDebug data={$form} /> -->
 <h1 class=" text-center text-3xl text-gray-900">Login</h1>
 
 {#if $message}

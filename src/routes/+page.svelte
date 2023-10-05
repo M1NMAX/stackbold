@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { Button } from 'flowbite-svelte';
 
 	import type { PageData } from './$types';
 
@@ -21,3 +22,5 @@
 <form method="post" action="?/logout" use:enhance>
 	<input type="submit" value="Sign out" />
 </form>
+
+<Button href="/collections">Collections</Button>
