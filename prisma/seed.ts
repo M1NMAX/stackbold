@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -8,13 +8,15 @@ async function main() {
 	await prisma.collection.create({
 		data: {
 			name: 'Collection one',
-			content: 'Collection one content'
+			description: 'Collection one content',
+			ownerId: '217r3d010700r87'
 		}
 	});
 
 	await prisma.collection.create({
 		data: {
-			name: 'Collection tgow'
+			name: 'Collection tgow',
+			ownerId: '217r3d010700r87'
 		}
 	});
 }

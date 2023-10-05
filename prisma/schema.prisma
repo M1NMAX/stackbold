@@ -11,10 +11,11 @@ datasource db {
 }
 
 model User {
-  id           String    @id @map("_id")
-  username     String    @unique
+  id           String       @id @map("_id")
+  username     String       @unique
   auth_session Session[]
   key          Key[]
+  collections  Collection[]
 }
 
 model Session {
@@ -36,9 +37,25 @@ model Key {
   @@index([user_id])
 }
 
+enum Color {
+  BW     @map("bw") // BLACK AND WHITE, More like tons of gray
+  RED    @map("red")
+  BLUE   @map("blue")
+  GREEN  @map("green")
+  YELLOW @map("yellow")
+}
+
+type Icon {
+  name  String @default("")
+  color Color  @default(BW)
+}
+
 model Collection {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now())
-  name      String
-  content   String?
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String
 }
