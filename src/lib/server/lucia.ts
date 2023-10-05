@@ -9,7 +9,7 @@ export const auth = lucia({
 	middleware: sveltekit(),
 	env: dev ? 'DEV' : 'PROD',
 	getSessionAttributes: (userData) => {
-		console.table(userData);
+		// console.table(userData);
 		return {
 			username: userData.username
 		};
