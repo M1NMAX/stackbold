@@ -53,6 +53,7 @@ type Icon {
 model Collection {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
+  isFavourite Boolean  @default(false)
   description String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
