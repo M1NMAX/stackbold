@@ -8,13 +8,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	if (!session) throw redirect(302, '/login');
 
-	// const user = await auth.getUser(session.user.userId);
-
-	// console.log('hell');
-	// console.table(user);
 	return {
 		userId: session.user.userId,
-		username: session.username
+		username: session.user.name
 	};
 };
 
