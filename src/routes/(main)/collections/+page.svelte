@@ -11,6 +11,7 @@
 <div>
 	{#each data.collections as collection}
 		<div>
+			{collection.id}
 			{collection.name}
 			{collection.ownerId}
 		</div>
