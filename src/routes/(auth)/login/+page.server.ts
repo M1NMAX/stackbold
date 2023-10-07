@@ -7,7 +7,7 @@ import { message, superValidate } from 'sveltekit-superforms/server';
 import type { PageServerLoad, Actions } from './$types';
 
 const loginSchema = z.object({
-	email: z.string().email().max(255),
+	email: z.string().email(),
 	password: z.string().min(6).max(255)
 });
 
