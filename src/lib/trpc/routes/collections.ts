@@ -11,7 +11,7 @@ export const collections = createTRPCRouter({
 	),
 	getCollection: protectedProcedure
 		.input(z.string())
-		.query(({ input }) => prisma.collection.findFirstOrThrow({ where: { id: input } })),
+		.query(({ input }) => prisma.collection.findUniqueOrThrow({ where: { id: input } })),
 
 	deleteCollection: protectedProcedure.input(z.string()).mutation(async ({ input: id }) => {
 		await prisma.collection.delete({ where: { id } });
