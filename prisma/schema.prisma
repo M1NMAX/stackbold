@@ -11,11 +11,14 @@ datasource db {
 }
 
 model User {
-  id           String       @id @map("_id")
-  username     String       @unique
-  auth_session Session[]
-  key          Key[]
-  collections  Collection[]
+  id                     String                   @id @map("_id")
+  name                   String
+  email                  String                   @unique
+  email_verified         Boolean
+  auth_session           Session[]
+  key                    Key[]
+  collections            Collection[]
+  EmailVerificationToken EmailVerificationToken[]
 }
 
 model Session {
@@ -33,6 +36,15 @@ model Key {
   hashed_password String?
   user_id         String
   user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model EmailVerificationToken {
+  id      String @id @map("_id")
+  expires BigInt
+  user_id String
+  user    User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
 
   @@index([user_id])
 }

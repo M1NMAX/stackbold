@@ -10,8 +10,9 @@ export const auth = lucia({
 	env: dev ? 'DEV' : 'PROD',
 	getUserAttributes: (userData) => {
 		return {
-			username: userData.username,
-			name: userData.name
+			name: userData.name,
+			email: userData.email,
+			emailVerified: userData.email_verified
 		};
 	}
 });

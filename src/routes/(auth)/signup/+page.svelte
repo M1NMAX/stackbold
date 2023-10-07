@@ -17,18 +17,35 @@
 <form method="post" use:enhance>
 	<div class="grid gap-6 mb-6">
 		<div>
-			<Label for="username" class="mb-2">Username</Label>
+			<Label for="username" class="mb-2">Name</Label>
 			<Input
 				type="text"
-				id="username"
-				name="username"
+				id="name"
+				name="name"
 				placeholder="John"
 				required
-				bind:value={$form.username}
+				bind:value={$form.name}
 			/>
-			{#if $errors.username}
+			{#if $errors.name}
 				<Helper class="mt-2" color="red">
-					{$errors.username}
+					{$errors.name}
+				</Helper>
+			{/if}
+		</div>
+
+		<div>
+			<Label for="email" class="mb-2">Email</Label>
+			<Input
+				type="text"
+				id="email"
+				name="email"
+				placeholder="john@email.com"
+				required
+				bind:value={$form.email}
+			/>
+			{#if $errors.email}
+				<Helper class="mt-2" color="red">
+					{$errors.email}
 				</Helper>
 			{/if}
 		</div>

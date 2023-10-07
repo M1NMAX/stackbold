@@ -7,14 +7,17 @@ import { message, superValidate } from 'sveltekit-superforms/server';
 import type { PageServerLoad, Actions } from './$types';
 
 const loginSchema = z.object({
-	username: z.string().min(1).max(31),
+	email: z.string().email().max(255),
 	password: z.string().min(6).max(255)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.auth.validate();
-	if (session) throw redirect(302, '/');
 
+	if (session) {
+		if (!session.user.emailVerified) throw redirect(302, '/email-verification');
+		throw redirect(302, '/');
+	}
 	const form = await superValidate(loginSchema);
 	return { form };
 };
@@ -25,11 +28,11 @@ export const actions: Actions = {
 
 		if (!form.valid) return fail(400, { form });
 
-		const { username, password } = form.data;
+		const { email, password } = form.data;
 
 		try {
 			// find user by key and validate password
-			const key = await auth.useKey('username', username.toLowerCase(), password);
+			const key = await auth.useKey('email', email.toLowerCase(), password);
 			const session = await auth.createSession({
 				userId: key.userId,
 				attributes: {}

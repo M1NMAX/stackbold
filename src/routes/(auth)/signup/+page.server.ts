@@ -5,15 +5,22 @@ import { message, superValidate } from 'sveltekit-superforms/server';
 
 import type { PageServerLoad, Actions } from './$types';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { generateEmailVerificationToken } from '$lib/server/token';
+import { sendEmailVerificationLink } from '$lib/server/email';
 
 const signUpSchema = z.object({
-	username: z.string().min(1).max(31),
+	name: z.string().min(4).max(31),
+	email: z.string().email().max(255),
 	password: z.string().min(6).max(255)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.auth.validate();
-	if (session) throw redirect(302, '/');
+
+	if (session) {
+		if (!session.user.emailVerified) throw redirect(302, '/email-verification');
+		throw redirect(302, '/');
+	}
 
 	const form = await superValidate(signUpSchema);
 	return { form };
@@ -25,17 +32,19 @@ export const actions: Actions = {
 
 		if (!form.valid) return fail(400, { form });
 
-		const { username, password } = form.data;
+		const { name, email, password } = form.data;
 
 		try {
 			const user = await auth.createUser({
 				key: {
-					providerId: 'username', // auth method
-					providerUserId: username.toLowerCase(), // unique id when using "username" auth method
+					providerId: 'email', // auth method
+					providerUserId: email.toLowerCase(), // unique id when using "username" auth method
 					password // hashed by Lucia
 				},
 				attributes: {
-					username
+					name,
+					email: email.toLocaleLowerCase(),
+					email_verified: false
 				}
 			});
 			const session = await auth.createSession({
@@ -43,6 +52,9 @@ export const actions: Actions = {
 				attributes: {}
 			});
 			locals.auth.setSession(session); // set session cookie
+
+			const token = await generateEmailVerificationToken(user.userId);
+			await sendEmailVerificationLink(token);
 		} catch (e) {
 			// check for unique constraint error in user table
 			if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {

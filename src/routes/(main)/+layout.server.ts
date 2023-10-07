@@ -8,6 +8,10 @@ export const load: LayoutServerLoad = async (event) => {
 
 	if (!session) throw redirect(302, '/login');
 
+	if (!session.user.emailVerified) {
+		throw redirect(302, '/email-verification');
+	}
+
 	const user = session.user;
 
 	const collections = router
