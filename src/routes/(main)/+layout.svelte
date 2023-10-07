@@ -2,20 +2,15 @@
 	import {
 		Sidebar,
 		SidebarWrapper,
-		SidebarBrand,
 		SidebarItem,
-		SidebarGroup
+		SidebarGroup,
+		Badge,
+		Avatar
 	} from 'flowbite-svelte';
-	import { ClockOutline, CogOutline, FolderOutline, HomeOutline } from 'flowbite-svelte-icons';
+	import { CogOutline, DnaOutline, FolderOutline, HomeOutline } from 'flowbite-svelte-icons';
 	import type { LayoutData } from './$types';
 
 	let spanClass = 'flex-1 ml-3 whitespace-nowrap';
-
-	let site = {
-		name: 'Username',
-		href: '/collecitons',
-		img: './favicon.png'
-	};
 
 	export let data: LayoutData;
 
@@ -26,8 +21,13 @@
 	<Sidebar>
 		<SidebarWrapper class="h-full">
 			<SidebarGroup>
-				<SidebarBrand {site} />
-				<SidebarItem label="Home" href="/collections">
+				<div class="flex justify-between space-x-4">
+					<Avatar src="./favicon.png" class="h-8 w-8" />
+					<span class="text-xl font-semibold"> {data.user.name} </span>
+					<Badge rounded color="blue" class="font-bold uppercase">Admin</Badge>
+				</div>
+
+				<SidebarItem label="Home" href="/">
 					<svelte:fragment slot="icon">
 						<HomeOutline
 							class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -35,9 +35,9 @@
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="Recent" {spanClass}>
+				<SidebarItem label="Templates" {spanClass}>
 					<svelte:fragment slot="icon">
-						<ClockOutline
+						<DnaOutline
 							class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
 						/>
 					</svelte:fragment>
@@ -91,5 +91,7 @@
 		</SidebarWrapper>
 	</Sidebar>
 
-	<slot />
+	<div>
+		<slot />
+	</div>
 </div>
