@@ -56,4 +56,5 @@
 	</div>
 </form>
 
-<Button class="w-full" href="/signup" outline>Create an account</Button>
+<Button href="/signup" outline class="w-full">Create an account</Button>
+<Button href="/password-reset" outline class="w-full">Reset password</Button>
