@@ -1,25 +1,23 @@
 <script lang="ts">
-	import {
-		Sidebar,
-		SidebarWrapper,
-		SidebarItem,
-		SidebarGroup,
-		Badge,
-		Avatar
-	} from 'flowbite-svelte';
-	import { CogOutline, DnaOutline, FolderOutline, HomeOutline } from 'flowbite-svelte-icons';
-	import type { LayoutData } from './$types';
+	import { Sidebar, SidebarWrapper, SidebarGroup, Badge, Avatar } from 'flowbite-svelte';
+	import { CogOutline, DnaOutline, HomeOutline } from 'flowbite-svelte-icons';
 
-	let spanClass = 'flex-1 ml-3 whitespace-nowrap';
+	import SidebarCollection from '$lib/components/SidebarCollection.svelte';
+	import type { LayoutData } from './$types';
+	import { page } from '$app/stores';
+	import SidebarItem from '$lib/components/SidebarItem.svelte';
 
 	export let data: LayoutData;
 
 	$: favourites = data.collections.filter((collection) => collection.isFavourite);
+
+	$: activeUrl = $page.url.pathname;
+	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
 </script>
 
 <div class=" h-screen flex">
 	<Sidebar>
-		<SidebarWrapper class="h-full">
+		<SidebarWrapper class="h-full pr-0">
 			<SidebarGroup>
 				<div class="flex justify-between space-x-4">
 					<Avatar src="./favicon.png" class="h-8 w-8" />
@@ -27,27 +25,21 @@
 					<Badge rounded color="blue" class="font-bold uppercase">Admin</Badge>
 				</div>
 
-				<SidebarItem label="Home" href="/">
+				<SidebarItem label="Home" href="/" active={activeUrl === '/'}>
 					<svelte:fragment slot="icon">
-						<HomeOutline
-							class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-						/>
+						<HomeOutline class="icon-sm" />
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="Templates" {spanClass}>
+				<SidebarItem label="Templates" active={activeUrl === '/templates'}>
 					<svelte:fragment slot="icon">
-						<DnaOutline
-							class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-						/>
+						<DnaOutline class="icon-sm" />
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="Settings" href="/settings" {spanClass}>
+				<SidebarItem label="Settings" href="/settings" active={activeUrl === '/settings'}>
 					<svelte:fragment slot="icon">
-						<CogOutline
-							class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-						/>
+						<CogOutline class="icon-sm" />
 					</svelte:fragment>
 				</SidebarItem>
 			</SidebarGroup>
@@ -61,13 +53,7 @@
 					</span>
 				</span>
 				{#each favourites as collection}
-					<span class="flex space-x-4">
-						<FolderOutline />
-
-						<a href={`/collections/${collection.id}`}>
-							{collection.name}
-						</a>
-					</span>
+					<SidebarCollection {collection} active={activeCollection(collection.id)} />
 				{/each}
 			</SidebarGroup>
 
@@ -79,19 +65,13 @@
 					</span>
 				</span>
 				{#each data.collections as collection}
-					<span class="flex space-x-4">
-						<FolderOutline />
-
-						<a href={`/collections/${collection.id}`}>
-							{collection.name}
-						</a>
-					</span>
+					<SidebarCollection {collection} active={activeCollection(collection.id)} />
 				{/each}
 			</SidebarGroup>
 		</SidebarWrapper>
 	</Sidebar>
 
-	<div>
+	<div class="m-1 border">
 		<slot />
 	</div>
 </div>
