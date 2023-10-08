@@ -43,7 +43,7 @@
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="Settings" {spanClass}>
+				<SidebarItem label="Settings" href="/settings" {spanClass}>
 					<svelte:fragment slot="icon">
 						<CogOutline
 							class="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
