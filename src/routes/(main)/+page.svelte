@@ -10,8 +10,5 @@
 <h1>Profile</h1>
 <p>User id: {data.user.userId}</p>
 <p>Username: {data.user.name}</p>
-<form method="post" action="?/logout" use:enhance>
-	<input type="submit" value="Sign out" />
-</form>
 
 <Button href="/collections">Collections</Button>

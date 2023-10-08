@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Card, DarkMode } from 'flowbite-svelte';
+	import { enhance } from '$app/forms';
+	import { Button, Card, DarkMode } from 'flowbite-svelte';
 </script>
 
 <svelte:head>
@@ -11,4 +12,10 @@
 <Card>
 	<h2 class="text-lg">Theme</h2>
 	<DarkMode />
+</Card>
+
+<Card>
+	<form method="post" action="?/logout" use:enhance>
+		<Button type="submit">Log out</Button>
+	</form>
 </Card>
