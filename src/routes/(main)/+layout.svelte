@@ -71,7 +71,9 @@
 		</SidebarWrapper>
 	</Sidebar>
 
-	<div class="m-1 border">
+	<div class="grow m-1 border">
 		<slot />
 	</div>
+
+	<div class="w-1/5 bg-gray-100" />
 </div>
