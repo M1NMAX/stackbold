@@ -60,11 +60,20 @@ model PasswordResetToken {
 }
 
 enum Color {
-  BW     @map("bw") // BLACK AND WHITE, More like tons of gray
+  BW     @map("bw") // BLACK AND WHITE, specifically tons of gray
   RED    @map("red")
   BLUE   @map("blue")
   GREEN  @map("green")
   YELLOW @map("yellow")
+}
+
+enum PropertyType {
+  TEXT     @map("text")
+  SELECT   @map("select")
+  CHECKBOX @map("checkbox")
+  URL      @map("url")
+  DATE     @map("date")
+  NUMBER   @map("number")
 }
 
 type Icon {
@@ -72,13 +81,44 @@ type Icon {
   color Color  @default(BW)
 }
 
+type Option {
+  id    String @default(uuid()) @map("_id")
+  value String
+  color Color  @default(BW)
+}
+
+type CollectionProperty {
+  id        String       @default(uuid()) @map("_id")
+  name      String
+  createdAt DateTime     @default(now())
+  type      PropertyType @default(TEXT)
+  options   Option[]
+}
+
+type ItemProperty {
+  id    String @map("_id")
+  value String @default("")
+}
+
 model Collection {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String               @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  isFavourite Boolean  @default(false)
-  description String   @default("")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  owner       User     @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  isFavourite Boolean              @default(false)
+  description String               @default("")
+  owner       User                 @relation(fields: [ownerId], references: [id])
   ownerId     String
+  items       Item[]
+  properties  CollectionProperty[]
+}
+
+model Item {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  collection   Collection     @relation(fields: [collectionId], references: [id])
+  collectionId String         @db.ObjectId
+  properties   ItemProperty[]
 }
