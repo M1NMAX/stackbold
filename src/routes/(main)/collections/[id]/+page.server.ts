@@ -4,7 +4,9 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const id = event.params.id;
-	const collection = router.createCaller(await createContext(event)).collections.getCollection(id);
 
-	return { collection };
+	return {
+		collection: router.createCaller(await createContext(event)).collections.getCollection(id),
+		items: router.createCaller(await createContext(event)).items.getCollectionItems(id)
+	};
 };
