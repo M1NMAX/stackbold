@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { Badge, type Colors } from 'flowbite-svelte';
 	import { CheckCircleSolid } from 'flowbite-svelte-icons';
 
 	export let name: string;
-	export let color: Colors;
+	export let color: string;
 	export let type: string;
 	export let value: string;
+
+	type BgColors = { [key: string]: string };
+
+	const bgColors: BgColors = {
+		gray: 'bg-gray-400',
+		red: 'bg-red-500',
+		green: 'bg-green-500',
+		blue: 'bg-blue-500'
+	};
 </script>
 
-<Badge {color} class="items-center text-base font-medium">
+<span class={`${bgColors[color]} items-center text-base font-medium p-0.5 rounded`}>
 	{#if type === 'check'}
 		<span class="flex space-x-2">
 			<span>
@@ -24,4 +32,4 @@
 	{:else}
 		{value}
 	{/if}
-</Badge>
+</span>

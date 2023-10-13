@@ -5,5 +5,9 @@ import { z } from 'zod';
 export const items = createTRPCRouter({
 	getCollectionItems: protectedProcedure
 		.input(z.string())
-		.query(({ input }) => prisma.item.findMany({ where: { collectionId: input } }))
+		.query(({ input }) => prisma.item.findMany({ where: { collectionId: input } })),
+
+	getItem: protectedProcedure
+		.input(z.string())
+		.query(({ input }) => prisma.item.findUnique({ where: { id: input } }))
 });
