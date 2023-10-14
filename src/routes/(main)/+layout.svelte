@@ -1,6 +1,12 @@
 <script lang="ts">
-	import { Sidebar, SidebarWrapper, SidebarGroup, Badge, Avatar } from 'flowbite-svelte';
-	import { CogOutline, DnaOutline, HomeOutline } from 'flowbite-svelte-icons';
+	import { Sidebar, SidebarWrapper, SidebarGroup, Badge, Avatar, Button } from 'flowbite-svelte';
+	import {
+		CogOutline,
+		DnaOutline,
+		HomeOutline,
+		PlusOutline,
+		SearchOutline
+	} from 'flowbite-svelte-icons';
 
 	import SidebarCollection from '$lib/components/SidebarCollection.svelte';
 	import type { LayoutData } from './$types';
@@ -15,14 +21,21 @@
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
 </script>
 
-<div class=" h-screen flex">
+<div class=" h-screen flex bg-gray-200">
 	<Sidebar>
-		<SidebarWrapper class="h-full pr-0">
+		<SidebarWrapper class="h-full pr-0 rounded-none bg-gray-200">
 			<SidebarGroup>
 				<div class="flex justify-between space-x-4">
 					<Avatar src="./favicon.png" class="h-8 w-8" />
 					<span class="text-xl font-semibold"> {data.user.name} </span>
-					<Badge rounded color="blue" class="font-bold uppercase">Admin</Badge>
+					<Badge color="blue" class="font-bold uppercase">Admin</Badge>
+				</div>
+
+				<div class="py-1 pr-2 pl-1">
+					<button class="w-full flex items-center space-x-4 p-1.5 rounded-md bg-gray-300">
+						<SearchOutline class="icon-xss" />
+						<span class="font-semibold"> Search </span>
+					</button>
 				</div>
 
 				<SidebarItem label="Home" href="/" active={activeUrl === '/'}>
@@ -68,12 +81,15 @@
 					<SidebarCollection {collection} active={activeCollection(collection.id)} />
 				{/each}
 			</SidebarGroup>
+
+			<div class="py-1 pr-2 pl-1">
+				<Button class="w-full flex items-center space-x-4 p-1.5 rounded-md">
+					<PlusOutline class="icon-xss" />
+					<span class="font-semibold"> Create Collection </span>
+				</Button>
+			</div>
 		</SidebarWrapper>
 	</Sidebar>
 
-	<div class="grow m-1 border">
-		<slot />
-	</div>
-
-	<div class="w-1/5 bg-gray-100" />
+	<slot />
 </div>
