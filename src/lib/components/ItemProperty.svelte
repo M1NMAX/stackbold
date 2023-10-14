@@ -1,34 +1,27 @@
 <script lang="ts">
-	import { CheckCircleSolid } from 'flowbite-svelte-icons';
+	import { Checkbox, Label } from 'flowbite-svelte';
 
 	export let name: string;
 	export let color: string;
 	export let type: string;
 	export let value: string;
 
-	type BgColors = { [key: string]: string };
+	type Colors = { [key: string]: string };
 
-	const bgColors: BgColors = {
-		gray: 'bg-gray-400',
-		red: 'bg-red-500',
-		green: 'bg-green-500',
-		blue: 'bg-blue-500'
+	const colors: Colors = {
+		gray: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+		red: 'bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-300',
+		blue: 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+		green: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300'
 	};
 </script>
 
-<span class={`${bgColors[color]} items-center text-base font-medium p-0.5 rounded`}>
-	{#if type === 'check'}
-		<span class="flex space-x-2">
-			<span>
-				{name}
-			</span>
-
-			{#if value === 'true'}
-				<CheckCircleSolid class="icon-xss" />
-			{:else}
-				<div class="w-5 h-5 border border-gray-400 rounded-full bg-white" />
-			{/if}
-		</span>
+<span
+	class={` ${colors[color]} rounded inline-flex items-center justify-center text-base font-semibold px-2.5 py-0.5 `}
+>
+	{#if type === 'CHECKBOX'}
+		<Checkbox checked={value === 'true'} />
+		<Label class="text-base font-semibold">{name}</Label>
 	{:else}
 		{value}
 	{/if}
