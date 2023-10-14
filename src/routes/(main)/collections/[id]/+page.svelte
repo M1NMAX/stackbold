@@ -18,18 +18,16 @@
 
 	const defaultPropColor = 'gray';
 	let busy = false;
-	let item: Item | null = null;
+	let seletedItem: Item | null = null;
 	let itemName: string | null = null;
-
-	$: primaryCollectionProp = data.collection.properties[0];
 
 	const handleOnClickItem = (itemId: string) => {
 		hidden = false;
 		busy = true;
 		const foundedItem = data.items.find((item) => item.id === itemId);
-		item = foundedItem ? foundedItem : null;
+		seletedItem = foundedItem ? foundedItem : null;
 
-		itemName = item && item.name;
+		itemName = seletedItem && seletedItem.name;
 
 		// item = await trpc().items.getItem(itemId)
 	};
@@ -82,23 +80,17 @@
 		{data.collection.description}
 	</div>
 
-	<div class="space-y-4 p-1">
+	<div class="space-y-2 p-1">
 		{#each data.items as item}
-			<div class="flex flex-col items-start border rounded p-1 space-y-2 group">
+			<div
+				class={` ${
+					seletedItem && seletedItem.id === item.id
+						? 'rounded-l-md bg-gray-100 border-r-4 border-primary-600'
+						: 'border rounded'
+				} flex flex-col items-start  py-1 px-2 space-y-2 group`}
+			>
 				<div class="w-full flex justify-between items-center space-x-2">
-					<!-- <ItemProperty
-						name={primaryCollectionProp.name}
-						color={primaryCollectionProp.type === 'SELECT'
-							? getOptionColor(
-									primaryCollectionProp.id,
-									getPropValueById(primaryCollectionProp.id, item.properties)
-							  )
-							: defaultPropColor}
-						type={primaryCollectionProp.type}
-						value={getPropValueById(primaryCollectionProp.id, item.properties)}
-					/> -->
-
-					<span class="grow text-lg font-medium">{item.name}</span>
+					<span class="grow text-lg font-semibold">{item.name}</span>
 
 					<IconBtn on:click={() => alert(item.name)} extraClass="invisible group-hover:visible">
 						<AdjustmentsHorizontalOutline class="icon-xss" />
@@ -158,7 +150,7 @@
 		{#each data.collection.properties as property}
 			<CollectionProperty
 				{property}
-				value={getPropValueById(property.id, item ? item.properties : [])}
+				value={getPropValueById(property.id, seletedItem ? seletedItem.properties : [])}
 			/>
 		{/each}
 	</div>
