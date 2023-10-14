@@ -53,7 +53,7 @@
 	let backdrop = false;
 	let transitionParams = {
 		x: 320,
-		duration: 200,
+		duration: 300,
 		easing: sineIn
 	};
 </script>
@@ -62,7 +62,11 @@
 	<title>{data.collection.name}</title>
 </svelte:head>
 
-<div class="grow m-1.5 ml-0 p-1 rounded-md bg-gray-50">
+<div
+	class={`${
+		!hidden ? 'w-3/6' : 'w-5/6'
+	} ease-in-out duration-300 m-2 ml-0 p-2 rounded-md bg-gray-50`}
+>
 	<div class="flex items-center space-x-1.5 p-1">
 		<h1 class="grow font-semibold text-2xl">
 			{data.collection.name}
@@ -120,7 +124,6 @@
 		{/each}
 	</div>
 </div>
-<div class="xl:w-1/4 bg-gray-50 m-1.5 rounded-md" />
 
 <Drawer
 	{activateClickOutside}
@@ -130,28 +133,30 @@
 	{transitionParams}
 	bind:hidden
 	id="itemDrawer"
-	class="w-full xl:w-1/4 m-1.5 p-1 rounded-md bg-gray-50"
+	class="w-full xl:w-2/6 p-2 bg-gray-200"
 >
-	<div class="flex justify-between items-center">
-		<IconBtn on:click={() => (hidden = true)} extraClass="p-4">
-			<CloseOutline class="icon-xss" />
-		</IconBtn>
-		<IconBtn>
-			<AdjustmentsHorizontalOutline class="icon-xss" />
-		</IconBtn>
-	</div>
+	<div class="h-full rounded-md bg-gray-50 p-3">
+		<div class="flex justify-between items-center">
+			<IconBtn on:click={() => (hidden = true)} extraClass="p-4">
+				<CloseOutline class="icon-xss" />
+			</IconBtn>
+			<IconBtn>
+				<AdjustmentsHorizontalOutline class="icon-xss" />
+			</IconBtn>
+		</div>
 
-	<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1 my-4">
-		<!-- <Label class=" grow truncate font-semibold">Name</Label> -->
-		<Input type="text" value={itemName} class=" rounded-sm text-lg border-none bg-gray-200 " />
-	</div>
+		<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1 my-4">
+			<!-- <Label class=" grow truncate font-semibold">Name</Label> -->
+			<Input type="text" value={itemName} class=" rounded-sm text-lg border-none bg-gray-200 " />
+		</div>
 
-	<div class="flex flex-col space-y-4">
-		{#each data.collection.properties as property}
-			<CollectionProperty
-				{property}
-				value={getPropValueById(property.id, seletedItem ? seletedItem.properties : [])}
-			/>
-		{/each}
+		<div class="flex flex-col space-y-4">
+			{#each data.collection.properties as property}
+				<CollectionProperty
+					{property}
+					value={getPropValueById(property.id, seletedItem ? seletedItem.properties : [])}
+				/>
+			{/each}
+		</div>
 	</div>
 </Drawer>

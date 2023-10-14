@@ -22,7 +22,7 @@
 </script>
 
 <div class=" h-screen flex bg-gray-200">
-	<Sidebar>
+	<Sidebar class="w-1/6">
 		<SidebarWrapper class="h-full pr-0 rounded-none bg-gray-200">
 			<SidebarGroup>
 				<div class="flex justify-between space-x-4">
