@@ -21,6 +21,8 @@
 	let item: Item | null = null;
 	let itemName: string | null = null;
 
+	$: primaryCollectionProp = data.collection.properties[0];
+
 	const handleOnClickItem = (itemId: string) => {
 		hidden = false;
 		busy = true;
@@ -31,6 +33,7 @@
 
 		// item = await trpc().items.getItem(itemId)
 	};
+
 	const getPropValueById = (pid: string, itemProps: ItemPropertyType[]) => {
 		const property = itemProps.find((property) => property.id === pid);
 		if (!property) return '';
@@ -81,10 +84,22 @@
 
 	<div class="space-y-4 p-1">
 		{#each data.items as item}
-			<div class="flex flex-col items-start border rounded p-1 space-x-2 space-y-2 group">
+			<div class="flex flex-col items-start border rounded p-1 space-y-2 group">
 				<div class="w-full flex justify-between items-center space-x-2">
-					<div class="w-5 h-5 border border-gray-400 rounded-full bg-white" />
+					<!-- <ItemProperty
+						name={primaryCollectionProp.name}
+						color={primaryCollectionProp.type === 'SELECT'
+							? getOptionColor(
+									primaryCollectionProp.id,
+									getPropValueById(primaryCollectionProp.id, item.properties)
+							  )
+							: defaultPropColor}
+						type={primaryCollectionProp.type}
+						value={getPropValueById(primaryCollectionProp.id, item.properties)}
+					/> -->
+
 					<span class="grow text-lg font-medium">{item.name}</span>
+
 					<IconBtn on:click={() => alert(item.name)} extraClass="invisible group-hover:visible">
 						<AdjustmentsHorizontalOutline class="icon-xss" />
 					</IconBtn>
@@ -97,7 +112,7 @@
 					</IconBtn>
 				</div>
 
-				<div class=" space-x-2">
+				<div class="flex flex-wrap gap-2">
 					{#each data.collection.properties as prop}
 						<ItemProperty
 							name={prop.name}
