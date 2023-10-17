@@ -1,12 +1,11 @@
 <script lang="ts">
+	import type { Colors } from '$lib/types';
 	import { Checkbox, Label } from 'flowbite-svelte';
 
 	export let name: string;
 	export let color: string;
 	export let type: string;
 	export let value: string;
-
-	type Colors = { [key: string]: string };
 
 	const colors: Colors = {
 		gray: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
@@ -17,7 +16,7 @@
 </script>
 
 <span
-	class={` ${colors[color]} rounded inline-flex items-center justify-center text-base font-semibold px-2.5 py-0.5 `}
+	class={` ${colors[color]} rounded inline-flex items-center justify-center text-base font-semibold px-1 py-0.5 `}
 >
 	{#if type === 'CHECKBOX'}
 		<Checkbox checked={value === 'true'} />
