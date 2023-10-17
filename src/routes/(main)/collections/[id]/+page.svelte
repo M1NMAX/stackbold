@@ -7,6 +7,7 @@
 		EyeSlashOutline,
 		FolderDuplicateOutline,
 		HeartOutline,
+		HeartSolid,
 		PenOutline,
 		TrashBinOutline,
 		UserAddOutline,
@@ -21,17 +22,16 @@
 		Input,
 		Modal
 	} from 'flowbite-svelte';
-	import ItemProperty from '$lib/components/ItemProperty.svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
 	import type { Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import CollectionProperty from '$lib/components/property/CollectionProperty.svelte';
-	import IconBtn from '$lib/components/IconBtn.svelte';
+	import { CollectionProperty, IconBtn, ItemProperty } from '$lib/components';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidateAll } from '$app/navigation';
 
 	import toast from 'svelte-french-toast';
+	import type { Color } from '$lib/types';
 
 	export let data: PageData;
 
@@ -66,7 +66,7 @@
 		const option = property.options.find((opt) => opt.value === value);
 
 		if (!option) return defaultPropColor;
-		return option.color.toString().toLowerCase();
+		return option.color.toLowerCase() as Color;
 	};
 
 	// Drawer
@@ -85,7 +85,7 @@
 
 	const handleOnDeleteItem = async () => {
 		if (!selectedItemId) {
-			alert('Error');
+			toast.error('Something went wrong :(, try again');
 			return;
 		}
 
@@ -117,11 +117,15 @@
 		</IconBtn>
 
 		<IconBtn>
-			<HeartOutline class="icon-xs" />
+			{#if data.collection.isFavourite}
+				<HeartSolid class="text-primary-700" />
+			{:else}
+				<HeartOutline />
+			{/if}
 		</IconBtn>
 
 		<IconBtn id="col-adjust-menu">
-			<AdjustmentsHorizontalOutline class="icon-xs" />
+			<AdjustmentsHorizontalOutline />
 		</IconBtn>
 		<Dropdown placement="left" triggeredBy="#col-adjust-menu" class="w-56 px-3 pb-3">
 			<DropdownItem class="dropdown-item">
@@ -161,14 +165,18 @@
 				class={` ${
 					drawerSelectedItem && drawerSelectedItem.id === item.id
 						? 'rounded-l-md bg-gray-100 border-r-4 border-primary-600'
-						: 'border rounded'
+						: ' rounded  bg-gray-100 '
 				} flex flex-col items-start  py-1 px-2 space-y-2 group`}
 			>
 				<div class="w-full flex justify-between items-center space-x-2">
 					<span class="grow text-lg font-semibold">{item.name}</span>
 
-					<IconBtn id={`item-adjust-menu-${item.id}`} extraClass="invisible group-hover:visible">
-						<AdjustmentsHorizontalOutline class="icon-xss" />
+					<IconBtn
+						id={`item-adjust-menu-${item.id}`}
+						color="dark"
+						class="invisible group-hover:visible"
+					>
+						<AdjustmentsHorizontalOutline />
 					</IconBtn>
 
 					<Dropdown triggeredBy={`#item-adjust-menu-${item.id}`} class="w-56 px-3 pb-3">
@@ -197,10 +205,10 @@
 
 					<IconBtn
 						on:click={() => handleOnClickItem(item.id)}
-						tootipText="Details"
-						extraClass="invisible group-hover:visible"
+						color="dark"
+						class="invisible group-hover:visible"
 					>
-						<WindowOutline class="icon-xss rotate-90" />
+						<WindowOutline class="rotate-90" />
 					</IconBtn>
 				</div>
 
@@ -233,11 +241,11 @@
 >
 	<div class="h-full rounded-md bg-gray-50 p-3">
 		<div class="flex justify-between items-center">
-			<IconBtn on:click={() => (hidden = true)} extraClass="p-4">
-				<CloseOutline class="icon-xss" />
+			<IconBtn on:click={() => (hidden = true)} class="p-4">
+				<CloseOutline />
 			</IconBtn>
 			<IconBtn>
-				<AdjustmentsHorizontalOutline class="icon-xss" />
+				<AdjustmentsHorizontalOutline />
 			</IconBtn>
 		</div>
 

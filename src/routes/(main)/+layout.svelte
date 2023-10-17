@@ -8,10 +8,9 @@
 		SearchOutline
 	} from 'flowbite-svelte-icons';
 
-	import SidebarCollection from '$lib/components/SidebarCollection.svelte';
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
-	import SidebarItem from '$lib/components/SidebarItem.svelte';
+	import { SidebarCollection, SidebarItem } from '$lib/components';
 
 	export let data: LayoutData;
 

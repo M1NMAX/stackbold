@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { Colors } from '$lib/types';
+	import type { Color, Colors } from '$lib/types';
 	import { Checkbox, Label } from 'flowbite-svelte';
 
 	export let name: string;
-	export let color: string;
+	export let color: Color = 'gray';
 	export let type: string;
 	export let value: string;
 
