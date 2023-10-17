@@ -1,11 +1,26 @@
 <script lang="ts">
 	import {
 		AdjustmentsHorizontalOutline,
+		ArchiveOutline,
 		CloseOutline,
+		ExclamationCircleOutline,
+		EyeSlashOutline,
+		FolderDuplicateOutline,
+		HeartOutline,
+		PenOutline,
+		TrashBinOutline,
 		UserAddOutline,
 		WindowOutline
 	} from 'flowbite-svelte-icons';
-	import { Button, Drawer, Input, Label } from 'flowbite-svelte';
+	import {
+		Button,
+		Drawer,
+		Dropdown,
+		DropdownDivider,
+		DropdownItem,
+		Input,
+		Modal
+	} from 'flowbite-svelte';
 	import ItemProperty from '$lib/components/ItemProperty.svelte';
 	import { sineIn } from 'svelte/easing';
 
@@ -13,21 +28,27 @@
 	import type { Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import CollectionProperty from '$lib/components/property/CollectionProperty.svelte';
 	import IconBtn from '$lib/components/IconBtn.svelte';
+	import { trpc } from '$lib/trpc/client';
+	import { invalidateAll } from '$app/navigation';
+
+	import toast from 'svelte-french-toast';
 
 	export let data: PageData;
 
 	const defaultPropColor = 'gray';
 	let busy = false;
-	let seletedItem: Item | null = null;
+	let drawerSelectedItem: Item | null = null;
 	let itemName: string | null = null;
+
+	let selectedItemId: string | null = null;
 
 	const handleOnClickItem = (itemId: string) => {
 		hidden = false;
 		busy = true;
 		const foundedItem = data.items.find((item) => item.id === itemId);
-		seletedItem = foundedItem ? foundedItem : null;
+		drawerSelectedItem = foundedItem ? foundedItem : null;
 
-		itemName = seletedItem && seletedItem.name;
+		itemName = drawerSelectedItem && drawerSelectedItem.name;
 
 		// item = await trpc().items.getItem(itemId)
 	};
@@ -48,6 +69,7 @@
 		return option.color.toString().toLowerCase();
 	};
 
+	// Drawer
 	let hidden = true;
 	let activateClickOutside = false;
 	let backdrop = false;
@@ -55,6 +77,25 @@
 		x: 320,
 		duration: 300,
 		easing: sineIn
+	};
+	// Drawer
+
+	// Delete Modal
+	let isDeleteModalOpen = false;
+
+	const handleOnDeleteItem = async () => {
+		if (!selectedItemId) {
+			alert('Error');
+			return;
+		}
+
+		console.log(selectedItemId);
+		busy = true;
+
+		await trpc().items.deleteItem.mutate(selectedItemId);
+		await invalidateAll();
+		busy = false;
+		toast.success('item deleted');
 	};
 </script>
 
@@ -72,12 +113,42 @@
 			{data.collection.name}
 		</h1>
 		<IconBtn>
-			<UserAddOutline class="icon-xs" />
+			<UserAddOutline />
 		</IconBtn>
 
 		<IconBtn>
+			<HeartOutline class="icon-xs" />
+		</IconBtn>
+
+		<IconBtn id="col-adjust-menu">
 			<AdjustmentsHorizontalOutline class="icon-xs" />
 		</IconBtn>
+		<Dropdown placement="left" triggeredBy="#col-adjust-menu" class="w-56 px-3 pb-3">
+			<DropdownItem class="dropdown-item">
+				<EyeSlashOutline />
+				<span> Hide description </span>
+			</DropdownItem>
+
+			<DropdownItem class="dropdown-item">
+				<PenOutline />
+				<span> Rename </span>
+			</DropdownItem>
+
+			<DropdownItem class="dropdown-item">
+				<FolderDuplicateOutline />
+				<span> Duplicate </span>
+			</DropdownItem>
+
+			<DropdownItem class="dropdown-item">
+				<ArchiveOutline />
+				<span> Archive </span>
+			</DropdownItem>
+			<DropdownDivider />
+			<DropdownItem class="dropdown-item dropdown-item-red">
+				<TrashBinOutline />
+				<span> Delete </span>
+			</DropdownItem>
+		</Dropdown>
 	</div>
 
 	<div>
@@ -88,7 +159,7 @@
 		{#each data.items as item}
 			<div
 				class={` ${
-					seletedItem && seletedItem.id === item.id
+					drawerSelectedItem && drawerSelectedItem.id === item.id
 						? 'rounded-l-md bg-gray-100 border-r-4 border-primary-600'
 						: 'border rounded'
 				} flex flex-col items-start  py-1 px-2 space-y-2 group`}
@@ -96,12 +167,37 @@
 				<div class="w-full flex justify-between items-center space-x-2">
 					<span class="grow text-lg font-semibold">{item.name}</span>
 
-					<IconBtn on:click={() => alert(item.name)} extraClass="invisible group-hover:visible">
+					<IconBtn id={`item-adjust-menu-${item.id}`} extraClass="invisible group-hover:visible">
 						<AdjustmentsHorizontalOutline class="icon-xss" />
 					</IconBtn>
 
+					<Dropdown triggeredBy={`#item-adjust-menu-${item.id}`} class="w-56 px-3 pb-3">
+						<DropdownItem class="dropdown-item">
+							<PenOutline />
+							<span> Rename item </span>
+						</DropdownItem>
+
+						<DropdownItem class="dropdown-item">
+							<FolderDuplicateOutline />
+							<span> Duplicate item </span>
+						</DropdownItem>
+
+						<DropdownDivider />
+						<DropdownItem
+							on:click={() => {
+								isDeleteModalOpen = true;
+								selectedItemId = item.id;
+							}}
+							class="dropdown-item dropdown-item-red"
+						>
+							<TrashBinOutline />
+							<span> Delete item </span>
+						</DropdownItem>
+					</Dropdown>
+
 					<IconBtn
 						on:click={() => handleOnClickItem(item.id)}
+						tootipText="Details"
 						extraClass="invisible group-hover:visible"
 					>
 						<WindowOutline class="icon-xss rotate-90" />
@@ -154,9 +250,23 @@
 			{#each data.collection.properties as property}
 				<CollectionProperty
 					{property}
-					value={getPropValueById(property.id, seletedItem ? seletedItem.properties : [])}
+					value={getPropValueById(
+						property.id,
+						drawerSelectedItem ? drawerSelectedItem.properties : []
+					)}
 				/>
 			{/each}
 		</div>
 	</div>
 </Drawer>
+
+<Modal bind:open={isDeleteModalOpen} size="xs" autoclose>
+	<div class="text-center">
+		<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
+		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+			Are you sure you want to delete this item? {selectedItemId}
+		</h3>
+		<Button on:click={handleOnDeleteItem} color="red" class="mr-2">Yes, I'm sure</Button>
+		<Button color="alternative">No, cancel</Button>
+	</div>
+</Modal>

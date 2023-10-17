@@ -26,5 +26,9 @@
 }
 
 .dropdown-item {
-	@apply flex items-center space-x-1.5 rounded;
+	@apply flex items-center space-x-2 rounded text-base font-semibold;
+}
+
+.dropdown-item-red {
+	@apply text-red-500;
 }

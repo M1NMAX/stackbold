@@ -8,10 +8,10 @@
 
 	const propType = property.type.toLowerCase() as InputType;
 
-	const inputClass = '!rounded-sm';
+	const inputClass = 'rounded-sm bg-gray-200 border-none text-base  font-semibold';
 </script>
 
-<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1">
+<div class="flex flex-col space-y-1 rounded bg-gray-200 px-2 py-1">
 	{#if property.type === PropertyType.CHECKBOX}
 		<div class="flex">
 			<Checkbox id={property.id} checked={value === 'true'} />
