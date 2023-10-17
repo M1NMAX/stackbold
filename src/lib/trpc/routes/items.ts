@@ -9,5 +9,11 @@ export const items = createTRPCRouter({
 
 	getItem: protectedProcedure
 		.input(z.string())
-		.query(({ input }) => prisma.item.findUnique({ where: { id: input } }))
+		.query(({ input }) => prisma.item.findUnique({ where: { id: input } })),
+	deleteItem: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ input: id, ctx: { userId } }) => {
+			console.log(userId);
+			await prisma.item.delete({ where: { id } });
+		})
 });
