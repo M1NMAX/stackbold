@@ -1,5 +1,16 @@
 <script lang="ts">
-	import { Sidebar, SidebarWrapper, SidebarGroup, Badge, Avatar, Button } from 'flowbite-svelte';
+	import {
+		Sidebar,
+		SidebarWrapper,
+		SidebarGroup,
+		Badge,
+		Avatar,
+		Button,
+		Modal,
+		Label,
+		Input,
+		Checkbox
+	} from 'flowbite-svelte';
 	import {
 		CogOutline,
 		DnaOutline,
@@ -18,6 +29,14 @@
 
 	$: activeUrl = $page.url.pathname;
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
+
+	let createCollectionModal = false;
+
+	const handleSubmit = (e: { currentTarget: HTMLFormElement }) => {
+		const formData = new FormData(e.currentTarget);
+
+		console.log(formData);
+	};
 </script>
 
 <div class=" h-screen flex bg-gray-200">
@@ -82,7 +101,10 @@
 			</SidebarGroup>
 
 			<div class="py-1 pr-2 pl-1">
-				<Button class="w-full flex items-center space-x-4 p-1.5 rounded-md">
+				<Button
+					on:click={() => (createCollectionModal = true)}
+					class="w-full flex items-center space-x-4 p-1.5 rounded-md"
+				>
 					<PlusOutline class="icon-xss" />
 					<span class="font-semibold"> Create Collection </span>
 				</Button>
@@ -92,3 +114,15 @@
 
 	<slot />
 </div>
+
+<Modal bind:open={createCollectionModal} size="xs" autoclose={false} class="w-full">
+	<form method="POST" action="/collections?/createCollection" class="flex flex-col space-y-6">
+		<h3 class="mb-2 text-xl font-medium text-gray-900 dark:text-white">New collection</h3>
+		<Label class="space-y-2">
+			<span>Name</span>
+			<Input type="text" name="name" placeholder="Tasks" required />
+		</Label>
+
+		<Button type="submit" class="w-full">Create</Button>
+	</form>
+</Modal>
