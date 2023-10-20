@@ -6,7 +6,7 @@ export const collections = createTRPCRouter({
 	getUserCollections: protectedProcedure.query(({ ctx: { userId } }) =>
 		prisma.collection.findMany({
 			where: { ownerId: userId },
-			orderBy: { name: 'asc' }
+			orderBy: { createdAt: 'asc' }
 		})
 	),
 	getCollection: protectedProcedure

@@ -11,8 +11,8 @@
 	export { className as class };
 
 	const sizes: Sizes = {
-		xxs: 'w-4 h-4',
-		xs: 'w-6 h-6'
+		xxs: 'w-3 h-3 p-3.5 m-0',
+		xs: 'w-6 h-6 p-4'
 	};
 	const colors: Colors = {
 		gray: 'bg-gray-200 hover:bg-gray-300 ',
@@ -23,7 +23,7 @@
 <Button
 	{id}
 	on:click
-	class={`${colors[color]} ${sizes[size]} text-black  p-4 rounded focus:ring-0 border-0 ${className}`}
+	class={`${colors[color]} ${sizes[size]} text-black   rounded focus:ring-0 border-0 ${className}`}
 >
 	<slot />
 </Button>
