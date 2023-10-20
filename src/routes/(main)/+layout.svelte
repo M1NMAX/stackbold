@@ -8,8 +8,7 @@
 		Button,
 		Modal,
 		Label,
-		Input,
-		Checkbox
+		Input
 	} from 'flowbite-svelte';
 	import {
 		CogOutline,
@@ -19,11 +18,17 @@
 		SearchOutline
 	} from 'flowbite-svelte-icons';
 
-	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
 	import { SidebarCollection, SidebarItem } from '$lib/components';
+	import toast from 'svelte-french-toast';
+	import { trpc } from '$lib/trpc/client';
+	import { TRPCClientError } from '@trpc/client';
+	import { goto, invalidateAll } from '$app/navigation';
+	import type { LayoutData } from './$types';
 
 	export let data: LayoutData;
+
+	let error: { message: string; path: string[] }[] | null = null;
 
 	$: favourites = data.collections.filter((collection) => collection.isFavourite);
 
@@ -32,10 +37,27 @@
 
 	let createCollectionModal = false;
 
-	const handleSubmit = (e: { currentTarget: HTMLFormElement }) => {
+	const handleSubmit = async (e: { currentTarget: HTMLFormElement }) => {
 		const formData = new FormData(e.currentTarget);
 
-		console.log(formData);
+		const name = formData.get('name') as string;
+		//TODO: input validation
+
+		try {
+			const collection = await trpc().collections.createCollection.mutate({ name });
+
+			await invalidateAll();
+			createCollectionModal = false;
+			toast.success('Collection created successfully');
+
+			console.log(collection);
+			setTimeout(() => goto(`/collections/${collection.id}`), 1000);
+		} catch (err) {
+			if (err instanceof TRPCClientError) error = JSON.parse(err.message);
+			else throw err;
+
+			toast.error('Something wrong ');
+		}
 	};
 </script>
 
@@ -116,7 +138,7 @@
 </div>
 
 <Modal bind:open={createCollectionModal} size="xs" autoclose={false} class="w-full">
-	<form method="POST" action="/collections?/createCollection" class="flex flex-col space-y-6">
+	<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-6">
 		<h3 class="mb-2 text-xl font-medium text-gray-900 dark:text-white">New collection</h3>
 		<Label class="space-y-2">
 			<span>Name</span>

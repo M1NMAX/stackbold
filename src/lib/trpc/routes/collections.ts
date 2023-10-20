@@ -19,11 +19,12 @@ export const collections = createTRPCRouter({
 				name: z.string().min(1).max(50)
 			})
 		)
-		.mutation(async ({ input, ctx: { userId } }) => {
-			await prisma.collection.create({
-				data: { ownerId: userId, name: input.name }
-			});
-		}),
+		.mutation(
+			async ({ input, ctx: { userId } }) =>
+				await prisma.collection.create({
+					data: { ownerId: userId, name: input.name }
+				})
+		),
 
 	deleteCollection: protectedProcedure.input(z.string()).mutation(async ({ input: id }) => {
 		await prisma.collection.delete({ where: { id } });
