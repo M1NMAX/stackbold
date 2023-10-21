@@ -124,35 +124,47 @@
 			{/if}
 		</IconBtn>
 
-		<IconBtn id="col-adjust-menu">
-			<AdjustmentsHorizontalOutline />
-		</IconBtn>
-		<Dropdown placement="left" triggeredBy="#col-adjust-menu" class="w-56 px-3 pb-3">
-			<DropdownItem class="dropdown-item">
-				<EyeSlashOutline />
-				<span> Hide description </span>
-			</DropdownItem>
+		<div class="dropdown dropdown-end">
+			<IconBtn>
+				<AdjustmentsHorizontalOutline />
+			</IconBtn>
 
-			<DropdownItem class="dropdown-item">
-				<PenOutline />
-				<span> Rename </span>
-			</DropdownItem>
+			<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+				<li>
+					<button class="dropdown-item">
+						<EyeSlashOutline />
+						<span> Hide description </span>
+					</button>
+				</li>
+				<li>
+					<button class="dropdown-item">
+						<PenOutline />
+						<span> Rename </span>
+					</button>
+				</li>
+				<li>
+					<button class="dropdown-item">
+						<FolderDuplicateOutline />
+						<span> Duplicate </span>
+					</button>
+				</li>
+				<li>
+					<button class="dropdown-item">
+						<ArchiveOutline />
+						<span> Archive </span>
+					</button>
+				</li>
+				<span class="divider p-0 m-0" />
+				<li>
+					<button class="dropdown-item dropdown-item-red">
+						<TrashBinOutline />
+						<span> Delete </span>
+					</button>
+				</li>
 
-			<DropdownItem class="dropdown-item">
-				<FolderDuplicateOutline />
-				<span> Duplicate </span>
-			</DropdownItem>
-
-			<DropdownItem class="dropdown-item">
-				<ArchiveOutline />
-				<span> Archive </span>
-			</DropdownItem>
-			<DropdownDivider />
-			<DropdownItem class="dropdown-item dropdown-item-red">
-				<TrashBinOutline />
-				<span> Delete </span>
-			</DropdownItem>
-		</Dropdown>
+				<ul />
+			</ul>
+		</div>
 	</div>
 
 	<div>
@@ -171,37 +183,42 @@
 				<div class="w-full flex justify-between items-center space-x-2">
 					<span class="grow text-lg font-semibold">{item.name}</span>
 
-					<IconBtn
-						id={`item-adjust-menu-${item.id}`}
-						color="dark"
-						class="invisible group-hover:visible"
-					>
-						<AdjustmentsHorizontalOutline />
-					</IconBtn>
+					<div class="dropdown dropdown-end">
+						<IconBtn class="invisible group-hover:visible">
+							<AdjustmentsHorizontalOutline />
+						</IconBtn>
 
-					<Dropdown triggeredBy={`#item-adjust-menu-${item.id}`} class="w-56 px-3 pb-3">
-						<DropdownItem class="dropdown-item">
-							<PenOutline />
-							<span> Rename item </span>
-						</DropdownItem>
+						<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+							<li>
+								<button class="dropdown-item">
+									<PenOutline />
+									<span> Rename item </span>
+								</button>
+							</li>
+							<li>
+								<button class="dropdown-item">
+									<FolderDuplicateOutline />
+									<span> Duplicate </span>
+								</button>
+							</li>
 
-						<DropdownItem class="dropdown-item">
-							<FolderDuplicateOutline />
-							<span> Duplicate item </span>
-						</DropdownItem>
+							<span class="divider p-0 m-0" />
+							<li>
+								<button
+									on:click={() => {
+										isDeleteModalOpen = true;
+										selectedItemId = item.id;
+									}}
+									class="dropdown-item dropdown-item-red"
+								>
+									<TrashBinOutline />
+									<span> Delete </span>
+								</button>
+							</li>
 
-						<DropdownDivider />
-						<DropdownItem
-							on:click={() => {
-								isDeleteModalOpen = true;
-								selectedItemId = item.id;
-							}}
-							class="dropdown-item dropdown-item-red"
-						>
-							<TrashBinOutline />
-							<span> Delete item </span>
-						</DropdownItem>
-					</Dropdown>
+							<ul />
+						</ul>
+					</div>
 
 					<IconBtn
 						on:click={() => handleOnClickItem(item.id)}

@@ -20,13 +20,9 @@
 	};
 </script>
 
-<Button
-	{id}
-	on:click
-	class={`${colors[color]} ${sizes[size]} text-black   rounded focus:ring-0 border-0 ${className}`}
->
+<button {id} on:click class={` btn btn-sm rounded px-2 py-1 ${className}`}>
 	<slot />
-</Button>
+</button>
 
 {#if tootipText}
 	<Tooltip>{tootipText}</Tooltip>

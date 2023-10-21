@@ -7,15 +7,21 @@
 	<title>Settings</title>
 </svelte:head>
 
-<h1 class="text-2xl">Settings</h1>
+<div class="grow m-2 p-2 rounded-md bg-gray-50">
+	<div class="h-full flex flex-col justify-between p-1 overflow-hidden">
+		<h1 class="font-semibold text-2xl">Settings</h1>
+		<div>
+			<button
+				class="btn text-blue-500 dark:text-red-500"
+				data-toggle-theme="dark,light"
+				data-act-class="ACTIVECLASS">Theme</button
+			>
+		</div>
 
-<Card>
-	<h2 class="text-lg">Theme</h2>
-	<DarkMode />
-</Card>
-
-<Card>
-	<form method="post" action="?/logout" use:enhance>
-		<Button type="submit">Log out</Button>
-	</form>
-</Card>
+		<div>
+			<form method="post" action="?/logout" use:enhance>
+				<Button type="submit">Log out</Button>
+			</form>
+		</div>
+	</div>
+</div>

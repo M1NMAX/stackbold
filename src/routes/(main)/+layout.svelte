@@ -3,7 +3,6 @@
 		Sidebar,
 		SidebarWrapper,
 		SidebarGroup,
-		Badge,
 		Avatar,
 		Button,
 		Modal,
@@ -11,10 +10,8 @@
 		Input
 	} from 'flowbite-svelte';
 	import {
+		ArrowRightToBracketOutline,
 		CaretSortSolid,
-		ChervonDoubleRightSolid,
-		ChevronSortOutline,
-		ChevronSortSolid,
 		CogOutline,
 		DnaOutline,
 		GridOutline,
@@ -72,13 +69,29 @@
 		<SidebarWrapper class="h-full flex flex-col space-y-4 px-2 py-1.5  rounded-none bg-gray-200">
 			<SidebarGroup>
 				<div class="flex space-x-1">
-					<button class="relative px-1 py-0.5 rounded bg-gray-300 hover:bg-gray-100 text-black">
-						<Avatar
-							src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
-							class=" rounded-full h-7 w-7"
-						/>
-						<CaretSortSolid class="absolute right-0 bottom-0 w-3 h-3" />
-					</button>
+					<div class="dropdown">
+						<button class="relative px-1 py-0.5 rounded bg-gray-300 hover:bg-gray-100 text-black">
+							<Avatar
+								src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
+								class=" rounded-full h-7 w-7"
+							/>
+							<CaretSortSolid class="absolute right-0 bottom-0 w-3 h-3" />
+						</button>
+						<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 w-60">
+							<li>
+								<a href="/settings" class="dropdown-item">
+									<CogOutline />
+									<span> Settings </span>
+								</a>
+							</li>
+							<li>
+								<button type="submit" class="dropdown-item">
+									<ArrowRightToBracketOutline />
+									<span> Log out </span>
+								</button>
+							</li>
+						</ul>
+					</div>
 					<button class="grow flex items-center space-x-4 p-1.5 rounded-md bg-gray-300">
 						<SearchOutline class="icon-xss" />
 						<span class="font-semibold"> Quick Search </span>

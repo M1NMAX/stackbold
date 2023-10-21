@@ -32,3 +32,7 @@
 .dropdown-item-red {
 	@apply text-red-500;
 }
+
+.dropdown-content {
+	@apply rounded;
+}
