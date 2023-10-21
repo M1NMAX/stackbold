@@ -34,5 +34,5 @@
 }
 
 .dropdown-content {
-	@apply rounded;
+	@apply rounded p-2 shadow bg-base-100;
 }

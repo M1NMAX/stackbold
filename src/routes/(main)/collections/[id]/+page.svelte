@@ -2,6 +2,7 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
+		CirclePlusOutline,
 		CloseOutline,
 		ExclamationCircleOutline,
 		EyeSlashOutline,
@@ -13,15 +14,7 @@
 		UserAddOutline,
 		WindowOutline
 	} from 'flowbite-svelte-icons';
-	import {
-		Button,
-		Drawer,
-		Dropdown,
-		DropdownDivider,
-		DropdownItem,
-		Input,
-		Modal
-	} from 'flowbite-svelte';
+	import { Button, Drawer, Input, Modal } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
@@ -89,10 +82,10 @@
 			return;
 		}
 
-		console.log(selectedItemId);
 		busy = true;
 
 		await trpc().items.deleteItem.mutate(selectedItemId);
+		if (selectedItemId === drawerSelectedItem?.id) hidden = true;
 		await invalidateAll();
 		busy = false;
 		toast.success('item deleted');
@@ -129,7 +122,7 @@
 				<AdjustmentsHorizontalOutline />
 			</IconBtn>
 
-			<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+			<ul class="dropdown-content z-[1] menu w-52">
 				<li>
 					<button class="dropdown-item">
 						<EyeSlashOutline />
@@ -260,9 +253,49 @@
 			<IconBtn on:click={() => (hidden = true)} class="p-4">
 				<CloseOutline />
 			</IconBtn>
-			<IconBtn>
-				<AdjustmentsHorizontalOutline />
-			</IconBtn>
+
+			<div class="dropdown dropdown-end">
+				<IconBtn>
+					<AdjustmentsHorizontalOutline />
+				</IconBtn>
+
+				<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+					<li>
+						<button class="dropdown-item">
+							<CirclePlusOutline />
+							<span> Add property </span>
+						</button>
+					</li>
+					<li>
+						<button class="dropdown-item">
+							<PenOutline />
+							<span> Rename item </span>
+						</button>
+					</li>
+					<li>
+						<button class="dropdown-item">
+							<FolderDuplicateOutline />
+							<span> Duplicate </span>
+						</button>
+					</li>
+
+					<span class="divider p-0 m-0" />
+					<li>
+						<button
+							on:click={() => {
+								isDeleteModalOpen = true;
+								selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
+							}}
+							class="dropdown-item dropdown-item-red"
+						>
+							<TrashBinOutline />
+							<span> Delete </span>
+						</button>
+					</li>
+
+					<ul />
+				</ul>
+			</div>
 		</div>
 
 		<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1 my-4">
