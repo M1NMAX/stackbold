@@ -146,11 +146,7 @@
 					>
 						All Collections
 					</a>
-					<IconBtn
-						on:click={() => (createCollectionModal = true)}
-						tootipText="Create collection"
-						size="xxs"
-					>
+					<IconBtn on:click={() => (createCollectionModal = true)} tootipText="Create collection">
 						<PlusOutline />
 					</IconBtn>
 				</span>

@@ -222,7 +222,6 @@
 
 					<IconBtn
 						on:click={() => handleOnClickItem(item.id)}
-						color="dark"
 						class="invisible group-hover:visible"
 					>
 						<WindowOutline class="rotate-90" />
