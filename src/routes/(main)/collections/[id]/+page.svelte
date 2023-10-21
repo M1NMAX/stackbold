@@ -21,7 +21,7 @@
 	import type { Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { CollectionProperty, IconBtn, ItemProperty } from '$lib/components';
 	import { trpc } from '$lib/trpc/client';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	import toast from 'svelte-french-toast';
 	import type { Color } from '$lib/types';
@@ -75,8 +75,9 @@
 
 	// Delete Modal
 	let isDeleteModalOpen = false;
+	let isCollection = false;
 
-	const handleOnDeleteItem = async () => {
+	const handleDeleteItem = async () => {
 		if (!selectedItemId) {
 			toast.error('Something went wrong :(, try again');
 			return;
@@ -89,6 +90,24 @@
 		await invalidateAll();
 		busy = false;
 		toast.success('item deleted');
+	};
+
+	const handleDeleteCollection = async () => {
+		console.log(data.collection.id);
+		if (data.collection.ownerId !== data.user.userId) {
+			toast.error('Unauthorized');
+			return;
+		}
+
+		busy = true;
+		await trpc().collections.deleteCollection.mutate(data.collection.id);
+
+		await invalidateAll();
+
+		isCollection = false;
+		busy = false;
+		goto('/collections');
+		toast.success('Collection deleted');
 	};
 </script>
 
@@ -149,7 +168,13 @@
 				</li>
 				<span class="divider p-0 m-0" />
 				<li>
-					<button class="dropdown-item dropdown-item-red">
+					<button
+						on:click={() => {
+							isCollection = true;
+							isDeleteModalOpen = true;
+						}}
+						class="dropdown-item dropdown-item-red"
+					>
 						<TrashBinOutline />
 						<span> Delete </span>
 					</button>
@@ -321,9 +346,17 @@
 	<div class="text-center">
 		<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
 		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-			Are you sure you want to delete this item? {selectedItemId}
+			Are you sure you want to delete this {#if isCollection}
+				collection
+			{:else}
+				item
+			{/if} ?
 		</h3>
-		<Button on:click={handleOnDeleteItem} color="red" class="mr-2">Yes, I'm sure</Button>
+		{#if isCollection}
+			<Button on:click={handleDeleteCollection} color="red" class="mr-2">Yes, I'm sure</Button>
+		{:else}
+			<Button on:click={handleDeleteItem} color="red" class="mr-2">Yes, I'm sure</Button>
+		{/if}
 		<Button color="alternative">No, cancel</Button>
 	</div>
 </Modal>
