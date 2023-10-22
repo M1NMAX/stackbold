@@ -51,7 +51,8 @@
 		"lucia": "^2.7.1",
 		"svelte-french-toast": "^1.2.0",
 		"theme-change": "^2.5.0",
-		"trpc-sveltekit": "^3.5.21"
+		"trpc-sveltekit": "^3.5.21",
+		"zod-prisma-types": "^2.8.1"
 	},
 	"prisma": {
 		"seed": "ts-node prisma/seed.ts"

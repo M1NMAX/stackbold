@@ -47,7 +47,10 @@
 		//TODO: input validation
 
 		try {
-			const collection = await trpc().collections.createCollection.mutate({ name });
+			const collection = await trpc().collections.createCollection.mutate({
+				name,
+				isFavourite: true
+			});
 
 			await invalidateAll();
 			createCollectionModal = false;
