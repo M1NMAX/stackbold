@@ -101,16 +101,18 @@ type ItemProperty {
 }
 
 model Collection {
-  id          String               @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  isFavourite Boolean              @default(false)
-  description String               @default("")
-  owner       User                 @relation(fields: [ownerId], references: [id])
-  ownerId     String
-  items       Item[]
-  properties  CollectionProperty[]
+  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  isFavourite  Boolean              @default(false)
+  isArchived   Boolean              @default(false)
+  description  String               @default("")
+  isDescHidden Boolean              @default(false)
+  owner        User                 @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  items        Item[]
+  properties   CollectionProperty[]
 }
 
 model Item {
