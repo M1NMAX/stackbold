@@ -21,13 +21,19 @@
 	} from 'flowbite-svelte-icons';
 
 	import { page } from '$app/stores';
-	import { SidebarCollection, SidebarItem } from '$lib/components';
+	import {
+		Dropdown,
+		DropdownDivider,
+		DropdownItem,
+		IconBtn,
+		SidebarCollection,
+		SidebarItem
+	} from '$lib/components';
 	import toast from 'svelte-french-toast';
 	import { trpc } from '$lib/trpc/client';
 	import { TRPCClientError } from '@trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
-	import IconBtn from '$lib/components/IconBtn.svelte';
 
 	export let data: LayoutData;
 
@@ -72,29 +78,32 @@
 		<SidebarWrapper class="h-full flex flex-col space-y-4 px-2 py-1.5  rounded-none bg-gray-200">
 			<SidebarGroup>
 				<div class="flex space-x-1">
-					<div class="dropdown">
-						<button class="relative px-1 py-0.5 rounded bg-gray-300 hover:bg-gray-100 text-black">
+					<Dropdown alighEnd={false}>
+						<button
+							slot="button"
+							class="relative px-1 py-0.5 rounded bg-gray-300 hover:bg-gray-100 text-black"
+						>
 							<Avatar
 								src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
 								class=" rounded-full h-7 w-7"
 							/>
 							<CaretSortSolid class="absolute right-0 bottom-0 w-3 h-3" />
 						</button>
-						<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 w-60">
-							<li>
-								<a href="/settings" class="dropdown-item">
-									<CogOutline />
-									<span> Settings </span>
-								</a>
-							</li>
-							<li>
-								<button type="submit" class="dropdown-item">
-									<ArrowRightToBracketOutline />
-									<span> Log out </span>
-								</button>
-							</li>
-						</ul>
-					</div>
+						<svelte:fragment>
+							<DropdownItem href="/settings">
+								<CogOutline />
+								<span> Settings </span>
+							</DropdownItem>
+
+							<DropdownDivider />
+
+							<DropdownItem>
+								<ArrowRightToBracketOutline />
+								<span> Log out </span>
+							</DropdownItem>
+						</svelte:fragment>
+					</Dropdown>
+
 					<button class="grow flex items-center space-x-4 p-1.5 rounded-md bg-gray-300">
 						<SearchOutline class="icon-xss" />
 						<span class="font-semibold"> Quick Search </span>

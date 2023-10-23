@@ -20,7 +20,15 @@
 
 	import type { PageData } from './$types';
 	import type { Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import { CollectionProperty, IconBtn, ItemProperty } from '$lib/components';
+	import {
+		CollectionProperty,
+		Dropdown,
+		DropdownItem,
+		DropdownDivider,
+		IconBtn,
+		ItemProperty
+	} from '$lib/components';
+
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 
@@ -169,61 +177,51 @@
 			{/if}
 		</IconBtn>
 
-		<div class="dropdown dropdown-end">
-			<IconBtn>
+		<Dropdown>
+			<IconBtn slot="button">
 				<AdjustmentsHorizontalOutline />
 			</IconBtn>
+			<svelte:fragment>
+				<DropdownItem
+					on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
+				>
+					{#if currCollection.isDescHidden}
+						<EyeOutline />
+						<span> Show description </span>
+					{:else}
+						<EyeSlashOutline />
+						<span> Hide description </span>
+					{/if}
+				</DropdownItem>
 
-			<ul class="dropdown-content z-[1] menu w-56">
-				<li>
-					<button
-						class="dropdown-item"
-						on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
-					>
-						{#if currCollection.isDescHidden}
-							<EyeOutline />
-							<span> Show description </span>
-						{:else}
-							<EyeSlashOutline />
-							<span> Hide description </span>
-						{/if}
-					</button>
-				</li>
-				<li>
-					<button class="dropdown-item" on:click={() => handleUpdateCollection({ name: 'chuve' })}>
-						<PenOutline />
-						<span> Rename </span>
-					</button>
-				</li>
-				<li>
-					<button class="dropdown-item" on:click={handleDuplicateCollection}>
-						<FolderDuplicateOutline />
-						<span> Duplicate </span>
-					</button>
-				</li>
-				<li>
-					<button class="dropdown-item">
-						<ArchiveOutline />
-						<span> Archive </span>
-					</button>
-				</li>
-				<span class="divider p-0 m-0" />
-				<li>
-					<button
-						on:click={() => {
-							isCollection = true;
-							isDeleteModalOpen = true;
-						}}
-						class="dropdown-item dropdown-item-red"
-					>
-						<TrashBinOutline />
-						<span> Delete </span>
-					</button>
-				</li>
+				<DropdownItem>
+					<PenOutline />
+					<span> Rename </span>
+				</DropdownItem>
 
-				<ul />
-			</ul>
-		</div>
+				<DropdownItem on:click={handleDuplicateCollection}>
+					<FolderDuplicateOutline />
+					<span> Duplicate </span>
+				</DropdownItem>
+
+				<DropdownItem>
+					<ArchiveOutline />
+					<span> Archive </span>
+				</DropdownItem>
+				<DropdownDivider />
+
+				<DropdownItem
+					on:click={() => {
+						isCollection = true;
+						isDeleteModalOpen = true;
+					}}
+					class="dropdown-item-red"
+				>
+					<TrashBinOutline />
+					<span> Delete </span>
+				</DropdownItem>
+			</svelte:fragment>
+		</Dropdown>
 	</div>
 
 	<div>
@@ -242,42 +240,34 @@
 				<div class="w-full flex justify-between items-center space-x-2">
 					<span class="grow text-lg font-semibold">{item.name}</span>
 
-					<div class="dropdown dropdown-end">
-						<IconBtn class="invisible group-hover:visible">
+					<Dropdown>
+						<IconBtn slot="button" class="invisible group-hover:visible">
 							<AdjustmentsHorizontalOutline />
 						</IconBtn>
 
-						<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-							<li>
-								<button class="dropdown-item">
-									<PenOutline />
-									<span> Rename item </span>
-								</button>
-							</li>
-							<li>
-								<button class="dropdown-item">
-									<FolderDuplicateOutline />
-									<span> Duplicate </span>
-								</button>
-							</li>
+						<svelte:fragment>
+							<DropdownItem>
+								<PenOutline />
+								<span> Rename item </span>
+							</DropdownItem>
 
-							<span class="divider p-0 m-0" />
-							<li>
-								<button
-									on:click={() => {
-										isDeleteModalOpen = true;
-										selectedItemId = item.id;
-									}}
-									class="dropdown-item dropdown-item-red"
-								>
-									<TrashBinOutline />
-									<span> Delete </span>
-								</button>
-							</li>
-
-							<ul />
-						</ul>
-					</div>
+							<DropdownItem>
+								<FolderDuplicateOutline />
+								<span> Duplicate </span>
+							</DropdownItem>
+							<DropdownDivider />
+							<DropdownItem
+								on:click={() => {
+									isDeleteModalOpen = true;
+									selectedItemId = item.id;
+								}}
+								class=" dropdown-item-red"
+							>
+								<TrashBinOutline />
+								<span> Delete </span>
+							</DropdownItem>
+						</svelte:fragment>
+					</Dropdown>
 
 					<IconBtn
 						on:click={() => handleOnClickItem(item.id)}
