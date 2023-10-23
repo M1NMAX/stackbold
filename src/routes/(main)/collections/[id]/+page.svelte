@@ -93,7 +93,6 @@
 	};
 
 	const handleDeleteCollection = async () => {
-		console.log(data.collection.id);
 		if (data.collection.ownerId !== data.user.userId) {
 			toast.error('Unauthorized');
 			return;
@@ -101,13 +100,30 @@
 
 		busy = true;
 		await trpc().collections.deleteCollection.mutate(data.collection.id);
-
 		await invalidateAll();
-
 		isCollection = false;
 		busy = false;
 		goto('/collections');
 		toast.success('Collection deleted');
+	};
+
+	const handleDuplicateCollection = async () => {
+		const itemsCopy = data.items.map(({ id, collectionId, ...otherItemData }) => ({
+			...otherItemData
+		}));
+
+		const { id, name, ownerId, ...otherCollectionData } = data.collection;
+
+		busy = true;
+		const newCollection = await trpc().collections.createCollection.mutate({
+			name: name + ' copy',
+			...otherCollectionData,
+			items: { create: itemsCopy }
+		});
+		await invalidateAll();
+		busy = false;
+		toast.success('Collection duplicated');
+		goto(`/collections/${newCollection.id}`);
 	};
 </script>
 
@@ -124,7 +140,7 @@
 		<h1 class="grow font-semibold text-2xl">
 			{data.collection.name}
 		</h1>
-		<IconBtn>
+		<IconBtn on:click={handleDuplicateCollection}>
 			<UserAddOutline />
 		</IconBtn>
 
@@ -155,7 +171,7 @@
 					</button>
 				</li>
 				<li>
-					<button class="dropdown-item">
+					<button class="dropdown-item" on:click={handleDuplicateCollection}>
 						<FolderDuplicateOutline />
 						<span> Duplicate </span>
 					</button>
