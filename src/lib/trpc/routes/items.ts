@@ -1,5 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
+import { ItemCreateInputSchema } from '$prisma-zod';
 import { z } from 'zod';
 
 export const items = createTRPCRouter({
@@ -10,6 +11,13 @@ export const items = createTRPCRouter({
 	getItem: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.item.findUnique({ where: { id: input } })),
+
+	createItem: protectedProcedure
+		.input(ItemCreateInputSchema)
+		.mutation(async ({ input: itemData, ctx: userId }) => {
+			await prisma.item.create({ data: itemData });
+		}),
+
 	deleteItem: protectedProcedure
 		.input(z.string())
 		.mutation(async ({ input: id, ctx: { userId } }) => {
