@@ -29,6 +29,7 @@
 	import type { RouterInputs } from '$lib/trpc/router';
 
 	export let data: PageData;
+	$: currCollection = data.collection;
 
 	const defaultPropColor = 'gray';
 	let busy = false;
@@ -95,13 +96,13 @@
 	};
 
 	const handleDeleteCollection = async () => {
-		if (data.collection.ownerId !== data.user.userId) {
+		if (currCollection.ownerId !== data.user.userId) {
 			toast.error('Unauthorized');
 			return;
 		}
 
 		busy = true;
-		await trpc().collections.deleteCollection.mutate(data.collection.id);
+		await trpc().collections.deleteCollection.mutate(currCollection.id);
 		await invalidateAll();
 		isCollection = false;
 		busy = false;
@@ -133,7 +134,7 @@
 	) => {
 		busy = true;
 		await trpc().collections.updateCollection.mutate({
-			id: data.collection.id,
+			id: currCollection.id,
 			data: detail
 		});
 
@@ -144,7 +145,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.collection.name}</title>
+	<title>{currCollection.name}</title>
 </svelte:head>
 
 <div
@@ -154,14 +155,14 @@
 >
 	<div class="flex items-center space-x-1.5 p-1">
 		<h1 class="grow font-semibold text-2xl">
-			{data.collection.name}
+			{currCollection.name}
 		</h1>
 		<IconBtn on:click={handleDuplicateCollection}>
 			<UserAddOutline />
 		</IconBtn>
 
-		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !data.collection.isFavourite })}>
-			{#if data.collection.isFavourite}
+		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
+			{#if currCollection.isFavourite}
 				<HeartSolid class="text-primary-700" />
 			{:else}
 				<HeartOutline />
@@ -177,9 +178,9 @@
 				<li>
 					<button
 						class="dropdown-item"
-						on:click={() => handleUpdateCollection({ isDescHidden: !data.collection.isDescHidden })}
+						on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
 					>
-						{#if data.collection.isDescHidden}
+						{#if currCollection.isDescHidden}
 							<EyeOutline />
 							<span> Show description </span>
 						{:else}
@@ -226,7 +227,7 @@
 	</div>
 
 	<div>
-		{data.collection.description}
+		{currCollection.description}
 	</div>
 
 	<div class="space-y-2 p-1">
@@ -287,7 +288,7 @@
 				</div>
 
 				<div class="flex flex-wrap gap-2">
-					{#each data.collection.properties as prop}
+					{#each currCollection.properties as prop}
 						<ItemProperty
 							name={prop.name}
 							color={prop.type === 'SELECT'
@@ -369,7 +370,7 @@
 		</div>
 
 		<div class="flex flex-col space-y-4">
-			{#each data.collection.properties as property}
+			{#each currCollection.properties as property}
 				<CollectionProperty
 					{property}
 					value={getPropValueById(
