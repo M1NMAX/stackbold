@@ -5,6 +5,7 @@
 		CirclePlusOutline,
 		CloseOutline,
 		ExclamationCircleOutline,
+		EyeOutline,
 		EyeSlashOutline,
 		FolderDuplicateOutline,
 		HeartOutline,
@@ -25,6 +26,7 @@
 
 	import toast from 'svelte-french-toast';
 	import type { Color } from '$lib/types';
+	import type { RouterInputs } from '$lib/trpc/router';
 
 	export let data: PageData;
 
@@ -125,6 +127,20 @@
 		toast.success('Collection duplicated');
 		goto(`/collections/${newCollection.id}`);
 	};
+
+	const handleUpdateCollection = async (
+		detail: RouterInputs['collections']['updateCollection']['data']
+	) => {
+		busy = true;
+		await trpc().collections.updateCollection.mutate({
+			id: data.collection.id,
+			data: detail
+		});
+
+		await invalidateAll();
+		busy = false;
+		toast.success('Collection updated successfully');
+	};
 </script>
 
 <svelte:head>
@@ -144,7 +160,7 @@
 			<UserAddOutline />
 		</IconBtn>
 
-		<IconBtn>
+		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !data.collection.isFavourite })}>
 			{#if data.collection.isFavourite}
 				<HeartSolid class="text-primary-700" />
 			{:else}
@@ -157,15 +173,23 @@
 				<AdjustmentsHorizontalOutline />
 			</IconBtn>
 
-			<ul class="dropdown-content z-[1] menu w-52">
+			<ul class="dropdown-content z-[1] menu w-56">
 				<li>
-					<button class="dropdown-item">
-						<EyeSlashOutline />
-						<span> Hide description </span>
+					<button
+						class="dropdown-item"
+						on:click={() => handleUpdateCollection({ isDescHidden: !data.collection.isDescHidden })}
+					>
+						{#if data.collection.isDescHidden}
+							<EyeOutline />
+							<span> Show description </span>
+						{:else}
+							<EyeSlashOutline />
+							<span> Hide description </span>
+						{/if}
 					</button>
 				</li>
 				<li>
-					<button class="dropdown-item">
+					<button class="dropdown-item" on:click={() => handleUpdateCollection({ name: 'chuve' })}>
 						<PenOutline />
 						<span> Rename </span>
 					</button>

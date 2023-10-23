@@ -2,7 +2,11 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { CollectionCreateWithoutOwnerInputSchema } from '$prisma-zod';
+import {
+	CollectionCreateWithoutOwnerInputSchema,
+	CollectionUpdateArgsSchema,
+	CollectionUpdateInputSchema
+} from '$prisma-zod';
 
 export const collections = createTRPCRouter({
 	getUserCollections: protectedProcedure.query(({ ctx: { userId } }) =>
@@ -21,6 +25,12 @@ export const collections = createTRPCRouter({
 				data: { ownerId: userId, ...collectionData }
 			})
 	),
+	updateCollection: protectedProcedure
+		.input(z.object({ id: z.string(), data: CollectionUpdateInputSchema }))
+		.mutation(async ({ input: { id, data }, ctx: userId }) => {
+			console.table(data);
+			await prisma.collection.update({ data, where: { id } });
+		}),
 
 	deleteCollection: protectedProcedure
 		.input(z.string())
