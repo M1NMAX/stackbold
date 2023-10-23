@@ -36,3 +36,7 @@
 .dropdown-content {
 	@apply rounded p-2 shadow bg-base-100;
 }
+
+.btn {
+	@apply rounded;
+}

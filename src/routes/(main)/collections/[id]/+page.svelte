@@ -15,7 +15,7 @@
 		UserAddOutline,
 		WindowOutline
 	} from 'flowbite-svelte-icons';
-	import { Button, Drawer, Input, Modal } from 'flowbite-svelte';
+	import { Drawer, Input, Modal } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
@@ -35,9 +35,12 @@
 	import toast from 'svelte-french-toast';
 	import type { Color } from '$lib/types';
 	import type { RouterInputs } from '$lib/trpc/router';
+	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+	import { string } from 'zod';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
+	$: currItems = data.items;
 
 	const defaultPropColor = 'gray';
 	let busy = false;
@@ -88,21 +91,7 @@
 	let isDeleteModalOpen = false;
 	let isCollection = false;
 
-	const handleDeleteItem = async () => {
-		if (!selectedItemId) {
-			toast.error('Something went wrong :(, try again');
-			return;
-		}
-
-		busy = true;
-
-		await trpc().items.deleteItem.mutate(selectedItemId);
-		if (selectedItemId === drawerSelectedItem?.id) hidden = true;
-		await invalidateAll();
-		busy = false;
-		toast.success('item deleted');
-	};
-
+	// Collection handlers
 	const handleDeleteCollection = async () => {
 		if (currCollection.ownerId !== data.user.userId) {
 			toast.error('Unauthorized');
@@ -149,6 +138,59 @@
 		await invalidateAll();
 		busy = false;
 		toast.success('Collection updated successfully');
+	};
+
+	// Item handlers
+
+	const handleDeleteItem = async () => {
+		if (!selectedItemId) {
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			return;
+		}
+
+		busy = true;
+
+		await trpc().items.deleteItem.mutate(selectedItemId);
+		if (selectedItemId === drawerSelectedItem?.id) hidden = true;
+		await invalidateAll();
+		busy = false;
+		toast.success('item deleted');
+	};
+
+	const handleDuplicateItem = async (itemId: string) => {
+		const item = currItems.find(({ id }) => id === itemId);
+		if (!item) {
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			return;
+		}
+
+		const { id, collectionId, updatedByUserId, name, ...rest } = item;
+
+		busy = true;
+
+		await trpc().items.createItem.mutate({
+			collectionId,
+			itemData: { ...rest, name: name + ' copy' }
+		});
+		hidden = true;
+		await invalidateAll();
+		busy = false;
+		toast.success('Item duplicated');
+	};
+	const handleUpdateItem = async (
+		itemId: string,
+		detail: RouterInputs['items']['updateItem']['data']
+	) => {
+		busy = true;
+
+		await trpc().items.updateItem.mutate({
+			id: itemId,
+			data: detail
+		});
+
+		await invalidateAll();
+		busy = false;
+		toast.success('Item updated successfully');
 	};
 </script>
 
@@ -204,7 +246,7 @@
 					<span> Duplicate </span>
 				</DropdownItem>
 
-				<DropdownItem>
+				<DropdownItem on:click={() => handleUpdateCollection({ isArchived: true })}>
 					<ArchiveOutline />
 					<span> Archive </span>
 				</DropdownItem>
@@ -251,7 +293,7 @@
 								<span> Rename item </span>
 							</DropdownItem>
 
-							<DropdownItem>
+							<DropdownItem on:click={() => handleDuplicateItem(item.id)}>
 								<FolderDuplicateOutline />
 								<span> Duplicate </span>
 							</DropdownItem>
@@ -310,48 +352,44 @@
 				<CloseOutline />
 			</IconBtn>
 
-			<div class="dropdown dropdown-end">
-				<IconBtn>
+			<Dropdown>
+				<IconBtn slot="button">
 					<AdjustmentsHorizontalOutline />
 				</IconBtn>
+				<svelte:fragment>
+					<DropdownItem>
+						<CirclePlusOutline />
+						<span> Add property </span>
+					</DropdownItem>
 
-				<ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-					<li>
-						<button class="dropdown-item">
-							<CirclePlusOutline />
-							<span> Add property </span>
-						</button>
-					</li>
-					<li>
-						<button class="dropdown-item">
-							<PenOutline />
-							<span> Rename item </span>
-						</button>
-					</li>
-					<li>
-						<button class="dropdown-item">
-							<FolderDuplicateOutline />
-							<span> Duplicate </span>
-						</button>
-					</li>
+					<DropdownItem
+						on:click={() =>
+							handleUpdateItem(drawerSelectedItem ? drawerSelectedItem.id : '', { isHidden: true })}
+					>
+						<EyeSlashOutline />
+						<span> Hide item </span>
+					</DropdownItem>
 
-					<span class="divider p-0 m-0" />
-					<li>
-						<button
-							on:click={() => {
-								isDeleteModalOpen = true;
-								selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
-							}}
-							class="dropdown-item dropdown-item-red"
-						>
-							<TrashBinOutline />
-							<span> Delete </span>
-						</button>
-					</li>
+					<DropdownItem
+						on:click={() => handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
+					>
+						<FolderDuplicateOutline />
+						<span> Duplicate </span>
+					</DropdownItem>
 
-					<ul />
-				</ul>
-			</div>
+					<DropdownDivider />
+					<DropdownItem
+						on:click={() => {
+							isDeleteModalOpen = true;
+							selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
+						}}
+						class=" dropdown-item-red"
+					>
+						<TrashBinOutline />
+						<span> Delete </span>
+					</DropdownItem>
+				</svelte:fragment>
+			</Dropdown>
 		</div>
 
 		<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1 my-4">
@@ -384,10 +422,10 @@
 			{/if} ?
 		</h3>
 		{#if isCollection}
-			<Button on:click={handleDeleteCollection} color="red" class="mr-2">Yes, I'm sure</Button>
+			<button on:click={handleDeleteCollection} class="btn btn-error btn-sm">Yes, I'm sure</button>
 		{:else}
-			<Button on:click={handleDeleteItem} color="red" class="mr-2">Yes, I'm sure</Button>
+			<button on:click={handleDeleteItem} class="btn btn-error btn-sm">Yes, I'm sure</button>
 		{/if}
-		<Button color="alternative">No, cancel</Button>
+		<button class="btn btn-sm">No, cancel</button>
 	</div>
 </Modal>

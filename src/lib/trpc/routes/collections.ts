@@ -2,11 +2,7 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import {
-	CollectionCreateWithoutOwnerInputSchema,
-	CollectionUpdateArgsSchema,
-	CollectionUpdateInputSchema
-} from '$prisma-zod';
+import { CollectionCreateWithoutOwnerInputSchema, CollectionUpdateInputSchema } from '$prisma-zod';
 
 export const collections = createTRPCRouter({
 	getUserCollections: protectedProcedure.query(({ ctx: { userId } }) =>

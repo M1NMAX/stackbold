@@ -25,6 +25,7 @@ model User {
   PasswordResetToken     PasswordResetToken[]
   name                   String
   collections            Collection[]
+  updatedItems           Item[]
 }
 
 model Session {
@@ -121,11 +122,14 @@ model Collection {
 }
 
 model Item {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId String         @db.ObjectId
-  properties   ItemProperty[]
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  updatedByUserId String?
+  updatedBy       User?          @relation(fields: [updatedByUserId], references: [id])
+  collection      Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId    String         @db.ObjectId
+  properties      ItemProperty[]
+  isHidden        Boolean        @default(false)
 }
