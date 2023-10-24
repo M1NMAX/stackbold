@@ -11,37 +11,35 @@ import {
 } from '$prisma-zod';
 
 export const collections = createTRPCRouter({
-	getUserCollections: protectedProcedure.query(({ ctx: { userId } }) =>
+	list: protectedProcedure.query(({ ctx: { userId } }) =>
 		prisma.collection.findMany({
 			where: { ownerId: userId },
 			orderBy: { createdAt: 'asc' }
 		})
 	),
-	getCollection: protectedProcedure
+	load: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.collection.findUniqueOrThrow({ where: { id: input } })),
 
-	createCollection: protectedProcedure.input(CollectionCreateWithoutOwnerInputSchema).mutation(
+	create: protectedProcedure.input(CollectionCreateWithoutOwnerInputSchema).mutation(
 		async ({ input: collectionData, ctx: { userId } }) =>
 			await prisma.collection.create({
 				data: { ownerId: userId, ...collectionData }
 			})
 	),
-	updateCollection: protectedProcedure
+	update: protectedProcedure
 		.input(z.object({ id: z.string(), data: CollectionUpdateInputSchema }))
 		.mutation(async ({ input: { id, data }, ctx: userId }) => {
 			await prisma.collection.update({ data, where: { id } });
 		}),
 
-	deleteCollection: protectedProcedure
-		.input(z.string())
-		.mutation(async ({ input: id, ctx: { userId } }) => {
-			const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
+	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
+		const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
 
-			if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+		if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-			await prisma.collection.delete({ where: { id } });
-		}),
+		await prisma.collection.delete({ where: { id } });
+	}),
 
 	addProperty: protectedProcedure
 		.input(z.object({ id: z.string(), property: CollectionPropertyCreateInputSchema }))

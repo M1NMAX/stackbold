@@ -36,7 +36,6 @@
 	import type { Color } from '$lib/types';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
-	import { string } from 'zod';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
@@ -99,7 +98,7 @@
 		}
 
 		busy = true;
-		await trpc().collections.deleteCollection.mutate(currCollection.id);
+		await trpc().collections.delete.mutate(currCollection.id);
 		await invalidateAll();
 		isCollection = false;
 		busy = false;
@@ -115,7 +114,7 @@
 		const { id, name, ownerId, ...otherCollectionData } = data.collection;
 
 		busy = true;
-		const newCollection = await trpc().collections.createCollection.mutate({
+		const newCollection = await trpc().collections.create.mutate({
 			name: name + ' copy',
 			...otherCollectionData,
 			items: { create: itemsCopy }
@@ -126,11 +125,9 @@
 		goto(`/collections/${newCollection.id}`);
 	};
 
-	const handleUpdateCollection = async (
-		detail: RouterInputs['collections']['updateCollection']['data']
-	) => {
+	const handleUpdateCollection = async (detail: RouterInputs['collections']['update']['data']) => {
 		busy = true;
-		await trpc().collections.updateCollection.mutate({
+		await trpc().collections.update.mutate({
 			id: currCollection.id,
 			data: detail
 		});

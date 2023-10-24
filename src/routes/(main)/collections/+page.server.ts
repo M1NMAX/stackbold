@@ -6,7 +6,7 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async (event) => ({
-	collections: router.createCaller(await createContext(event)).collections.getUserCollections()
+	collections: router.createCaller(await createContext(event)).collections.list()
 });
 
 const createCollectionSchema = z.object({
@@ -20,6 +20,6 @@ export const actions: Actions = {
 		if (!form.valid) return fail(400, { form });
 
 		const data = form.data;
-		router.createCaller(await createContext(event)).collections.createCollection(data);
+		router.createCaller(await createContext(event)).collections.create(data);
 	}
 };
