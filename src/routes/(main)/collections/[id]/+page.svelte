@@ -7,49 +7,47 @@
 		ExclamationCircleOutline,
 		EyeOutline,
 		EyeSlashOutline,
+		FileCopyOutline,
 		FolderDuplicateOutline,
 		HeartOutline,
 		HeartSolid,
 		PenOutline,
 		TrashBinOutline,
-		UserAddOutline,
-		WindowOutline
+		UserAddOutline
 	} from 'flowbite-svelte-icons';
 	import { Drawer, Input, Modal } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
-	import type { Item, ItemProperty as ItemPropertyType } from '@prisma/client';
+	import type { Item as ItemType, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import {
 		CollectionProperty,
 		Dropdown,
 		DropdownItem,
 		DropdownDivider,
-		IconBtn,
-		ItemProperty
+		IconBtn
 	} from '$lib/components';
 
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 
 	import toast from 'svelte-french-toast';
-	import type { Color } from '$lib/types';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+	import Item from './Item.svelte';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
-	const defaultPropColor = 'gray';
 	let busy = false;
-	let drawerSelectedItem: Item | null = null;
+	let drawerSelectedItem: ItemType | null = null;
 	let itemName: string | null = null;
 
 	let selectedItemId: string | null = null;
 
-	const handleOnClickItem = (itemId: string) => {
-		hidden = false;
+	const handleClickOpenItem = (itemId: string) => {
+		isDrawerHidden = false;
 		busy = true;
 		const foundedItem = data.items.find((item) => item.id === itemId);
 		drawerSelectedItem = foundedItem ? foundedItem : null;
@@ -65,18 +63,8 @@
 		return property.value;
 	};
 
-	const getOptionColor = (pid: string, value: string) => {
-		const property = data.collection.properties.find((prop) => prop.id === pid);
-		if (!property) return defaultPropColor;
-
-		const option = property.options.find((opt) => opt.value === value);
-
-		if (!option) return defaultPropColor;
-		return option.color.toLowerCase() as Color;
-	};
-
 	// Drawer
-	let hidden = true;
+	let isDrawerHidden = true;
 	let activateClickOutside = false;
 	let backdrop = false;
 	let transitionParams = {
@@ -107,16 +95,16 @@
 	};
 
 	const handleDuplicateCollection = async () => {
-		const itemsCopy = data.items.map(({ id, collectionId, ...otherItemData }) => ({
-			...otherItemData
+		const itemsCopy = data.items.map(({ id, collectionId, ...rest }) => ({
+			...rest
 		}));
 
-		const { id, name, ownerId, ...otherCollectionData } = data.collection;
+		const { id, name, ownerId, ...rest } = data.collection;
 
 		busy = true;
 		const newCollection = await trpc().collections.create.mutate({
+			...rest,
 			name: name + ' copy',
-			...otherCollectionData,
 			items: { create: itemsCopy }
 		});
 		await invalidateAll();
@@ -148,7 +136,7 @@
 		busy = true;
 
 		await trpc().items.delete.mutate(selectedItemId);
-		if (selectedItemId === drawerSelectedItem?.id) hidden = true;
+		if (selectedItemId === drawerSelectedItem?.id) isDrawerHidden = true;
 		await invalidateAll();
 		busy = false;
 		toast.success('item deleted');
@@ -169,7 +157,7 @@
 			collectionId,
 			itemData: { ...rest, name: name + ' copy' }
 		});
-		hidden = true;
+		isDrawerHidden = true;
 		await invalidateAll();
 		busy = false;
 		toast.success('Item duplicated');
@@ -197,7 +185,7 @@
 
 <div
 	class={`${
-		!hidden ? 'w-3/6' : 'w-5/6'
+		!isDrawerHidden ? 'w-3/6' : 'w-5/6'
 	} ease-in-out duration-300 m-2 ml-0 p-2 rounded-md bg-gray-50`}
 >
 	<div class="flex items-center space-x-1.5 p-1">
@@ -210,7 +198,7 @@
 
 		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
 			{#if currCollection.isFavourite}
-				<HeartSolid class="text-primary-700" />
+				<HeartSolid class="text-red-500" />
 			{:else}
 				<HeartOutline />
 			{/if}
@@ -269,66 +257,18 @@
 
 	<div class="space-y-2 p-1">
 		{#each data.items as item}
-			<div
-				class={` ${
-					drawerSelectedItem && drawerSelectedItem.id === item.id
-						? 'rounded-l-md bg-gray-100 border-r-4 border-primary-600'
-						: ' rounded  bg-gray-100 '
-				} flex flex-col items-start  py-1 px-2 space-y-2 group`}
-			>
-				<div class="w-full flex justify-between items-center space-x-2">
-					<span class="grow text-lg font-semibold">{item.name}</span>
-
-					<Dropdown>
-						<IconBtn slot="button" class="invisible group-hover:visible">
-							<AdjustmentsHorizontalOutline />
-						</IconBtn>
-
-						<svelte:fragment>
-							<DropdownItem>
-								<PenOutline />
-								<span> Rename item </span>
-							</DropdownItem>
-
-							<DropdownItem on:click={() => handleDuplicateItem(item.id)}>
-								<FolderDuplicateOutline />
-								<span> Duplicate </span>
-							</DropdownItem>
-							<DropdownDivider />
-							<DropdownItem
-								on:click={() => {
-									isDeleteModalOpen = true;
-									selectedItemId = item.id;
-								}}
-								class=" dropdown-item-red"
-							>
-								<TrashBinOutline />
-								<span> Delete </span>
-							</DropdownItem>
-						</svelte:fragment>
-					</Dropdown>
-
-					<IconBtn
-						on:click={() => handleOnClickItem(item.id)}
-						class="invisible group-hover:visible"
-					>
-						<WindowOutline class="rotate-90" />
-					</IconBtn>
-				</div>
-
-				<div class="flex flex-wrap gap-2">
-					{#each currCollection.properties as prop}
-						<ItemProperty
-							name={prop.name}
-							color={prop.type === 'SELECT'
-								? getOptionColor(prop.id, getPropValueById(prop.id, item.properties))
-								: defaultPropColor}
-							type={prop.type}
-							value={getPropValueById(prop.id, item.properties)}
-						/>
-					{/each}
-				</div>
-			</div>
+			<Item
+				{item}
+				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
+				collectionProperties={currCollection.properties}
+				on:clickOpen={() => handleClickOpenItem(item.id)}
+				on:clickHide={() => handleUpdateItem(item.id, { isHidden: true })}
+				on:clickDuplicate={() => handleDuplicateItem(item.id)}
+				on:clickDelete={() => {
+					isDeleteModalOpen = true;
+					selectedItemId = item.id;
+				}}
+			/>
 		{/each}
 	</div>
 </div>
@@ -339,13 +279,13 @@
 	placement="right"
 	transitionType="fly"
 	{transitionParams}
-	bind:hidden
+	bind:hidden={isDrawerHidden}
 	id="itemDrawer"
 	class="w-full xl:w-2/6 p-2 bg-gray-200"
 >
 	<div class="h-full rounded-md bg-gray-50 p-3">
 		<div class="flex justify-between items-center">
-			<IconBtn on:click={() => (hidden = true)} class="p-4">
+			<IconBtn on:click={() => (isDrawerHidden = true)} class="p-4">
 				<CloseOutline />
 			</IconBtn>
 
@@ -370,7 +310,7 @@
 					<DropdownItem
 						on:click={() => handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
 					>
-						<FolderDuplicateOutline />
+						<FileCopyOutline />
 						<span> Duplicate </span>
 					</DropdownItem>
 

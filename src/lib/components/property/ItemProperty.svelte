@@ -15,7 +15,7 @@
 	};
 </script>
 
-<span
+<div
 	class={` ${colors[color]} rounded inline-flex items-center justify-center text-base font-semibold px-1 py-0.5 `}
 >
 	{#if type === 'CHECKBOX'}
@@ -24,4 +24,4 @@
 	{:else}
 		{value}
 	{/if}
-</span>
+</div>

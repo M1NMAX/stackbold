@@ -28,7 +28,7 @@ export const items = createTRPCRouter({
 	update: protectedProcedure
 		.input(z.object({ id: z.string(), data: ItemUpdateInputSchema }))
 		.mutation(async ({ input: { id, data }, ctx: { userId } }) => {
-			Object.assign(data, { updateByUserId: userId });
+			Object.assign(data, { updatedByUserId: userId });
 
 			await prisma.item.update({
 				data,
