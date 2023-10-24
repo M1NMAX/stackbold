@@ -9,15 +9,15 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 export const items = createTRPCRouter({
-	getCollectionItems: protectedProcedure
+	list: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.item.findMany({ where: { collectionId: input } })),
 
-	getItem: protectedProcedure
+	load: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.item.findUnique({ where: { id: input } })),
 
-	createItem: protectedProcedure
+	create: protectedProcedure
 		.input(z.object({ collectionId: z.string(), itemData: ItemCreateWithoutCollectionInputSchema }))
 		.mutation(async ({ input: { collectionId, itemData } }) => {
 			await prisma.item.create({
@@ -25,7 +25,7 @@ export const items = createTRPCRouter({
 			});
 		}),
 
-	updateItem: protectedProcedure
+	update: protectedProcedure
 		.input(z.object({ id: z.string(), data: ItemUpdateInputSchema }))
 		.mutation(async ({ input: { id, data }, ctx: { userId } }) => {
 			Object.assign(data, { updateByUserId: userId });
@@ -36,17 +36,15 @@ export const items = createTRPCRouter({
 			});
 		}),
 
-	deleteItem: protectedProcedure
-		.input(z.string())
-		.mutation(async ({ input: id, ctx: { userId } }) => {
-			const item = await prisma.item.findUniqueOrThrow({
-				select: { collection: true },
-				where: { id }
-			});
-			if (item.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
+		const item = await prisma.item.findUniqueOrThrow({
+			select: { collection: true },
+			where: { id }
+		});
+		if (item.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-			await prisma.item.delete({ where: { id } });
-		}),
+		await prisma.item.delete({ where: { id } });
+	}),
 	addProperty: protectedProcedure
 		.input(z.object({ id: z.string(), property: ItemPropertyCreateInputSchema }))
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {

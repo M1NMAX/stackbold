@@ -147,7 +147,7 @@
 
 		busy = true;
 
-		await trpc().items.deleteItem.mutate(selectedItemId);
+		await trpc().items.delete.mutate(selectedItemId);
 		if (selectedItemId === drawerSelectedItem?.id) hidden = true;
 		await invalidateAll();
 		busy = false;
@@ -165,7 +165,7 @@
 
 		busy = true;
 
-		await trpc().items.createItem.mutate({
+		await trpc().items.create.mutate({
 			collectionId,
 			itemData: { ...rest, name: name + ' copy' }
 		});
@@ -176,11 +176,11 @@
 	};
 	const handleUpdateItem = async (
 		itemId: string,
-		detail: RouterInputs['items']['updateItem']['data']
+		detail: RouterInputs['items']['update']['data']
 	) => {
 		busy = true;
 
-		await trpc().items.updateItem.mutate({
+		await trpc().items.update.mutate({
 			id: itemId,
 			data: detail
 		});

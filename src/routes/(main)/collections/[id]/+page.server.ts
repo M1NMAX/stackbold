@@ -7,6 +7,6 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		collection: router.createCaller(await createContext(event)).collections.load(id),
-		items: router.createCaller(await createContext(event)).items.getCollectionItems(id)
+		items: router.createCaller(await createContext(event)).items.list(id)
 	};
 };
