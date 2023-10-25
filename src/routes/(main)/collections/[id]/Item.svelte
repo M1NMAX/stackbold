@@ -8,7 +8,7 @@
 	} from 'flowbite-svelte-icons';
 	import { Dropdown, DropdownDivider, DropdownItem, IconBtn, ItemProperty } from '$lib/components';
 	import type { Color } from '$lib/types';
-	import type { Item, CollectionProperty } from '@prisma/client';
+	import type { Item, CollectionProperty, PropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 
 	export let active: boolean = false;
@@ -24,13 +24,22 @@
 	}>();
 
 	const getPropValueById = (pid: string) => {
-		const property = item.properties.find((property) => property.id === pid);
-		if (!property) return '';
-		return property.value;
+		const collectionProp = collectionProperties.find((prop) => prop.id === pid);
+		const itemProp = item.properties.find((property) => property.id === pid);
+
+		if (!collectionProp || !itemProp) return '';
+
+		if (collectionProp.type !== 'SELECT') return itemProp.value;
+
+		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
+
+		return option ? option.value : '';
 	};
 
 	const defaultPropColor = 'gray';
-	const getPropertyColor = (pid: string) => {
+	const getPropertyColorById = (pid: string) => {
+		//TODO: refactor
+
 		const collectionProp = collectionProperties.find((prop) => prop.id === pid);
 
 		if (!collectionProp || collectionProp.type !== 'SELECT') return defaultPropColor;
@@ -39,7 +48,7 @@
 
 		if (!itemProp || itemProp.value === '') return defaultPropColor;
 
-		const option = collectionProp.options.find((opt) => opt.value === itemProp.value);
+		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
 
 		if (!option) return defaultPropColor;
 		return option.color.toLowerCase() as Color;
@@ -48,7 +57,7 @@
 
 <div
 	class={` ${
-		active ? 'rounded-l-md bg-gray-100 border-r-4 border-primary-600' : ' rounded  bg-gray-100 '
+		active ? 'rounded-tl-md bg-gray-100 border-r-4 border-primary-600' : ' rounded  bg-gray-100 '
 	} flex flex-col items-start  py-1 px-2 space-y-2 group`}
 >
 	<div class="w-full flex justify-between items-center space-x-2">
@@ -87,7 +96,7 @@
 			<ItemProperty
 				name={prop.name}
 				type={prop.type}
-				color={getPropertyColor(prop.id)}
+				color={getPropertyColorById(prop.id)}
 				value={getPropValueById(prop.id)}
 			/>
 		{/each}

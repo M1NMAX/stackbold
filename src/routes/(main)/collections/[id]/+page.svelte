@@ -58,9 +58,16 @@
 	};
 
 	const getPropValueById = (pid: string, itemProps: ItemPropertyType[]) => {
-		const property = itemProps.find((property) => property.id === pid);
-		if (!property) return '';
-		return property.value;
+		const collectionProp = currCollection.properties.find((prop) => prop.id === pid);
+		const itemProp = itemProps.find((property) => property.id === pid);
+
+		if (!collectionProp || !itemProp) return '';
+
+		if (collectionProp.type !== 'SELECT') return itemProp.value;
+
+		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
+
+		return option ? option.value : '';
 	};
 
 	// Drawer

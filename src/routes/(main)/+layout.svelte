@@ -53,7 +53,7 @@
 		//TODO: input validation
 
 		try {
-			const collection = await trpc().collections.createCollection.mutate({
+			const collection = await trpc().collections.create.mutate({
 				name,
 				isFavourite: true
 			});

@@ -1,4 +1,4 @@
-import { Color, PrismaClient, PropertyType } from '@prisma/client';
+import { type CollectionProperty, Color, PrismaClient, PropertyType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -138,6 +138,13 @@ const collectionsData = [
 const randomIntFromInterval = (min: number, max: number) =>
 	Math.floor(Math.random() * (max - min + 1) + min);
 
+const assignPropertyValue = (property: CollectionProperty) => {
+	const rand = randomIntFromInterval(0, property.options.length - 1);
+	if (property.type === 'SELECT') return property.options[rand].id;
+
+	return property.options.length !== 0 ? property.options[rand].value : '';
+};
+
 async function main() {
 	const user = await prisma.user.findFirst({ where: { email: 'john@email.com' } });
 	if (!user) throw new Error('There are no users');
@@ -170,10 +177,7 @@ async function main() {
 					collectionId: createdCollection.id,
 					properties: createdCollection.properties.map((property) => ({
 						id: property.id,
-						value:
-							property.options.length !== 0
-								? property.options[randomIntFromInterval(0, property.options.length - 1)].value
-								: ''
+						value: assignPropertyValue(property)
 					}))
 				}
 			});
