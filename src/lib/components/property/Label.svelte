@@ -9,9 +9,12 @@
 	import Dropdown from '../Dropdown/Dropdown.svelte';
 	import DropdownItem from '../Dropdown/DropdownItem.svelte';
 	import DropdownDivider from '../Dropdown/DropdownDivider.svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	export let id: string;
 	export let name: string;
+
+	const dispatch = createEventDispatcher<{ duplicate: string; edit: string; delete: string }>();
 </script>
 
 <label for={id} class="label grow font-semibold text-base">
@@ -19,20 +22,22 @@
 
 	<Dropdown>
 		<IconBtn slot="button">
-			<DotsVerticalOutline />
+			<DotsVerticalOutline size="sm" />
 		</IconBtn>
 		<svelte:fragment>
-			<DropdownItem>
+			<DropdownItem on:click={() => dispatch('edit', id)}>
 				<EditOutline />
 				<span> Edit Property </span>
 			</DropdownItem>
 
-			<DropdownItem>
+			<DropdownItem on:click={() => dispatch('duplicate', id)}>
 				<FileCopyOutline />
 				<span> Duplicate Property </span>
 			</DropdownItem>
+
 			<DropdownDivider />
-			<DropdownItem>
+
+			<DropdownItem on:click={() => dispatch('delete', id)}>
 				<TrashBinOutline />
 				<span> Delete Property</span>
 			</DropdownItem>
