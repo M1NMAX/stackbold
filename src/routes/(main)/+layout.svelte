@@ -105,20 +105,20 @@
 					</Dropdown>
 
 					<button class="grow flex items-center space-x-4 p-1.5 rounded-md bg-gray-300">
-						<SearchOutline class="icon-xss" />
+						<SearchOutline />
 						<span class="font-semibold"> Quick Search </span>
 					</button>
 				</div>
 
 				<SidebarItem label="Home" href="/" active={activeUrl === '/'}>
 					<svelte:fragment slot="icon">
-						<HomeOutline class="icon-sm" />
+						<HomeOutline size="lg" />
 					</svelte:fragment>
 				</SidebarItem>
 
 				<SidebarItem label="Templates" active={activeUrl === '/templates'}>
 					<svelte:fragment slot="icon">
-						<DnaOutline class="icon-sm" />
+						<DnaOutline size="lg" />
 					</svelte:fragment>
 				</SidebarItem>
 
@@ -128,7 +128,7 @@
 					active={activeUrl === '/collections'}
 				>
 					<svelte:fragment slot="icon">
-						<GridOutline class="icon-sm" />
+						<GridOutline csize="lg" />
 					</svelte:fragment>
 				</SidebarItem>
 			</SidebarGroup>
@@ -159,7 +159,7 @@
 						All Collections
 					</a>
 					<IconBtn on:click={() => (createCollectionModal = true)} tootipText="Create collection">
-						<PlusOutline />
+						<PlusOutline size="sm" />
 					</IconBtn>
 				</span>
 				<div>
