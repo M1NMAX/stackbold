@@ -2,29 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ICON   */
-.icon-xxs {
-	@apply w-4 h-4 focus:outline-none;
-}
-.icon-xs {
-	@apply w-5 h-5 focus:outline-none;
-}
-.icon-sm {
-	@apply w-6 h-6 focus:outline-none;
-}
-.icon-md {
-	@apply w-7 h-7 focus:outline-none;
-}
-.icon-lg {
-	@apply w-8 h-8 focus:outline-none;
-}
-.icon-xl {
-	@apply w-10 h-10 focus:outline-none;
-}
-.icon-3xl {
-	@apply w-14 h-14 focus:outline-none;
-}
-
 .dropdown-item {
 	@apply flex items-center space-x-2 rounded text-base font-semibold;
 }
@@ -39,4 +16,20 @@
 
 .btn {
 	@apply rounded;
+}
+
+.input {
+	@apply border-none rounded-sm w-full py-0 px-1;
+}
+
+.textarea {
+	@apply border-none rounded-sm w-full py-0 px-1;
+}
+
+.select {
+	@apply border-none rounded-sm w-full py-0 px-1 focus:ring-0;
+}
+
+.checkbox {
+	@apply border-none rounded-sm text-3xl focus:ring-0;
 }
