@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Color, Colors } from '$lib/types';
-	import { Checkbox, Label } from 'flowbite-svelte';
 
 	export let name: string;
 	export let color: Color = 'gray';
@@ -15,13 +14,21 @@
 	};
 </script>
 
-<div
-	class={` ${colors[color]} rounded inline-flex items-center justify-center text-base font-semibold px-1 py-0.5 `}
->
-	{#if type === 'CHECKBOX'}
-		<Checkbox checked={value === 'true'} />
-		<Label class="text-base font-semibold">{name}</Label>
-	{:else}
+{#if type === 'CHECKBOX'}
+	<label
+		class={` ${colors[color]} label rounded inline-flex items-center justify-center space-x-1 text-sm   font-semibold px-1 py-0.5  `}
+	>
+		<input
+			type="checkbox"
+			checked={value === 'true'}
+			class="checkbox checkbox-xs checkbox-primary"
+		/>
+		<span class="label-text font-semibold">{name} </span>
+	</label>
+{:else}
+	<div
+		class={` ${colors[color]} rounded inline-flex items-center justify-center space-x-1 text-sm font-semibold px-1 py-0.5 `}
+	>
 		{value}
-	{/if}
-</div>
+	</div>
+{/if}
