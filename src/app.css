@@ -23,7 +23,7 @@
 }
 
 .textarea {
-	@apply border-none rounded-sm w-full py-0 px-1;
+	@apply border-none rounded-sm w-full py-0 px-1 min-h-8;
 }
 
 .select {

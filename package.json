@@ -44,6 +44,8 @@
 		"@prisma/client": "^5.4.2",
 		"@trpc/client": "^10.38.5",
 		"@trpc/server": "^10.38.5",
+		"@types/autosize": "^4.0.2",
+		"autosize": "^6.0.1",
 		"dayjs": "^1.11.10",
 		"debounce": "^1.2.1",
 		"hash-wasm": "^4.9.0",

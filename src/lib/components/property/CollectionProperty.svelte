@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { PropertyType, type CollectionProperty } from '@prisma/client';
 	import Label from './Label.svelte';
+	import Textarea from '../Textarea/Textarea.svelte';
 
 	export let property: CollectionProperty;
 	export let value: string;
@@ -31,12 +32,11 @@
 				{/each}
 			</select>
 		{:else if property.type === PropertyType.TEXT}
-			<textarea
+			<Textarea
 				id={property.id}
 				name={property.name}
 				{value}
-				rows="3"
-				class="textarea textarea-sm textarea-ghost font-medium"
+				class="textarea textarea-sm textarea-ghost font-medium m-0"
 			/>
 		{:else}
 			<input
