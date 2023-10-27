@@ -46,12 +46,15 @@ export const items = createTRPCRouter({
 		await prisma.item.delete({ where: { id } });
 	}),
 	addProperty: protectedProcedure
-		.input(z.object({ id: z.string(), property: ItemPropertyCreateInputSchema }))
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
-			await prisma.item.update({
-				data: { properties: { push: [property] } },
-				where: { id }
-			});
+		.input(z.object({ ids: z.array(z.string()), property: ItemPropertyCreateInputSchema }))
+		.mutation(async ({ input: { ids, property }, ctx: { userId } }) => {
+			//TODO: find better alt
+			for (const id of ids) {
+				await prisma.item.update({
+					data: { properties: { push: [property] } },
+					where: { id }
+				});
+			}
 		}),
 	updateProperty: protectedProcedure
 		.input(
@@ -71,11 +74,14 @@ export const items = createTRPCRouter({
 			});
 		}),
 	deleteProperty: protectedProcedure
-		.input(z.object({ id: z.string(), propertyId: z.string() }))
-		.mutation(async ({ input: { id, propertyId }, ctx: { userId } }) => {
-			await prisma.item.update({
-				data: { properties: { deleteMany: { where: { id: propertyId } } } },
-				where: { id }
-			});
+		.input(z.object({ ids: z.array(z.string()), propertyId: z.string() }))
+		.mutation(async ({ input: { ids, propertyId }, ctx: { userId } }) => {
+			//TODO: find better alt
+			for (const id of ids) {
+				await prisma.item.update({
+					data: { properties: { deleteMany: { where: { id: propertyId } } } },
+					where: { id }
+				});
+			}
 		})
 });

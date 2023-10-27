@@ -44,7 +44,10 @@ export const collections = createTRPCRouter({
 	addProperty: protectedProcedure
 		.input(z.object({ id: z.string(), property: CollectionPropertyCreateInputSchema }))
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
-			prisma.collection.update({ data: { properties: { push: [property] } }, where: { id } });
+			return await prisma.collection.update({
+				data: { properties: { push: [property] } },
+				where: { id }
+			});
 		}),
 
 	updateProperty: protectedProcedure

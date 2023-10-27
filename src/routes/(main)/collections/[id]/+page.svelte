@@ -15,7 +15,7 @@
 		TrashBinOutline,
 		UserAddOutline
 	} from 'flowbite-svelte-icons';
-	import { Drawer, Input, Modal } from 'flowbite-svelte';
+	import { Drawer, Modal } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
@@ -194,7 +194,90 @@
 		toast.success('Item updated successfully');
 	};
 
+	// Property Handlers
+
 	const propertyTypes = Object.values(PropertyType);
+
+	const getProperty = (pid: string) =>
+		currCollection.properties.find((prop) => prop.id === pid) || null;
+
+	const handleEditProperty = (pid: string) => (selectedProperty = getProperty(pid));
+
+	const handleDuplicateProperty = async (pid: string) => {
+		const property = getProperty(pid);
+		if (!property) {
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			return;
+		}
+
+		try {
+			const { id, name, createdAt, ...rest } = property;
+
+			const updatedCollectionData = await trpc().collections.addProperty.mutate({
+				id: currCollection.id,
+				property: { ...rest, name: name + ' copy' }
+			});
+
+			const updatedProperties = updatedCollectionData.properties;
+
+			const lastProperty = updatedProperties[updatedProperties.length - 1];
+
+			await trpc().items.addProperty.mutate({
+				ids: currItems.map(({ id }) => id),
+				property: {
+					id: lastProperty.id,
+					value: ''
+				}
+			});
+			await invalidateAll();
+			toast.success('Property duplicated');
+		} catch (error) {
+			console.log(error);
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+		}
+	};
+	const handleDeleteProperty = async (pid: string) => {
+		try {
+			await trpc().collections.deleteProperty.mutate({ id: currCollection.id, propertyId: pid });
+
+			await trpc().items.deleteProperty.mutate({
+				ids: currItems.map(({ id }) => id),
+				propertyId: pid
+			});
+
+			await invalidateAll();
+			toast.success('Property removed');
+		} catch (err) {
+			console.log(err);
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+		}
+	};
+
+	const handleAddProperty = async () => {
+		try {
+			const updatedCollectionData = await trpc().collections.addProperty.mutate({
+				id: currCollection.id,
+				property: { name: PropertyType.TEXT.toString(), type: PropertyType.TEXT }
+			});
+
+			const updatedProperties = updatedCollectionData.properties;
+
+			const lastProperty = updatedProperties[updatedProperties.length - 1];
+
+			await trpc().items.addProperty.mutate({
+				ids: currItems.map(({ id }) => id),
+				property: {
+					id: lastProperty.id,
+					value: ''
+				}
+			});
+			await invalidateAll();
+			toast.success('Property Added');
+		} catch (error) {
+			console.log(error);
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+		}
+	};
 </script>
 
 <svelte:head>
@@ -312,7 +395,7 @@
 					<AdjustmentsHorizontalOutline />
 				</IconBtn>
 				<svelte:fragment>
-					<DropdownItem>
+					<DropdownItem on:click={() => handleAddProperty()}>
 						<CirclePlusOutline />
 						<span> Add property </span>
 					</DropdownItem>
@@ -364,9 +447,9 @@
 						property.id,
 						drawerSelectedItem ? drawerSelectedItem.properties : []
 					)}
-					on:edit={(e) =>
-						(selectedProperty =
-							currCollection.properties.find((prop) => prop.id === e.detail) || null)}
+					on:edit={(e) => handleEditProperty(e.detail)}
+					on:duplicate={(e) => handleDuplicateProperty(e.detail)}
+					on:delete={(e) => handleDeleteProperty(e.detail)}
 				/>
 			{/each}
 		</div>

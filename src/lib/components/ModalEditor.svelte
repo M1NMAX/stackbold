@@ -12,7 +12,7 @@
 	const handleCancel = () => dispatch('cancel');
 </script>
 
-<dialog open={!!item} id="my_modal_1" class="modal rounded">
+<dialog open={!!item} class="modal rounded">
 	<div class="modal-box rounded p-2.5">
 		<div class="flex justify-between">
 			<h3 class="font-bold text-lg">Edit {itemName}</h3>
