@@ -8,7 +8,7 @@
 	export { className as class };
 </script>
 
-<button {id} on:click class={` btn btn-sm rounded px-2 py-1 ${className}`}>
+<button {id} on:click class={` btn btn-sm py-1 px-2  ${className}`}>
 	<slot />
 </button>
 

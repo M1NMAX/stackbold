@@ -19,13 +19,18 @@
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
-	import type { Item as ItemType, ItemProperty as ItemPropertyType } from '@prisma/client';
+	import {
+		type Item as ItemType,
+		type ItemProperty as ItemPropertyType,
+		PropertyType
+	} from '@prisma/client';
 	import {
 		CollectionProperty,
 		Dropdown,
 		DropdownItem,
 		DropdownDivider,
-		IconBtn
+		IconBtn,
+		ModalEditor
 	} from '$lib/components';
 
 	import { trpc } from '$lib/trpc/client';
@@ -35,12 +40,15 @@
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
+	import {} from 'os';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
 	let busy = false;
+
+	let selectedProperty: RouterInputs['collections']['updateProperty']['property'] | null = null;
 	let drawerSelectedItem: ItemType | null = null;
 	let itemName: string | null = null;
 
@@ -70,6 +78,7 @@
 		return option ? option.value : '';
 	};
 
+	let openEdit = false;
 	// Drawer
 	let isDrawerHidden = true;
 	let activateClickOutside = false;
@@ -184,6 +193,8 @@
 		busy = false;
 		toast.success('Item updated successfully');
 	};
+
+	const propertyTypes = Object.values(PropertyType);
 </script>
 
 <svelte:head>
@@ -292,8 +303,8 @@
 >
 	<div class="h-full rounded-md bg-gray-50 p-3">
 		<div class="flex justify-between items-center">
-			<IconBtn on:click={() => (isDrawerHidden = true)} class="p-4">
-				<CloseOutline />
+			<IconBtn on:click={() => (isDrawerHidden = true)}>
+				<CloseOutline size="sm" />
 			</IconBtn>
 
 			<Dropdown>
@@ -338,7 +349,11 @@
 
 		<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1 my-4">
 			<!-- <Label class=" grow truncate font-semibold">Name</Label> -->
-			<Input type="text" value={itemName} class=" rounded-sm text-lg border-none bg-gray-200 " />
+			<input
+				type="text"
+				value={itemName}
+				class="input input-sm input-ghost font-medium bg-gray-200"
+			/>
 		</div>
 
 		<div class="flex flex-col space-y-4">
@@ -349,11 +364,43 @@
 						property.id,
 						drawerSelectedItem ? drawerSelectedItem.properties : []
 					)}
+					on:edit={(e) =>
+						(selectedProperty =
+							currCollection.properties.find((prop) => prop.id === e.detail) || null)}
 				/>
 			{/each}
 		</div>
 	</div>
 </Drawer>
+
+<ModalEditor
+	item={selectedProperty}
+	itemName="Property"
+	on:cancel={() => (selectedProperty = null)}
+>
+	<div class="form-control">
+		<label class="label flex flex-col items-start space-y-2">
+			<span class="label-text">Name</span>
+			<input type="text" class="input input-sm input-ghost" value={selectedProperty?.name} />
+		</label>
+	</div>
+
+	<div class="form-control">
+		<label class="label flex flex-col items-start space-y-2">
+			<span class="label-text">Type</span>
+
+			<select class="select select-sm select-ghost" value={selectedProperty?.type}>
+				<option disabled selected>Pick one</option>
+
+				{#each propertyTypes as propType}
+					<option value={propType}>
+						{propType.charAt(0) + propType.slice(1).toLowerCase()}
+					</option>
+				{/each}
+			</select>
+		</label>
+	</div>
+</ModalEditor>
 
 <Modal bind:open={isDeleteModalOpen} size="xs" autoclose>
 	<div class="text-center">
