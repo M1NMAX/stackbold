@@ -10,3 +10,5 @@ export { default as ItemProperty } from './property/ItemProperty.svelte';
 export { default as ModalEditor } from './ModalEditor.svelte';
 export { default as SidebarCollection } from './sidebar/SidebarCollection.svelte';
 export { default as SidebarItem } from './sidebar/SidebarItem.svelte';
+
+export { default as Textarea } from './Textarea/Textarea.svelte';
