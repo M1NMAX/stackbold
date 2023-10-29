@@ -5,8 +5,6 @@
 
 	export let property: CollectionProperty;
 	export let value: string;
-
-	const propType = property.type.toLowerCase();
 </script>
 
 {#if property.type === PropertyType.CHECKBOX}
@@ -24,7 +22,7 @@
 		<Label id={property.id} name={property.name} on:edit on:duplicate on:delete />
 
 		{#if property.type === PropertyType.SELECT}
-			<select {value} class="select select-sm select-ghost">
+			<select {value} class="select select-sm select-ghost bg-gray-200">
 				{#each property.options as option}
 					<option value={option.value}>
 						{option.value}
@@ -36,14 +34,15 @@
 				id={property.id}
 				name={property.name}
 				{value}
-				class="textarea textarea-sm textarea-ghost font-medium m-0"
+				placeholder="Empty"
+				class="textarea textarea-sm textarea-ghost font-medium bg-gray-200"
 			/>
 		{:else}
 			<input
 				id={property.id}
-				type={propType}
+				type={property.type.toLowerCase()}
 				{value}
-				class="input input-sm input-ghost font-medium"
+				class="input input-sm input-ghost font-medium bg-gray-200"
 			/>
 		{/if}
 	</div>
