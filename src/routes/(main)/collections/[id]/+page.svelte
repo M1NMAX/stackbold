@@ -30,7 +30,8 @@
 		DropdownItem,
 		DropdownDivider,
 		IconBtn,
-		ModalEditor
+		ModalEditor,
+		Textarea
 	} from '$lib/components';
 
 	import { trpc } from '$lib/trpc/client';
@@ -40,7 +41,6 @@
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
-	import {} from 'os';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
@@ -78,11 +78,9 @@
 		return option ? option.value : '';
 	};
 
-	let openEdit = false;
 	// Drawer
 	let isDrawerHidden = true;
-	let activateClickOutside = false;
-	let backdrop = false;
+
 	let transitionParams = {
 		x: 320,
 		duration: 300,
@@ -375,8 +373,8 @@
 </div>
 
 <Drawer
-	{activateClickOutside}
-	{backdrop}
+	activateClickOutside={false}
+	backdrop={false}
 	placement="right"
 	transitionType="fly"
 	{transitionParams}
@@ -386,7 +384,12 @@
 >
 	<div class="h-full rounded-md bg-gray-50 p-3">
 		<div class="flex justify-between items-center">
-			<IconBtn on:click={() => (isDrawerHidden = true)}>
+			<IconBtn
+				on:click={() => {
+					isDrawerHidden = true;
+					drawerSelectedItem = null;
+				}}
+			>
 				<CloseOutline size="sm" />
 			</IconBtn>
 
@@ -430,12 +433,11 @@
 			</Dropdown>
 		</div>
 
-		<div class="flex flex-col space-y-1 rounded bg-gray-200 p-1 my-4">
-			<!-- <Label class=" grow truncate font-semibold">Name</Label> -->
-			<input
-				type="text"
+		<div class="rounded bg-gray-200 p-1 my-4">
+			<Textarea
 				value={itemName}
-				class="input input-sm input-ghost font-medium bg-gray-200"
+				placeholder="Empty"
+				class="textarea textarea-sm textarea-ghost font-medium bg-gray-200"
 			/>
 		</div>
 
@@ -461,14 +463,18 @@
 	itemName="Property"
 	on:cancel={() => (selectedProperty = null)}
 >
-	<div class="form-control">
+	<div class="form-control rounded bg-gray-200">
 		<label class="label flex flex-col items-start space-y-2">
 			<span class="label-text">Name</span>
-			<input type="text" class="input input-sm input-ghost" value={selectedProperty?.name} />
+			<input
+				type="text"
+				class="input input-sm input-ghost bg-gray-200"
+				value={selectedProperty?.name}
+			/>
 		</label>
 	</div>
 
-	<div class="form-control">
+	<div class="form-control rounded bg-gray-200">
 		<label class="label flex flex-col items-start space-y-2">
 			<span class="label-text">Type</span>
 
@@ -483,6 +489,40 @@
 			</select>
 		</label>
 	</div>
+
+	{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
+		<div class="form-control rounded bg-gray-200">
+			<label class="label flex flex-col items-start space-y-2">
+				<span class="label-text">Options</span>
+				<input
+					type="text"
+					class="input input-sm input-ghost"
+					placeholder="Enter option value"
+					on:keypress|stopPropagation={(e) => {
+						if (e.key === 'Enter') {
+							console.log('ENNTE'); // Do something
+						}
+					}}
+				/>
+			</label>
+
+			<div class="space-y-1">
+				{#each selectedProperty.options as option}
+					<div class="join w-full">
+						<IconBtn class="join-item">Color Pi</IconBtn>
+
+						<input class="grow input input-sm input-ghost join-item" value={option.value} />
+
+						<IconBtn class="btn join-item">
+							<TrashBinOutline size="sm" />
+						</IconBtn>
+					</div>
+				{:else}
+					<div>Empty</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
 </ModalEditor>
 
 <Modal bind:open={isDeleteModalOpen} size="xs" autoclose>
