@@ -33,7 +33,7 @@
 		ModalEditor,
 		Textarea
 	} from '$lib/components';
-
+	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 
@@ -41,6 +41,7 @@
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
@@ -276,6 +277,13 @@
 			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
 		}
 	};
+
+	const debouncedCollectionUpdate = debounce(handleUpdateCollection, 1500);
+
+	const handleNameChange = async (e: { currentTarget: EventTarget & HTMLHeadingElement }) => {
+		const collectionName = e.currentTarget.innerText;
+		debouncedCollectionUpdate({ name: collectionName });
+	};
 </script>
 
 <svelte:head>
@@ -288,7 +296,12 @@
 	} ease-in-out duration-300 m-2 ml-0 p-2 rounded-md bg-gray-50`}
 >
 	<div class="flex items-center space-x-1.5 p-1">
-		<h1 class="grow font-semibold text-2xl">
+		<h1
+			class="grow font-semibold text-2xl focus:outline-none focus:border-b-2 focus:border-primary-500"
+			contenteditable
+			spellcheck={false}
+			on:input={handleNameChange}
+		>
 			{currCollection.name}
 		</h1>
 		<IconBtn on:click={handleDuplicateCollection}>
