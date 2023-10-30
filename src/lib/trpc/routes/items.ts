@@ -66,7 +66,7 @@ export const items = createTRPCRouter({
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
 			const { id: pid, ...rest } = property;
 
-			await prisma.item.update({
+			return await prisma.item.update({
 				where: { id },
 				data: {
 					properties: { updateMany: { where: { id: pid }, data: rest } }

@@ -2,6 +2,7 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
+		BookSolid,
 		CirclePlusOutline,
 		CloseOutline,
 		ExclamationCircleOutline,
@@ -19,11 +20,7 @@
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
-	import {
-		type Item as ItemType,
-		type ItemProperty as ItemPropertyType,
-		PropertyType
-	} from '@prisma/client';
+	import { type ItemProperty as ItemPropertyType, PropertyType } from '@prisma/client';
 	import {
 		CollectionProperty,
 		Dropdown,
@@ -38,32 +35,22 @@
 	import { goto, invalidateAll } from '$app/navigation';
 
 	import toast from 'svelte-french-toast';
-	import type { RouterInputs } from '$lib/trpc/router';
-	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+	import type { RouterInputs, RouterOutputs } from '$lib/trpc/router';
+	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
-	import { onMount } from 'svelte';
 
 	export let data: PageData;
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
-	let busy = false;
-
 	let selectedProperty: RouterInputs['collections']['updateProperty']['property'] | null = null;
-	let drawerSelectedItem: ItemType | null = null;
-	let itemName: string | null = null;
+	let drawerSelectedItem: RouterOutputs['items']['load'] | null = null;
 
 	let selectedItemId: string | null = null;
 
-	const handleClickOpenItem = (itemId: string) => {
+	const handleClickOpenItem = async (itemId: string) => {
 		isDrawerHidden = false;
-		busy = true;
-		const foundedItem = data.items.find((item) => item.id === itemId);
-		drawerSelectedItem = foundedItem ? foundedItem : null;
-
-		itemName = drawerSelectedItem && drawerSelectedItem.name;
-
-		// item = await trpc().items.getItem(itemId)
+		drawerSelectedItem = await trpc().items.load.query(itemId);
 	};
 
 	const getPropValueById = (pid: string, itemProps: ItemPropertyType[]) => {
@@ -76,7 +63,7 @@
 
 		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
 
-		return option ? option.value : '';
+		return option ? option.id : '';
 	};
 
 	// Drawer
@@ -100,11 +87,10 @@
 			return;
 		}
 
-		busy = true;
 		await trpc().collections.delete.mutate(currCollection.id);
 		await invalidateAll();
 		isCollection = false;
-		busy = false;
+
 		goto('/collections');
 		toast.success('Collection deleted');
 	};
@@ -116,27 +102,25 @@
 
 		const { id, name, ownerId, ...rest } = data.collection;
 
-		busy = true;
 		const newCollection = await trpc().collections.create.mutate({
 			...rest,
 			name: name + ' copy',
 			items: { create: itemsCopy }
 		});
 		await invalidateAll();
-		busy = false;
+
 		toast.success('Collection duplicated');
 		goto(`/collections/${newCollection.id}`);
 	};
 
 	const handleUpdateCollection = async (detail: RouterInputs['collections']['update']['data']) => {
-		busy = true;
 		await trpc().collections.update.mutate({
 			id: currCollection.id,
 			data: detail
 		});
 
 		await invalidateAll();
-		busy = false;
+
 		toast.success('Collection updated successfully');
 	};
 
@@ -148,12 +132,10 @@
 			return;
 		}
 
-		busy = true;
-
 		await trpc().items.delete.mutate(selectedItemId);
 		if (selectedItemId === drawerSelectedItem?.id) isDrawerHidden = true;
 		await invalidateAll();
-		busy = false;
+
 		toast.success('item deleted');
 	};
 
@@ -166,30 +148,26 @@
 
 		const { id, collectionId, updatedByUserId, name, ...rest } = item;
 
-		busy = true;
-
 		await trpc().items.create.mutate({
 			collectionId,
 			itemData: { ...rest, name: name + ' copy' }
 		});
 		isDrawerHidden = true;
 		await invalidateAll();
-		busy = false;
+
 		toast.success('Item duplicated');
 	};
 	const handleUpdateItem = async (
 		itemId: string,
 		detail: RouterInputs['items']['update']['data']
 	) => {
-		busy = true;
-
 		await trpc().items.update.mutate({
 			id: itemId,
 			data: detail
 		});
 
 		await invalidateAll();
-		busy = false;
+
 		toast.success('Item updated successfully');
 	};
 
@@ -278,11 +256,38 @@
 		}
 	};
 
-	const debouncedCollectionUpdate = debounce(handleUpdateCollection, 1500);
+	const handleUpdatePropertyValue = async (id: string, property: { id: string; value: string }) => {
+		try {
+			drawerSelectedItem = await trpc().items.updateProperty.mutate({ id, property });
+			await invalidateAll();
+			toast.success('Property Value updated');
+		} catch (error) {
+			console.log(error);
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+		}
+	};
+
+	const debouncedPropertyValueUpdate = debounce(
+		handleUpdatePropertyValue,
+		DEFAULT_DEBOUNCE_INTERVAL
+	);
+
+	const debouncedCollectionUpdate = debounce(handleUpdateCollection, DEFAULT_DEBOUNCE_INTERVAL);
 
 	const handleNameChange = async (e: { currentTarget: EventTarget & HTMLHeadingElement }) => {
 		const collectionName = e.currentTarget.innerText;
 		debouncedCollectionUpdate({ name: collectionName });
+	};
+
+	const debounceItemUpdate = debounce(handleUpdateItem, DEFAULT_DEBOUNCE_INTERVAL);
+	const handleItemNameChange = async (e: Event) => {
+		const input = e.target as HTMLTextAreaElement;
+
+		if (!drawerSelectedItem) return;
+
+		const id = drawerSelectedItem.id;
+
+		debounceItemUpdate(id, { name: input.value });
 	};
 </script>
 
@@ -448,7 +453,8 @@
 
 		<div class="rounded bg-gray-200 p-1 my-4">
 			<Textarea
-				value={itemName}
+				value={drawerSelectedItem?.name}
+				on:input={handleItemNameChange}
 				placeholder="Empty"
 				class="textarea textarea-sm textarea-ghost font-medium bg-gray-200"
 			/>
@@ -462,6 +468,11 @@
 						property.id,
 						drawerSelectedItem ? drawerSelectedItem.properties : []
 					)}
+					on:update={(e) => {
+						if (!drawerSelectedItem) return;
+
+						debouncedPropertyValueUpdate(drawerSelectedItem.id, e.detail.property);
+					}}
 					on:edit={(e) => handleEditProperty(e.detail)}
 					on:duplicate={(e) => handleDuplicateProperty(e.detail)}
 					on:delete={(e) => handleDeleteProperty(e.detail)}
@@ -522,7 +533,7 @@
 			<div class="space-y-1">
 				{#each selectedProperty.options as option}
 					<div class="join w-full">
-						<IconBtn class="join-item">Color Pi</IconBtn>
+						<IconBtn class="join-item"><BookSolid class="text-primary-500" /></IconBtn>
 
 						<input class="grow input input-sm input-ghost join-item" value={option.value} />
 
