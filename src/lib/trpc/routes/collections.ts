@@ -86,5 +86,86 @@ export const collections = createTRPCRouter({
 				data: { properties: { deleteMany: { where: { id: propertyId } } } },
 				where: { id }
 			});
+		}),
+
+	addPropertyOption: protectedProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				property: z.object({
+					id: z.string(),
+					option: z.object({
+						value: z.string(),
+						color: z.lazy(() => ColorSchema).optional()
+					})
+				})
+			})
+		)
+		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+			await prisma.collection.update({
+				data: {
+					properties: {
+						updateMany: {
+							where: { id: property.id },
+							data: { options: { push: [property.option] } }
+						}
+					}
+				},
+				where: { id }
+			});
+		}),
+
+	updatePropertyOption: protectedProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				property: z.object({
+					id: z.string(),
+					option: z.object({
+						id: z.string(),
+						value: z.string().optional(),
+						color: z.lazy(() => ColorSchema).optional()
+					})
+				})
+			})
+		)
+		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+			const { id: oid, ...rest } = property.option;
+
+			await prisma.collection.update({
+				data: {
+					properties: {
+						updateMany: {
+							where: { id: property.id },
+							data: { options: { updateMany: { where: { id: oid }, data: rest } } }
+						}
+					}
+				},
+				where: { id }
+			});
+		}),
+
+	deletePropertyOption: protectedProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				property: z.object({
+					id: z.string(),
+					optionId: z.string()
+				})
+			})
+		)
+		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+			await prisma.collection.update({
+				data: {
+					properties: {
+						updateMany: {
+							where: { id: property.id },
+							data: { options: { deleteMany: { where: { id: property.optionId } } } }
+						}
+					}
+				},
+				where: { id }
+			});
 		})
 });

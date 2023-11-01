@@ -20,7 +20,7 @@
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
-	import { type ItemProperty as ItemPropertyType, PropertyType } from '@prisma/client';
+	import { type ItemProperty as ItemPropertyType, PropertyType, Color } from '@prisma/client';
 	import {
 		CollectionProperty,
 		Dropdown,
@@ -43,6 +43,7 @@
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
+	//TODO: ref this type
 	let selectedProperty: RouterInputs['collections']['updateProperty']['property'] | null = null;
 	let drawerSelectedItem: RouterOutputs['items']['load'] | null = null;
 
@@ -213,6 +214,7 @@
 			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
 		}
 	};
+
 	const handleDeleteProperty = async (pid: string) => {
 		try {
 			await trpc().collections.deleteProperty.mutate({ id: currCollection.id, propertyId: pid });
@@ -254,6 +256,104 @@
 			console.log(error);
 			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
 		}
+	};
+
+	const handleUpdateProperty = async (
+		property: RouterInputs['collections']['updateProperty']['property']
+	) => {
+		try {
+			await trpc().collections.updateProperty.mutate({ id: currCollection.id, property });
+			await invalidateAll();
+			toast.success('Property update');
+		} catch (error) {
+			console.log(error);
+			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+		}
+	};
+
+	const debouncedPropertyUpdate = debounce(handleUpdateProperty, DEFAULT_DEBOUNCE_INTERVAL);
+
+	const handleOnInput = (e: Event) => {
+		//TODO: correct item value when property change
+		const input = e.target as HTMLInputElement;
+
+		const { id, name, value } = input;
+
+		const data: { [key: string]: string } = {};
+
+		data[name] = value;
+
+		debouncedPropertyUpdate({ id, ...data });
+	};
+
+	const handleOnInputOnPropertyOptions = (e: Event) => {
+		const input = e.target as HTMLInputElement;
+
+		const { id, value } = input;
+
+		const data: { [key: string]: string } = {};
+
+		const optionId = input.dataset.optionId as string;
+		const fieldName = input.dataset.optionFieldName as string;
+
+		data[fieldName] = value;
+
+		handleUpdatePropertyOption(id, { id: optionId, ...data });
+	};
+
+	const debouncedAddPropertyOption = debounce(
+		async (arg: RouterInputs['collections']['addPropertyOption']) => {
+			try {
+				await trpc().collections.addPropertyOption.mutate(arg);
+				await invalidateAll();
+				toast.success('Property Option added ');
+			} catch (error) {
+				console.log(error);
+				toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			}
+		}
+	);
+
+	const handleAddPropertyOption = (pid: string, value: string) => {
+		debouncedAddPropertyOption({ id: currCollection.id, property: { id: pid, option: { value } } });
+	};
+
+	const debouncedUpdatePropertyOption = debounce(
+		async (args: RouterInputs['collections']['updatePropertyOption']) => {
+			try {
+				await trpc().collections.updatePropertyOption.mutate(args);
+				await invalidateAll();
+				toast.success('Property Option added ');
+			} catch (error) {
+				console.log(error);
+				toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			}
+		},
+		DEFAULT_DEBOUNCE_INTERVAL
+	);
+
+	const handleUpdatePropertyOption = (
+		pid: string,
+		option: RouterInputs['collections']['updatePropertyOption']['property']['option']
+	) => {
+		debouncedUpdatePropertyOption({ id: currCollection.id, property: { id: pid, option } });
+	};
+
+	const debouncedDeletePropertyOption = debounce(
+		async (arg: RouterInputs['collections']['deletePropertyOption']) => {
+			try {
+				await trpc().collections.deletePropertyOption.mutate(arg);
+				await invalidateAll();
+				toast.success('Property Option deleted ');
+			} catch (error) {
+				console.log(error);
+				toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			}
+		}
+	);
+
+	const handleDeletePropertyOption = (pid: string, optionId: string) => {
+		debouncedDeletePropertyOption({ id: currCollection.id, property: { id: pid, optionId } });
 	};
 
 	const handleUpdatePropertyValue = async (id: string, property: { id: string; value: string }) => {
@@ -491,9 +591,12 @@
 		<label class="label flex flex-col items-start space-y-2">
 			<span class="label-text">Name</span>
 			<input
-				type="text"
-				class="input input-sm input-ghost bg-gray-200"
+				id={selectedProperty?.id}
 				value={selectedProperty?.name}
+				on:input={handleOnInput}
+				type="text"
+				name="name"
+				class="input input-sm input-ghost bg-gray-200"
 			/>
 		</label>
 	</div>
@@ -502,7 +605,13 @@
 		<label class="label flex flex-col items-start space-y-2">
 			<span class="label-text">Type</span>
 
-			<select class="select select-sm select-ghost" value={selectedProperty?.type}>
+			<select
+				id={selectedProperty?.id}
+				name="type"
+				value={selectedProperty?.type}
+				on:input={handleOnInput}
+				class="select select-sm select-ghost"
+			>
 				<option disabled selected>Pick one</option>
 
 				{#each propertyTypes as propType}
@@ -524,7 +633,10 @@
 					placeholder="Enter option value"
 					on:keypress|stopPropagation={(e) => {
 						if (e.key === 'Enter') {
-							console.log('ENNTE'); // Do something
+							if (!selectedProperty) return;
+
+							const value = e.currentTarget.value;
+							handleAddPropertyOption(selectedProperty.id, value);
 						}
 					}}
 				/>
@@ -535,9 +647,24 @@
 					<div class="join w-full">
 						<IconBtn class="join-item"><BookSolid class="text-primary-500" /></IconBtn>
 
-						<input class="grow input input-sm input-ghost join-item" value={option.value} />
+						<input
+							id={selectedProperty?.id}
+							value={option.value}
+							name="option"
+							on:input={handleOnInputOnPropertyOptions}
+							data-option-id={option.id}
+							data-option-field-name="value"
+							class="grow input input-sm input-ghost join-item"
+						/>
 
-						<IconBtn class="btn join-item">
+						<IconBtn
+							class="btn join-item"
+							on:click={() => {
+								if (!selectedProperty || !option.id) return;
+
+								handleDeletePropertyOption(selectedProperty.id, option.id);
+							}}
+						>
 							<TrashBinOutline size="sm" />
 						</IconBtn>
 					</div>
