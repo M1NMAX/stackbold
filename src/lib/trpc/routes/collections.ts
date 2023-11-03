@@ -73,7 +73,7 @@ export const collections = createTRPCRouter({
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
 			const { id: pid, ...rest } = property;
 
-			await prisma.collection.update({
+			return await prisma.collection.update({
 				where: { id },
 				data: { properties: { updateMany: { where: { id: pid }, data: rest } } }
 			});
@@ -102,7 +102,7 @@ export const collections = createTRPCRouter({
 			})
 		)
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
-			await prisma.collection.update({
+			return await prisma.collection.update({
 				data: {
 					properties: {
 						updateMany: {
@@ -156,7 +156,7 @@ export const collections = createTRPCRouter({
 			})
 		)
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
-			await prisma.collection.update({
+			return await prisma.collection.update({
 				data: {
 					properties: {
 						updateMany: {

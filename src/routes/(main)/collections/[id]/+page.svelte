@@ -20,7 +20,11 @@
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
-	import { type ItemProperty as ItemPropertyType, PropertyType, Color } from '@prisma/client';
+	import {
+		type ItemProperty as ItemPropertyType,
+		PropertyType,
+		type Collection
+	} from '@prisma/client';
 	import {
 		CollectionProperty,
 		Dropdown,
@@ -33,21 +37,50 @@
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
-
 	import toast from 'svelte-french-toast';
 	import type { RouterInputs, RouterOutputs } from '$lib/trpc/router';
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
+	import InputWrapper from './InputWrapper.svelte';
+	import { capitalizeFirstLetter } from './utils';
+	import Option from './Option.svelte';
+	import Options from './Options.svelte';
 
 	export let data: PageData;
+
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
-	//TODO: ref this type
+	//TODO: ref those types
 	let selectedProperty: RouterInputs['collections']['updateProperty']['property'] | null = null;
 	let drawerSelectedItem: RouterOutputs['items']['load'] | null = null;
-
 	let selectedItemId: string | null = null;
+
+	// Drawer
+	let isDrawerHidden = true;
+
+	let transitionParams = {
+		x: 320,
+		duration: 300,
+		easing: sineIn
+	};
+
+	// Delete Modal
+	let isDeleteModalOpen = false;
+	let isCollection = false;
+
+	let selectedElementToDelete: 'collection' | 'item' | 'property' = 'item';
+
+	// Feedback
+	const onSuccess = async (msg: string) => {
+		await invalidateAll();
+		toast.success(msg);
+	};
+
+	const onError = async (error: unknown, msg: string | null = null) => {
+		console.log(error);
+		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
+	};
 
 	const handleClickOpenItem = async (itemId: string) => {
 		isDrawerHidden = false;
@@ -66,20 +99,6 @@
 
 		return option ? option.id : '';
 	};
-
-	// Drawer
-	let isDrawerHidden = true;
-
-	let transitionParams = {
-		x: 320,
-		duration: 300,
-		easing: sineIn
-	};
-	// Drawer
-
-	// Delete Modal
-	let isDeleteModalOpen = false;
-	let isCollection = false;
 
 	// Collection handlers
 	const handleDeleteCollection = async () => {
@@ -108,9 +127,8 @@
 			name: name + ' copy',
 			items: { create: itemsCopy }
 		});
-		await invalidateAll();
 
-		toast.success('Collection duplicated');
+		onSuccess('Collection duplicated');
 		goto(`/collections/${newCollection.id}`);
 	};
 
@@ -120,13 +138,19 @@
 			data: detail
 		});
 
-		await invalidateAll();
+		onSuccess('Collection updated successfully');
+	};
 
-		toast.success('Collection updated successfully');
+	const debouncedCollectionUpdate = debounce(handleUpdateCollection, DEFAULT_DEBOUNCE_INTERVAL);
+
+	const handleOnInputCollectionName = async (e: {
+		currentTarget: EventTarget & HTMLHeadingElement;
+	}) => {
+		const collectionName = e.currentTarget.innerText;
+		debouncedCollectionUpdate({ name: collectionName });
 	};
 
 	// Item handlers
-
 	const handleDeleteItem = async () => {
 		if (!selectedItemId) {
 			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
@@ -135,9 +159,7 @@
 
 		await trpc().items.delete.mutate(selectedItemId);
 		if (selectedItemId === drawerSelectedItem?.id) isDrawerHidden = true;
-		await invalidateAll();
-
-		toast.success('item deleted');
+		await onSuccess('item deleted');
 	};
 
 	const handleDuplicateItem = async (itemId: string) => {
@@ -154,9 +176,7 @@
 			itemData: { ...rest, name: name + ' copy' }
 		});
 		isDrawerHidden = true;
-		await invalidateAll();
-
-		toast.success('Item duplicated');
+		onSuccess('Item duplicated');
 	};
 	const handleUpdateItem = async (
 		itemId: string,
@@ -167,22 +187,21 @@
 			data: detail
 		});
 
-		await invalidateAll();
-
-		toast.success('Item updated successfully');
+		await onSuccess('Item updated successfully');
 	};
 
 	// Property Handlers
-
 	const propertyTypes = Object.values(PropertyType);
 
-	const getProperty = (pid: string) =>
-		currCollection.properties.find((prop) => prop.id === pid) || null;
+	const getProperty = (
+		collection: Collection | RouterOutputs['collections']['create'],
+		pid: string
+	) => collection.properties.find((prop) => prop.id === pid) || null;
 
-	const handleEditProperty = (pid: string) => (selectedProperty = getProperty(pid));
+	const handleEditProperty = (pid: string) => (selectedProperty = getProperty(currCollection, pid));
 
 	const handleDuplicateProperty = async (pid: string) => {
-		const property = getProperty(pid);
+		const property = getProperty(currCollection, pid);
 		if (!property) {
 			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
 			return;
@@ -207,11 +226,9 @@
 					value: ''
 				}
 			});
-			await invalidateAll();
-			toast.success('Property duplicated');
+			await onSuccess('Property duplicated');
 		} catch (error) {
-			console.log(error);
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError(error);
 		}
 	};
 
@@ -224,11 +241,9 @@
 				propertyId: pid
 			});
 
-			await invalidateAll();
-			toast.success('Property removed');
-		} catch (err) {
-			console.log(err);
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			await onSuccess('Property removed');
+		} catch (error) {
+			onError(error);
 		}
 	};
 
@@ -250,11 +265,9 @@
 					value: ''
 				}
 			});
-			await invalidateAll();
-			toast.success('Property Added');
+			await onSuccess('Property Added');
 		} catch (error) {
-			console.log(error);
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError(error);
 		}
 	};
 
@@ -262,18 +275,22 @@
 		property: RouterInputs['collections']['updateProperty']['property']
 	) => {
 		try {
-			await trpc().collections.updateProperty.mutate({ id: currCollection.id, property });
-			await invalidateAll();
-			toast.success('Property update');
+			const updatedCollectionData = await trpc().collections.updateProperty.mutate({
+				id: currCollection.id,
+				property
+			});
+
+			selectedProperty = getProperty(updatedCollectionData, property.id);
+
+			await onSuccess('Property update');
 		} catch (error) {
-			console.log(error);
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError(error);
 		}
 	};
 
 	const debouncedPropertyUpdate = debounce(handleUpdateProperty, DEFAULT_DEBOUNCE_INTERVAL);
 
-	const handleOnInput = (e: Event) => {
+	const handleOnInputPropertyField = (e: Event) => {
 		//TODO: correct item value when property change
 		const input = e.target as HTMLInputElement;
 
@@ -302,14 +319,15 @@
 	};
 
 	const debouncedAddPropertyOption = debounce(
-		async (arg: RouterInputs['collections']['addPropertyOption']) => {
+		async (args: RouterInputs['collections']['addPropertyOption']) => {
 			try {
-				await trpc().collections.addPropertyOption.mutate(arg);
-				await invalidateAll();
-				toast.success('Property Option added ');
+				const updatedCollection = await trpc().collections.addPropertyOption.mutate(args);
+
+				selectedProperty = getProperty(updatedCollection, args.property.id);
+
+				await onSuccess('Property Option added ');
 			} catch (error) {
-				console.log(error);
-				toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+				onError(error);
 			}
 		}
 	);
@@ -322,11 +340,9 @@
 		async (args: RouterInputs['collections']['updatePropertyOption']) => {
 			try {
 				await trpc().collections.updatePropertyOption.mutate(args);
-				await invalidateAll();
-				toast.success('Property Option added ');
+				await onSuccess('Property Option added');
 			} catch (error) {
-				console.log(error);
-				toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+				onError(error);
 			}
 		},
 		DEFAULT_DEBOUNCE_INTERVAL
@@ -340,14 +356,15 @@
 	};
 
 	const debouncedDeletePropertyOption = debounce(
-		async (arg: RouterInputs['collections']['deletePropertyOption']) => {
+		async (args: RouterInputs['collections']['deletePropertyOption']) => {
 			try {
-				await trpc().collections.deletePropertyOption.mutate(arg);
+				const updatedCollection = await trpc().collections.deletePropertyOption.mutate(args);
+				selectedProperty =
+					updatedCollection.properties.find((prop) => prop.id === args.property.id) || null;
 				await invalidateAll();
 				toast.success('Property Option deleted ');
 			} catch (error) {
-				console.log(error);
-				toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+				onError(error);
 			}
 		}
 	);
@@ -362,8 +379,7 @@
 			await invalidateAll();
 			toast.success('Property Value updated');
 		} catch (error) {
-			console.log(error);
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError(error);
 		}
 	};
 
@@ -371,13 +387,6 @@
 		handleUpdatePropertyValue,
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
-
-	const debouncedCollectionUpdate = debounce(handleUpdateCollection, DEFAULT_DEBOUNCE_INTERVAL);
-
-	const handleNameChange = async (e: { currentTarget: EventTarget & HTMLHeadingElement }) => {
-		const collectionName = e.currentTarget.innerText;
-		debouncedCollectionUpdate({ name: collectionName });
-	};
 
 	const debounceItemUpdate = debounce(handleUpdateItem, DEFAULT_DEBOUNCE_INTERVAL);
 	const handleItemNameChange = async (e: Event) => {
@@ -405,7 +414,7 @@
 			class="grow font-semibold text-2xl focus:outline-none focus:border-b-2 focus:border-primary-500"
 			contenteditable
 			spellcheck={false}
-			on:input={handleNameChange}
+			on:input={handleOnInputCollectionName}
 		>
 			{currCollection.name}
 		</h1>
@@ -582,109 +591,66 @@
 	</div>
 </Drawer>
 
-<ModalEditor
-	item={selectedProperty}
-	itemName="Property"
-	on:cancel={() => (selectedProperty = null)}
->
-	<div class="form-control rounded bg-gray-200">
-		<label class="label flex flex-col items-start space-y-2">
-			<span class="label-text">Name</span>
+<ModalEditor title="Property" open={!!selectedProperty} onClose={() => (selectedProperty = null)}>
+	<form class="space-y-1">
+		<InputWrapper name="Name">
 			<input
 				id={selectedProperty?.id}
 				value={selectedProperty?.name}
-				on:input={handleOnInput}
-				type="text"
+				on:input={handleOnInputPropertyField}
 				name="name"
-				class="input input-sm input-ghost bg-gray-200"
+				class="input input-xs input-ghost text-sm bg-base-200"
 			/>
-		</label>
-	</div>
+		</InputWrapper>
 
-	<div class="form-control rounded bg-gray-200">
-		<label class="label flex flex-col items-start space-y-2">
-			<span class="label-text">Type</span>
-
+		<InputWrapper name="Type">
 			<select
 				id={selectedProperty?.id}
 				name="type"
 				value={selectedProperty?.type}
-				on:input={handleOnInput}
-				class="select select-sm select-ghost"
+				on:input={handleOnInputPropertyField}
+				class="select select-xs select-ghost text-sm bg-base-200"
 			>
-				<option disabled selected>Pick one</option>
-
-				{#each propertyTypes as propType}
-					<option value={propType}>
-						{propType.charAt(0) + propType.slice(1).toLowerCase()}
+				{#each propertyTypes as propertyType}
+					<option value={propertyType}>
+						{capitalizeFirstLetter(propertyType)}
 					</option>
 				{/each}
 			</select>
-		</label>
-	</div>
+		</InputWrapper>
 
-	{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
-		<div class="form-control rounded bg-gray-200">
-			<label class="label flex flex-col items-start space-y-2">
-				<span class="label-text">Options</span>
-				<input
-					type="text"
-					class="input input-sm input-ghost"
-					placeholder="Enter option value"
-					on:keypress|stopPropagation={(e) => {
-						if (e.key === 'Enter') {
-							if (!selectedProperty) return;
-
-							const value = e.currentTarget.value;
-							handleAddPropertyOption(selectedProperty.id, value);
-						}
-					}}
-				/>
-			</label>
-
-			<div class="space-y-1">
+		{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
+			<Options
+				handleAddOption={(value) => {
+					if (!selectedProperty) return;
+					handleAddPropertyOption(selectedProperty.id, value);
+				}}
+			>
 				{#each selectedProperty.options as option}
-					<div class="join w-full">
-						<IconBtn class="join-item"><BookSolid class="text-primary-500" /></IconBtn>
+					<Option
+						optionId={option.id}
+						value={option.value}
+						propertyId={selectedProperty.id}
+						onInput={handleOnInputOnPropertyOptions}
+						onClickDelete={() => {
+							if (!selectedProperty || !option.id) return;
 
-						<input
-							id={selectedProperty?.id}
-							value={option.value}
-							name="option"
-							on:input={handleOnInputOnPropertyOptions}
-							data-option-id={option.id}
-							data-option-field-name="value"
-							class="grow input input-sm input-ghost join-item"
-						/>
-
-						<IconBtn
-							class="btn join-item"
-							on:click={() => {
-								if (!selectedProperty || !option.id) return;
-
-								handleDeletePropertyOption(selectedProperty.id, option.id);
-							}}
-						>
-							<TrashBinOutline size="sm" />
-						</IconBtn>
-					</div>
+							handleDeletePropertyOption(selectedProperty.id, option.id);
+						}}
+					/>
 				{:else}
 					<div>Empty</div>
 				{/each}
-			</div>
-		</div>
-	{/if}
+			</Options>
+		{/if}
+	</form>
 </ModalEditor>
 
 <Modal bind:open={isDeleteModalOpen} size="xs" autoclose>
 	<div class="text-center">
 		<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
 		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-			Are you sure you want to delete this {#if isCollection}
-				collection
-			{:else}
-				item
-			{/if} ?
+			Are you sure you want to delete this {selectedElementToDelete} ?
 		</h3>
 		{#if isCollection}
 			<button on:click={handleDeleteCollection} class="btn btn-error btn-sm">Yes, I'm sure</button>
