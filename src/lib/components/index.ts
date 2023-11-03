@@ -7,7 +7,7 @@ export { default as DropdownItem } from './Dropdown/DropdownItem.svelte';
 export { default as IconBtn } from './IconBtn.svelte';
 export { default as ItemProperty } from './property/ItemProperty.svelte';
 
-export { default as ModalEditor } from './ModalEditor.svelte';
+export { default as Modal } from './Modal.svelte';
 export { default as SidebarCollection } from './sidebar/SidebarCollection.svelte';
 export { default as SidebarItem } from './sidebar/SidebarItem.svelte';
 

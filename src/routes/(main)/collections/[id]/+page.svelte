@@ -2,7 +2,6 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
-		BookSolid,
 		CirclePlusOutline,
 		CloseOutline,
 		ExclamationCircleOutline,
@@ -16,7 +15,7 @@
 		TrashBinOutline,
 		UserAddOutline
 	} from 'flowbite-svelte-icons';
-	import { Drawer, Modal } from 'flowbite-svelte';
+	import { Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
@@ -31,7 +30,7 @@
 		DropdownItem,
 		DropdownDivider,
 		IconBtn,
-		ModalEditor,
+		Modal,
 		Textarea
 	} from '$lib/components';
 	import debounce from 'debounce';
@@ -67,9 +66,44 @@
 
 	// Delete Modal
 	let isDeleteModalOpen = false;
-	let isCollection = false;
 
-	let selectedElementToDelete: 'collection' | 'item' | 'property' = 'item';
+	type ElementType = 'collection' | 'item' | 'property' | 'option' | null;
+
+	type ToBeDeleted = {
+		id: string | null;
+		type: ElementType;
+		option?: string;
+	};
+
+	let elementToBeDelete: ToBeDeleted = { id: null, type: null };
+
+	$: handleOnClickModalDeleteBtn = () => {
+		const { id, type, option } = elementToBeDelete;
+
+		if (!id) return;
+
+		switch (type) {
+			case 'collection':
+				handleDeleteCollection();
+				break;
+
+			case 'item':
+				handleDeleteItem();
+				break;
+
+			case 'property':
+				handleDeleteProperty(id);
+				break;
+
+			case 'option':
+				if (!option) return;
+				handleDeletePropertyOption(id, option);
+				break;
+
+			default:
+				break;
+		}
+	};
 
 	// Feedback
 	const onSuccess = async (msg: string) => {
@@ -109,7 +143,6 @@
 
 		await trpc().collections.delete.mutate(currCollection.id);
 		await invalidateAll();
-		isCollection = false;
 
 		goto('/collections');
 		toast.success('Collection deleted');
@@ -465,7 +498,7 @@
 
 				<DropdownItem
 					on:click={() => {
-						isCollection = true;
+						elementToBeDelete = { id: currCollection.id, type: 'collection' };
 						isDeleteModalOpen = true;
 					}}
 					class="dropdown-item-red"
@@ -491,7 +524,9 @@
 				on:clickHide={() => handleUpdateItem(item.id, { isHidden: true })}
 				on:clickDuplicate={() => handleDuplicateItem(item.id)}
 				on:clickDelete={() => {
+					elementToBeDelete = { id: item.id, type: 'item' };
 					isDeleteModalOpen = true;
+
 					selectedItemId = item.id;
 				}}
 			/>
@@ -548,7 +583,11 @@
 					<DropdownDivider />
 					<DropdownItem
 						on:click={() => {
+							if (!drawerSelectedItem) return;
+
+							elementToBeDelete = { id: drawerSelectedItem.id, type: 'item' };
 							isDeleteModalOpen = true;
+
 							selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
 						}}
 						class=" dropdown-item-red"
@@ -584,14 +623,18 @@
 					}}
 					on:edit={(e) => handleEditProperty(e.detail)}
 					on:duplicate={(e) => handleDuplicateProperty(e.detail)}
-					on:delete={(e) => handleDeleteProperty(e.detail)}
+					on:delete={(e) => {
+						elementToBeDelete = { id: property.id, type: 'property' };
+
+						isDeleteModalOpen = true;
+					}}
 				/>
 			{/each}
 		</div>
 	</div>
 </Drawer>
 
-<ModalEditor title="Property" open={!!selectedProperty} onClose={() => (selectedProperty = null)}>
+<Modal title="Property" open={!!selectedProperty} onClose={() => (selectedProperty = null)}>
 	<form class="space-y-1">
 		<InputWrapper name="Name">
 			<input
@@ -635,7 +678,13 @@
 						onClickDelete={() => {
 							if (!selectedProperty || !option.id) return;
 
-							handleDeletePropertyOption(selectedProperty.id, option.id);
+							elementToBeDelete = {
+								id: selectedProperty.id,
+								type: 'option',
+								option: option.id
+							};
+							isDeleteModalOpen = true;
+							// handleDeletePropertyOption(selectedProperty.id, option.id);
 						}}
 					/>
 				{:else}
@@ -644,19 +693,19 @@
 			</Options>
 		{/if}
 	</form>
-</ModalEditor>
+</Modal>
 
-<Modal bind:open={isDeleteModalOpen} size="xs" autoclose>
+<Modal open={isDeleteModalOpen} onClose={() => (isDeleteModalOpen = false)}>
 	<div class="text-center">
 		<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
 		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-			Are you sure you want to delete this {selectedElementToDelete} ?
+			Are you sure you want to delete this {elementToBeDelete.type} ?
 		</h3>
-		{#if isCollection}
-			<button on:click={handleDeleteCollection} class="btn btn-error btn-sm">Yes, I'm sure</button>
-		{:else}
-			<button on:click={handleDeleteItem} class="btn btn-error btn-sm">Yes, I'm sure</button>
-		{/if}
+
+		<button on:click={handleOnClickModalDeleteBtn} class="btn btn-error btn-sm">
+			Yes, I'm sure
+		</button>
+
 		<button class="btn btn-sm">No, cancel</button>
 	</div>
 </Modal>
