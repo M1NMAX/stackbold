@@ -41,15 +41,15 @@
 
 		const collectionProp = collectionProperties.find((prop) => prop.id === pid);
 
-		if (!collectionProp || collectionProp.type !== 'SELECT') return defaultPropertyColor;
-
 		const itemProp = item.properties.find((prop) => prop.id === pid);
+		if (!collectionProp || collectionProp.type !== 'SELECT') return defaultPropertyColor;
 
 		if (!itemProp || itemProp.value === '') return defaultPropertyColor;
 
 		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
 
 		if (!option) return defaultPropertyColor;
+
 		return option.color;
 	};
 </script>

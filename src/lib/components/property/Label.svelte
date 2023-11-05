@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {
-		DotsVerticalOutline,
+		DotsHorizontalOutline,
 		EditOutline,
 		FileCopyOutline,
 		TrashBinOutline
@@ -22,7 +22,7 @@
 
 	<Dropdown>
 		<IconBtn slot="button">
-			<DotsVerticalOutline size="sm" />
+			<DotsHorizontalOutline size="sm" />
 		</IconBtn>
 		<svelte:fragment>
 			<DropdownItem on:click={() => dispatch('edit', id)}>

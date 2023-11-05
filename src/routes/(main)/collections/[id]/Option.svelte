@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { TrashBinOutline } from 'flowbite-svelte-icons';
 	import { IconBtn, ColorPicker } from '$lib/components';
-	import type { Color, Option } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
+	import type { Color, Option } from '@prisma/client';
 
 	export let propertyId: string;
 	export let option: Option;
@@ -27,11 +27,8 @@
 
 	<input
 		name="option"
-		id={propertyId}
 		value={option.value}
 		on:input={handleOnInput}
-		data-option-id={option.id}
-		data-option-field-name="value"
 		class="grow input input-xs input-ghost"
 	/>
 

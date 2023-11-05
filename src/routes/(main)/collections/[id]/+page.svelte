@@ -39,7 +39,7 @@
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 	import toast from 'svelte-french-toast';
-	import type { RouterInputs, RouterOutputs } from '$lib/trpc/router';
+	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
 	import InputWrapper from './InputWrapper.svelte';
@@ -122,19 +122,6 @@
 		drawerSelectedItem = await trpc().items.load.query(itemId);
 	};
 
-	const getPropValueById = (pid: string, itemProps: ItemPropertyType[]) => {
-		const collectionProp = currCollection.properties.find((prop) => prop.id === pid);
-		const itemProp = itemProps.find((property) => property.id === pid);
-
-		if (!collectionProp || !itemProp) return '';
-
-		if (collectionProp.type !== 'SELECT') return itemProp.value;
-
-		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
-
-		return option ? option.id : '';
-	};
-
 	// Collection handlers
 	const handleDeleteCollection = async () => {
 		if (currCollection.ownerId !== data.user.userId) {
@@ -212,6 +199,7 @@
 		isDrawerHidden = true;
 		onSuccess('Item duplicated');
 	};
+
 	const handleUpdateItem = async (
 		itemId: string,
 		detail: RouterInputs['items']['update']['data']
@@ -227,10 +215,21 @@
 	// Property Handlers
 	const propertyTypes = Object.values(PropertyType);
 
-	const getProperty = (
-		collection: Collection | RouterOutputs['collections']['create'],
-		pid: string
-	) => collection.properties.find((prop) => prop.id === pid) || null;
+	const getProperty = (collection: Collection, pid: string) =>
+		collection.properties.find((prop) => prop.id === pid) || null;
+
+	const getItemPropValue = (pid: string, itemProps: ItemPropertyType[]) => {
+		const collectionProp = currCollection.properties.find((prop) => prop.id === pid);
+		const itemProp = itemProps.find((property) => property.id === pid);
+
+		if (!collectionProp || !itemProp) return '';
+
+		if (collectionProp.type !== 'SELECT') return itemProp.value;
+
+		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
+
+		return option ? option.id : '';
+	};
 
 	const handleEditProperty = (pid: string) => (selectedProperty = getProperty(currCollection, pid));
 
@@ -305,24 +304,23 @@
 		}
 	};
 
-	const handleUpdateProperty = async (
-		property: RouterInputs['collections']['updateProperty']['property']
-	) => {
-		try {
-			const updatedCollectionData = await trpc().collections.updateProperty.mutate({
-				id: currCollection.id,
-				property
-			});
+	const handleUpdateProperty = debounce(
+		async (property: RouterInputs['collections']['updateProperty']['property']) => {
+			try {
+				const updatedCollectionData = await trpc().collections.updateProperty.mutate({
+					id: currCollection.id,
+					property
+				});
 
-			selectedProperty = getProperty(updatedCollectionData, property.id);
+				selectedProperty = getProperty(updatedCollectionData, property.id);
 
-			await onSuccess('Property update');
-		} catch (error) {
-			onError(error);
-		}
-	};
-
-	const debouncedPropertyUpdate = debounce(handleUpdateProperty, DEFAULT_DEBOUNCE_INTERVAL);
+				await onSuccess('Property update');
+			} catch (error) {
+				onError(error);
+			}
+		},
+		DEFAULT_DEBOUNCE_INTERVAL
+	);
 
 	const handleOnInputPropertyField = (e: Event) => {
 		//TODO: correct item value when property change
@@ -334,25 +332,22 @@
 
 		data[name] = value;
 
-		debouncedPropertyUpdate({ id, ...data });
+		handleUpdateProperty({ id, ...data });
 	};
 
-	const debouncedAddPropertyOption = debounce(
-		async (args: RouterInputs['collections']['addPropertyOption']) => {
-			try {
-				const updatedCollection = await trpc().collections.addPropertyOption.mutate(args);
+	const handleAddPropertyOption = async (pid: string, value: string) => {
+		try {
+			const updatedCollection = await trpc().collections.addPropertyOption.mutate({
+				id: currCollection.id,
+				property: { id: pid, option: { value } }
+			});
 
-				selectedProperty = getProperty(updatedCollection, args.property.id);
+			selectedProperty = getProperty(updatedCollection, pid);
 
-				await onSuccess('Property Option added ');
-			} catch (error) {
-				onError(error);
-			}
+			await onSuccess('Property Option added ');
+		} catch (error) {
+			onError(error);
 		}
-	);
-
-	const handleAddPropertyOption = (pid: string, value: string) => {
-		debouncedAddPropertyOption({ id: currCollection.id, property: { id: pid, option: { value } } });
 	};
 
 	const debouncedUpdatePropertyOption = debounce(
@@ -374,36 +369,30 @@
 		debouncedUpdatePropertyOption({ id: currCollection.id, property: { id: pid, option } });
 	};
 
-	const debouncedDeletePropertyOption = debounce(
-		async (args: RouterInputs['collections']['deletePropertyOption']) => {
-			try {
-				const updatedCollection = await trpc().collections.deletePropertyOption.mutate(args);
-				selectedProperty =
-					updatedCollection.properties.find((prop) => prop.id === args.property.id) || null;
-				await invalidateAll();
-				toast.success('Property Option deleted ');
-			} catch (error) {
-				onError(error);
-			}
-		}
-	);
-
-	const handleDeletePropertyOption = (pid: string, optionId: string) => {
-		debouncedDeletePropertyOption({ id: currCollection.id, property: { id: pid, optionId } });
-	};
-
-	const handleUpdatePropertyValue = async (id: string, property: { id: string; value: string }) => {
+	const handleDeletePropertyOption = async (pid: string, optionId: string) => {
 		try {
-			drawerSelectedItem = await trpc().items.updateProperty.mutate({ id, property });
-			await invalidateAll();
-			toast.success('Property Value updated');
+			const updatedCollection = await trpc().collections.deletePropertyOption.mutate({
+				id: currCollection.id,
+				property: { id: pid, optionId }
+			});
+			selectedProperty = updatedCollection.properties.find((prop) => prop.id === pid) || null;
+
+			await onSuccess('Property Option deleted ');
 		} catch (error) {
 			onError(error);
 		}
 	};
 
-	const debouncedPropertyValueUpdate = debounce(
-		handleUpdatePropertyValue,
+	const handleUpdatePropertyValue = debounce(
+		async (id: string, property: { id: string; value: string }) => {
+			try {
+				drawerSelectedItem = await trpc().items.updateProperty.mutate({ id, property });
+				await invalidateAll();
+				toast.success('Property Value updated');
+			} catch (error) {
+				onError(error);
+			}
+		},
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
 
@@ -599,19 +588,19 @@
 			{#each currCollection.properties as property}
 				<CollectionProperty
 					{property}
-					value={getPropValueById(
+					value={getItemPropValue(
 						property.id,
 						drawerSelectedItem ? drawerSelectedItem.properties : []
 					)}
 					on:update={(e) => {
 						if (!drawerSelectedItem) return;
 
-						debouncedPropertyValueUpdate(drawerSelectedItem.id, e.detail.property);
+						handleUpdatePropertyValue(drawerSelectedItem.id, e.detail.property);
 					}}
 					on:edit={(e) => handleEditProperty(e.detail)}
 					on:duplicate={(e) => handleDuplicateProperty(e.detail)}
 					on:delete={(e) => {
-						elementToBeDelete = { id: property.id, type: 'property' };
+						elementToBeDelete = { id: e.detail, type: 'property' };
 
 						isDeleteModalOpen = true;
 					}}
