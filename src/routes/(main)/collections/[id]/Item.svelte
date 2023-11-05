@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {
-		AdjustmentsHorizontalOutline,
+		DotsHorizontalOutline,
 		EyeSlashOutline,
 		FileCopyOutline,
 		TrashBinOutline,
@@ -64,7 +64,7 @@
 
 		<Dropdown>
 			<IconBtn slot="button" class="invisible group-hover:visible">
-				<AdjustmentsHorizontalOutline />
+				<DotsHorizontalOutline />
 			</IconBtn>
 
 			<svelte:fragment>

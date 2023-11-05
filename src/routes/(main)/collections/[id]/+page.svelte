@@ -4,6 +4,7 @@
 		ArchiveOutline,
 		CirclePlusOutline,
 		CloseOutline,
+		DotsHorizontalOutline,
 		ExclamationCircleOutline,
 		EyeOutline,
 		EyeSlashOutline,
@@ -12,8 +13,7 @@
 		HeartOutline,
 		HeartSolid,
 		PenOutline,
-		TrashBinOutline,
-		UserAddOutline
+		TrashBinOutline
 	} from 'flowbite-svelte-icons';
 	import { Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
@@ -21,8 +21,10 @@
 	import type { PageData } from './$types';
 	import {
 		type ItemProperty as ItemPropertyType,
+		type Item as ItemType,
 		PropertyType,
-		type Collection
+		type Collection,
+		type CollectionProperty as CollectionPropertyType
 	} from '@prisma/client';
 	import {
 		CollectionProperty,
@@ -51,8 +53,8 @@
 	$: currItems = data.items;
 
 	//TODO: ref those types
-	let selectedProperty: RouterInputs['collections']['updateProperty']['property'] | null = null;
-	let drawerSelectedItem: RouterOutputs['items']['load'] | null = null;
+	let selectedProperty: CollectionPropertyType | null = null;
+	let drawerSelectedItem: ItemType | null = null;
 	let selectedItemId: string | null = null;
 
 	// Drawer
@@ -451,9 +453,6 @@
 		>
 			{currCollection.name}
 		</h1>
-		<IconBtn on:click={handleDuplicateCollection}>
-			<UserAddOutline />
-		</IconBtn>
 
 		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
 			{#if currCollection.isFavourite}
@@ -463,9 +462,13 @@
 			{/if}
 		</IconBtn>
 
+		<IconBtn>
+			<AdjustmentsHorizontalOutline />
+		</IconBtn>
+
 		<Dropdown>
 			<IconBtn slot="button">
-				<AdjustmentsHorizontalOutline />
+				<DotsHorizontalOutline />
 			</IconBtn>
 			<svelte:fragment>
 				<DropdownItem
@@ -557,7 +560,7 @@
 
 			<Dropdown>
 				<IconBtn slot="button">
-					<AdjustmentsHorizontalOutline />
+					<DotsHorizontalOutline />
 				</IconBtn>
 				<svelte:fragment>
 					<DropdownItem on:click={() => handleAddProperty()}>
@@ -671,18 +674,14 @@
 			>
 				{#each selectedProperty.options as option}
 					<Option
-						optionId={option.id}
-						value={option.value}
-						color={option.color}
+						{option}
 						propertyId={selectedProperty.id}
 						onInput={handleOnInputOnPropertyOptions}
 						onClickColor={(pid, optionId, color) => {
-							if (!optionId) return;
-
 							handleUpdatePropertyOption(pid, { id: optionId, color });
 						}}
 						onClickDelete={() => {
-							if (!selectedProperty || !option.id) return;
+							if (!selectedProperty) return;
 
 							elementToBeDelete = {
 								id: selectedProperty.id,
