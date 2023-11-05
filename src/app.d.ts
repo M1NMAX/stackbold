@@ -9,6 +9,11 @@ declare global {
 			auth: import('lucia').AuthRequest;
 		}
 	}
+	namespace svelteHTML {
+		interface HTMLAttributes<T> {
+			'on:clickoutside'?: (event: CustomEvent) => void;
+		}
+	}
 }
 
 /// <reference types='lucia' />

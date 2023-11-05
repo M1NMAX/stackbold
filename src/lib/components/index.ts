@@ -1,3 +1,4 @@
+export { default as ColorPicker } from './colorPicker/ColorPicker.svelte';
 export { default as CollectionProperty } from './property/CollectionProperty.svelte';
 
 export { default as Dropdown } from './Dropdown/Dropdown.svelte';
