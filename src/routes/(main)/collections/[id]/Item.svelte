@@ -7,8 +7,7 @@
 		WindowOutline
 	} from 'flowbite-svelte-icons';
 	import { Dropdown, DropdownDivider, DropdownItem, IconBtn, ItemProperty } from '$lib/components';
-	import type { Color } from '$lib/types';
-	import type { Item, CollectionProperty, PropertyType } from '@prisma/client';
+	import type { CollectionProperty, Item } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 
 	export let active: boolean = false;
@@ -36,22 +35,22 @@
 		return option ? option.value : '';
 	};
 
-	const defaultPropColor = 'gray';
+	const defaultPropertyColor = 'GRAY';
 	const getPropertyColorById = (pid: string) => {
 		//TODO: refactor
 
 		const collectionProp = collectionProperties.find((prop) => prop.id === pid);
 
-		if (!collectionProp || collectionProp.type !== 'SELECT') return defaultPropColor;
+		if (!collectionProp || collectionProp.type !== 'SELECT') return defaultPropertyColor;
 
 		const itemProp = item.properties.find((prop) => prop.id === pid);
 
-		if (!itemProp || itemProp.value === '') return defaultPropColor;
+		if (!itemProp || itemProp.value === '') return defaultPropertyColor;
 
 		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
 
-		if (!option) return defaultPropColor;
-		return option.color.toLowerCase() as Color;
+		if (!option) return defaultPropertyColor;
+		return option.color;
 	};
 </script>
 

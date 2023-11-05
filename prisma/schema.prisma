@@ -66,7 +66,7 @@ model PasswordResetToken {
 }
 
 enum Color {
-  BW     @map("bw") // BLACK AND WHITE, specifically tons of gray
+  GRAY   @map("gray")
   RED    @map("red")
   BLUE   @map("blue")
   GREEN  @map("green")
@@ -84,13 +84,13 @@ enum PropertyType {
 
 type Icon {
   name  String @default("")
-  color Color  @default(BW)
+  color Color  @default(GRAY)
 }
 
 type Option {
   id    String @default(uuid()) @map("_id")
   value String
-  color Color  @default(BW)
+  color Color  @default(GRAY)
 }
 
 type CollectionProperty {

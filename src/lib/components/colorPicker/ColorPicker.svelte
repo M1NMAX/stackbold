@@ -1,26 +1,22 @@
 <script lang="ts">
-	import { v4 as uuid } from 'uuid';
-
 	import { clickOutside } from './clickOutside';
-	import { tick, onMount } from 'svelte';
+	import { tick } from 'svelte';
+	import { capitalizeFirstLetter } from '$lib/utils';
+	import { CaretDownSolid } from 'flowbite-svelte-icons';
+	import type { Color } from '@prisma/client';
+	import type { Colors } from '$lib/types';
 
-	export let id = uuid();
-	export let value = '#5E7ABC';
+	export let value: Color = 'GRAY';
+	export let onChange: (color: Color) => void;
 
-	// Our color set
-	let values = [
-		['#DAAFE9', '#C7DBF5', '#AAD5FB', '#ADE5DA', '#B0EDC3', '#FDF0A4', '#F8D6A2'],
-		['#C47ADA', '#90BAEE', '#75BAFA', '#72D5BF', '#73DE8C', '#FBE66E', '#F5B969'],
-		['#AE44B7', '#5E7ABC', '#5E7ABC', '#4DACA9', '#63B75A', '#EDBD4A', '#EC9740'],
-		['#501B87', '#021B6B', '#0C2794', '#337277', '#2F6A52', '#AE802F', '#AD6127']
-	];
-
-	let trigger = 'Escape';
+	const colors: Colors = {
+		GRAY: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+		RED: 'bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-300',
+		BLUE: 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+		GREEN: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300'
+	};
 
 	let ddActive = false;
-	const handleKeydown = (e: KeyboardEvent) => {
-		if (e.key === trigger) ddActive = false;
-	};
 
 	let windowHeight: number;
 	let top: boolean;
@@ -48,109 +44,45 @@
 
 	const clickOutsideDropdown = () => (ddActive = false);
 
-	const changeValue = (innerValue: string) => {
-		value = innerValue;
+	const handleChange = (newValue: String) => {
+		value = newValue as Color;
 		ddActive = false;
-	};
-
-	const keyboardGridNav = (e: KeyboardEvent, index: number) => {
-		const focussedElement = document.activeElement?.id!;
-
-		let myRow = parseInt(focussedElement.charAt(focussedElement.length - 3));
-		let myIndex = parseInt(focussedElement.charAt(focussedElement.length - 1));
-		let nextRow;
-		let prevRow;
-		let nextIndex;
-		let prevIndex;
-
-		let composedId = '';
-
-		switch (e.key) {
-			// left arrow
-			case 'ArrowLeft':
-				prevIndex = myIndex - 1;
-				if (prevIndex > -1) {
-					composedId = id + '-' + myRow + '-' + prevIndex;
-					document.getElementById(composedId)?.focus();
-				}
-				break;
-			// top arrow
-			case 'ArrowUp':
-				prevRow = myRow - 1;
-				if (prevRow > -1) {
-					composedId = id + '-' + prevRow + '-' + myIndex;
-					document.getElementById(composedId)?.focus();
-				}
-				break;
-			// right arrow
-			case 'ArrowRight':
-				nextIndex = myIndex + 1;
-				if (nextIndex < values[0].length) {
-					composedId = id + '-' + myRow + '-' + nextIndex;
-					document.getElementById(composedId)?.focus();
-				}
-				break;
-			// down arrow
-			case 'ArrowDown':
-				nextRow = myRow + 1;
-				if (nextRow < values.length) {
-					composedId = id + '-' + nextRow + '-' + myIndex;
-					document.getElementById(composedId)?.focus();
-				}
-				break;
-		}
+		onChange(value);
 	};
 </script>
 
 <div class="relative">
-	<div class="flex h-9">
-		<button
-			bind:clientHeight={inputHeight}
-			class="border border-gay-50 p-1 rounded mr-2 bg-white h-9"
-			on:click={(e) => toggleDropdown(e)}
-			class:fake-focus={ddActive}
-		>
-			<div class="flex">
-				<div style="background: {value};" class="border-none rounded w-6 h-6 text-xs" />
-				<div
-					class="w-0 h-0 border-x-4 border-red-500 relative top-2"
-					class:top
-					style="margin-right: .2rem;"
-				/>
-			</div>
-		</button>
-	</div>
+	<button
+		bind:clientHeight={inputHeight}
+		class="flex items-center space-x-0.5 h-9 p-1 rounded bg-white border border-gay-50"
+		on:click={(e) => toggleDropdown(e)}
+		class:fake-focus={ddActive}
+	>
+		<div class={`${colors[value]} border-none rounded w-6 h-6 text-xs`} />
+
+		<CaretDownSolid size="xs" class="text-gray-500" />
+	</button>
 
 	{#if ddActive}
 		<div
 			class:top
 			bind:clientHeight={ddHeight}
-			class="p-4 absolute z-10 top-10 bg-white border border-gray-500 rounded"
+			class="absolute z-10 bottom-10 p-1 bg-white rounded border border-gray-500"
 			use:clickOutside
 			on:clickoutside={clickOutsideDropdown}
 		>
-			<div class=" grid grid-cols-7 grid-rows-2 gap-2 values-dropdown-grid">
-				{#each values as val, index}
-					{#each val as innerValue, innerIndex}
-						<button
-							id="{id}-{index}-{innerIndex}"
-							class:active={innerValue == value}
-							on:keydown={(e) => keyboardGridNav(e, innerIndex)}
-							style="background: {innerValue};"
-							on:click={() => {
-								changeValue(innerValue);
-							}}
-							class="border-none rounded w-6 h-6 text-xs"
-						/>
-					{/each}
+			<div class="flex flex-col items-start space-y-1">
+				{#each Object.entries(colors) as [key, value]}
+					<button
+						on:click={() => handleChange(key)}
+						class="w-full flex items-center space-x-2 py-0.5 px-1 rounded hover:bg-gray-100"
+					>
+						<div class={`${value} h-5 w-5 rounded`} />
+
+						<div>{capitalizeFirstLetter(key)}</div>
+					</button>
 				{/each}
 			</div>
 		</div>
 	{/if}
 </div>
-
-<style>
-	.active {
-		@apply shadow-inner;
-	}
-</style>

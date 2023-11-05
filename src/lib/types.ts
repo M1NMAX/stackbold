@@ -1,4 +1,4 @@
-export type Color = 'dark' | 'gray' | 'red' | 'green' | 'blue';
+import type { Color } from '@prisma/client';
 
 export type Colors = { [key in Color]?: string };
 

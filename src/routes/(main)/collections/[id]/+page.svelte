@@ -41,7 +41,7 @@
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
 	import InputWrapper from './InputWrapper.svelte';
-	import { capitalizeFirstLetter } from './utils';
+	import { capitalizeFirstLetter } from '$lib/utils';
 	import Option from './Option.svelte';
 	import Options from './Options.svelte';
 
@@ -673,8 +673,14 @@
 					<Option
 						optionId={option.id}
 						value={option.value}
+						color={option.color}
 						propertyId={selectedProperty.id}
 						onInput={handleOnInputOnPropertyOptions}
+						onClickColor={(pid, optionId, color) => {
+							if (!optionId) return;
+
+							handleUpdatePropertyOption(pid, { id: optionId, color });
+						}}
 						onClickDelete={() => {
 							if (!selectedProperty || !option.id) return;
 

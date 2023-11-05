@@ -1,19 +1,25 @@
 <script lang="ts">
-	import { IconBtn } from '$lib/components';
-	import { BarsOutline, TrashBinOutline } from 'flowbite-svelte-icons';
+	import { TrashBinOutline } from 'flowbite-svelte-icons';
+	import { IconBtn, ColorPicker } from '$lib/components';
+	import type { Color } from '@prisma/client';
 
 	export let propertyId: string;
 	export let optionId: string | undefined;
 	export let value: string | undefined;
+	export let color: Color | undefined;
 
 	export let onClickDelete: () => void;
 	export let onInput: (e: Event) => void;
+	export let onClickColor: (pid: string, optionId: string | undefined, color: Color) => void;
 </script>
 
 <div class="w-full flex justify-between items-center space-x-1">
-	<IconBtn>
-		<BarsOutline size="xs" />
-	</IconBtn>
+	<ColorPicker
+		value={color}
+		onChange={(color) => {
+			onClickColor(propertyId, optionId, color);
+		}}
+	/>
 
 	<input
 		name="option"
