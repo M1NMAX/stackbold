@@ -53,6 +53,7 @@
 		"hash-wasm": "^4.9.0",
 		"jsonwebtoken": "^9.0.2",
 		"lucia": "^2.7.1",
+		"superjson": "^2.2.0",
 		"svelte-french-toast": "^1.2.0",
 		"theme-change": "^2.5.0",
 		"trpc-sveltekit": "^3.5.21",

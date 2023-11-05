@@ -1,7 +1,8 @@
 import type { Context } from '$lib/trpc/context';
 import { TRPCError, initTRPC } from '@trpc/server';
+import superjson from 'superjson';
 
-export const t = initTRPC.context<Context>().create();
+export const t = initTRPC.context<Context>().create({ transformer: superjson });
 
 export const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
 	const start = Date.now();
