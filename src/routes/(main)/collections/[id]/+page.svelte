@@ -44,7 +44,6 @@
 	import Item from './Item.svelte';
 	import InputWrapper from './InputWrapper.svelte';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import Option from './Option.svelte';
 	import Options from './Options.svelte';
 
 	export let data: PageData;
@@ -52,7 +51,6 @@
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
-	//TODO: ref those types
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
 	let selectedItemId: string | null = null;
@@ -105,6 +103,7 @@
 			default:
 				break;
 		}
+		isDeleteModalOpen = false;
 	};
 
 	// Feedback
@@ -336,21 +335,6 @@
 		data[name] = value;
 
 		debouncedPropertyUpdate({ id, ...data });
-	};
-
-	const handleOnInputOnPropertyOptions = (e: Event) => {
-		const input = e.target as HTMLInputElement;
-
-		const { id, value } = input;
-
-		const data: { [key: string]: string } = {};
-
-		const optionId = input.dataset.optionId as string;
-		const fieldName = input.dataset.optionFieldName as string;
-
-		data[fieldName] = value;
-
-		handleUpdatePropertyOption(id, { id: optionId, ...data });
 	};
 
 	const debouncedAddPropertyOption = debounce(
@@ -667,35 +651,30 @@
 
 		{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
 			<Options
-				handleAddOption={(value) => {
-					if (!selectedProperty) return;
-					handleAddPropertyOption(selectedProperty.id, value);
+				propertyId={selectedProperty.id}
+				options={selectedProperty.options}
+				on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}
+				on:updOptColor={({ detail }) => {
+					handleUpdatePropertyOption(detail.propertyId, {
+						id: detail.optionId,
+						color: detail.color
+					});
 				}}
-			>
-				{#each selectedProperty.options as option}
-					<Option
-						{option}
-						propertyId={selectedProperty.id}
-						onInput={handleOnInputOnPropertyOptions}
-						onClickColor={(pid, optionId, color) => {
-							handleUpdatePropertyOption(pid, { id: optionId, color });
-						}}
-						onClickDelete={() => {
-							if (!selectedProperty) return;
-
-							elementToBeDelete = {
-								id: selectedProperty.id,
-								type: 'option',
-								option: option.id
-							};
-							isDeleteModalOpen = true;
-							// handleDeletePropertyOption(selectedProperty.id, option.id);
-						}}
-					/>
-				{:else}
-					<div>Empty</div>
-				{/each}
-			</Options>
+				on:updOptValue={({ detail }) => {
+					handleUpdatePropertyOption(detail.propertyId, {
+						id: detail.optionId,
+						value: detail.value
+					});
+				}}
+				on:deleteOpt={({ detail }) => {
+					elementToBeDelete = {
+						id: detail.propertyId,
+						option: detail.optionId,
+						type: 'option'
+					};
+					isDeleteModalOpen = true;
+				}}
+			/>
 		{/if}
 	</form>
 </Modal>

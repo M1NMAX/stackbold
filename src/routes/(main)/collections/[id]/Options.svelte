@@ -1,8 +1,14 @@
 <script lang="ts">
+	import type { Option as OptionType } from '@prisma/client';
 	import { CloseOutline, PlusOutline } from 'flowbite-svelte-icons';
 	import { fade } from 'svelte/transition';
+	import Option from './Option.svelte';
+	import { createEventDispatcher } from 'svelte';
 
-	export let handleAddOption: (value: string) => void;
+	export let propertyId: string;
+	export let options: OptionType[];
+
+	const dispatch = createEventDispatcher<{ addOpt: { propertyId: string; value: string } }>();
 
 	let showInput = false;
 </script>
@@ -24,14 +30,13 @@
 		class={`  input input-xs input-ghost bg-base-200  ${showInput ? 'block' : 'hidden'}`}
 		placeholder="Enter option value"
 		on:keypress|stopPropagation={(e) => {
-			if (e.key === 'Enter') {
-				const value = e.currentTarget.value;
-				handleAddOption(value);
-			}
+			if (e.key === 'Enter') dispatch('addOpt', { propertyId, value: e.currentTarget.value });
 		}}
 	/>
 
 	<div class="space-y-1">
-		<slot />
+		{#each options as option}
+			<Option {propertyId} {option} on:updOptColor on:updOptValue on:deleteOpt />
+		{/each}
 	</div>
 </div>
