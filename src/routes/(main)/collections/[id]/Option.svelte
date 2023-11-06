@@ -19,7 +19,7 @@
 	};
 </script>
 
-<div class="w-full flex justify-between items-center space-x-1">
+<div class="w-full flex justify-between items-center space-x-1.5">
 	<ColorPicker
 		value={option.color}
 		onChange={(color) => dispatch('updOptColor', { propertyId, optionId: option.id, color })}
@@ -29,7 +29,7 @@
 		name="option"
 		value={option.value}
 		on:input={handleOnInput}
-		class="grow input input-xs input-ghost"
+		class="grow input input-xs text-sm font-semibold input-ghost"
 	/>
 
 	<IconBtn on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}>

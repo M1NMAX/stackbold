@@ -3,7 +3,7 @@
 </script>
 
 <div class="form-control">
-	<label class="label flex flex-row items-center space-x-2.5">
+	<label class="label grid grid-cols-10 items-center space-x-2.5 px-2">
 		<span class="label-text font-semibold">{name}</span>
 
 		<slot />
