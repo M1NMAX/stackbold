@@ -122,7 +122,6 @@
 		drawerSelectedItem = await trpc().items.load.query(itemId);
 	};
 
-	//TODO: remove useless debounce fun
 	// Collection handlers
 	const handleDeleteCollection = async () => {
 		if (currCollection.ownerId !== data.user.userId) {
@@ -130,11 +129,15 @@
 			return;
 		}
 
-		await trpc().collections.delete.mutate(currCollection.id);
-		await invalidateAll();
+		try {
+			await trpc().collections.delete.mutate(currCollection.id);
+			await invalidateAll();
 
-		goto('/collections');
-		toast.success('Collection deleted');
+			goto('/collections');
+			toast.success('Collection deleted');
+		} catch (error) {
+			onError(error);
+		}
 	};
 
 	const handleDuplicateCollection = async () => {
@@ -201,16 +204,25 @@
 		onSuccess('Item duplicated');
 	};
 
-	const handleUpdateItem = async (
-		itemId: string,
-		detail: RouterInputs['items']['update']['data']
-	) => {
-		await trpc().items.update.mutate({
-			id: itemId,
-			data: detail
-		});
+	const handleUpdateItem = async (args: RouterInputs['items']['update']) => {
+		try {
+			await trpc().items.update.mutate(args);
 
-		await onSuccess('Item updated successfully');
+			await onSuccess('Item updated successfully');
+		} catch (error) {
+			onError(error);
+		}
+	};
+
+	const debounceItemUpdate = debounce(handleUpdateItem, DEFAULT_DEBOUNCE_INTERVAL);
+	const handleItemNameChange = async (e: Event) => {
+		const input = e.target as HTMLTextAreaElement;
+
+		if (!drawerSelectedItem) return;
+
+		const id = drawerSelectedItem.id;
+
+		debounceItemUpdate({ id, data: { name: input.value } });
 	};
 
 	// Property Handlers
@@ -396,17 +408,6 @@
 		},
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
-
-	const debounceItemUpdate = debounce(handleUpdateItem, DEFAULT_DEBOUNCE_INTERVAL);
-	const handleItemNameChange = async (e: Event) => {
-		const input = e.target as HTMLTextAreaElement;
-
-		if (!drawerSelectedItem) return;
-
-		const id = drawerSelectedItem.id;
-
-		debounceItemUpdate(id, { name: input.value });
-	};
 </script>
 
 <svelte:head>
@@ -498,7 +499,7 @@
 				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
 				collectionProperties={currCollection.properties}
 				on:clickOpen={() => handleClickOpenItem(item.id)}
-				on:clickHide={() => handleUpdateItem(item.id, { isHidden: true })}
+				on:clickHide={() => handleUpdateItem({ id: item.id, data: { isHidden: true } })}
 				on:clickDuplicate={() => handleDuplicateItem(item.id)}
 				on:clickDelete={() => {
 					elementToBeDelete = { id: item.id, type: 'item' };
@@ -544,7 +545,10 @@
 
 					<DropdownItem
 						on:click={() =>
-							handleUpdateItem(drawerSelectedItem ? drawerSelectedItem.id : '', { isHidden: true })}
+							handleUpdateItem({
+								id: drawerSelectedItem ? drawerSelectedItem.id : '',
+								data: { isHidden: true }
+							})}
 					>
 						<EyeSlashOutline />
 						<span> Hide item </span>
