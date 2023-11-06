@@ -56,7 +56,7 @@
 
 <div
 	class={` ${
-		active ? 'rounded-tl-md bg-gray-100 border-r-4 border-primary-600' : ' rounded  bg-gray-100 '
+		active ? 'rounded-r-md bg-gray-100 border-l-2 border-primary' : ' rounded  bg-gray-100 '
 	} flex flex-col items-start  py-1 px-2 space-y-2 group`}
 >
 	<div class="w-full flex justify-between items-center space-x-2">

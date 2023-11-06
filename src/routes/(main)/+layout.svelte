@@ -11,7 +11,7 @@
 	} from 'flowbite-svelte';
 	import {
 		ArrowRightToBracketOutline,
-		CaretSortSolid,
+		CaretDownSolid,
 		CogOutline,
 		DnaOutline,
 		GridOutline,
@@ -87,7 +87,7 @@
 								src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
 								class=" rounded-full h-7 w-7"
 							/>
-							<CaretSortSolid class="absolute right-0 bottom-0 w-3 h-3" />
+							<CaretDownSolid class="absolute right-0 bottom-0 w-3 h-3 text-primary" />
 						</button>
 						<svelte:fragment>
 							<DropdownItem href="/settings">
@@ -162,7 +162,7 @@
 						<PlusOutline size="sm" />
 					</IconBtn>
 				</span>
-				<div>
+				<div class="space-y-0.5">
 					{#each data.collections as collection}
 						<SidebarCollection {collection} active={activeCollection(collection.id)} />
 					{/each}

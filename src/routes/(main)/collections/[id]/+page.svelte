@@ -122,6 +122,7 @@
 		drawerSelectedItem = await trpc().items.load.query(itemId);
 	};
 
+	//TODO: remove useless debounce fun
 	// Collection handlers
 	const handleDeleteCollection = async () => {
 		if (currCollection.ownerId !== data.user.userId) {
@@ -419,7 +420,7 @@
 >
 	<div class="flex items-center space-x-1.5 p-1">
 		<h1
-			class="grow font-semibold text-2xl focus:outline-none focus:border-b-2 focus:border-primary-500"
+			class="grow font-semibold text-2xl focus:outline-none focus:border-b-2 focus:border-gray-300"
 			contenteditable
 			spellcheck={false}
 			on:input={handleOnInputCollectionName}
@@ -429,7 +430,7 @@
 
 		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
 			{#if currCollection.isFavourite}
-				<HeartSolid class="text-red-500" />
+				<HeartSolid class="text-primary" />
 			{:else}
 				<HeartOutline />
 			{/if}
@@ -577,10 +578,11 @@
 
 		<div class="rounded bg-gray-200 p-1 my-4">
 			<Textarea
+				spellcheck={false}
 				value={drawerSelectedItem?.name}
 				on:input={handleItemNameChange}
 				placeholder="Empty"
-				class="textarea textarea-sm textarea-ghost font-medium bg-gray-200"
+				class="textarea textarea-sm textarea-ghost font-semibold  bg-gray-200"
 			/>
 		</div>
 
