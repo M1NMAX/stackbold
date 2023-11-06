@@ -56,6 +56,7 @@
 	import { capitalizeFirstLetter, pluralize } from '$lib/utils';
 	import Options from './Options.svelte';
 	import RadioButton from '$lib/components/input/RadioButton.svelte';
+	import { fade } from 'svelte/transition';
 
 	export let data: PageData;
 
@@ -65,6 +66,9 @@
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
 	let selectedItemId: string | null = null;
+
+	// View
+	let currView = 'list';
 
 	// Drawer
 	let isDrawerHidden = true;
@@ -184,6 +188,12 @@
 	}) => {
 		const collectionName = e.currentTarget.innerText;
 		debouncedCollectionUpdate({ name: collectionName });
+	};
+
+	const handleOnInputCollectionDesc = async (e: Event) => {
+		const targetEl = e.target as HTMLTextAreaElement;
+
+		debouncedCollectionUpdate({ description: targetEl.value });
 	};
 
 	// Item handlers
@@ -419,8 +429,6 @@
 		},
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
-
-	let radioGroup = 'table';
 </script>
 
 <svelte:head>
@@ -501,9 +509,18 @@
 		</Dropdown>
 	</div>
 
-	<div>
-		{currCollection.description}
-	</div>
+	{#if !currCollection.isDescHidden}
+		<label transition:fade for="description" class="label p-1">
+			<span class="sr-only label-text"> Collection description</span>
+			<Textarea
+				id="description"
+				value={currCollection.description}
+				on:input={handleOnInputCollectionDesc}
+				spellcheck={false}
+				class="textarea textarea-ghost text-base"
+			/>
+		</label>
+	{/if}
 
 	<div class="flex justify-between p-1">
 		<div>
@@ -511,8 +528,8 @@
 		</div>
 
 		<div class="inline-flex rounded shadow-sm bg-gray-100">
-			<RadioButton value={'list'} bind:group={radioGroup}><ListOutline /></RadioButton>
-			<RadioButton value={'table'} bind:group={radioGroup}><GridOutline /></RadioButton>
+			<RadioButton value="list" bind:group={currView}><ListOutline /></RadioButton>
+			<RadioButton value="grid" bind:group={currView}><GridOutline /></RadioButton>
 		</div>
 	</div>
 
@@ -648,7 +665,7 @@
 				value={selectedProperty?.name}
 				on:input={handleOnInputPropertyField}
 				name="name"
-				class="input input-xs input-ghost text-sm bg-base-200"
+				class="input input-sm input-ghost font-semibold text-sm bg-base-200 col-span-9"
 			/>
 		</InputWrapper>
 
@@ -658,7 +675,7 @@
 				name="type"
 				value={selectedProperty?.type}
 				on:input={handleOnInputPropertyField}
-				class="select select-xs select-ghost text-sm bg-base-200"
+				class="select select-sm select-ghost font-semibold text-sm bg-base-200 col-span-9"
 			>
 				{#each propertyTypes as propertyType}
 					<option value={propertyType}>
