@@ -2,20 +2,30 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
+		ArrowRightOutline,
 		CirclePlusOutline,
 		CloseOutline,
+		CreditCardOutline,
 		DotsHorizontalOutline,
 		ExclamationCircleOutline,
 		EyeOutline,
 		EyeSlashOutline,
 		FileCopyOutline,
 		FolderDuplicateOutline,
+		GridOutline,
 		HeartOutline,
 		HeartSolid,
+		ListMusicSolid,
+		ListOrdoredSolid,
+		ListOutline,
+		ListSolid,
 		PenOutline,
+		SearchOutline,
+		SearchSolid,
+		TableRowOutline,
 		TrashBinOutline
 	} from 'flowbite-svelte-icons';
-	import { Drawer } from 'flowbite-svelte';
+	import { ButtonGroup, Drawer, Radio } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
@@ -43,8 +53,9 @@
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import Item from './Item.svelte';
 	import InputWrapper from './InputWrapper.svelte';
-	import { capitalizeFirstLetter } from '$lib/utils';
+	import { capitalizeFirstLetter, pluralize } from '$lib/utils';
 	import Options from './Options.svelte';
+	import RadioButton from '$lib/components/input/RadioButton.svelte';
 
 	export let data: PageData;
 
@@ -408,6 +419,8 @@
 		},
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
+
+	let radioGroup = 'table';
 </script>
 
 <svelte:head>
@@ -492,7 +505,18 @@
 		{currCollection.description}
 	</div>
 
-	<div class="space-y-2 p-1">
+	<div class="flex justify-between p-1">
+		<div>
+			<p class="text-lg font-medium">{pluralize('Item', currItems.length, 's')}</p>
+		</div>
+
+		<div class="inline-flex rounded shadow-sm bg-gray-100">
+			<RadioButton value={'list'} bind:group={radioGroup}><ListOutline /></RadioButton>
+			<RadioButton value={'table'} bind:group={radioGroup}><GridOutline /></RadioButton>
+		</div>
+	</div>
+
+	<div class={`space-y-2 p-1`}>
 		{#each data.items as item}
 			<Item
 				{item}
