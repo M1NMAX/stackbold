@@ -2,30 +2,23 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
-		ArrowRightOutline,
 		CirclePlusOutline,
 		CloseOutline,
-		CreditCardOutline,
 		DotsHorizontalOutline,
 		ExclamationCircleOutline,
 		EyeOutline,
 		EyeSlashOutline,
 		FileCopyOutline,
 		FolderDuplicateOutline,
+		FolderOutline,
 		GridOutline,
 		HeartOutline,
 		HeartSolid,
-		ListMusicSolid,
-		ListOrdoredSolid,
 		ListOutline,
-		ListSolid,
 		PenOutline,
-		SearchOutline,
-		SearchSolid,
-		TableRowOutline,
 		TrashBinOutline
 	} from 'flowbite-svelte-icons';
-	import { ButtonGroup, Drawer, Radio } from 'flowbite-svelte';
+	import { Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	import type { PageData } from './$types';
@@ -43,6 +36,7 @@
 		DropdownDivider,
 		IconBtn,
 		Modal,
+		RadioButton,
 		Textarea
 	} from '$lib/components';
 	import debounce from 'debounce';
@@ -55,7 +49,6 @@
 	import InputWrapper from './InputWrapper.svelte';
 	import { capitalizeFirstLetter, pluralize } from '$lib/utils';
 	import Options from './Options.svelte';
-	import RadioButton from '$lib/components/input/RadioButton.svelte';
 	import { fade } from 'svelte/transition';
 
 	export let data: PageData;
@@ -244,6 +237,31 @@
 		const id = drawerSelectedItem.id;
 
 		debounceItemUpdate({ id, data: { name: input.value } });
+	};
+
+	const handleCreateItem = async (name: string) => {
+		try {
+			//TODO: in the future, property may have default value
+			await trpc().items.create.mutate({
+				collectionId: currCollection.id,
+				itemData: {
+					name,
+					properties: currCollection.properties.map((prop) => ({ id: prop.id, value: '' }))
+				}
+			});
+			await onSuccess('New item add successfully');
+		} catch (error) {
+			onError(error);
+		}
+	};
+
+	const handleKeypressNewItemInput = (e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			const targetEl = e.target as HTMLInputElement;
+			const value = targetEl.value;
+			//TODO: better validation
+			if (value.length >= 1 && value.length < 255) handleCreateItem(value);
+		}
 	};
 
 	// Property Handlers
@@ -438,9 +456,10 @@
 <div
 	class={`${
 		!isDrawerHidden ? 'w-3/6' : 'w-5/6'
-	} ease-in-out duration-300 m-2 ml-0 p-2 rounded-md bg-gray-50`}
+	} ease-in-out duration-300 m-2 ml-0 p-2 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
 >
 	<div class="flex items-center space-x-1.5 p-1">
+		<FolderOutline size="lg" />
 		<h1
 			class="grow font-semibold text-2xl focus:outline-none focus:border-b-2 focus:border-gray-300"
 			contenteditable
@@ -450,6 +469,7 @@
 			{currCollection.name}
 		</h1>
 
+		<button class="btn btn-sm btn-primary">New item</button>
 		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
 			{#if currCollection.isFavourite}
 				<HeartSolid class="text-primary" />
@@ -533,7 +553,7 @@
 		</div>
 	</div>
 
-	<div class={`space-y-2 p-1`}>
+	<div class={`space-y-2 p-1 grow overflow-y-auto`}>
 		{#each data.items as item}
 			<Item
 				{item}
@@ -550,6 +570,46 @@
 				}}
 			/>
 		{/each}
+		{#each data.items as item}
+			<Item
+				{item}
+				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
+				collectionProperties={currCollection.properties}
+				on:clickOpen={() => handleClickOpenItem(item.id)}
+				on:clickHide={() => handleUpdateItem({ id: item.id, data: { isHidden: true } })}
+				on:clickDuplicate={() => handleDuplicateItem(item.id)}
+				on:clickDelete={() => {
+					elementToBeDelete = { id: item.id, type: 'item' };
+					isDeleteModalOpen = true;
+
+					selectedItemId = item.id;
+				}}
+			/>
+		{/each}
+		{#each data.items as item}
+			<Item
+				{item}
+				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
+				collectionProperties={currCollection.properties}
+				on:clickOpen={() => handleClickOpenItem(item.id)}
+				on:clickHide={() => handleUpdateItem({ id: item.id, data: { isHidden: true } })}
+				on:clickDuplicate={() => handleDuplicateItem(item.id)}
+				on:clickDelete={() => {
+					elementToBeDelete = { id: item.id, type: 'item' };
+					isDeleteModalOpen = true;
+
+					selectedItemId = item.id;
+				}}
+			/>
+		{/each}
+	</div>
+
+	<div class="rounded bg-gray-200 p-1">
+		<input
+			class="w-full input input-sm input-ghost text-base font-semibold placeholder:text-primary focus:placeholder:text-gray-800 bg-gray-100"
+			placeholder="Add new item"
+			on:keypress={handleKeypressNewItemInput}
+		/>
 	</div>
 </div>
 
