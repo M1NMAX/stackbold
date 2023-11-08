@@ -17,13 +17,17 @@
 	const dispatch = createEventDispatcher<{ duplicate: string; edit: string; delete: string }>();
 </script>
 
-<label for={id} class="label grow font-semibold text-base">
+<label
+	for={id}
+	class="grow flex justify-between items-center py-1 px-0.5 font-semibold text-base select-none"
+>
 	<span class="label-text"> {name}</span>
 
 	<Dropdown>
-		<IconBtn slot="button">
+		<button slot="button" class="p-1 rounded bg-base-200 hover:bg-base-300">
 			<DotsHorizontalOutline size="sm" />
-		</IconBtn>
+		</button>
+
 		<svelte:fragment>
 			<DropdownItem on:click={() => dispatch('edit', id)}>
 				<EditOutline />

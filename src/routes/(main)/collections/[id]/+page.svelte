@@ -16,7 +16,9 @@
 		HeartSolid,
 		ListOutline,
 		PenOutline,
-		TrashBinOutline
+		PlusOutline,
+		TrashBinOutline,
+		UserAddOutline
 	} from 'flowbite-svelte-icons';
 	import { Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
@@ -125,9 +127,15 @@
 		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
 	};
 
+	const preventEnterKeypress = (e: KeyboardEvent) => {
+		if (e.key == 'Enter') e.preventDefault();
+	};
+
 	const handleClickOpenItem = async (itemId: string) => {
 		isDrawerHidden = false;
-		drawerSelectedItem = await trpc().items.load.query(itemId);
+		drawerSelectedItem = data.items.find((item) => item.id === itemId) || null;
+
+		// drawerSelectedItem = await trpc().items.load.query(itemId);
 	};
 
 	// Collection handlers
@@ -229,6 +237,16 @@
 	};
 
 	const debounceItemUpdate = debounce(handleUpdateItem, DEFAULT_DEBOUNCE_INTERVAL);
+
+	const handleOnInputItemName = async (e: { currentTarget: EventTarget & HTMLHeadingElement }) => {
+		if (!drawerSelectedItem) return;
+		const id = drawerSelectedItem.id;
+
+		//TODO:valide inner text
+		const name = e.currentTarget.innerText;
+
+		debounceItemUpdate({ id, data: { name } });
+	};
 	const handleItemNameChange = async (e: Event) => {
 		const input = e.target as HTMLTextAreaElement;
 
@@ -260,7 +278,10 @@
 			const targetEl = e.target as HTMLInputElement;
 			const value = targetEl.value;
 			//TODO: better validation
-			if (value.length >= 1 && value.length < 255) handleCreateItem(value);
+			if (value.length >= 1 && value.length < 255) {
+				handleCreateItem(value);
+				targetEl.value = '';
+			}
 		}
 	};
 
@@ -336,7 +357,10 @@
 		try {
 			const updatedCollectionData = await trpc().collections.addProperty.mutate({
 				id: currCollection.id,
-				property: { name: PropertyType.TEXT.toString(), type: PropertyType.TEXT }
+				property: {
+					name: capitalizeFirstLetter(PropertyType.TEXT.toString()),
+					type: PropertyType.TEXT
+				}
 			});
 
 			const updatedProperties = updatedCollectionData.properties;
@@ -456,20 +480,28 @@
 <div
 	class={`${
 		!isDrawerHidden ? 'w-3/6' : 'w-5/6'
-	} ease-in-out duration-300 m-2 ml-0 p-2 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
+	} ease-in-out duration-300 m-2 ml-0 p-1 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
 >
 	<div class="flex items-center space-x-1.5 p-1">
 		<FolderOutline size="lg" />
 		<h1
-			class="grow font-semibold text-2xl focus:outline-none focus:border-b-2 focus:border-gray-300"
+			class="grow font-semibold text-2xl focus:outline-none"
 			contenteditable
 			spellcheck={false}
+			on:keypress={preventEnterKeypress}
 			on:input={handleOnInputCollectionName}
 		>
 			{currCollection.name}
 		</h1>
 
-		<button class="btn btn-sm btn-primary">New item</button>
+		<span class="font-semibold text-xs text-gray-500 mr-2">
+			Updated
+			{new Date(currCollection.updatedAt).toDateString()}
+		</span>
+		<!-- 
+		<IconBtn>
+			<UserAddOutline />
+		</IconBtn> -->
 		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
 			{#if currCollection.isFavourite}
 				<HeartSolid class="text-primary" />
@@ -570,43 +602,14 @@
 				}}
 			/>
 		{/each}
-		{#each data.items as item}
-			<Item
-				{item}
-				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
-				collectionProperties={currCollection.properties}
-				on:clickOpen={() => handleClickOpenItem(item.id)}
-				on:clickHide={() => handleUpdateItem({ id: item.id, data: { isHidden: true } })}
-				on:clickDuplicate={() => handleDuplicateItem(item.id)}
-				on:clickDelete={() => {
-					elementToBeDelete = { id: item.id, type: 'item' };
-					isDeleteModalOpen = true;
-
-					selectedItemId = item.id;
-				}}
-			/>
-		{/each}
-		{#each data.items as item}
-			<Item
-				{item}
-				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
-				collectionProperties={currCollection.properties}
-				on:clickOpen={() => handleClickOpenItem(item.id)}
-				on:clickHide={() => handleUpdateItem({ id: item.id, data: { isHidden: true } })}
-				on:clickDuplicate={() => handleDuplicateItem(item.id)}
-				on:clickDelete={() => {
-					elementToBeDelete = { id: item.id, type: 'item' };
-					isDeleteModalOpen = true;
-
-					selectedItemId = item.id;
-				}}
-			/>
-		{/each}
 	</div>
 
-	<div class="rounded bg-gray-200 p-1">
+	<div class="relative">
+		<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+			<PlusOutline class="text-primary" />
+		</div>
 		<input
-			class="w-full input input-sm input-ghost text-base font-semibold placeholder:text-primary focus:placeholder:text-gray-800 bg-gray-100"
+			class="w-full h-10 pl-10 text-base font-semibold rounded bg-base-300 placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
 			placeholder="Add new item"
 			on:keypress={handleKeypressNewItemInput}
 		/>
@@ -623,7 +626,7 @@
 	id="itemDrawer"
 	class="w-full xl:w-2/6 p-2 bg-gray-200"
 >
-	<div class="h-full rounded-md bg-gray-50 p-3">
+	<div class="h-full flex flex-col space-y-1.5 rounded-md bg-gray-50 p-2">
 		<div class="flex justify-between items-center">
 			<IconBtn
 				on:click={() => {
@@ -634,85 +637,97 @@
 				<CloseOutline size="sm" />
 			</IconBtn>
 
-			<Dropdown>
-				<IconBtn slot="button">
-					<DotsHorizontalOutline />
-				</IconBtn>
-				<svelte:fragment>
-					<DropdownItem on:click={() => handleAddProperty()}>
-						<CirclePlusOutline />
-						<span> Add property </span>
-					</DropdownItem>
+			<div class="flex items-center space-x-1.5">
+				{#if drawerSelectedItem}
+					<span class="font-semibold text-xs text-gray-500">
+						Updated
+						{new Date(drawerSelectedItem?.updatedAt).toDateString()}
+					</span>
+				{/if}
 
-					<DropdownItem
-						on:click={() =>
-							handleUpdateItem({
-								id: drawerSelectedItem ? drawerSelectedItem.id : '',
-								data: { isHidden: true }
-							})}
-					>
-						<EyeSlashOutline />
-						<span> Hide item </span>
-					</DropdownItem>
+				<Dropdown>
+					<IconBtn slot="button">
+						<DotsHorizontalOutline />
+					</IconBtn>
+					<svelte:fragment>
+						<DropdownItem
+							on:click={() =>
+								handleUpdateItem({
+									id: drawerSelectedItem ? drawerSelectedItem.id : '',
+									data: { isHidden: true }
+								})}
+						>
+							<EyeSlashOutline />
+							<span> Hide item </span>
+						</DropdownItem>
 
-					<DropdownItem
-						on:click={() => handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
-					>
-						<FileCopyOutline />
-						<span> Duplicate </span>
-					</DropdownItem>
+						<DropdownItem
+							on:click={() => handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
+						>
+							<FileCopyOutline />
+							<span> Duplicate </span>
+						</DropdownItem>
 
-					<DropdownDivider />
-					<DropdownItem
-						on:click={() => {
+						<DropdownDivider />
+						<DropdownItem
+							on:click={() => {
+								if (!drawerSelectedItem) return;
+
+								elementToBeDelete = { id: drawerSelectedItem.id, type: 'item' };
+								isDeleteModalOpen = true;
+
+								selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
+							}}
+							class=" dropdown-item-red"
+						>
+							<TrashBinOutline />
+							<span> Delete </span>
+						</DropdownItem>
+					</svelte:fragment>
+				</Dropdown>
+			</div>
+		</div>
+
+		<div class="grow flex flex-col space-y-4">
+			<h2
+				contenteditable
+				spellcheck={false}
+				on:keypress={preventEnterKeypress}
+				on:input={handleOnInputItemName}
+				class="pt-1 text-2xl font-semibold focus:outline-none"
+			>
+				{drawerSelectedItem?.name}
+			</h2>
+
+			<div class="space-y-2">
+				{#each currCollection.properties as property}
+					<CollectionProperty
+						{property}
+						value={getItemPropValue(
+							property.id,
+							drawerSelectedItem ? drawerSelectedItem.properties : []
+						)}
+						on:update={(e) => {
 							if (!drawerSelectedItem) return;
 
-							elementToBeDelete = { id: drawerSelectedItem.id, type: 'item' };
-							isDeleteModalOpen = true;
-
-							selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
+							handleUpdatePropertyValue(drawerSelectedItem.id, e.detail.property);
 						}}
-						class=" dropdown-item-red"
-					>
-						<TrashBinOutline />
-						<span> Delete </span>
-					</DropdownItem>
-				</svelte:fragment>
-			</Dropdown>
+						on:edit={(e) => handleEditProperty(e.detail)}
+						on:duplicate={(e) => handleDuplicateProperty(e.detail)}
+						on:delete={(e) => {
+							elementToBeDelete = { id: e.detail, type: 'property' };
+
+							isDeleteModalOpen = true;
+						}}
+					/>
+				{/each}
+			</div>
 		</div>
-
-		<div class="rounded bg-gray-200 p-1 my-4">
-			<Textarea
-				spellcheck={false}
-				value={drawerSelectedItem?.name}
-				on:input={handleItemNameChange}
-				placeholder="Empty"
-				class="textarea textarea-sm textarea-ghost font-semibold  bg-gray-200"
-			/>
-		</div>
-
-		<div class="flex flex-col space-y-4">
-			{#each currCollection.properties as property}
-				<CollectionProperty
-					{property}
-					value={getItemPropValue(
-						property.id,
-						drawerSelectedItem ? drawerSelectedItem.properties : []
-					)}
-					on:update={(e) => {
-						if (!drawerSelectedItem) return;
-
-						handleUpdatePropertyValue(drawerSelectedItem.id, e.detail.property);
-					}}
-					on:edit={(e) => handleEditProperty(e.detail)}
-					on:duplicate={(e) => handleDuplicateProperty(e.detail)}
-					on:delete={(e) => {
-						elementToBeDelete = { id: e.detail, type: 'property' };
-
-						isDeleteModalOpen = true;
-					}}
-				/>
-			{/each}
+		<div class="grid justify-items-end">
+			<button on:click={() => handleAddProperty()} class="btn btn-sm normal-case">
+				<PlusOutline size="sm" />
+				<span> Add a property </span>
+			</button>
 		</div>
 	</div>
 </Drawer>

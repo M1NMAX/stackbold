@@ -23,18 +23,18 @@
 </script>
 
 {#if property.type === PropertyType.CHECKBOX}
-	<div class="form-control flex flex-row items-center space-x-2 rounded bg-gray-200 px-2">
+	<div class="form-control flex flex-row items-center space-x-2 rounded bg-gray-100 px-2">
 		<input
 			id={property.id}
 			type="checkbox"
 			checked={value === 'true'}
 			on:input={handleOnInput}
-			class="checkbox checkbox-sm checkbox-primary"
+			class="checkbox checkbox-sm checkbox-primary ring-2 ring-gray-200"
 		/>
 		<Label id={property.id} name={property.name} on:edit on:duplicate on:delete />
 	</div>
 {:else}
-	<div class="form-control rounded bg-gray-200 px-2 pb-2 pt-0">
+	<div class="form-control rounded bg-gray-100 px-1 pb-1">
 		<Label id={property.id} name={property.name} on:edit on:duplicate on:delete />
 
 		{#if property.type === PropertyType.SELECT}
