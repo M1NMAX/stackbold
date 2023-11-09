@@ -55,6 +55,7 @@
 		"lucia": "^2.7.1",
 		"superjson": "^2.2.0",
 		"svelte-french-toast": "^1.2.0",
+		"tailwind-merge": "^2.0.0",
 		"theme-change": "^2.5.0",
 		"trpc-sveltekit": "^3.5.21",
 		"uuid": "^9.0.1",
