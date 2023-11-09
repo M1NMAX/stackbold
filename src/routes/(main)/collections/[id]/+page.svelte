@@ -95,39 +95,10 @@
 		option: string;
 	};
 
-	let myEle: noElement | selectElement | selectedOption;
-
-	const fun = () => {
-		switch (myEle.type) {
-			case 'collection':
-				console.log(myEle.id);
-
-				break;
-			case 'option':
-				console.log(myEle.option);
-				break;
-
-			default:
-				break;
-		}
-	};
-
-	type ElementType = 'collection' | 'item' | 'property' | 'option' | null;
-
-	type ToBeDeleted = {
-		id: string | null;
-		type: ElementType;
-		option?: string;
-	};
-
-	let elementToBeDelete: ToBeDeleted = { id: null, type: null };
+	let elementToBeDelete: noElement | selectElement | selectedOption = { type: null };
 
 	$: handleOnClickModalDeleteBtn = () => {
-		const { id, type, option } = elementToBeDelete;
-
-		if (!id) return;
-
-		switch (type) {
+		switch (elementToBeDelete.type) {
 			case 'collection':
 				handleDeleteCollection();
 				break;
@@ -137,12 +108,11 @@
 				break;
 
 			case 'property':
-				handleDeleteProperty(id);
+				handleDeleteProperty(elementToBeDelete.id);
 				break;
 
 			case 'option':
-				if (!option) return;
-				handleDeletePropertyOption(id, option);
+				handleDeletePropertyOption(elementToBeDelete.id, elementToBeDelete.option);
 				break;
 
 			default:
@@ -603,7 +573,7 @@
 	</div>
 
 	{#if !currCollection.isDescHidden}
-		<label transition:fade for="description" class="label p-1">
+		<label transition:fade for="description" class="label p-1 mt-1.5">
 			<span class="sr-only label-text"> Collection description</span>
 			<Textarea
 				id="description"
@@ -638,8 +608,13 @@
 				on:clickDelete={() => {
 					elementToBeDelete = { id: item.id, type: 'item' };
 					isDeleteModalOpen = true;
-
 					selectedItemId = item.id;
+				}}
+				on:updPropertyValue={(e) => {
+					handleUpdatePropertyValue(item.id, {
+						id: e.detail.pid,
+						value: e.detail.value
+					});
 				}}
 			/>
 		{/each}
@@ -748,10 +723,13 @@
 							property.id,
 							drawerSelectedItem ? drawerSelectedItem.properties : []
 						)}
-						on:update={(e) => {
+						on:updPropertyValue={(e) => {
 							if (!drawerSelectedItem) return;
 
-							handleUpdatePropertyValue(drawerSelectedItem.id, e.detail.property);
+							handleUpdatePropertyValue(drawerSelectedItem.id, {
+								id: e.detail.pid,
+								value: e.detail.value
+							});
 						}}
 						on:edit={(e) => handleEditProperty(e.detail)}
 						on:duplicate={(e) => handleDuplicateProperty(e.detail)}

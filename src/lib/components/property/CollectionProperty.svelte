@@ -8,7 +8,7 @@
 	export let value: string;
 
 	const dispatch = createEventDispatcher<{
-		update: { property: { id: string; value: string } };
+		updPropertyValue: { pid: string; value: string };
 	}>();
 
 	const handleOnInput = (e: Event) => {
@@ -16,9 +16,7 @@
 
 		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
 
-		dispatch('update', {
-			property: { id: property.id, value: currValue }
-		});
+		dispatch('updPropertyValue', { pid: property.id, value: currValue });
 	};
 </script>
 

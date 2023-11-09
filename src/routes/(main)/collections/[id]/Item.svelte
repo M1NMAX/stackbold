@@ -91,12 +91,12 @@
 	</div>
 
 	<div class="flex flex-wrap gap-2">
-		{#each collectionProperties as prop}
+		{#each collectionProperties as property}
 			<ItemProperty
-				name={prop.name}
-				type={prop.type}
-				color={getPropertyColorById(prop.id)}
-				value={getPropValueById(prop.id)}
+				{property}
+				color={getPropertyColorById(property.id)}
+				value={getPropValueById(property.id)}
+				on:updPropertyValue
 			/>
 		{/each}
 	</div>

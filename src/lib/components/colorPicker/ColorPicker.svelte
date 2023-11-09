@@ -3,16 +3,11 @@
 	import { capitalizeFirstLetter, clickOutside } from '$lib/utils';
 	import type { Color } from '@prisma/client';
 	import type { Colors } from '$lib/types';
+	import { PROPERTY_COLORS } from '$lib/constant';
 
 	export let value: Color = 'GRAY';
 	export let onChange: (color: Color) => void;
-
-	const colors: Colors = {
-		GRAY: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-		RED: 'bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-300',
-		GREEN: 'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-300',
-		BLUE: 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-	};
+	export let colors: Colors = PROPERTY_COLORS;
 
 	let ddActive = false;
 
