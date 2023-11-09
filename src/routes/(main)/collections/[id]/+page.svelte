@@ -2,6 +2,7 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
+		BarsOutline,
 		CloseOutline,
 		DotsHorizontalOutline,
 		ExclamationCircleOutline,
@@ -51,12 +52,15 @@
 	import { capitalizeFirstLetter, pluralize } from '$lib/utils';
 	import Options from './Options.svelte';
 	import { fade } from 'svelte/transition';
+	import type { Writable } from 'svelte/store';
+	import { getContext } from 'svelte';
 
 	export let data: PageData;
 
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
+	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
 	let selectedItemId: string | null = null;
@@ -514,6 +518,12 @@
 	}  ease-in-out duration-300   p-1 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
 >
 	<div class="flex items-center space-x-1.5">
+		{#if !$sidebarState}
+			<IconBtn on:click={() => ($sidebarState = true)} class="btn btn-sm mr-1.5">
+				<BarsOutline size="sm" />
+			</IconBtn>
+		{/if}
+
 		<FolderOutline size="lg" />
 		<h1
 			class="grow font-semibold text-2xl focus:outline-none"

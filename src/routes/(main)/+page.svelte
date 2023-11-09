@@ -1,26 +1,22 @@
 <script lang="ts">
 	import { BarsOutline } from 'flowbite-svelte-icons';
-	import type { PageData } from './$types';
 	import { getContext } from 'svelte';
 	import IconBtn from '$lib/components/IconBtn.svelte';
+	import type { Writable } from 'svelte/store';
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	const sidebarState = getContext('sidebarStateStore') as {
-		update: (callback: () => boolean) => void;
-	};
+	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 </script>
 
 <div class="grow p-1 rounded-md bg-gray-50">
-	<div class="flex items-center space-x-2">
-		<IconBtn
-			on:click={() => {
-				sidebarState.update(() => true);
-			}}
-			class="btn btn-sm "
-		>
-			<BarsOutline size="sm" />
-		</IconBtn>
+	<div class="flex items-center space-x-1.5">
+		{#if !$sidebarState}
+			<IconBtn on:click={() => ($sidebarState = true)} class="btn btn-sm mr-1.5">
+				<BarsOutline size="sm" />
+			</IconBtn>
+		{/if}
 		<h1 class=" font-semibold text-2xl">Home</h1>
 	</div>
 	<h1>Home</h1>

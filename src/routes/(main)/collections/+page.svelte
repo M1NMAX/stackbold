@@ -2,14 +2,14 @@
 	import { Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { FolderOutline } from 'flowbite-svelte-icons';
+	import { BarsOutline, FolderOutline } from 'flowbite-svelte-icons';
 	import { getContext } from 'svelte';
+	import { IconBtn } from '$lib/components';
+	import type { Writable } from 'svelte/store';
 
 	export let data: PageData;
 
-	const sidebarState = getContext('sidebarStateStore') as {
-		update: (callback: () => boolean) => void;
-	};
+	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 </script>
 
 <svelte:head>
@@ -17,16 +17,15 @@
 </svelte:head>
 
 <div class="w-full rounded bg-gray-50 flex flex-col justify-between p-1 overflow-hidden">
-	<h1 class=" font-semibold text-2xl">My Collections</h1>
+	<div class="flex items-center space-x-1.5">
+		{#if !$sidebarState}
+			<IconBtn on:click={() => ($sidebarState = true)} class="btn btn-sm mr-1.5">
+				<BarsOutline size="sm" />
+			</IconBtn>
+		{/if}
+		<h1 class=" font-semibold text-2xl">All Collections</h1>
+	</div>
 
-	<button
-		on:click={() => {
-			sidebarState.update(() => true);
-		}}
-		class="btn btn-sm btn-primary"
-	>
-		gmgm
-	</button>
 	<div class="grow flex flex-col space-y-2 overflow-y-auto">
 		{#each data.collections as collection}
 			<div class="flex flex-col rounded bg-gray-100 py-1 px-2">

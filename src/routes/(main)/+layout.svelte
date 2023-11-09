@@ -67,12 +67,12 @@
 		}
 	};
 
-	const stateStore = writable(true);
-	setContext('sidebarStateStore', stateStore);
+	const sidebarStateStore = writable(true);
+	setContext('sidebarStateStore', sidebarStateStore);
 </script>
 
 <div class="h-screen flex bg-gray-200">
-	<Sidebar class={`${$stateStore ? 'w-64' : 'w-0'} transition-all`}>
+	<Sidebar class={`${$sidebarStateStore ? 'w-64' : 'w-0'} transition-all`}>
 		<div class="h-full flex flex-col space-y-4 overflow-hidden px-0 py-1.5 rounded-none bg-gray-50">
 			<div class="space-y-0.5 px-0">
 				<div class="w-full flex justify-between space-x-0.5 px-1">
@@ -102,7 +102,7 @@
 						</svelte:fragment>
 					</Dropdown>
 
-					<button on:click={() => stateStore.update(() => false)} class="btn btn-sm p-1">
+					<button on:click={() => ($sidebarStateStore = false)} class="btn btn-sm p-1">
 						<ChevronDoubleLeftOutline size="sm" />
 					</button>
 				</div>
