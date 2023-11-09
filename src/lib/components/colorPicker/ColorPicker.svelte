@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { clickOutside } from './clickOutside';
 	import { tick } from 'svelte';
-	import { capitalizeFirstLetter } from '$lib/utils';
-	import { CaretDownSolid } from 'flowbite-svelte-icons';
+	import { capitalizeFirstLetter, clickOutside } from '$lib/utils';
 	import type { Color } from '@prisma/client';
 	import type { Colors } from '$lib/types';
 
@@ -54,13 +52,13 @@
 <div class="relative">
 	<button
 		bind:clientHeight={inputHeight}
-		class="flex items-center space-x-0.5 h-9 p-1 rounded bg-white border border-gay-50"
+		class="flex items-center space-x-0.5 rounded bg-white border border-gay-50"
 		on:click={(e) => toggleDropdown(e)}
 		class:fake-focus={ddActive}
 	>
 		<div class={`${colors[value]} border-none rounded w-6 h-6 text-xs`} />
 
-		<CaretDownSolid size="xs" class="text-gray-500" />
+		<!-- <CaretDownSolid size="xs" class="text-gray-500" /> -->
 	</button>
 
 	{#if ddActive}

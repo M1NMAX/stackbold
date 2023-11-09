@@ -2,7 +2,6 @@
 	import {
 		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
-		CirclePlusOutline,
 		CloseOutline,
 		DotsHorizontalOutline,
 		ExclamationCircleOutline,
