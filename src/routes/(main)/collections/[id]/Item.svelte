@@ -16,10 +16,10 @@
 	export let collectionProperties: CollectionProperty[];
 
 	const dispatch = createEventDispatcher<{
-		clickOpen: undefined;
-		clickHide: undefined;
-		clickDuplicate: undefined;
-		clickDelete: undefined;
+		clickOpenItem: string;
+		clickHideItem: string;
+		clickDuplicateItem: string;
+		clickDeleteItem: string;
 	}>();
 
 	const getPropValueById = (pid: string) => {
@@ -68,24 +68,30 @@
 			</IconBtn>
 
 			<svelte:fragment>
-				<DropdownItem on:click={() => dispatch('clickHide')}>
+				<DropdownItem on:click={() => dispatch('clickHideItem', item.id)}>
 					<EyeSlashOutline />
 					<span> Hide item </span>
 				</DropdownItem>
 
-				<DropdownItem on:click={() => dispatch('clickDuplicate')}>
+				<DropdownItem on:click={() => dispatch('clickDuplicateItem', item.id)}>
 					<FileCopyOutline />
 					<span> Duplicate </span>
 				</DropdownItem>
 				<DropdownDivider />
-				<DropdownItem on:click={() => dispatch('clickDelete')} class="dropdown-item-red">
+				<DropdownItem
+					on:click={() => dispatch('clickDeleteItem', item.id)}
+					class="dropdown-item-red"
+				>
 					<TrashBinOutline />
 					<span> Delete </span>
 				</DropdownItem>
 			</svelte:fragment>
 		</Dropdown>
 
-		<IconBtn on:click={() => dispatch('clickOpen')} class="invisible group-hover:visible">
+		<IconBtn
+			on:click={() => dispatch('clickOpenItem', item.id)}
+			class="invisible group-hover:visible"
+		>
 			<WindowOutline class="rotate-90" />
 		</IconBtn>
 	</div>
@@ -93,6 +99,7 @@
 	<div class="flex flex-wrap gap-2">
 		{#each collectionProperties as property}
 			<ItemProperty
+				itemId={item.id}
 				{property}
 				color={getPropertyColorById(property.id)}
 				value={getPropValueById(property.id)}

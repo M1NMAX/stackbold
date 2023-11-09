@@ -11,10 +11,8 @@
 		FileCopyOutline,
 		FolderDuplicateOutline,
 		FolderOutline,
-		GridOutline,
 		HeartOutline,
 		HeartSolid,
-		ListOutline,
 		PenOutline,
 		PlusOutline,
 		TrashBinOutline,
@@ -38,7 +36,6 @@
 		DropdownDivider,
 		IconBtn,
 		Modal,
-		RadioButton,
 		Textarea
 	} from '$lib/components';
 	import debounce from 'debounce';
@@ -47,9 +44,9 @@
 	import toast from 'svelte-french-toast';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
-	import Item from './Item.svelte';
+	import Items from './Items.svelte';
 	import InputWrapper from './InputWrapper.svelte';
-	import { capitalizeFirstLetter, pluralize } from '$lib/utils';
+	import { capitalizeFirstLetter } from '$lib/utils';
 	import Options from './Options.svelte';
 	import { fade } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';
@@ -509,20 +506,16 @@
 			Updated
 			{new Date(currCollection.updatedAt).toDateString()}
 		</span>
-		<!-- 
+
 		<IconBtn>
 			<UserAddOutline />
-		</IconBtn> -->
+		</IconBtn>
 		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
 			{#if currCollection.isFavourite}
 				<HeartSolid class="text-primary" />
 			{:else}
 				<HeartOutline />
 			{/if}
-		</IconBtn>
-
-		<IconBtn>
-			<AdjustmentsHorizontalOutline />
 		</IconBtn>
 
 		<Dropdown>
@@ -585,40 +578,26 @@
 		</label>
 	{/if}
 
-	<div class="flex justify-between p-1">
-		<div>
-			<p class="text-lg font-medium">{pluralize('Item', currItems.length, 's')}</p>
-		</div>
-
-		<div class="inline-flex rounded shadow-sm bg-gray-100">
-			<RadioButton value="list" bind:group={currView}><ListOutline /></RadioButton>
-			<RadioButton value="grid" bind:group={currView}><GridOutline /></RadioButton>
-		</div>
-	</div>
-
-	<div class={`space-y-2 p-1 grow overflow-y-auto`}>
-		{#each data.items as item}
-			<Item
-				{item}
-				active={drawerSelectedItem ? drawerSelectedItem.id === item.id : false}
-				collectionProperties={currCollection.properties}
-				on:clickOpen={() => handleClickOpenItem(item.id)}
-				on:clickHide={() => handleUpdateItem({ id: item.id, data: { isHidden: true } })}
-				on:clickDuplicate={() => handleDuplicateItem(item.id)}
-				on:clickDelete={() => {
-					elementToBeDelete = { id: item.id, type: 'item' };
-					isDeleteModalOpen = true;
-					selectedItemId = item.id;
-				}}
-				on:updPropertyValue={(e) => {
-					handleUpdatePropertyValue(item.id, {
-						id: e.detail.pid,
-						value: e.detail.value
-					});
-				}}
-			/>
-		{/each}
-	</div>
+	<Items
+		currActiveItem={drawerSelectedItem ? drawerSelectedItem.id : undefined}
+		items={data.items}
+		bind:view={currView}
+		collectionProperties={currCollection.properties}
+		on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+		on:clickHideItem={(e) => handleUpdateItem({ id: e.detail, data: { isHidden: true } })}
+		on:clickDuplicateItem={(e) => handleDuplicateItem(e.detail)}
+		on:clickDeleteItem={(e) => {
+			elementToBeDelete = { id: e.detail, type: 'item' };
+			isDeleteModalOpen = true;
+			selectedItemId = e.detail;
+		}}
+		on:updPropertyValue={(e) => {
+			handleUpdatePropertyValue(e.detail.itemId, {
+				id: e.detail.property.id,
+				value: e.detail.property.value
+			});
+		}}
+	/>
 
 	<div class="relative">
 		<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">

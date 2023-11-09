@@ -3,12 +3,13 @@
 	import { createEventDispatcher } from 'svelte';
 	import type { CollectionProperty, Color } from '@prisma/client';
 
+	export let itemId: string;
 	export let property: CollectionProperty;
 	export let color: Color = 'GRAY';
 	export let value: string | null;
 
 	const dispatch = createEventDispatcher<{
-		updPropertyValue: { pid: string; value: string };
+		updPropertyValue: { itemId: string; property: { id: string; value: string } };
 	}>();
 
 	const handleOnInput = (e: Event) => {
@@ -16,7 +17,7 @@
 
 		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
 
-		dispatch('updPropertyValue', { pid: property.id, value: currValue });
+		dispatch('updPropertyValue', { itemId, property: { id: property.id, value: currValue } });
 	};
 </script>
 
