@@ -11,6 +11,8 @@ export { default as ItemProperty } from './property/ItemProperty.svelte';
 export { default as RadioButton } from './input/RadioButton.svelte';
 
 export { default as Modal } from './Modal.svelte';
+
+export { default as Sidebar } from './sidebar/Sidebar.svelte';
 export { default as SidebarCollection } from './sidebar/SidebarCollection.svelte';
 export { default as SidebarItem } from './sidebar/SidebarItem.svelte';
 

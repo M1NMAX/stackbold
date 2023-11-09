@@ -8,8 +8,8 @@
 
 <span
 	class={`${
-		active && 'rounded-r-md border-l-2 border-primary bg-gray-300 dark:bg-gray-600'
-	} flex items-center space-x-4 p-1.5 hover:rounded-r-md hover:bg-gray-300
+		active && ' border-r-2 border-primary bg-gray-300 dark:bg-gray-600'
+	} flex items-center space-x-2.5 py-0.5 px-1.5  hover:bg-gray-300
  dark:hover:bg-gray-500 transition duration-75 dark:text-gray-400`}
 >
 	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">

@@ -77,6 +77,38 @@
 	// Delete Modal
 	let isDeleteModalOpen = false;
 
+	type noElement = {
+		type: null;
+	};
+
+	type selectElement = {
+		type: 'collection' | 'item' | 'property';
+		id: string;
+	};
+
+	type selectedOption = {
+		type: 'option';
+		id: string;
+		option: string;
+	};
+
+	let myEle: noElement | selectElement | selectedOption;
+
+	const fun = () => {
+		switch (myEle.type) {
+			case 'collection':
+				console.log(myEle.id);
+
+				break;
+			case 'option':
+				console.log(myEle.option);
+				break;
+
+			default:
+				break;
+		}
+	};
+
 	type ElementType = 'collection' | 'item' | 'property' | 'option' | null;
 
 	type ToBeDeleted = {
@@ -479,10 +511,10 @@
 
 <div
 	class={`${
-		!isDrawerHidden ? 'w-3/6' : 'w-5/6'
-	} ease-in-out duration-300 m-2 ml-0 p-1 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
+		isDrawerHidden ? 'w-full' : 'w-2/3'
+	}  ease-in-out duration-300   p-1 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
 >
-	<div class="flex items-center space-x-1.5 p-1">
+	<div class="flex items-center space-x-1.5">
 		<FolderOutline size="lg" />
 		<h1
 			class="grow font-semibold text-2xl focus:outline-none"
@@ -624,9 +656,9 @@
 	{transitionParams}
 	bind:hidden={isDrawerHidden}
 	id="itemDrawer"
-	class="w-full xl:w-2/6 p-2 bg-gray-200"
+	class="absolute w-full lg:w-1/3 p-0 pl-1  bg-gray-200"
 >
-	<div class="h-full flex flex-col space-y-1.5 rounded-md bg-gray-50 p-2">
+	<div class="h-full flex flex-col space-y-1.5 rounded-md bg-gray-50 p-1">
 		<div class="flex justify-between items-center">
 			<IconBtn
 				on:click={() => {

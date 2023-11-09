@@ -1,20 +1,11 @@
 <script lang="ts">
 	import {
-		Sidebar,
-		SidebarWrapper,
-		SidebarGroup,
-		Avatar,
-		Button,
-		Modal,
-		Label,
-		Input
-	} from 'flowbite-svelte';
-	import {
 		ArrowRightToBracketOutline,
-		CaretDownSolid,
+		ChevronDoubleLeftOutline,
+		CirclePlusOutline,
 		CogOutline,
+		DatabaseOutline,
 		DnaOutline,
-		GridOutline,
 		HomeOutline,
 		PlusOutline,
 		SearchOutline
@@ -26,6 +17,8 @@
 		DropdownDivider,
 		DropdownItem,
 		IconBtn,
+		Modal,
+		Sidebar,
 		SidebarCollection,
 		SidebarItem
 	} from '$lib/components';
@@ -34,6 +27,8 @@
 	import { TRPCClientError } from '@trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
+	import { writable } from 'svelte/store';
+	import { setContext } from 'svelte';
 
 	export let data: LayoutData;
 
@@ -71,23 +66,26 @@
 			toast.error('Something wrong ');
 		}
 	};
+
+	const stateStore = writable(true);
+	setContext('sidebarStateStore', stateStore);
 </script>
 
-<div class=" h-screen flex bg-gray-200">
-	<Sidebar class="w-1/6">
-		<SidebarWrapper class="h-full flex flex-col space-y-4 px-2 py-1.5  rounded-none bg-gray-200">
-			<SidebarGroup>
-				<div class="flex space-x-1">
+<div class="h-screen flex bg-gray-200">
+	<Sidebar class={`${$stateStore ? 'w-64' : 'w-0'} transition-all`}>
+		<div class="h-full flex flex-col space-y-4 overflow-hidden px-0 py-1.5 rounded-none bg-gray-50">
+			<div class="space-y-0.5 px-0">
+				<div class="w-full flex justify-between space-x-0.5 px-1">
 					<Dropdown alighEnd={false}>
-						<button
-							slot="button"
-							class="relative px-1 py-0.5 rounded bg-gray-300 hover:bg-gray-100 text-black"
-						>
-							<Avatar
-								src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
-								class=" rounded-full h-7 w-7"
-							/>
-							<CaretDownSolid class="absolute right-0 bottom-0 w-3 h-3 text-primary" />
+						<button slot="button" class="relative w-44 btn btn-sm">
+							<span class="flex justify-start items-center space-x-1.5">
+								<img
+									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
+									class=" rounded-full h-6 w-6"
+									alt="avatar"
+								/>
+								<span class="grow font-semibold">{data.user.name}</span>
+							</span>
 						</button>
 						<svelte:fragment>
 							<DropdownItem href="/settings">
@@ -104,62 +102,59 @@
 						</svelte:fragment>
 					</Dropdown>
 
-					<button class="grow flex items-center space-x-4 p-1.5 rounded-md bg-gray-300">
-						<SearchOutline />
-						<span class="font-semibold"> Quick Search </span>
+					<button on:click={() => stateStore.update(() => false)} class="btn btn-sm p-1">
+						<ChevronDoubleLeftOutline size="sm" />
 					</button>
 				</div>
 
 				<SidebarItem label="Home" href="/" active={activeUrl === '/'}>
 					<svelte:fragment slot="icon">
-						<HomeOutline size="lg" />
+						<HomeOutline />
+					</svelte:fragment>
+				</SidebarItem>
+
+				<SidebarItem label="Quick Search" active={activeUrl === '/templates'}>
+					<svelte:fragment slot="icon">
+						<SearchOutline />
 					</svelte:fragment>
 				</SidebarItem>
 
 				<SidebarItem label="Templates" active={activeUrl === '/templates'}>
 					<svelte:fragment slot="icon">
-						<DnaOutline size="lg" />
+						<DnaOutline />
 					</svelte:fragment>
 				</SidebarItem>
 
 				<SidebarItem
-					label="My Collections"
+					label="All Collections"
 					href="/collections"
 					active={activeUrl === '/collections'}
 				>
 					<svelte:fragment slot="icon">
-						<GridOutline csize="lg" />
+						<DatabaseOutline />
 					</svelte:fragment>
 				</SidebarItem>
-			</SidebarGroup>
 
-			<!-- <SidebarGroup>
-				<span class="flex justify-between">
-					<span> Favourites </span>
+				<SidebarItem label="New collection" on:click={() => (createCollectionModal = true)}>
+					<svelte:fragment slot="icon">
+						<CirclePlusOutline />
+					</svelte:fragment>
+				</SidebarItem>
+			</div>
 
-					<span>
-						{favourites.length}
-					</span>
-					<IconBtn><PlusOutline /></IconBtn>
-				</span>
+			<div>
+				<span class="text-sm font-semibold px-1"> Favourites </span>
 				{#each favourites as collection}
 					<SidebarCollection {collection} active={activeCollection(collection.id)} />
 				{/each}
-			</SidebarGroup> -->
+			</div>
 
-			<SidebarGroup class="grow overflow-y-auto">
-				<span class="sticky top-0 flex justify-between items-center bg-gray-200">
-					<a
-						href="/collections"
-						class={`${
-							activeUrl === '/collections' && 'bg-gray-300 dark:bg-gray-600'
-						} font-semibold text-sm grow p-1 rounded hover:bg-gray-300
-					dark:hover:bg-gray-500 transition duration-75 dark:text-gray-400`}
-					>
-						All Collections
-					</a>
+			<div class="grow overflow-y-auto">
+				<span class="flex justify-between items-center pr-2">
+					<span class="text-sm font-semibold px-1"> Personal </span>
+
 					<IconBtn on:click={() => (createCollectionModal = true)} tootipText="Create collection">
-						<PlusOutline size="sm" />
+						<PlusOutline size="xs" />
 					</IconBtn>
 				</span>
 				<div class="space-y-0.5">
@@ -167,21 +162,32 @@
 						<SidebarCollection {collection} active={activeCollection(collection.id)} />
 					{/each}
 				</div>
-			</SidebarGroup>
-		</SidebarWrapper>
+			</div>
+		</div>
 	</Sidebar>
 
-	<slot />
+	<div class="w-full flex space-x-1 m-1 relative">
+		<slot />
+	</div>
 </div>
 
-<Modal bind:open={createCollectionModal} size="xs" autoclose={false} class="w-full">
-	<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-6">
-		<h3 class="mb-2 text-xl font-medium text-gray-900 dark:text-white">New collection</h3>
-		<Label class="space-y-2">
-			<span>Name</span>
-			<Input type="text" name="name" placeholder="Tasks" required />
-		</Label>
+<Modal
+	title="New collection"
+	open={createCollectionModal}
+	onClose={() => (createCollectionModal = false)}
+>
+	<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-2">
+		<label class="label flex flex-col items-start space-y-2">
+			<span class="label-text">Name</span>
+			<input
+				type="text"
+				name="name"
+				placeholder="Tasks"
+				required
+				class="input input-sm input-ghost bg-gray-200"
+			/>
+		</label>
 
-		<Button type="submit" class="w-full">Create</Button>
+		<button type="submit" class="w-ful btn btn-sm btn-primary">Create</button>
 	</form>
 </Modal>
