@@ -51,6 +51,7 @@
 	import { fade } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
+	import dayjs from '$lib/dayjs';
 
 	export let data: PageData;
 
@@ -504,7 +505,7 @@
 
 		<span class="font-semibold text-xs text-gray-500 mr-2">
 			Updated
-			{new Date(currCollection.updatedAt).toDateString()}
+			{dayjs(currCollection.updatedAt).fromNow()}
 		</span>
 
 		<IconBtn>
@@ -636,7 +637,7 @@
 				{#if drawerSelectedItem}
 					<span class="font-semibold text-xs text-gray-500">
 						Updated
-						{new Date(drawerSelectedItem?.updatedAt).toDateString()}
+						{dayjs(drawerSelectedItem?.updatedAt).fromNow()}
 					</span>
 				{/if}
 
