@@ -580,7 +580,7 @@
 	{/if}
 
 	<Items
-		currActiveItem={drawerSelectedItem ? drawerSelectedItem.id : undefined}
+		currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
 		items={data.items}
 		bind:view={currView}
 		collectionProperties={currCollection.properties}

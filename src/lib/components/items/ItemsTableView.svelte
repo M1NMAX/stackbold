@@ -1,20 +1,20 @@
 <script lang="ts">
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import SortArrow from '../SortArrow.svelte';
+	import { IconBtn, ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
 	import dayjs from '$lib/dayjs';
-	import IconBtn from '../IconBtn.svelte';
-	import { DotsHorizontalOutline } from 'flowbite-svelte-icons';
+	import { DotsHorizontalOutline, WindowOutline } from 'flowbite-svelte-icons';
 	import { fade } from 'svelte/transition';
-	import ItemProperty from '../property/ItemProperty.svelte';
-
-	export let active: boolean = false;
+	import { createEventDispatcher } from 'svelte';
 
 	export let items: Item[];
+	export let currActiveItemId: string | undefined = undefined;
 	export let collectionProperties: CollectionProperty[];
 	export let order: OrderType = 'asc';
 
 	export let onClickTableHead: (field: keyof IBaseSchema) => void;
+
+	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
 
 	const getItemProperty = (pid: string, properties: ItemPropertyType[]) => {
 		return properties.find((property) => property.id === pid) || null;
@@ -71,7 +71,13 @@
 	<tbody>
 		{#if items.length}
 			{#each items as item (item.id)}
-				<tr class="font-medium text-base border-y-2 border-gray-100 hover:bg-base-200">
+				<tr
+					class={`${
+						item.id === currActiveItemId
+							? 'rounded-r-md bg-gray-100 border-l-2 border-primary'
+							: ' rounded  bg-gray-100 '
+					} font-medium text-base border-y-2 border-gray-100 hover:bg-base-200`}
+				>
 					<td class="text-left py-2 px-1"> {item.name}</td>
 
 					{#each collectionProperties as property (property.id)}
@@ -97,13 +103,16 @@
 					</td>
 
 					<td class="text-left whitespace-nowrap">
-						<!-- <IconBtn>
-                            <WindowOutline class="rotate-90" />
-                        </IconBtn> -->
-
-						<IconBtn>
-							<DotsHorizontalOutline />
+						<IconBtn on:click={() => dispatch('clickOpenItem', item.id)}>
+							<WindowOutline class="rotate-90" />
 						</IconBtn>
+
+						<ItemContextMenu
+							itemId={item.id}
+							on:clickHideItem
+							on:clickDuplicateItem
+							on:clickDeleteItem
+						/>
 					</td>
 				</tr>
 			{/each}

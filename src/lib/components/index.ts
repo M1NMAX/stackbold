@@ -8,6 +8,7 @@ export { default as DropdownItem } from './Dropdown/DropdownItem.svelte';
 export { default as IconBtn } from './IconBtn.svelte';
 export { default as ItemProperty } from './property/ItemProperty.svelte';
 
+export { default as ItemContextMenu } from './items/ItemContextMenu.svelte';
 export { default as ItemsListView } from './items/ItemsListView.svelte';
 export { default as ItemsTableView } from './items/ItemsTableView.svelte';
 
