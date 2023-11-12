@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {
-		AdjustmentsHorizontalOutline,
 		ArchiveOutline,
 		BarsOutline,
 		CloseOutline,
@@ -20,7 +19,6 @@
 	} from 'flowbite-svelte-icons';
 	import { Drawer } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
-
 	import type { PageData } from './$types';
 	import {
 		type ItemProperty as ItemPropertyType,
@@ -31,10 +29,13 @@
 	} from '@prisma/client';
 	import {
 		CollectionProperty,
+		CollectionPropertyOptions,
+		CollectionPropertyInputWrapper,
 		Dropdown,
 		DropdownItem,
 		DropdownDivider,
 		IconBtn,
+		Items,
 		Modal,
 		Textarea
 	} from '$lib/components';
@@ -44,14 +45,11 @@
 	import toast from 'svelte-french-toast';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
-	import Items from './Items.svelte';
-	import InputWrapper from './InputWrapper.svelte';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import Options from './Options.svelte';
 	import { fade } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
-	import dayjs from '$lib/dayjs';
+	import dayjs from '$lib/utils/dayjs';
 
 	export let data: PageData;
 
@@ -733,7 +731,7 @@
 
 <Modal title="Property" open={!!selectedProperty} onClose={() => (selectedProperty = null)}>
 	<form class="space-y-1">
-		<InputWrapper name="Name">
+		<CollectionPropertyInputWrapper name="Name">
 			<input
 				id={selectedProperty?.id}
 				value={selectedProperty?.name}
@@ -741,9 +739,9 @@
 				name="name"
 				class="input input-sm input-ghost font-semibold text-sm bg-base-200 col-span-9"
 			/>
-		</InputWrapper>
+		</CollectionPropertyInputWrapper>
 
-		<InputWrapper name="Type">
+		<CollectionPropertyInputWrapper name="Type">
 			<select
 				id={selectedProperty?.id}
 				name="type"
@@ -757,10 +755,10 @@
 					</option>
 				{/each}
 			</select>
-		</InputWrapper>
+		</CollectionPropertyInputWrapper>
 
 		{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
-			<Options
+			<CollectionPropertyOptions
 				propertyId={selectedProperty.id}
 				options={selectedProperty.options}
 				on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}

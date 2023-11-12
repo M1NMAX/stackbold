@@ -30,8 +30,8 @@
 		<div
 			class={` ${
 				item.id === currActiveItemId
-					? 'rounded-r-md bg-gray-100 border-l-2 border-primary'
-					: ' rounded  bg-gray-100 '
+					? 'rounded-l-md border-r-2 border-primary bg-gray-100'
+					: 'rounded bg-gray-100'
 			} flex flex-col items-start  py-1 px-2 space-y-2 group`}
 		>
 			<div class="w-full flex justify-between items-center space-x-2">

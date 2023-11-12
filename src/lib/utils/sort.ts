@@ -7,7 +7,10 @@ export interface IBaseSchema {
 
 export type OrderType = 'asc' | 'desc';
 
-const sortDate = <T extends IBaseSchema, K extends keyof Pick<T, 'createdAt' | 'updatedAt'>>(
+const sortDate = <
+	T extends IBaseSchema,
+	K extends keyof Pick<IBaseSchema, 'createdAt' | 'updatedAt'>
+>(
 	a: T,
 	b: T,
 	field: K
@@ -32,7 +35,7 @@ const sortString = <T extends IBaseSchema, K extends keyof T>(a: T, b: T, field:
 	return 0;
 };
 
-export const sortFun = <K extends keyof IBaseSchema>(field: K, order: OrderType) => {
+const sortFun = <K extends keyof IBaseSchema>(field: K, order: OrderType) => {
 	return <T extends IBaseSchema>(a: T, b: T) => {
 		if (a[field] === b[field]) return 0;
 
@@ -44,3 +47,5 @@ export const sortFun = <K extends keyof IBaseSchema>(field: K, order: OrderType)
 		return order === 'asc' ? +result : -result;
 	};
 };
+
+export default sortFun;

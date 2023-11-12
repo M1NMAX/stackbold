@@ -5,7 +5,6 @@
 		FileCopyOutline,
 		TrashBinOutline
 	} from 'flowbite-svelte-icons';
-	import IconBtn from '../IconBtn.svelte';
 	import Dropdown from '../Dropdown/Dropdown.svelte';
 	import DropdownItem from '../Dropdown/DropdownItem.svelte';
 	import DropdownDivider from '../Dropdown/DropdownDivider.svelte';

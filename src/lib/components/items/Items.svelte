@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ItemsListView, ItemsTableView, RadioButton } from '$lib/components';
-	import { pluralize, sortFun, type IBaseSchema, type OrderType } from '$lib/utils';
+	import { pluralize } from '$lib/utils';
+	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import { ListOutline, TableRowOutline } from 'flowbite-svelte-icons';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
 

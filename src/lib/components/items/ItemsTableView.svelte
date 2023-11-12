@@ -2,7 +2,7 @@
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { IconBtn, ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
-	import dayjs from '$lib/dayjs';
+	import dayjs from '$lib/utils/dayjs';
 	import { DotsHorizontalOutline, WindowOutline } from 'flowbite-svelte-icons';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
@@ -74,8 +74,8 @@
 				<tr
 					class={`${
 						item.id === currActiveItemId
-							? 'rounded-r-md bg-gray-100 border-l-2 border-primary'
-							: ' rounded  bg-gray-100 '
+							? ' bg-gray-200/50 border-r-2 border-y-0 border-primary'
+							: ''
 					} font-medium text-base border-y-2 border-gray-100 hover:bg-base-200`}
 				>
 					<td class="text-left py-2 px-1"> {item.name}</td>
@@ -102,7 +102,7 @@
 						{dayjs(item.updatedAt).fromNow()}
 					</td>
 
-					<td class="text-left whitespace-nowrap">
+					<td class="text-left whitespace-nowrap px-2">
 						<IconBtn on:click={() => dispatch('clickOpenItem', item.id)}>
 							<WindowOutline class="rotate-90" />
 						</IconBtn>
