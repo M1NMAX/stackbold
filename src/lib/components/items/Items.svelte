@@ -1,18 +1,10 @@
 <script lang="ts">
 	import { ItemsListView, ItemsTableView, RadioButton } from '$lib/components';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
-	import {
-		ArrowSortLettersOutline,
-		ClockOutline,
-		ListOutline,
-		SearchOutline,
-		TableRowOutline,
-		IconOutline
-	} from 'flowbite-svelte-icons';
+	import { ListOutline, SearchOutline, TableRowOutline, IconOutline } from 'flowbite-svelte-icons';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
 	import Dropdown from '../Dropdown/Dropdown.svelte';
 	import DropdownItem from '../Dropdown/DropdownItem.svelte';
-	import type { ComponentType } from 'svelte';
 
 	export let items: ItemType[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -27,28 +19,31 @@
 		label: string;
 		field: keyof IBaseSchema;
 		order: OrderType;
-		icon: ComponentType;
 	};
 
 	const sortOptions: SortOption[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc', icon: ArrowSortLettersOutline },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc', icon: ArrowSortLettersOutline },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc', icon: ClockOutline },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc', icon: ClockOutline }
+		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
+		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
+		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
+		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
+		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
+		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
 	];
 
 	$: currSortLabel = sortOptions.find(
 		(option) => option.field === sortDetail.field && option.order === sortDetail.order
 	)?.label;
+
+	let isSearchInputHidden = true;
 </script>
 
 <div class="h-full p-1 space-y-2">
 	<!-- View handler -->
 	<div class="flex justify-between space-x-2">
-		<div class="flex justify-between space-x-2">
-			<div class="inline-flex rounded shadow-sm bg-gray-100">
-				<RadioButton value="list" bind:group={view}><ListOutline /></RadioButton>
-				<RadioButton value="table" bind:group={view}><TableRowOutline /></RadioButton>
+		<div class="flex justify-between items-center space-x-2">
+			<div class="inline-flex rounded shadow-sm bg-base-300">
+				<RadioButton value="list" bind:group={view}><ListOutline /> List</RadioButton>
+				<RadioButton value="table" bind:group={view}><TableRowOutline /> Table</RadioButton>
 			</div>
 
 			<Dropdown alighEnd={false}>
@@ -57,19 +52,27 @@
 				</button>
 
 				<svelte:fragment>
-					{#each sortOptions as { label, field, order, icon }}
-						<DropdownItem on:click={() => (sortDetail = { field, order })}>
-							<IconOutline {icon} />
+					{#each sortOptions as { label, field, order }}
+						<DropdownItem
+							on:click={() => (sortDetail = { field, order })}
+							class={`${currSortLabel === label && 'bg-primary/80 text-white'} `}
+						>
 							{label}
 						</DropdownItem>
 					{/each}
 				</svelte:fragment>
 			</Dropdown>
-			<button class="btn btn-sm">
-				<SearchOutline class="text-gray-500" />
-			</button>
 		</div>
-		<div>
+		<div class="flex justify-between items-center space-x-2">
+			<div class="relative">
+				<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+					<SearchOutline class="text-primary" />
+				</div>
+				<input
+					class="w-full h-9 pl-10 text-base font-semibold rounded bg-base-300 placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
+					placeholder="Find Item "
+				/>
+			</div>
 			<button class="btn btn-sm btn-primary"> New item </button>
 		</div>
 	</div>
