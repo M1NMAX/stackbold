@@ -6,15 +6,18 @@
 	import { DotsHorizontalOutline, WindowOutline } from 'flowbite-svelte-icons';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
+	import Dropdown from '../Dropdown/Dropdown.svelte';
+	import DropdownItem from '../Dropdown/DropdownItem.svelte';
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
 	export let collectionProperties: CollectionProperty[];
 	export let order: OrderType = 'asc';
 
-	export let onClickTableHead: (field: keyof IBaseSchema) => void;
-
-	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
+	const dispatch = createEventDispatcher<{
+		clickOpenItem: string;
+		clickTableHead: { field: keyof IBaseSchema };
+	}>();
 
 	const getItemProperty = (pid: string, properties: ItemPropertyType[]) => {
 		return properties.find((property) => property.id === pid) || null;
@@ -32,12 +35,15 @@
 </script>
 
 <table class="w-full">
-	<thead>
+	<thead class="">
 		<tr class="text-gray-500 text-sm">
 			<th scope="col" class="text-left rounded-t-md hover:bg-base-200 py-2 px-1 cursor-pointer">
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
-				<div on:click={() => onClickTableHead('name')} class="flex justify-between items-center">
+				<div
+					on:click={() => dispatch('clickTableHead', { field: 'name' })}
+					class="flex justify-between items-center"
+				>
 					<span> Name </span>
 
 					<SortArrow bind:order />
@@ -55,7 +61,7 @@
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
-					on:click={() => onClickTableHead('updatedAt')}
+					on:click={() => dispatch('clickTableHead', { field: 'updatedAt' })}
 					class="flex justify-between items-center"
 				>
 					<span> Last updated </span>
@@ -64,7 +70,34 @@
 			</th>
 
 			<th scope="col" class="text-left" title="Row actions">
-				<DotsHorizontalOutline />
+				<Dropdown>
+					<IconBtn slot="button">
+						<DotsHorizontalOutline />
+					</IconBtn>
+					<svelte:fragment>
+						{#each collectionProperties as property}
+							<DropdownItem>
+								<label class="label cursor-pointer space-x-2 py-0">
+									<input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
+									<span class="label-text">{property.name} </span>
+								</label>
+							</DropdownItem>
+						{/each}
+
+						<DropdownItem>
+							<label class="label cursor-pointer space-x-2 py-0">
+								<input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
+								<span class="label-text">Updated </span>
+							</label>
+						</DropdownItem>
+						<DropdownItem>
+							<label class="label cursor-pointer space-x-2 py-0">
+								<input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
+								<span class="label-text">Created </span>
+							</label>
+						</DropdownItem>
+					</svelte:fragment>
+				</Dropdown>
 			</th>
 		</tr>
 	</thead>

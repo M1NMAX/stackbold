@@ -481,7 +481,7 @@
 <div
 	class={`${
 		isDrawerHidden ? 'w-full' : 'w-2/3'
-	}  ease-in-out duration-300   p-1 rounded-md bg-gray-50 flex flex-col overflow-hidden`}
+	}  ease-in-out duration-300  p-1 rounded-md bg-gray-50 flex flex-col space-y-3.5 overflow-hidden`}
 >
 	<div class="flex items-center space-x-1.5">
 		{#if !$sidebarState}
