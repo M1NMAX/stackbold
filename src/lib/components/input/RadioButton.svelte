@@ -5,7 +5,7 @@
 
 <label
 	class={`btn btn-sm rounded-sm ${
-		group === value ? '   text-gray-100  bg-gray-800 hover:bg-gray-700 ' : 'bg-gray-100'
+		group === value ? 'bg-primary text-white hover:bg-primary/90' : 'bg-base-300 hover:bg-base-200'
 	}`}
 >
 	<input
