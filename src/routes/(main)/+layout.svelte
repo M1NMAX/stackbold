@@ -29,6 +29,7 @@
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
 	import { setContext } from 'svelte';
+	import { enhance } from '$app/forms';
 
 	export let data: LayoutData;
 
@@ -95,10 +96,12 @@
 
 							<DropdownDivider />
 
-							<DropdownItem>
-								<ArrowRightToBracketOutline />
-								<span> Log out </span>
-							</DropdownItem>
+							<form method="post" action="/?/logout" use:enhance>
+								<DropdownItem type="submit">
+									<ArrowRightToBracketOutline />
+									<span> Log out </span>
+								</DropdownItem>
+							</form>
 						</svelte:fragment>
 					</Dropdown>
 
