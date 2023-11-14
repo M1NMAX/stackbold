@@ -107,7 +107,7 @@
 				<tr
 					class={`${
 						item.id === currActiveItemId
-							? ' bg-gray-200/50 border-r-2 border-y-0 border-primary'
+							? ' bg-gray-200/50 border-r-2 border-t-0 border-b-0 border-primary'
 							: ''
 					} font-medium text-base border-y-2 border-gray-100 hover:bg-base-200`}
 				>

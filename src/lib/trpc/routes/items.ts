@@ -20,7 +20,7 @@ export const items = createTRPCRouter({
 	create: protectedProcedure
 		.input(z.object({ collectionId: z.string(), itemData: ItemCreateWithoutCollectionInputSchema }))
 		.mutation(async ({ input: { collectionId, itemData } }) => {
-			await prisma.item.create({
+			return await prisma.item.create({
 				data: { ...itemData, collection: { connect: { id: collectionId } } }
 			});
 		}),

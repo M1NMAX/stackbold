@@ -258,10 +258,10 @@
 		debounceItemUpdate({ id, data: { name: input.value } });
 	};
 
-	const handleCreateItem = async (name: string) => {
+	const handleCreateItem = async (name: string, openDrawer: boolean = false) => {
 		try {
 			//TODO: in the future, property may have default value
-			await trpc().items.create.mutate({
+			const createItem = await trpc().items.create.mutate({
 				collectionId: currCollection.id,
 				itemData: {
 					name,
@@ -269,6 +269,11 @@
 				}
 			});
 			await onSuccess('New item add successfully');
+
+			if (openDrawer) {
+				drawerSelectedItem = createItem;
+				isDrawerHidden = false;
+			}
 		} catch (error) {
 			onError(error);
 		}
@@ -578,6 +583,7 @@
 	{/if}
 
 	<Items
+		onClickNewItemBtn={() => handleCreateItem('untitle item', true)}
 		currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
 		items={data.items}
 		bind:view={currView}

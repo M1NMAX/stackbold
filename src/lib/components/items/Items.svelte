@@ -10,6 +10,7 @@
 	export let currActiveItemId: string | undefined = undefined;
 	export let collectionProperties: CollectionProperty[];
 	export let view: string;
+	export let onClickNewItemBtn: () => void;
 
 	let sortDetail: { field: keyof IBaseSchema; order: OrderType } = { field: 'name', order: 'asc' };
 
@@ -73,7 +74,7 @@
 					placeholder="Find Item "
 				/>
 			</div>
-			<button class="btn btn-sm btn-primary"> New item </button>
+			<button on:click={onClickNewItemBtn} class="btn btn-sm btn-primary"> New item </button>
 		</div>
 	</div>
 
