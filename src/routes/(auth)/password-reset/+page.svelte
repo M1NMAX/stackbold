@@ -1,6 +1,6 @@
 <script lang="ts">
+	import logoSrc from '$lib/assets/trpc-logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Alert, Button, Helper, Input, Label } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -8,32 +8,44 @@
 	const { form, message, errors, enhance } = superForm(data.form);
 </script>
 
-<h1>Reset password</h1>
-{#if $message}
-	<Alert>{$message}</Alert>
-{/if}
+<div>
+	<div class="flex justify-center pb-8">
+		<img src={logoSrc} alt="logo" />
+	</div>
 
-<form method="post" use:enhance>
-	<div class="grid gap-6 mb-6">
+	<h1 class="mb-6 text-center text-3xl font-medium">Reset yout password</h1>
+
+	{#if $message}
+		<div
+			class="px-1 py-4 rounded-sm text-center text-red-200 outline outline-1 outline-red-300 bg-red-700/90"
+		>
+			{$message}
+		</div>
+	{/if}
+
+	<form method="post" use:enhance class="space-y-4">
 		<div>
-			<Label for="email" class="mb-2">Email</Label>
-			<Input
-				type="text"
+			<label for="email" class="label px-0"> Email </label>
+			<input
 				id="email"
+				type="text"
 				name="email"
-				placeholder="john@email.com"
 				required
 				bind:value={$form.email}
+				class="w-full h-9 input input-sm input-ghost bg-gray-200 outline outline-gray-50"
 			/>
+
 			{#if $errors.email}
-				<Helper class="mt-2" color="red">
-					{$errors.email}
-				</Helper>
+				<span class="mt-2 text-error"> {$errors.email} </span>
 			{/if}
 		</div>
-
-		<Button type="submit">Submit</Button>
-	</div>
-</form>
-
-<Button outline href="/login">Sign in</Button>
+		<div>
+			<button type="submit" class="w-full btn btn-primary normal-case">Reset password</button>
+		</div>
+	</form>
+</div>
+<div class="my-8 leading-8 font-medium text-sm">
+	<p class="text-center text-gray-500">
+		<a href="/login" class="no-underline text-primary hover:text-primary/70"> Back to Sign in </a>
+	</p>
+</div>
