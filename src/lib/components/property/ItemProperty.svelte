@@ -90,7 +90,9 @@
 								<Check class={cn('mr-2 h-4 w-4', value !== option.id && 'text-transparent')} />
 
 								<span class={` ${PROPERTY_COLORS[option.color]} w-4 h-4 mr-2 `} />
-								{option.value}
+								<span>
+									{option.value}
+								</span>
 							</Command.Item>
 						{/each}
 					</Command.Group>

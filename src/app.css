@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ICON   */
+.icon-xxs {
+	@apply w-4 h-4 focus:outline-none;
+}
+.icon-xs {
+	@apply w-5 h-5 focus:outline-none;
+}
+.icon-sm {
+	@apply w-6 h-6 focus:outline-none;
+}
+.icon-md {
+	@apply w-7 h-7 focus:outline-none;
+}
+.icon-lg {
+	@apply w-8 h-8 focus:outline-none;
+}
+.icon-xl {
+	@apply w-10 h-10 focus:outline-none;
+}
+.icon-3xl {
+	@apply w-14 h-14 focus:outline-none;
+}
 @layer base {
 	:root {
 		--background: 0 0% 100%;

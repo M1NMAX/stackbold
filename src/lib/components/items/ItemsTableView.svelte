@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import {  ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
+	import { ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
 	import dayjs from '$lib/utils/dayjs';
-	
+
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 
-	import {  PanelLeftOpen, Settings2 } from 'lucide-svelte';
+	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
@@ -27,7 +27,7 @@
 
 	const getOptionValue = (property: CollectionProperty, value: string) => {
 		const option = property.options.find((opt) => opt.id === value);
-		return option ? option.value : '';
+		return option ? option.id : '';
 	};
 
 	const getOptionColor = (property: CollectionProperty, value: string) => {

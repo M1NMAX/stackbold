@@ -3,8 +3,7 @@
 
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Label } from '$lib/components/ui/label';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import * as Tabs from '$lib/components/ui/tabs';
 	import { ItemsListView, ItemsTableView } from '$lib/components';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
@@ -43,33 +42,43 @@
 	<!-- View handler -->
 	<div class="flex justify-between space-x-2">
 		<div class="flex justify-between items-center space-x-2">
-			<div class="inline-flex rounded shadow-sm bg-base-300">
-				<RadioGroup.Root bind:value={view} class="flex space-x-2">
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="list" id="list" />
-						<Label for="list" class="flex items-center space-x-2">
-							<List class="w-4 h-4" /> List
-						</Label>
-					</div>
-					<div class="flex items-center space-x-2">
-						<RadioGroup.Item value="table" id="table" />
-						<Label for="table" class="flex items-center space-x-2">
-							<Table class="w-4 h-4" /> Table
-						</Label>
-					</div>
-				</RadioGroup.Root>
-			</div>
+			<Tabs.Root value="list" class="w-44">
+				<Tabs.List class="grid w-full grid-cols-2">
+					<Tabs.Trigger
+						value="list"
+						on:click={() => (view = 'list')}
+						class="flex space-x-2 text-base"
+					>
+						<List class="icon-xs" />
+						<span> List </span>
+					</Tabs.Trigger>
+					<Tabs.Trigger
+						value="table"
+						on:click={() => (view = 'table')}
+						class="flex space-x-2 text-base"
+					>
+						<Table class="icon-xs" />
+						<span> Table </span>
+					</Tabs.Trigger>
+				</Tabs.List>
+			</Tabs.Root>
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="outline">Sort {currSortLabel}</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content class="w-56">
+					<DropdownMenu.Label>Sort By</DropdownMenu.Label>
+					<DropdownMenu.Separator />
+
 					<DropdownMenu.Group>
 						{#each sortOptions as { label, field, order }}
-							<DropdownMenu.Item on:click={() => (sortDetail = { field, order })}>
+							<DropdownMenu.CheckboxItem
+								checked={sortDetail.field === field && sortDetail.order === order}
+								on:click={() => (sortDetail = { field, order })}
+							>
 								{label}
-							</DropdownMenu.Item>
+							</DropdownMenu.CheckboxItem>
 						{/each}
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
