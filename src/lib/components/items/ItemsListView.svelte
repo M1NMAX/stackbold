@@ -17,7 +17,7 @@
 
 	const getOptionValue = (property: CollectionProperty, value: string) => {
 		const option = property.options.find((opt) => opt.id === value);
-		return option ? option.value : '';
+		return option ? option.id : '';
 	};
 
 	const getOptionColor = (property: CollectionProperty, value: string) => {
