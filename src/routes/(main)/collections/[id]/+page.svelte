@@ -265,7 +265,10 @@
 				collectionId: currCollection.id,
 				itemData: {
 					name,
-					properties: currCollection.properties.map((prop) => ({ id: prop.id, value: '' }))
+					properties: currCollection.properties.map((prop) => ({
+						id: prop.id,
+						value: prop.type === 'CHECKBOX' ? 'false' : ''
+					}))
 				}
 			});
 			await onSuccess('New item add successfully');

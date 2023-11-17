@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ItemsListView, ItemsTableView, RadioButton } from '$lib/components';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
-	import { ListOutline, SearchOutline, TableRowOutline, IconOutline } from 'flowbite-svelte-icons';
+	import { ListOutline, SearchOutline, TableRowOutline } from 'flowbite-svelte-icons';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
 	import Dropdown from '../Dropdown/Dropdown.svelte';
 	import DropdownItem from '../Dropdown/DropdownItem.svelte';
@@ -34,8 +34,6 @@
 	$: currSortLabel = sortOptions.find(
 		(option) => option.field === sortDetail.field && option.order === sortDetail.order
 	)?.label;
-
-	let isSearchInputHidden = true;
 </script>
 
 <div class="h-full p-1 space-y-2">
