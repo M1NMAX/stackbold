@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Option as OptionType } from '@prisma/client';
-	import { CloseOutline, PlusOutline } from 'flowbite-svelte-icons';
+
 	import { fade } from 'svelte/transition';
 	import Option from './Option.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { Plus, X } from 'lucide-svelte';
 
 	export let propertyId: string;
 	export let options: OptionType[];
@@ -18,9 +19,9 @@
 		<span class="text-sm font-semibold">Options</span>
 		<button on:click={() => (showInput = !showInput)} class="btn btn-xs p-1 rounded-xs">
 			{#if showInput}
-				<CloseOutline size="xs" />
+				<X class="w-4 h-4" />
 			{:else}
-				<PlusOutline size="xs" />
+				<Plus class="w-4 h-4" />
 			{/if}
 		</button>
 	</div>

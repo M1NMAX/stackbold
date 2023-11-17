@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { TrashBinOutline } from 'flowbite-svelte-icons';
-	import { IconBtn, ColorPicker } from '$lib/components';
+	import { ColorPicker } from '$lib/components';
 	import { createEventDispatcher } from 'svelte';
 	import type { Color, Option } from '@prisma/client';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { Trash } from 'lucide-svelte';
 
 	export let propertyId: string;
 	export let option: Option;
@@ -32,7 +33,7 @@
 		class="grow input input-xs text-sm font-semibold input-ghost"
 	/>
 
-	<IconBtn on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}>
-		<TrashBinOutline size="xs" />
-	</IconBtn>
+	<Button on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}>
+		<Trash class="w-3 h-3" />
+	</Button>
 </div>

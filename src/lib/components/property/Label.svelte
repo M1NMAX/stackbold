@@ -1,14 +1,8 @@
 <script lang="ts">
-	import {
-		DotsHorizontalOutline,
-		EditOutline,
-		FileCopyOutline,
-		TrashBinOutline
-	} from 'flowbite-svelte-icons';
-	import Dropdown from '../Dropdown/Dropdown.svelte';
-	import DropdownItem from '../Dropdown/DropdownItem.svelte';
-	import DropdownDivider from '../Dropdown/DropdownDivider.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { Copy, MoreHorizontal, Pen, Trash } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	export let id: string;
 	export let name: string;
@@ -22,28 +16,28 @@
 >
 	<span class="label-text"> {name}</span>
 
-	<Dropdown>
-		<button slot="button" class="p-1 rounded bg-base-200 hover:bg-base-300">
-			<DotsHorizontalOutline size="sm" />
-		</button>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content class="w-56">
+			<DropdownMenu.Group>
+				<DropdownMenu.Item on:click={() => dispatch('edit', id)}>
+					<Pen class="mr-2 h-4 w-4" />
+					<span> Hide item </span>
+				</DropdownMenu.Item>
 
-		<svelte:fragment>
-			<DropdownItem on:click={() => dispatch('edit', id)}>
-				<EditOutline />
-				<span> Edit Property </span>
-			</DropdownItem>
+				<DropdownMenu.Item on:click={() => dispatch('duplicate', id)}>
+					<Copy class="mr-2 h-4 w-4" />
+					<span>Duplicate</span>
+				</DropdownMenu.Item>
 
-			<DropdownItem on:click={() => dispatch('duplicate', id)}>
-				<FileCopyOutline />
-				<span> Duplicate Property </span>
-			</DropdownItem>
-
-			<DropdownDivider />
-
-			<DropdownItem on:click={() => dispatch('delete', id)}>
-				<TrashBinOutline />
-				<span> Delete Property</span>
-			</DropdownItem>
-		</svelte:fragment>
-	</Dropdown>
+				<DropdownMenu.Separator />
+				<DropdownMenu.Item on:click={() => dispatch('delete', id)}>
+					<Trash class="mr-2 h-4 w-4" />
+					<span>Delete</span>
+				</DropdownMenu.Item>
+			</DropdownMenu.Group>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 </label>

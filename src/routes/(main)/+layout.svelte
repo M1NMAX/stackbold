@@ -1,27 +1,17 @@
 <script lang="ts">
 	import {
-		ArrowRightToBracketOutline,
-		ChevronDoubleLeftOutline,
-		CirclePlusOutline,
-		CogOutline,
-		DatabaseOutline,
-		DnaOutline,
-		HomeOutline,
-		PlusOutline,
-		SearchOutline
-	} from 'flowbite-svelte-icons';
-
+		ChevronsLeft,
+		Database,
+		Dna,
+		Home,
+		LogOut,
+		Plus,
+		PlusCircle,
+		Search,
+		Settings
+	} from 'lucide-svelte';
 	import { page } from '$app/stores';
-	import {
-		Dropdown,
-		DropdownDivider,
-		DropdownItem,
-		IconBtn,
-		Modal,
-		Sidebar,
-		SidebarCollection,
-		SidebarItem
-	} from '$lib/components';
+	import { Sidebar, SidebarCollection, SidebarItem } from '$lib/components';
 	import toast from 'svelte-french-toast';
 	import { trpc } from '$lib/trpc/client';
 	import { TRPCClientError } from '@trpc/client';
@@ -30,6 +20,9 @@
 	import { writable } from 'svelte/store';
 	import { setContext } from 'svelte';
 	import { enhance } from '$app/forms';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
 
 	export let data: LayoutData;
 
@@ -77,54 +70,62 @@
 		<div class="h-full flex flex-col space-y-4 overflow-hidden px-0 py-1.5 rounded-none bg-gray-50">
 			<div class="space-y-0.5 px-0">
 				<div class="w-full flex justify-between space-x-0.5 px-1">
-					<Dropdown alighEnd={false}>
-						<button slot="button" class="relative w-44 btn btn-sm">
-							<span class="flex justify-start items-center space-x-1.5">
-								<img
-									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
-									class=" rounded-full h-6 w-6"
-									alt="avatar"
-								/>
-								<span class="grow font-semibold">{data.user.name}</span>
-							</span>
-						</button>
-						<svelte:fragment>
-							<DropdownItem href="/settings">
-								<CogOutline />
-								<span> Settings </span>
-							</DropdownItem>
+					<DropdownMenu.Root>
+						<div class="w-full flex items-center justify-between space-x-1">
+							<DropdownMenu.Trigger asChild let:builder>
+								<Button builders={[builder]} variant="outline" class="grow">
+									<span class="flex justify-start items-center space-x-1.5">
+										<img
+											src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
+											class=" rounded-full h-6 w-6"
+											alt="avatar"
+										/>
+										<span class="grow font-semibold">{data.user.name}</span>
+									</span>
+								</Button>
+							</DropdownMenu.Trigger>
+							<Button variant="outline" size="icon" on:click={() => ($sidebarStateStore = false)}>
+								<ChevronsLeft />
+							</Button>
+						</div>
+						<DropdownMenu.Content class="w-56">
+							<DropdownMenu.Label>My Account</DropdownMenu.Label>
+							<DropdownMenu.Separator />
+							<DropdownMenu.Group>
+								<DropdownMenu.Item href="/settings">
+									<Settings class="mr-2 h-4 w-4" />
+									<span>Settings</span>
+								</DropdownMenu.Item>
+							</DropdownMenu.Group>
 
-							<DropdownDivider />
+							<DropdownMenu.Separator />
 
 							<form method="post" action="/?/logout" use:enhance>
-								<DropdownItem type="submit">
-									<ArrowRightToBracketOutline />
-									<span> Log out </span>
-								</DropdownItem>
+								<!-- //TODO: add action -->
+								<DropdownMenu.Item>
+									<LogOut class="mr-2 h-4 w-4" />
+									<span>Log out</span>
+								</DropdownMenu.Item>
 							</form>
-						</svelte:fragment>
-					</Dropdown>
-
-					<button on:click={() => ($sidebarStateStore = false)} class="btn btn-sm p-1">
-						<ChevronDoubleLeftOutline size="sm" />
-					</button>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
 				</div>
 
 				<SidebarItem label="Home" href="/" active={activeUrl === '/'}>
 					<svelte:fragment slot="icon">
-						<HomeOutline />
+						<Home />
 					</svelte:fragment>
 				</SidebarItem>
 
 				<SidebarItem label="Quick Search" active={activeUrl === '/templates'}>
 					<svelte:fragment slot="icon">
-						<SearchOutline />
+						<Search />
 					</svelte:fragment>
 				</SidebarItem>
 
 				<SidebarItem label="Templates" active={activeUrl === '/templates'}>
 					<svelte:fragment slot="icon">
-						<DnaOutline />
+						<Dna />
 					</svelte:fragment>
 				</SidebarItem>
 
@@ -134,13 +135,13 @@
 					active={activeUrl === '/collections'}
 				>
 					<svelte:fragment slot="icon">
-						<DatabaseOutline />
+						<Database />
 					</svelte:fragment>
 				</SidebarItem>
 
 				<SidebarItem label="New collection" on:click={() => (createCollectionModal = true)}>
 					<svelte:fragment slot="icon">
-						<CirclePlusOutline />
+						<PlusCircle />
 					</svelte:fragment>
 				</SidebarItem>
 			</div>
@@ -156,9 +157,9 @@
 				<span class="flex justify-between items-center pr-2">
 					<span class="text-sm font-semibold px-1"> Personal </span>
 
-					<IconBtn on:click={() => (createCollectionModal = true)} tootipText="Create collection">
-						<PlusOutline size="xs" />
-					</IconBtn>
+					<Button variant="outline" size="icon" on:click={() => (createCollectionModal = true)}>
+						<Plus class="w-4 h-4" />
+					</Button>
 				</span>
 				<div class="space-y-0.5">
 					{#each data.collections as collection}
@@ -174,23 +175,25 @@
 	</div>
 </div>
 
-<Modal
-	title="New collection"
-	open={createCollectionModal}
-	onClose={() => (createCollectionModal = false)}
->
-	<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-2">
-		<label class="label flex flex-col items-start space-y-2">
-			<span class="label-text">Name</span>
-			<input
-				type="text"
-				name="name"
-				placeholder="Tasks"
-				required
-				class="input input-sm input-ghost bg-gray-200"
-			/>
-		</label>
+<Dialog.Root bind:open={createCollectionModal}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>New collection</Dialog.Title>
+		</Dialog.Header>
+		<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-2">
+			<label class="label flex flex-col items-start space-y-2">
+				<span class="label-text">Name</span>
+				<input
+					type="text"
+					name="name"
+					placeholder="Tasks"
+					required
+					class="input input-sm input-ghost bg-gray-200"
+				/>
+			</label>
 
-		<button type="submit" class="w-ful btn btn-sm btn-primary">Create</button>
-	</form>
-</Modal>
+			<!-- //TODO: upd form or change logic  -->
+			<Button type="submit" class="w-ful btn btn-sm btn-primary">Create</Button>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>

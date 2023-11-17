@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { OrderType } from '$lib/utils';
-	import { ArrowDownOutline, ArrowUpOutline } from 'flowbite-svelte-icons';
+	import { ArrowDown, ArrowUp } from 'lucide-svelte';
 
 	export let order: OrderType = 'asc';
 </script>
 
 {#if order === 'asc'}
-	<ArrowDownOutline size="xs" />
+	<ArrowDown class="w-3 h-3" />
 {:else}
-	<ArrowUpOutline size="xs" />
+	<ArrowUp class="w-3 h-3" />
 {/if}

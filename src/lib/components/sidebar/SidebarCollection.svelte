@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
-	import { FolderOutline } from 'flowbite-svelte-icons';
+	import { Folder } from 'lucide-svelte';
 
 	export let collection: Collection;
 	export let active: boolean;
@@ -13,7 +13,7 @@
  dark:hover:bg-gray-500 transition duration-75 dark:text-gray-400`}
 >
 	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">
-		<FolderOutline />
+		<Folder />
 		<span class="trucante font-semibold">{collection.name}</span>
 	</a>
 </span>

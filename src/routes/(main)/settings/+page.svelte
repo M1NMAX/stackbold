@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { Button, Card, DarkMode } from 'flowbite-svelte';
+	import { Button } from '$lib/components/ui/button';
 </script>
 
 <svelte:head>

@@ -1,11 +1,9 @@
 <script lang="ts">
-	import {
-		DotsHorizontalOutline,
-		EyeSlashOutline,
-		FileCopyOutline,
-		TrashBinOutline
-	} from 'flowbite-svelte-icons';
-	import { Dropdown, DropdownDivider, DropdownItem, IconBtn } from '$lib/components';
+	import { Copy, EyeOff, MoreHorizontal, Trash } from 'lucide-svelte';
+
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+
 	import { createEventDispatcher } from 'svelte';
 
 	export let itemId: string;
@@ -19,25 +17,26 @@
 	// class="invisible group-hover:visible"
 </script>
 
-<Dropdown>
-	<IconBtn slot="button">
-		<DotsHorizontalOutline />
-	</IconBtn>
+<DropdownMenu.Root>
+	<DropdownMenu.Trigger asChild let:builder>
+		<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+	</DropdownMenu.Trigger>
+	<DropdownMenu.Content class="w-56">
+		<DropdownMenu.Group>
+			<DropdownMenu.Item on:click={() => dispatch('clickHideItem', itemId)}>
+				<EyeOff class="mr-2 h-4 w-4" />
+				<span> Hide item </span>
+			</DropdownMenu.Item>
 
-	<svelte:fragment>
-		<DropdownItem on:click={() => dispatch('clickHideItem', itemId)}>
-			<EyeSlashOutline />
-			<span> Hide item </span>
-		</DropdownItem>
+			<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
+				<Copy class="mr-2 h-4 w-4" />
+				<span>Duplicate</span>
+			</DropdownMenu.Item>
 
-		<DropdownItem on:click={() => dispatch('clickDuplicateItem', itemId)}>
-			<FileCopyOutline />
-			<span> Duplicate </span>
-		</DropdownItem>
-		<DropdownDivider />
-		<DropdownItem on:click={() => dispatch('clickDeleteItem', itemId)} class="dropdown-item-red">
-			<TrashBinOutline />
-			<span> Delete </span>
-		</DropdownItem>
-	</svelte:fragment>
-</Dropdown>
+			<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)}>
+				<Trash class="mr-2 h-4 w-4" />
+				<span>Delete</span>
+			</DropdownMenu.Item>
+		</DropdownMenu.Group>
+	</DropdownMenu.Content>
+</DropdownMenu.Root>

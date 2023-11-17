@@ -1,23 +1,21 @@
 <script lang="ts">
 	import {
-		ArchiveOutline,
-		BarsOutline,
-		CloseOutline,
-		DotsHorizontalOutline,
-		ExclamationCircleOutline,
-		EyeOutline,
-		EyeSlashOutline,
-		FileCopyOutline,
-		FolderDuplicateOutline,
-		FolderOutline,
-		HeartOutline,
-		HeartSolid,
-		PenOutline,
-		PlusOutline,
-		TrashBinOutline,
-		UserAddOutline
-	} from 'flowbite-svelte-icons';
-	import { Drawer } from 'flowbite-svelte';
+		Archive,
+		Copy,
+		Eye,
+		EyeOff,
+		Folder,
+		Heart,
+		HeartOff,
+		Menu,
+		MoreHorizontal,
+		Pencil,
+		Plus,
+		Trash,
+		UserPlus,
+		X
+	} from 'lucide-svelte';
+
 	import { sineIn } from 'svelte/easing';
 	import type { PageData } from './$types';
 	import {
@@ -31,12 +29,7 @@
 		CollectionProperty,
 		CollectionPropertyOptions,
 		CollectionPropertyInputWrapper,
-		Dropdown,
-		DropdownItem,
-		DropdownDivider,
-		IconBtn,
 		Items,
-		Modal,
 		Textarea
 	} from '$lib/components';
 	import debounce from 'debounce';
@@ -50,12 +43,20 @@
 	import type { Writable } from 'svelte/store';
 	import { getContext } from 'svelte';
 	import dayjs from '$lib/utils/dayjs';
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Drawer } from '$lib/components/ui/drawer';
 
 	export let data: PageData;
 
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
+	let isSheetOpen = false;
+
+	let isPropertyDialogOpen = false;
 	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
@@ -313,7 +314,10 @@
 		return option ? option.id : '';
 	};
 
-	const handleEditProperty = (pid: string) => (selectedProperty = getProperty(currCollection, pid));
+	const handleEditProperty = (pid: string) => {
+		isPropertyDialogOpen = true;
+		selectedProperty = getProperty(currCollection, pid);
+	};
 
 	const handleDuplicateProperty = async (pid: string) => {
 		const property = getProperty(currCollection, pid);
@@ -488,17 +492,17 @@
 
 <div
 	class={`${
-		isDrawerHidden ? 'w-full' : 'w-2/3'
+		!isDrawerHidden ? 'w-2/3' : 'w-full'
 	}  ease-in-out duration-300  p-1 rounded-md bg-gray-50 flex flex-col space-y-3.5 overflow-hidden`}
 >
 	<div class="flex items-center space-x-1.5">
 		{#if !$sidebarState}
-			<IconBtn on:click={() => ($sidebarState = true)} class="btn btn-sm mr-1.5">
-				<BarsOutline size="sm" />
-			</IconBtn>
+			<Button variant="outline" size="icon" on:click={() => ($sidebarState = true)}>
+				<Menu class="w-6 h-6" />
+			</Button>
 		{/if}
 
-		<FolderOutline size="lg" />
+		<Folder class="w-6 h-6" />
 		<h1
 			class="grow font-semibold text-2xl focus:outline-none"
 			contenteditable
@@ -514,62 +518,63 @@
 			{dayjs(currCollection.updatedAt).fromNow()}
 		</span>
 
-		<IconBtn>
-			<UserAddOutline />
-		</IconBtn>
-		<IconBtn on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}>
+		<Button variant="outline" size="icon">
+			<UserPlus />
+		</Button>
+
+		<Button
+			variant="outline"
+			size="icon"
+			on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}
+		>
 			{#if currCollection.isFavourite}
-				<HeartSolid class="text-primary" />
+				<Heart class="text-primary" />
 			{:else}
-				<HeartOutline />
+				<HeartOff />
 			{/if}
-		</IconBtn>
+		</Button>
 
-		<Dropdown>
-			<IconBtn slot="button">
-				<DotsHorizontalOutline />
-			</IconBtn>
-			<svelte:fragment>
-				<DropdownItem
-					on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
-				>
-					{#if currCollection.isDescHidden}
-						<EyeOutline />
-						<span> Show description </span>
-					{:else}
-						<EyeSlashOutline />
-						<span> Hide description </span>
-					{/if}
-				</DropdownItem>
-
-				<DropdownItem>
-					<PenOutline />
-					<span> Rename </span>
-				</DropdownItem>
-
-				<DropdownItem on:click={handleDuplicateCollection}>
-					<FolderDuplicateOutline />
-					<span> Duplicate </span>
-				</DropdownItem>
-
-				<DropdownItem on:click={() => handleUpdateCollection({ isArchived: true })}>
-					<ArchiveOutline />
-					<span> Archive </span>
-				</DropdownItem>
-				<DropdownDivider />
-
-				<DropdownItem
-					on:click={() => {
-						elementToBeDelete = { id: currCollection.id, type: 'collection' };
-						isDeleteModalOpen = true;
-					}}
-					class="dropdown-item-red"
-				>
-					<TrashBinOutline />
-					<span> Delete </span>
-				</DropdownItem>
-			</svelte:fragment>
-		</Dropdown>
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content class="w-56">
+				<DropdownMenu.Group>
+					<DropdownMenu.Item
+						on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
+					>
+						{#if currCollection.isDescHidden}
+							<Eye class="mr-2 h-4 w-4" />
+							<span> Show description </span>
+						{:else}
+							<EyeOff class="mr-2 h-4 w-4" />
+							<span> Hide description </span>
+						{/if}
+					</DropdownMenu.Item>
+					<DropdownMenu.Item>
+						<Pencil class="mr-2 h-4 w-4" />
+						<span>Rename</span>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item on:click={handleDuplicateCollection}>
+						<Copy class="mr-2 h-4 w-4" />
+						<span>Duplicate</span>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item on:click={() => handleUpdateCollection({ isArchived: true })}>
+						<Archive class="mr-2 h-4 w-4" />
+						<span>Archive</span>
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
+						on:click={() => {
+							elementToBeDelete = { id: currCollection.id, type: 'collection' };
+							isDeleteModalOpen = true;
+						}}
+					>
+						<Trash class="mr-2 h-4 w-4" />
+						<span>Delete</span>
+					</DropdownMenu.Item>
+				</DropdownMenu.Group>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 	</div>
 
 	{#if !currCollection.isDescHidden}
@@ -609,7 +614,7 @@
 
 	<div class="relative">
 		<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-			<PlusOutline class="text-primary" />
+			<Plus class="text-primary" />
 		</div>
 		<input
 			class="w-full h-10 pl-10 text-base font-semibold rounded bg-base-300 placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
@@ -631,14 +636,16 @@
 >
 	<div class="h-full flex flex-col space-y-1.5 rounded-md bg-gray-50 p-1">
 		<div class="flex justify-between items-center">
-			<IconBtn
+			<Button
+				variant="outline"
+				size="icon"
 				on:click={() => {
 					isDrawerHidden = true;
 					drawerSelectedItem = null;
 				}}
 			>
-				<CloseOutline size="sm" />
-			</IconBtn>
+				<X />
+			</Button>
 
 			<div class="flex items-center space-x-1.5">
 				{#if drawerSelectedItem}
@@ -648,46 +655,47 @@
 					</span>
 				{/if}
 
-				<Dropdown>
-					<IconBtn slot="button">
-						<DotsHorizontalOutline />
-					</IconBtn>
-					<svelte:fragment>
-						<DropdownItem
-							on:click={() =>
-								handleUpdateItem({
-									id: drawerSelectedItem ? drawerSelectedItem.id : '',
-									data: { isHidden: true }
-								})}
-						>
-							<EyeSlashOutline />
-							<span> Hide item </span>
-						</DropdownItem>
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content class="w-56">
+						<DropdownMenu.Group>
+							<DropdownMenu.Item
+								on:click={() =>
+									handleUpdateItem({
+										id: drawerSelectedItem ? drawerSelectedItem.id : '',
+										data: { isHidden: true }
+									})}
+							>
+								<EyeOff class="mr-2 h-4 w-4" />
+								<span> Hide item </span>
+							</DropdownMenu.Item>
 
-						<DropdownItem
-							on:click={() => handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
-						>
-							<FileCopyOutline />
-							<span> Duplicate </span>
-						</DropdownItem>
+							<DropdownMenu.Item
+								on:click={() =>
+									handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
+							>
+								<Copy class="mr-2 h-4 w-4" />
+								<span>Duplicate</span>
+							</DropdownMenu.Item>
 
-						<DropdownDivider />
-						<DropdownItem
-							on:click={() => {
-								if (!drawerSelectedItem) return;
+							<DropdownMenu.Item
+								on:click={() => {
+									if (!drawerSelectedItem) return;
 
-								elementToBeDelete = { id: drawerSelectedItem.id, type: 'item' };
-								isDeleteModalOpen = true;
+									elementToBeDelete = { id: drawerSelectedItem.id, type: 'item' };
+									isDeleteModalOpen = true;
 
-								selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
-							}}
-							class=" dropdown-item-red"
-						>
-							<TrashBinOutline />
-							<span> Delete </span>
-						</DropdownItem>
-					</svelte:fragment>
-				</Dropdown>
+									selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
+								}}
+							>
+								<Trash class="mr-2 h-4 w-4" />
+								<span>Delete</span>
+							</DropdownMenu.Item>
+						</DropdownMenu.Group>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</div>
 		</div>
 
@@ -730,83 +738,88 @@
 			</div>
 		</div>
 		<div class="grid justify-items-end">
-			<button on:click={() => handleAddProperty()} class="btn btn-sm normal-case">
-				<PlusOutline size="sm" />
+			<Button variant="secondary" on:click={() => handleAddProperty()} class="space-x-2">
+				<Plus class="w-4 h-4" />
 				<span> Add a property </span>
-			</button>
+			</Button>
 		</div>
 	</div>
 </Drawer>
 
-<Modal title="Property" open={!!selectedProperty} onClose={() => (selectedProperty = null)}>
-	<form class="space-y-1">
-		<CollectionPropertyInputWrapper name="Name">
-			<input
-				id={selectedProperty?.id}
-				value={selectedProperty?.name}
-				on:input={handleOnInputPropertyField}
-				name="name"
-				class="input input-sm input-ghost font-semibold text-sm bg-base-200 col-span-9"
-			/>
-		</CollectionPropertyInputWrapper>
+<Dialog.Root bind:open={isPropertyDialogOpen}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Property</Dialog.Title>
+		</Dialog.Header>
+		<form class="space-y-1">
+			<CollectionPropertyInputWrapper name="Name">
+				<input
+					id={selectedProperty?.id}
+					value={selectedProperty?.name}
+					on:input={handleOnInputPropertyField}
+					name="name"
+					class="input input-sm input-ghost font-semibold text-sm bg-base-200 col-span-9"
+				/>
+			</CollectionPropertyInputWrapper>
 
-		<CollectionPropertyInputWrapper name="Type">
-			<select
-				id={selectedProperty?.id}
-				name="type"
-				value={selectedProperty?.type}
-				on:input={handleOnInputPropertyField}
-				class="select select-sm select-ghost font-semibold text-sm bg-base-200 col-span-9"
-			>
-				{#each propertyTypes as propertyType}
-					<option value={propertyType}>
-						{capitalizeFirstLetter(propertyType)}
-					</option>
-				{/each}
-			</select>
-		</CollectionPropertyInputWrapper>
+			<CollectionPropertyInputWrapper name="Type">
+				<select
+					id={selectedProperty?.id}
+					name="type"
+					value={selectedProperty?.type}
+					on:input={handleOnInputPropertyField}
+					class="select select-sm select-ghost font-semibold text-sm bg-base-200 col-span-9"
+				>
+					{#each propertyTypes as propertyType}
+						<option value={propertyType}>
+							{capitalizeFirstLetter(propertyType)}
+						</option>
+					{/each}
+				</select>
+			</CollectionPropertyInputWrapper>
 
-		{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
-			<CollectionPropertyOptions
-				propertyId={selectedProperty.id}
-				options={selectedProperty.options}
-				on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}
-				on:updOptColor={({ detail }) => {
-					handleUpdatePropertyOption(detail.propertyId, {
-						id: detail.optionId,
-						color: detail.color
-					});
-				}}
-				on:updOptValue={({ detail }) => {
-					handleUpdatePropertyOption(detail.propertyId, {
-						id: detail.optionId,
-						value: detail.value
-					});
-				}}
-				on:deleteOpt={({ detail }) => {
-					elementToBeDelete = {
-						id: detail.propertyId,
-						option: detail.optionId,
-						type: 'option'
-					};
-					isDeleteModalOpen = true;
-				}}
-			/>
-		{/if}
-	</form>
-</Modal>
+			{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
+				<CollectionPropertyOptions
+					propertyId={selectedProperty.id}
+					options={selectedProperty.options}
+					on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}
+					on:updOptColor={({ detail }) => {
+						handleUpdatePropertyOption(detail.propertyId, {
+							id: detail.optionId,
+							color: detail.color
+						});
+					}}
+					on:updOptValue={({ detail }) => {
+						handleUpdatePropertyOption(detail.propertyId, {
+							id: detail.optionId,
+							value: detail.value
+						});
+					}}
+					on:deleteOpt={({ detail }) => {
+						elementToBeDelete = {
+							id: detail.propertyId,
+							option: detail.optionId,
+							type: 'option'
+						};
+						isDeleteModalOpen = true;
+					}}
+				/>
+			{/if}
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 
-<Modal open={isDeleteModalOpen} onClose={() => (isDeleteModalOpen = false)}>
-	<div class="text-center">
-		<ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
-		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-			Are you sure you want to delete this {elementToBeDelete.type} ?
-		</h3>
-
-		<button on:click={handleOnClickModalDeleteBtn} class="btn btn-error btn-sm">
-			Yes, I'm sure
-		</button>
-
-		<button class="btn btn-sm">No, cancel</button>
-	</div>
-</Modal>
+<AlertDialog.Root bind:open={isDeleteModalOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete</AlertDialog.Title>
+			<AlertDialog.Description class="text-lg">
+				Are you sure you want to delete this {elementToBeDelete.type} ?
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action>Continue</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

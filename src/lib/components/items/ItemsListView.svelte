@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { WindowOutline } from 'flowbite-svelte-icons';
-	import { IconBtn, ItemContextMenu, ItemProperty } from '$lib/components';
+	import { Button } from '$lib/components/ui/button';
+	import { ItemContextMenu, ItemProperty } from '$lib/components';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
+	import { PanelLeftOpen } from 'lucide-svelte';
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -23,6 +24,7 @@
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.color : 'GRAY';
 	};
+	// class="invisible group-hover:visible"
 </script>
 
 <div class="h-full space-y-2 grow overflow-y-auto">
@@ -44,12 +46,9 @@
 					on:clickDeleteItem
 				/>
 
-				<IconBtn
-					on:click={() => dispatch('clickOpenItem', item.id)}
-					class="invisible group-hover:visible"
-				>
-					<WindowOutline class="rotate-90" />
-				</IconBtn>
+				<Button variant="outline" size="icon" on:click={() => dispatch('clickOpenItem', item.id)}>
+					<PanelLeftOpen />
+				</Button>
 			</div>
 
 			<div class="flex flex-wrap gap-2">

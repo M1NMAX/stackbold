@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { BarsOutline, FolderOutline } from 'flowbite-svelte-icons';
 	import { getContext } from 'svelte';
-	import { IconBtn } from '$lib/components';
 	import type { Writable } from 'svelte/store';
+	import { Folder, Menu } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	export let data: PageData;
 
@@ -19,9 +18,14 @@
 <div class="w-full rounded bg-gray-50 flex flex-col justify-between p-1 overflow-hidden">
 	<div class="flex items-center space-x-1.5">
 		{#if !$sidebarState}
-			<IconBtn on:click={() => ($sidebarState = true)} class="btn btn-sm mr-1.5">
-				<BarsOutline size="sm" />
-			</IconBtn>
+			<Button
+				variant="outline"
+				size="icon"
+				on:click={() => ($sidebarState = true)}
+				class="btn btn-sm mr-1.5"
+			>
+				<Menu />
+			</Button>
 		{/if}
 		<h1 class=" font-semibold text-2xl">All Collections</h1>
 	</div>
@@ -30,14 +34,13 @@
 		{#each data.collections as collection}
 			<div class="flex flex-col rounded bg-gray-100 py-1 px-2">
 				<div class="flex items-center justify-between space-x-2">
-					<FolderOutline class="w-4 h-4" />
+					<Folder />
 					<h5 class="grow mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
 						{collection.name}
 					</h5>
-					<Button
-						on:click={() => goto(`/collections/${collection.id}`)}
-						class="bg-gray-50 hover:bg-gray-100 font-semibold text-black px-2 py-1">Open</Button
-					>
+					<Button variant="outline" on:click={() => goto(`/collections/${collection.id}`)}>
+						Open
+					</Button>
 				</div>
 
 				<p class="font-normal text-gray-700 dark:text-gray-400 leading-tight">

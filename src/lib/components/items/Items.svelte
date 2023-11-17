@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { ItemsListView, ItemsTableView, RadioButton } from '$lib/components';
+	import { List, Search, Table } from 'lucide-svelte';
+
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Label } from '$lib/components/ui/label';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { ItemsListView, ItemsTableView } from '$lib/components';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
-	import { ListOutline, SearchOutline, TableRowOutline } from 'flowbite-svelte-icons';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
-	import Dropdown from '../Dropdown/Dropdown.svelte';
-	import DropdownItem from '../Dropdown/DropdownItem.svelte';
 
 	export let items: ItemType[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -41,38 +44,48 @@
 	<div class="flex justify-between space-x-2">
 		<div class="flex justify-between items-center space-x-2">
 			<div class="inline-flex rounded shadow-sm bg-base-300">
-				<RadioButton value="list" bind:group={view}><ListOutline /> List</RadioButton>
-				<RadioButton value="table" bind:group={view}><TableRowOutline /> Table</RadioButton>
+				<RadioGroup.Root bind:value={view} class="flex space-x-2">
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="list" id="list" />
+						<Label for="list" class="flex items-center space-x-2">
+							<List class="w-4 h-4" /> List
+						</Label>
+					</div>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="table" id="table" />
+						<Label for="table" class="flex items-center space-x-2">
+							<Table class="w-4 h-4" /> Table
+						</Label>
+					</div>
+				</RadioGroup.Root>
 			</div>
 
-			<Dropdown alighEnd={false}>
-				<button slot="button" class="btn btn-sm">
-					Sort {currSortLabel}
-				</button>
-
-				<svelte:fragment>
-					{#each sortOptions as { label, field, order }}
-						<DropdownItem
-							on:click={() => (sortDetail = { field, order })}
-							class={`${currSortLabel === label && 'bg-primary/80 text-white'} `}
-						>
-							{label}
-						</DropdownItem>
-					{/each}
-				</svelte:fragment>
-			</Dropdown>
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger asChild let:builder>
+					<Button builders={[builder]} variant="outline">Sort {currSortLabel}</Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content class="w-56">
+					<DropdownMenu.Group>
+						{#each sortOptions as { label, field, order }}
+							<DropdownMenu.Item on:click={() => (sortDetail = { field, order })}>
+								{label}
+							</DropdownMenu.Item>
+						{/each}
+					</DropdownMenu.Group>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 		</div>
 		<div class="flex justify-between items-center space-x-2">
 			<div class="relative">
 				<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-					<SearchOutline class="text-primary" />
+					<Search class="text-primary w-5 h-5" />
 				</div>
 				<input
 					class="w-full h-9 pl-10 text-base font-semibold rounded bg-base-300 placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
 					placeholder="Find Item "
 				/>
 			</div>
-			<button on:click={onClickNewItemBtn} class="btn btn-sm btn-primary"> New item </button>
+			<Button size="sm" on:click={onClickNewItemBtn}>New item</Button>
 		</div>
 	</div>
 

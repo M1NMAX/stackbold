@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import { IconBtn, ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
+	import {  ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
 	import dayjs from '$lib/utils/dayjs';
-	import { DotsHorizontalOutline, WindowOutline } from 'flowbite-svelte-icons';
+	
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
-	import Dropdown from '../Dropdown/Dropdown.svelte';
-	import DropdownItem from '../Dropdown/DropdownItem.svelte';
+
+	import {  PanelLeftOpen, Settings2 } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -70,34 +72,27 @@
 			</th>
 
 			<th scope="col" class="text-left" title="Row actions">
-				<Dropdown>
-					<IconBtn slot="button">
-						<DotsHorizontalOutline />
-					</IconBtn>
-					<svelte:fragment>
-						{#each collectionProperties as property}
-							<DropdownItem>
-								<label class="label cursor-pointer space-x-2 py-0">
-									<input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
-									<span class="label-text">{property.name} </span>
-								</label>
-							</DropdownItem>
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger asChild let:builder>
+						<Button variant="outline" builders={[builder]}>
+							<Settings2 class="w-4 h-4" />
+							View
+						</Button>
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content class="w-56">
+						<DropdownMenu.Label>Toggle columns</DropdownMenu.Label>
+						<DropdownMenu.Separator />
+
+						{#each collectionProperties as property (property.id)}
+							<DropdownMenu.CheckboxItem>
+								{property.name}
+							</DropdownMenu.CheckboxItem>
 						{/each}
 
-						<DropdownItem>
-							<label class="label cursor-pointer space-x-2 py-0">
-								<input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
-								<span class="label-text">Updated </span>
-							</label>
-						</DropdownItem>
-						<DropdownItem>
-							<label class="label cursor-pointer space-x-2 py-0">
-								<input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
-								<span class="label-text">Created </span>
-							</label>
-						</DropdownItem>
-					</svelte:fragment>
-				</Dropdown>
+						<DropdownMenu.CheckboxItem>Updated</DropdownMenu.CheckboxItem>
+						<DropdownMenu.CheckboxItem>Created</DropdownMenu.CheckboxItem>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</th>
 		</tr>
 	</thead>
@@ -136,16 +131,20 @@
 					</td>
 
 					<td class="text-left whitespace-nowrap px-2">
-						<IconBtn on:click={() => dispatch('clickOpenItem', item.id)}>
-							<WindowOutline class="rotate-90" />
-						</IconBtn>
-
 						<ItemContextMenu
 							itemId={item.id}
 							on:clickHideItem
 							on:clickDuplicateItem
 							on:clickDeleteItem
 						/>
+
+						<Button
+							variant="outline"
+							size="icon"
+							on:click={() => dispatch('clickOpenItem', item.id)}
+						>
+							<PanelLeftOpen />
+						</Button>
 					</td>
 				</tr>
 			{/each}
