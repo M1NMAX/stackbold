@@ -38,7 +38,7 @@
 	&-ghost {
 		@apply bg-opacity-5;
 		&:focus {
-			@apply text-secondary bg-opacity-100;
+			@apply text-gray-900 bg-opacity-100;
 			box-shadow: none;
 		}
 	}
@@ -64,7 +64,7 @@
 		@apply bg-opacity-5;
 		&:focus,
 		&:focus-within {
-			@apply text-secondary bg-opacity-100;
+			@apply text-gray-900 bg-opacity-100;
 			box-shadow: none;
 		}
 	}
@@ -83,7 +83,7 @@
 	&-ghost {
 		@apply bg-opacity-5;
 		&:focus {
-			@apply text-secondary bg-opacity-100;
+			@apply text-gray-900 bg-opacity-100;
 		}
 	}
 }

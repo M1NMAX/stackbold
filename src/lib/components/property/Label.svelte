@@ -26,7 +26,7 @@
 			<DropdownMenu.Group>
 				<DropdownMenu.Item on:click={() => dispatch('edit', id)} class="space-x-1">
 					<Pen class="icon-xs" />
-					<span> Edit item </span>
+					<span> Edit Property </span>
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Item on:click={() => dispatch('duplicate', id)} class="space-x-1">

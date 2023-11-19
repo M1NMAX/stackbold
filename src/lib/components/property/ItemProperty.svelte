@@ -60,14 +60,14 @@
 					variant="outline"
 					role="combobox"
 					aria-expanded={open}
-					class={`${PROPERTY_COLORS[color]} h-6`}
+					class={`${PROPERTY_COLORS[color]} h-6 rounded outline-none border-0 py-1 px-1.5 font-semibold `}
 				>
 					{selectedValue}
 				</Button>
 			</Popover.Trigger>
 			<Popover.Content class="w-[200px] p-0">
 				<Command.Root>
-					<Command.Input placeholder="Search options..." />
+					<Command.Input placeholder={`Search ${property.name} options...`} />
 					<Command.Empty>No option found.</Command.Empty>
 					<Command.Group>
 						{#each property.options as option}

@@ -585,7 +585,7 @@
 				value={currCollection.description}
 				on:input={handleOnInputCollectionDesc}
 				spellcheck={false}
-				class="textarea textarea-ghost text-base"
+				class="w-full textarea textarea-ghost text-base"
 			/>
 		</label>
 	{/if}
