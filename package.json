@@ -57,6 +57,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"lucia": "^2.7.1",
 		"lucide-svelte": "^0.292.0",
+		"mode-watcher": "^0.1.1",
 		"superjson": "^2.2.0",
 		"svelte-french-toast": "^1.2.0",
 		"tailwind-merge": "^2.0.0",
