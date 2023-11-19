@@ -18,23 +18,25 @@
 
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+			<Button builders={[builder]} variant="outline" size="xs">
+				<MoreHorizontal class="icon-xs" />
+			</Button>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => dispatch('edit', id)}>
-					<Pen class="mr-2 h-4 w-4" />
-					<span> Hide item </span>
+				<DropdownMenu.Item on:click={() => dispatch('edit', id)} class="space-x-1">
+					<Pen class="icon-xs" />
+					<span> Edit item </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('duplicate', id)}>
-					<Copy class="mr-2 h-4 w-4" />
+				<DropdownMenu.Item on:click={() => dispatch('duplicate', id)} class="space-x-1">
+					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item on:click={() => dispatch('delete', id)}>
-					<Trash class="mr-2 h-4 w-4" />
+				<DropdownMenu.Item on:click={() => dispatch('delete', id)} class="space-x-1">
+					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>

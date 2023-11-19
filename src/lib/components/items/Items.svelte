@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { List, Search, Table } from 'lucide-svelte';
-
 	import { Button } from '$lib/components/ui/button';
+	import { Label } from '$lib/components/ui/label';
+	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { ItemsListView, ItemsTableView } from '$lib/components';
-	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 
 	export let items: ItemType[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -41,27 +42,36 @@
 <div class="h-full p-1 space-y-2">
 	<!-- View handler -->
 	<div class="flex justify-between space-x-2">
-		<div class="flex justify-between items-center space-x-2">
-			<Tabs.Root value="list" class="w-44">
-				<Tabs.List class="grid w-full grid-cols-2">
-					<Tabs.Trigger
-						value="list"
-						on:click={() => (view = 'list')}
-						class="flex space-x-2 text-base"
+		<div class="flex justify-between items-center space-x-0.5">
+			<RadioGroup.Root bind:value={view} class="flex space-x-0 bg-gray-100 p-1 ">
+				<div class="flex items-center space-x-2">
+					<Label
+						for="list"
+						class={`${view === 'list' ? 'bg-white' : 'bg-gray-100'} py-0.5 px-1 rounded-sm`}
 					>
-						<List class="icon-xs" />
-						<span> List </span>
-					</Tabs.Trigger>
-					<Tabs.Trigger
-						value="table"
-						on:click={() => (view = 'table')}
-						class="flex space-x-2 text-base"
+						<RadioGroup.Item value="list" id="list" class="sr-only" />
+
+						<div class="flex items-center justify-between space-x-2 text-base">
+							<List class="icon-xs" />
+							<span> List </span>
+						</div>
+					</Label>
+				</div>
+
+				<div class="flex items-center space-x-2">
+					<Label
+						for="table"
+						class={`${view === 'table' ? 'bg-white' : 'bg-gray-100'} py-0.5 px-1 rounded-sm`}
 					>
-						<Table class="icon-xs" />
-						<span> Table </span>
-					</Tabs.Trigger>
-				</Tabs.List>
-			</Tabs.Root>
+						<RadioGroup.Item value="table" id="table" class="sr-only" />
+
+						<div class="flex items-center justify-between space-x-2 text-base">
+							<Table class="icon-xs" />
+							<span> Table </span>
+						</div>
+					</Label>
+				</div>
+			</RadioGroup.Root>
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
