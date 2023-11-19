@@ -48,12 +48,8 @@
 		<label
 			class={` ${PROPERTY_COLORS[color]} label rounded inline-flex items-center justify-center space-x-1 text-sm   font-semibold px-1 py-0.5  `}
 		>
-			<input
-				type="checkbox"
-				checked={value === 'true'}
-				on:input={handleOnInput}
-				class="checkbox checkbox-xs checkbox-primary"
-			/>
+			<input type="checkbox" checked={value === 'true'} on:input={handleOnInput} class="checkbox" />
+
 			<span class="label-text font-semibold">{property.name} </span>
 		</label>
 	{:else if property.type === 'SELECT'}

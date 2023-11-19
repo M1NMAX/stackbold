@@ -19,7 +19,7 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+		<Button builders={[builder]} variant="outline" size="xs"><MoreHorizontal /></Button>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content class="w-56">
 		<DropdownMenu.Group>

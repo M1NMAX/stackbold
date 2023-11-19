@@ -2,6 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
+.checkbox {
+	--chkbg: theme(colors.rose.500);
+	--chkfg: theme(colors.gray.50);
+	@apply h-4 w-4 cursor-pointer appearance-none rounded-md border-2 border-gray-300 bg-gray-100 hover:bg-gray-200;
+
+	&:checked,
+	&[checked='true'],
+	&[aria-checked='true'] {
+		@apply bg-primary  bg-no-repeat border-primary  text-primary;
+		animation: checkmark var(--animation-input, 0.2s) ease-out;
+		background-image: linear-gradient(-45deg, transparent 65%, var(--chkbg) 65.99%),
+			linear-gradient(45deg, transparent 75%, var(--chkbg) 75.99%),
+			linear-gradient(-45deg, var(--chkbg) 40%, transparent 40.99%),
+			linear-gradient(
+				45deg,
+				var(--chkbg) 30%,
+				var(--chkfg) 30.99%,
+				var(--chkfg) 40%,
+				transparent 40.99%
+			),
+			linear-gradient(-45deg, var(--chkfg) 50%, var(--chkbg) 50.99%);
+	}
+}
+
+.textarea {
+	@apply bg-secondary rounded-md border border-transparent;
+	&-bordered {
+		@apply border-secondary/20;
+	}
+	&:focus {
+		box-shadow: none;
+		@apply border-secondary/20 outline-secondary/20 outline outline-2 outline-offset-2;
+	}
+	&-ghost {
+		@apply bg-opacity-5;
+		&:focus {
+			@apply text-secondary bg-opacity-100;
+			box-shadow: none;
+		}
+	}
+}
+
+.input {
+	@apply bg-secondary  rounded-md border border-transparent text-base;
+	input:focus {
+		@apply outline-none;
+	}
+	&[list]::-webkit-calendar-picker-indicator {
+		line-height: 1em;
+	}
+	&-bordered {
+		@apply border-secondary/20;
+	}
+	&:focus,
+	&:focus-within {
+		box-shadow: none;
+		@apply border-secondary/20 outline-secondary/20 outline outline-2 outline-offset-2;
+	}
+	&-ghost {
+		@apply bg-opacity-5;
+		&:focus,
+		&:focus-within {
+			@apply text-secondary bg-opacity-100;
+			box-shadow: none;
+		}
+	}
+}
+
+.select {
+	@apply bg-secondary  rounded-md border border-transparent pr-10;
+	&-bordered {
+		@apply border-secondary/20;
+	}
+
+	&:focus {
+		box-shadow: none;
+		@apply border-secondary/20 outline-secondary/20 outline outline-2 outline-offset-2;
+	}
+	&-ghost {
+		@apply bg-opacity-5;
+		&:focus {
+			@apply text-secondary bg-opacity-100;
+		}
+	}
+}
+
 /* ICON   */
 .icon-xxs {
 	@apply w-4 h-4 focus:outline-none;
@@ -34,8 +120,8 @@
 		--popover-foreground: 240 10% 3.9%;
 		--primary: 346.8 77.2% 49.8%;
 		--primary-foreground: 355.7 100% 97.3%;
-		--secondary: 240 4.8% 95.9%;
-		--secondary-foreground: 240 5.9% 10%;
+		--secondary: 180 2% 90%;
+		--secondary-foreground: 215 28% 17%;
 		--muted: 240 4.8% 95.9%;
 		--muted-foreground: 240 3.8% 46.1%;
 		--accent: 240 4.8% 95.9%;

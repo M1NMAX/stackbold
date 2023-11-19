@@ -46,8 +46,8 @@
 					on:clickDeleteItem
 				/>
 
-				<Button variant="outline" size="icon" on:click={() => dispatch('clickOpenItem', item.id)}>
-					<PanelLeftOpen />
+				<Button variant="outline" size="xs" on:click={() => dispatch('clickOpenItem', item.id)}>
+					<PanelLeftOpen class="icon-sm" />
 				</Button>
 			</div>
 
