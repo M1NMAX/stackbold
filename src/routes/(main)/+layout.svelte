@@ -5,8 +5,7 @@
 		Dna,
 		Home,
 		LogOut,
-		Plus,
-		PlusCircle,
+		PlusSquare,
 		Search,
 		Settings
 	} from 'lucide-svelte';
@@ -23,6 +22,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Accordion from '$lib/components/ui/accordion';
 
 	export let data: LayoutData;
 
@@ -71,25 +71,29 @@
 			<div class="space-y-0.5 px-0">
 				<div class="w-full flex justify-between space-x-0.5 px-1">
 					<DropdownMenu.Root>
-						<div class="w-full flex items-center justify-between space-x-1">
+						<div class="w-full flex items-center justify-between space-x-1 hover:bg-gray-200">
 							<DropdownMenu.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="outline" class="grow">
-									<span class="flex justify-start items-center space-x-1.5">
+								<Button
+									builders={[builder]}
+									variant="secondary"
+									class="grow h-8 flex justify-start px-1"
+								>
+									<span class="flex items-center space-x-1.5">
 										<img
 											src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
-											class=" rounded-full h-6 w-6"
+											class=" rounded h-6 w-6"
 											alt="avatar"
 										/>
 										<span class="grow font-semibold">{data.user.name}</span>
 									</span>
 								</Button>
 							</DropdownMenu.Trigger>
-							<Button variant="outline" size="icon" on:click={() => ($sidebarStateStore = false)}>
-								<ChevronsLeft />
+							<Button variant="secondary" size="xs" on:click={() => ($sidebarStateStore = false)}>
+								<ChevronsLeft class="icon-xs" />
 							</Button>
 						</div>
 						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Label>My Account</DropdownMenu.Label>
+							<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Group>
 								<DropdownMenu.Item href="/settings">
@@ -141,12 +145,12 @@
 
 				<SidebarItem label="New collection" on:click={() => (createCollectionModal = true)}>
 					<svelte:fragment slot="icon">
-						<PlusCircle />
+						<PlusSquare />
 					</svelte:fragment>
 				</SidebarItem>
 			</div>
 
-			<div>
+			<!-- <div>
 				<span class="text-sm font-semibold px-1"> Favourites </span>
 				{#each favourites as collection}
 					<SidebarCollection {collection} active={activeCollection(collection.id)} />
@@ -166,7 +170,35 @@
 						<SidebarCollection {collection} active={activeCollection(collection.id)} />
 					{/each}
 				</div>
-			</div>
+			</div> -->
+
+			<Accordion.Root class="w-full space-y-2" multiple value={['item-1', 'item-2']}>
+				<Accordion.Item value="item-1">
+					<Accordion.Trigger
+						class="justify-start py-0 px-1 text-sm font-semibold  hover:no-underline hover:bg-gray-200"
+					>
+						Favourites</Accordion.Trigger
+					>
+					<Accordion.Content>
+						{#each favourites as collection}
+							<SidebarCollection {collection} active={activeCollection(collection.id)} />
+						{/each}
+					</Accordion.Content>
+				</Accordion.Item>
+				<Accordion.Item value="item-2">
+					<Accordion.Trigger
+						class="justify-start space-x-2 py-0 px-1 text-sm font-semibold   hover:no-underline hover:bg-gray-200"
+					>
+						Personal
+					</Accordion.Trigger>
+
+					<Accordion.Content>
+						{#each data.collections as collection}
+							<SidebarCollection {collection} active={activeCollection(collection.id)} />
+						{/each}
+					</Accordion.Content>
+				</Accordion.Item>
+			</Accordion.Root>
 		</div>
 	</Sidebar>
 
