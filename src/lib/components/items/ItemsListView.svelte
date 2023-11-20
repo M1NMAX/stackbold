@@ -41,7 +41,7 @@
 
 				<ItemContextMenu
 					itemId={item.id}
-					on:clickHideItem
+					on:clickRenameItem
 					on:clickDuplicateItem
 					on:clickDeleteItem
 				/>

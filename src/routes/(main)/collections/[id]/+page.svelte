@@ -590,6 +590,7 @@
 		</label>
 	{/if}
 
+	<!-- //TODO: impl rename item -->
 	<Items
 		onClickNewItemBtn={() => handleCreateItem('untitle item', true)}
 		currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
@@ -597,7 +598,7 @@
 		bind:view={currView}
 		collectionProperties={currCollection.properties}
 		on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-		on:clickHideItem={(e) => handleUpdateItem({ id: e.detail, data: { isHidden: true } })}
+		on:clickRename={(e) => handleUpdateItem({ id: e.detail, data: { name: 'something' } })}
 		on:clickDuplicateItem={(e) => handleDuplicateItem(e.detail)}
 		on:clickDeleteItem={(e) => {
 			elementToBeDelete = { id: e.detail, type: 'item' };
@@ -661,26 +662,30 @@
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-56">
 						<DropdownMenu.Group>
+							<!-- TODO: Implement rename -->
 							<DropdownMenu.Item
+								class="space-x-2"
 								on:click={() =>
 									handleUpdateItem({
 										id: drawerSelectedItem ? drawerSelectedItem.id : '',
-										data: { isHidden: true }
+										data: { name: 'something' }
 									})}
 							>
-								<EyeOff class="mr-2 h-4 w-4" />
-								<span> Hide item </span>
+								<Pencil class="icon-xs" />
+								<span> Rename </span>
 							</DropdownMenu.Item>
 
 							<DropdownMenu.Item
+								class="space-x-2"
 								on:click={() =>
 									handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
 							>
-								<Copy class="mr-2 h-4 w-4" />
+								<Copy class="icon-xs" />
 								<span>Duplicate</span>
 							</DropdownMenu.Item>
 
 							<DropdownMenu.Item
+								class="space-x-2"
 								on:click={() => {
 									if (!drawerSelectedItem) return;
 
@@ -690,7 +695,7 @@
 									selectedItemId = drawerSelectedItem && drawerSelectedItem.id;
 								}}
 							>
-								<Trash class="mr-2 h-4 w-4" />
+								<Trash class="icon-xs" />
 								<span>Delete</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>

@@ -133,7 +133,7 @@
 					<td class="text-left whitespace-nowrap px-2">
 						<ItemContextMenu
 							itemId={item.id}
-							on:clickHideItem
+							on:clickRename
 							on:clickDuplicateItem
 							on:clickDeleteItem
 						/>

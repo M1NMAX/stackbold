@@ -120,7 +120,7 @@
 					order: sortDetail.order === 'asc' ? 'desc' : 'asc'
 				})}
 			on:clickOpenItem
-			on:clickHideItem
+			on:clickRenameItem
 			on:clickDuplicateItem
 			on:clickDeleteItem
 			on:updPropertyValue
@@ -131,7 +131,7 @@
 			{currActiveItemId}
 			{collectionProperties}
 			on:clickOpenItem
-			on:clickHideItem
+			on:clickRenameItem
 			on:clickDuplicateItem
 			on:clickDeleteItem
 			on:updPropertyValue

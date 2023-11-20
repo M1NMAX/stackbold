@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Copy, EyeOff, MoreHorizontal, Trash } from 'lucide-svelte';
+	import { Copy, EyeOff, MoreHorizontal, PanelLeftOpen, Pencil, Trash } from 'lucide-svelte';
 
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -10,7 +10,7 @@
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
-		clickHideItem: string;
+		clickRenameItem: string;
 		clickDuplicateItem: string;
 		clickDeleteItem: string;
 	}>();
@@ -23,18 +23,23 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content class="w-56">
 		<DropdownMenu.Group>
-			<DropdownMenu.Item on:click={() => dispatch('clickHideItem', itemId)}>
-				<EyeOff class="mr-2 h-4 w-4" />
-				<span> Hide item </span>
+			<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)} class="space-x-2">
+				<PanelLeftOpen class="icon-xs" />
+				<span> Open in side </span>
 			</DropdownMenu.Item>
 
-			<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
-				<Copy class="mr-2 h-4 w-4" />
+			<DropdownMenu.Item on:click={() => dispatch('clickRenameItem', itemId)} class="space-x-2">
+				<Pencil class="icon-xs" />
+				<span> Rename </span>
+			</DropdownMenu.Item>
+
+			<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)} class="space-x-2">
+				<Copy class="icon-xs" />
 				<span>Duplicate</span>
 			</DropdownMenu.Item>
 
-			<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)}>
-				<Trash class="mr-2 h-4 w-4" />
+			<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="space-x-2">
+				<Trash class="icon-xs" />
 				<span>Delete</span>
 			</DropdownMenu.Item>
 		</DropdownMenu.Group>
