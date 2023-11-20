@@ -18,6 +18,7 @@
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
 		clickTableHead: { field: keyof IBaseSchema };
+		updPropertyVisibility: { pid: string; name: string; value: boolean };
 	}>();
 
 	const getItemProperty = (pid: string, properties: ItemPropertyType[]) => {
@@ -51,9 +52,11 @@
 				</div>
 			</th>
 			{#each collectionProperties as property (property.id)}
-				<th scope="col" class="text-left rounded-t-md hover:bg-base-200 py-2 px-1 cursor-pointer">
-					{property.name}
-				</th>
+				{#if property.isVisibleOnTableView}
+					<th scope="col" class="text-left rounded-t-md hover:bg-base-200 py-2 px-1 cursor-pointer">
+						{property.name}
+					</th>
+				{/if}
 			{/each}
 
 			<th scope="col" class="text-left" title="Row actions">
@@ -69,7 +72,16 @@
 						<DropdownMenu.Separator />
 
 						{#each collectionProperties as property (property.id)}
-							<DropdownMenu.CheckboxItem>
+							<DropdownMenu.CheckboxItem
+								checked={property.isVisibleOnTableView}
+								on:click={() => {
+									dispatch('updPropertyVisibility', {
+										pid: property.id,
+										name: 'isVisibleOnTableView',
+										value: !property.isVisibleOnTableView
+									});
+								}}
+							>
 								{property.name}
 							</DropdownMenu.CheckboxItem>
 						{/each}
@@ -91,22 +103,24 @@
 					<td class="text-left py-2 px-1"> {item.name}</td>
 
 					{#each collectionProperties as property (property.id)}
-						{@const itemProperty = getItemProperty(property.id, item.properties)}
-						<td class="text-left py-2 px-1">
-							{#if itemProperty}
-								<ItemProperty
-									itemId={item.id}
-									{property}
-									color={property.type === 'SELECT'
-										? getOptionColor(property, itemProperty.value)
-										: 'GRAY'}
-									value={property.type === 'SELECT'
-										? getOptionValue(property, itemProperty.value)
-										: itemProperty.value}
-									on:updPropertyValue
-								/>
-							{/if}
-						</td>
+						{#if property.isVisibleOnTableView}
+							{@const itemProperty = getItemProperty(property.id, item.properties)}
+							<td class="text-left py-2 px-1">
+								{#if itemProperty}
+									<ItemProperty
+										itemId={item.id}
+										{property}
+										color={property.type === 'SELECT'
+											? getOptionColor(property, itemProperty.value)
+											: 'GRAY'}
+										value={property.type === 'SELECT'
+											? getOptionValue(property, itemProperty.value)
+											: itemProperty.value}
+										on:updPropertyValue
+									/>
+								{/if}
+							</td>
+						{/if}
 					{/each}
 
 					<td class="flex items-center space-x-2 text-left whitespace-nowrap px-2">

@@ -29,11 +29,11 @@
 			on:input={handleOnInput}
 			class="checkbox"
 		/>
-		<Label id={property.id} name={property.name} on:edit on:duplicate on:delete />
+		<Label {property} on:edit on:duplicate on:delete on:updPropertyVisibility />
 	</div>
 {:else}
 	<div class="form-control rounded bg-gray-100 px-1 pb-1">
-		<Label id={property.id} name={property.name} on:edit on:duplicate on:delete />
+		<Label {property} on:edit on:duplicate on:delete on:updPropertyVisibility />
 
 		{#if property.type === PropertyType.SELECT}
 			<select {value} on:input={handleOnInput} class="w-full h-7 select select-ghost bg-gray-200">

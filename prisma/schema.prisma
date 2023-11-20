@@ -94,11 +94,13 @@ type Option {
 }
 
 type CollectionProperty {
-  id        String       @default(uuid()) @map("_id")
-  name      String
-  createdAt DateTime     @default(now())
-  type      PropertyType @default(TEXT)
-  options   Option[]
+  id                   String       @default(uuid()) @map("_id")
+  name                 String
+  createdAt            DateTime     @default(now())
+  type                 PropertyType @default(TEXT)
+  options              Option[]
+  isVisibleOnListView  Boolean      @default(true)
+  isVisibleOnTableView Boolean      @default(true)
 }
 
 type ItemProperty {

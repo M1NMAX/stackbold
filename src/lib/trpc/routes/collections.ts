@@ -58,6 +58,8 @@ export const collections = createTRPCRouter({
 					id: z.string(),
 					name: z.string().optional(),
 					type: PropertyTypeSchema.optional(),
+					isVisibleOnListView: z.boolean().optional(),
+					isVisibleOnTableView: z.boolean().optional(),
 					options: z
 						.array(
 							z.object({

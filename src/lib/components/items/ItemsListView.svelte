@@ -53,19 +53,21 @@
 
 			<div class="flex flex-wrap gap-2">
 				{#each collectionProperties as property (property.id)}
-					{@const itemProperty = getItemProperty(property.id, item.properties)}
-					{#if itemProperty}
-						<ItemProperty
-							itemId={item.id}
-							{property}
-							color={property.type === 'SELECT'
-								? getOptionColor(property, itemProperty.value)
-								: 'GRAY'}
-							value={property.type === 'SELECT'
-								? getOptionValue(property, itemProperty.value)
-								: itemProperty.value}
-							on:updPropertyValue
-						/>
+					{#if property.isVisibleOnListView}
+						{@const itemProperty = getItemProperty(property.id, item.properties)}
+						{#if itemProperty}
+							<ItemProperty
+								itemId={item.id}
+								{property}
+								color={property.type === 'SELECT'
+									? getOptionColor(property, itemProperty.value)
+									: 'GRAY'}
+								value={property.type === 'SELECT'
+									? getOptionValue(property, itemProperty.value)
+									: itemProperty.value}
+								on:updPropertyValue
+							/>
+						{/if}
 					{/if}
 				{/each}
 			</div>

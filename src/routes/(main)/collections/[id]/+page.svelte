@@ -611,6 +611,9 @@
 				value: e.detail.property.value
 			});
 		}}
+		on:updPropertyVisibility={(e) => {
+			handleUpdateProperty({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+		}}
 	/>
 
 	<div class="relative">
@@ -723,6 +726,9 @@
 							property.id,
 							drawerSelectedItem ? drawerSelectedItem.properties : []
 						)}
+						on:updPropertyVisibility={(e) => {
+							handleUpdateProperty({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+						}}
 						on:updPropertyValue={(e) => {
 							if (!drawerSelectedItem) return;
 

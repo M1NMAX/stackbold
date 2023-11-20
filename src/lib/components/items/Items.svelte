@@ -124,6 +124,7 @@
 			on:clickDuplicateItem
 			on:clickDeleteItem
 			on:updPropertyValue
+			on:updPropertyVisibility
 		/>
 	{:else}
 		<ItemsListView
