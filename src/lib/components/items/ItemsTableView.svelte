@@ -2,7 +2,6 @@
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
-	import dayjs from '$lib/utils/dayjs';
 
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
@@ -56,20 +55,6 @@
 					{property.name}
 				</th>
 			{/each}
-			<th
-				scope="col"
-				class="whitespace-nowrap text-left rounded-t-md hover:bg-base-200 py-2 px-1 cursor-pointer"
-			>
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
-				<div
-					on:click={() => dispatch('clickTableHead', { field: 'updatedAt' })}
-					class="flex justify-between items-center"
-				>
-					<span> Last updated </span>
-					<SortArrow bind:order />
-				</div>
-			</th>
 
 			<th scope="col" class="text-left" title="Row actions">
 				<DropdownMenu.Root>
@@ -88,9 +73,6 @@
 								{property.name}
 							</DropdownMenu.CheckboxItem>
 						{/each}
-
-						<DropdownMenu.CheckboxItem>Updated</DropdownMenu.CheckboxItem>
-						<DropdownMenu.CheckboxItem>Created</DropdownMenu.CheckboxItem>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 			</th>
@@ -126,11 +108,8 @@
 							{/if}
 						</td>
 					{/each}
-					<td class="whitespace-nowrap text-left py-2 px-1">
-						{dayjs(item.updatedAt).fromNow()}
-					</td>
 
-					<td class="text-left whitespace-nowrap px-2">
+					<td class="flex items-center space-x-2 text-left whitespace-nowrap px-2">
 						<ItemContextMenu
 							itemId={item.id}
 							on:clickRename

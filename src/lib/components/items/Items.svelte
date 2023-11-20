@@ -75,7 +75,7 @@
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="outline">Sort {currSortLabel}</Button>
+					<Button builders={[builder]} variant="outline" size="sm">Sort {currSortLabel}</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content class="w-56">
 					<DropdownMenu.Label>Sort By</DropdownMenu.Label>
