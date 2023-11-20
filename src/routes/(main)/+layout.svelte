@@ -150,28 +150,6 @@
 				</SidebarItem>
 			</div>
 
-			<!-- <div>
-				<span class="text-sm font-semibold px-1"> Favourites </span>
-				{#each favourites as collection}
-					<SidebarCollection {collection} active={activeCollection(collection.id)} />
-				{/each}
-			</div>
-
-			<div class="grow overflow-y-auto">
-				<span class="flex justify-between items-center pr-2">
-					<span class="text-sm font-semibold px-1"> Personal </span>
-
-					<Button variant="outline" size="icon" on:click={() => (createCollectionModal = true)}>
-						<Plus class="w-4 h-4" />
-					</Button>
-				</span>
-				<div class="space-y-0.5">
-					{#each data.collections as collection}
-						<SidebarCollection {collection} active={activeCollection(collection.id)} />
-					{/each}
-				</div>
-			</div> -->
-
 			<Accordion.Root class="w-full space-y-2" multiple value={['item-1', 'item-2']}>
 				<Accordion.Item value="item-1">
 					<Accordion.Trigger

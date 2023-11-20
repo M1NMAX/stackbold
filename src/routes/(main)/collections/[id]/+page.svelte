@@ -523,20 +523,20 @@
 		</Button>
 
 		<Button
-			variant="outline"
+			variant="secondary"
 			size="icon"
 			on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}
 		>
 			{#if currCollection.isFavourite}
-				<Heart class="text-primary" />
-			{:else}
 				<HeartOff />
+			{:else}
+				<Heart />
 			{/if}
 		</Button>
 
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+				<Button builders={[builder]} variant="secondary" size="icon"><MoreHorizontal /></Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
 				<DropdownMenu.Group>
@@ -638,7 +638,7 @@
 	<div class="h-full flex flex-col space-y-1.5 rounded-md bg-gray-50 p-1">
 		<div class="flex justify-between items-center">
 			<Button
-				variant="outline"
+				variant="secondary"
 				size="icon"
 				on:click={() => {
 					isDrawerHidden = true;
@@ -658,7 +658,7 @@
 
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="outline" size="icon"><MoreHorizontal /></Button>
+						<Button builders={[builder]} variant="secondary" size="icon"><MoreHorizontal /></Button>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-56">
 						<DropdownMenu.Group>
