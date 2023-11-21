@@ -15,7 +15,6 @@
 		UserPlus,
 		X
 	} from 'lucide-svelte';
-
 	import { sineIn } from 'svelte/easing';
 	import type { PageData } from './$types';
 	import {
@@ -25,13 +24,7 @@
 		type Collection,
 		type CollectionProperty as CollectionPropertyType
 	} from '@prisma/client';
-	import {
-		CollectionProperty,
-		CollectionPropertyOptions,
-		CollectionPropertyInputWrapper,
-		Items,
-		Textarea
-	} from '$lib/components';
+	import { CollectionProperty, Items, Textarea } from '$lib/components';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -46,15 +39,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import { Drawer } from '$lib/components/ui/drawer';
 
 	export let data: PageData;
 
 	$: currCollection = data.collection;
 	$: currItems = data.items;
-
-	let isSheetOpen = false;
 
 	let isPropertyDialogOpen = false;
 	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
@@ -296,7 +286,6 @@
 	};
 
 	// Property Handlers
-	const propertyTypes = Object.values(PropertyType);
 
 	const getProperty = (collection: Collection, pid: string) =>
 		collection.properties.find((prop) => prop.id === pid) || null;
@@ -312,11 +301,6 @@
 		const option = collectionProp.options.find((opt) => opt.id === itemProp.value);
 
 		return option ? option.id : '';
-	};
-
-	const handleEditProperty = (pid: string) => {
-		isPropertyDialogOpen = true;
-		selectedProperty = getProperty(currCollection, pid);
 	};
 
 	const handleDuplicateProperty = async (pid: string) => {
@@ -410,19 +394,6 @@
 		},
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
-
-	const handleOnInputPropertyField = (e: Event) => {
-		//TODO: correct item value when property change
-		const input = e.target as HTMLInputElement;
-
-		const { id, name, value } = input;
-
-		const data: { [key: string]: string } = {};
-
-		data[name] = value;
-
-		handleUpdateProperty({ id, ...data });
-	};
 
 	const handleAddPropertyOption = async (pid: string, value: string) => {
 		try {
@@ -590,7 +561,7 @@
 		</label>
 	{/if}
 
-	<!-- //TODO: impl rename item -->
+	<!-- //TODO: impl rename item menu-->
 	<Items
 		onClickNewItemBtn={() => handleCreateItem('untitle item', true)}
 		currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
@@ -726,7 +697,7 @@
 							property.id,
 							drawerSelectedItem ? drawerSelectedItem.properties : []
 						)}
-						on:updPropertyVisibility={(e) => {
+						on:updPropertyField={(e) => {
 							handleUpdateProperty({ id: e.detail.pid, [e.detail.name]: e.detail.value });
 						}}
 						on:updPropertyValue={(e) => {
@@ -737,11 +708,31 @@
 								value: e.detail.value
 							});
 						}}
-						on:edit={(e) => handleEditProperty(e.detail)}
 						on:duplicate={(e) => handleDuplicateProperty(e.detail)}
 						on:delete={(e) => {
 							elementToBeDelete = { id: e.detail, type: 'property' };
 
+							isDeleteModalOpen = true;
+						}}
+						on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}
+						on:updOptColor={({ detail }) => {
+							handleUpdatePropertyOption(detail.propertyId, {
+								id: detail.optionId,
+								color: detail.color
+							});
+						}}
+						on:updOptValue={({ detail }) => {
+							handleUpdatePropertyOption(detail.propertyId, {
+								id: detail.optionId,
+								value: detail.value
+							});
+						}}
+						on:deleteOpt={({ detail }) => {
+							elementToBeDelete = {
+								id: detail.propertyId,
+								option: detail.optionId,
+								type: 'option'
+							};
 							isDeleteModalOpen = true;
 						}}
 					/>
@@ -756,69 +747,6 @@
 		</div>
 	</div>
 </Drawer>
-
-<Dialog.Root bind:open={isPropertyDialogOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Property</Dialog.Title>
-		</Dialog.Header>
-		<form class="space-y-1">
-			<CollectionPropertyInputWrapper name="Name">
-				<input
-					id={selectedProperty?.id}
-					value={selectedProperty?.name}
-					on:input={handleOnInputPropertyField}
-					name="name"
-					class="input input-sm input-ghost font-semibold text-sm bg-base-200 col-span-9"
-				/>
-			</CollectionPropertyInputWrapper>
-
-			<CollectionPropertyInputWrapper name="Type">
-				<select
-					id={selectedProperty?.id}
-					name="type"
-					value={selectedProperty?.type}
-					on:input={handleOnInputPropertyField}
-					class="select select-sm select-ghost font-semibold text-sm bg-base-200 col-span-9"
-				>
-					{#each propertyTypes as propertyType}
-						<option value={propertyType}>
-							{capitalizeFirstLetter(propertyType)}
-						</option>
-					{/each}
-				</select>
-			</CollectionPropertyInputWrapper>
-
-			{#if selectedProperty && selectedProperty.type === 'SELECT' && selectedProperty.options}
-				<CollectionPropertyOptions
-					propertyId={selectedProperty.id}
-					options={selectedProperty.options}
-					on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}
-					on:updOptColor={({ detail }) => {
-						handleUpdatePropertyOption(detail.propertyId, {
-							id: detail.optionId,
-							color: detail.color
-						});
-					}}
-					on:updOptValue={({ detail }) => {
-						handleUpdatePropertyOption(detail.propertyId, {
-							id: detail.optionId,
-							value: detail.value
-						});
-					}}
-					on:deleteOpt={({ detail }) => {
-						elementToBeDelete = {
-							id: detail.propertyId,
-							option: detail.optionId,
-							type: 'option'
-						};
-						isDeleteModalOpen = true;
-					}}
-				/>
-			{/if}
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
 
 <AlertDialog.Root bind:open={isDeleteModalOpen}>
 	<AlertDialog.Content>

@@ -4,7 +4,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Tabs from '$lib/components/ui/tabs';
 	import { ItemsListView, ItemsTableView } from '$lib/components';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
 	import * as RadioGroup from '$lib/components/ui/radio-group';

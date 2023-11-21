@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Option as OptionType } from '@prisma/client';
-
 	import { fade } from 'svelte/transition';
 	import Option from './Option.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { Plus, X } from 'lucide-svelte';
+	import { Button } from '../ui/button';
 
 	export let propertyId: string;
 	export let options: OptionType[];
@@ -14,16 +14,16 @@
 	let showInput = false;
 </script>
 
-<div class=" flex flex-col space-y-1.5 border-t pt-1">
+<div class=" flex flex-col space-y-1.5 pt-1">
 	<div class="flex justify-between space-x-1">
 		<span class="text-sm font-semibold">Options</span>
-		<button on:click={() => (showInput = !showInput)} class="btn btn-xs p-1 rounded-xs">
+		<Button variant="outline" size="xs" on:click={() => (showInput = !showInput)}>
 			{#if showInput}
-				<X class="w-4 h-4" />
+				<X class="icon-xs" />
 			{:else}
-				<Plus class="w-4 h-4" />
+				<Plus class="icon-xs" />
 			{/if}
-		</button>
+		</Button>
 	</div>
 
 	<input

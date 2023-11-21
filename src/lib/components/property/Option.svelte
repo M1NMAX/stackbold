@@ -89,6 +89,6 @@
 		on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}
 		class="rounded-md"
 	>
-		<Trash class="icon-xss" />
+		<Trash class="icon-xs" />
 	</Button>
 </div>
