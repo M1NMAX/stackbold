@@ -758,7 +758,11 @@
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action>Continue</AlertDialog.Action>
+			<AlertDialog.Action asChild let:builder>
+				<Button builders={[builder]} variant="destructive" on:click={handleOnClickModalDeleteBtn}>
+					Continue
+				</Button>
+			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
