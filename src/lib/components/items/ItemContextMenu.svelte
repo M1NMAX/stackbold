@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Copy, EyeOff, MoreHorizontal, PanelLeftOpen, Pencil, Trash } from 'lucide-svelte';
+	import { Copy, MoreHorizontal, PanelLeftOpen, Pencil, Trash } from 'lucide-svelte';
 
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -19,7 +19,7 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" size="xs"><MoreHorizontal /></Button>
+		<Button builders={[builder]} variant="ghost" size="xs"><MoreHorizontal /></Button>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content class="w-56">
 		<DropdownMenu.Group>

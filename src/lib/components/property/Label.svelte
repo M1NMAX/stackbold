@@ -85,7 +85,7 @@
 
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="outline" size="xs">
+			<Button builders={[builder]} variant="ghost" size="xs">
 				<MoreHorizontal class="icon-xs" />
 			</Button>
 		</DropdownMenu.Trigger>

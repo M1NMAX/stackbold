@@ -131,8 +131,8 @@
 							on:clickDeleteItem
 						/>
 
-						<Button variant="outline" size="xs" on:click={() => dispatch('clickOpenItem', item.id)}>
-							<PanelLeftOpen class="icon-xs" />
+						<Button variant="ghost" size="xs" on:click={() => dispatch('clickOpenItem', item.id)}>
+							<PanelLeftOpen class="icon-sm" />
 						</Button>
 					</td>
 				</tr>
