@@ -150,8 +150,12 @@
 				</SidebarItem>
 			</div>
 
-			<Accordion.Root class="w-full space-y-2" multiple value={['item-1', 'item-2']}>
-				<Accordion.Item value="item-1">
+			<Accordion.Root
+				class="w-full space-y-2"
+				multiple
+				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
+			>
+				<Accordion.Item value="item-0">
 					<Accordion.Trigger
 						class="justify-start py-0 px-1 text-sm font-semibold  hover:no-underline hover:bg-gray-200"
 					>
@@ -163,19 +167,25 @@
 						{/each}
 					</Accordion.Content>
 				</Accordion.Item>
-				<Accordion.Item value="item-2">
-					<Accordion.Trigger
-						class="justify-start space-x-2 py-0 px-1 text-sm font-semibold   hover:no-underline hover:bg-gray-200"
-					>
-						Personal
-					</Accordion.Trigger>
 
-					<Accordion.Content>
-						{#each data.collections as collection}
-							<SidebarCollection {collection} active={activeCollection(collection.id)} />
-						{/each}
-					</Accordion.Content>
-				</Accordion.Item>
+				{#each data.groups as group, idx (group.id)}
+					{@const groupCollections = data.collections.filter(
+						(collection) => collection.groupId && collection.groupId === group.id
+					)}
+					<Accordion.Item value={`item-${idx + 1}`}>
+						<Accordion.Trigger
+							class="justify-start space-x-2 py-0 px-1 text-sm font-semibold   hover:no-underline hover:bg-gray-200"
+						>
+							{group.name}
+						</Accordion.Trigger>
+
+						<Accordion.Content>
+							{#each groupCollections as collection}
+								<SidebarCollection {collection} active={activeCollection(collection.id)} />
+							{/each}
+						</Accordion.Content>
+					</Accordion.Item>
+				{/each}
 			</Accordion.Root>
 		</div>
 	</Sidebar>

@@ -16,5 +16,7 @@ export const load: LayoutServerLoad = async (event) => {
 
 	const collections = router.createCaller(await createContext(event)).collections.list();
 
-	return { user, collections };
+	const groups = router.createCaller(await createContext(event)).groups.list();
+
+	return { user, collections, groups };
 };

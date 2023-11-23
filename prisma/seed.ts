@@ -3,6 +3,8 @@ import { type CollectionProperty, Color, PrismaClient, PropertyType } from '@pri
 const prisma = new PrismaClient();
 
 const colorsNames = [Color.RED, Color.BLUE, Color.GREEN];
+
+const groupsNames = ['Work', 'Personal'];
 const collectionsData = [
 	{
 		name: 'Books',
@@ -152,8 +154,20 @@ async function main() {
 	const user = await prisma.user.findFirst({ where: { email: 'john@email.com' } });
 	if (!user) throw new Error('There are no users');
 
+	// clean the DB
+	await prisma.group.deleteMany();
 	await prisma.collection.deleteMany();
 	await prisma.item.deleteMany();
+
+	let groupsIds: string[] = [];
+
+	for (const name of groupsNames) {
+		const { id } = await prisma.group.create({
+			data: { name, ownerId: user.id }
+		});
+
+		groupsIds.push(id);
+	}
 
 	for (const collection of collectionsData) {
 		const createdCollection = await prisma.collection.create({
@@ -169,7 +183,8 @@ async function main() {
 						color: colorsNames[randomIntFromInterval(0, 2)]
 					}))
 				})),
-				isFavourite: Math.random() < 0.5
+				isFavourite: Math.random() < 0.5,
+				groupId: Math.random() > 0.7 ? undefined : groupsIds[randomIntFromInterval(0, 1)]
 			}
 		});
 
