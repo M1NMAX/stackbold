@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PropertyType, type CollectionProperty } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
-	import { Copy, EyeOff, FileSignature, MoreHorizontal, Pen, Trash } from 'lucide-svelte';
+	import { Copy, EyeOff, FileSignature, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Popover from '$lib/components/ui/popover';
@@ -75,8 +75,8 @@
 						</select>
 					</div>
 
-					<Separator />
 					{#if property.type === 'SELECT'}
+						<Separator />
 						<Options
 							propertyId={property.id}
 							options={property.options}
