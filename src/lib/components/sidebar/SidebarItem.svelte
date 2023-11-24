@@ -18,9 +18,9 @@
 	on:mouseenter
 	on:mouseleave
 	class={`${
-		active && 'border-r-2 border-primary bg-gray-200 dark:bg-gray-600'
-	} w-full flex items-center space-x-2.5 py-0.5 px-1.5  hover:bg-gray-300
-     dark:hover:bg-gray-500  transition duration-75 dark:text-gray-400`}
+		active && 'border-r-2 border-primary bg-secondary '
+	} w-full flex items-center space-x-2.5 py-0.5 px-1.5  hover:bg-secondary/95
+       transition duration-75 text-secondary-foreground`}
 >
 	<slot name="icon" />
 

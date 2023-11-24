@@ -30,7 +30,7 @@
 	};
 </script>
 
-<div class="py-0.5 px-1 rounded bg-gray-100">
+<div class="py-0.5 px-1 rounded bg-secondary/90 text-secondary-foreground">
 	<div class="flex justify-between items-center space-x-1">
 		{#if isCheckBox}
 			<slot />

@@ -464,7 +464,7 @@
 <div
 	class={`${
 		!isDrawerHidden ? 'w-2/3' : 'w-full'
-	}  ease-in-out duration-300  p-1 rounded-md bg-gray-50 flex flex-col space-y-3.5 overflow-hidden`}
+	}  ease-in-out duration-300  p-1 rounded-md bg-card text-secondary-foreground  flex flex-col space-y-2.5 overflow-hidden`}
 >
 	<div class="flex items-center space-x-1.5">
 		{#if !$sidebarState}
@@ -549,14 +549,14 @@
 	</div>
 
 	{#if !currCollection.isDescHidden}
-		<label transition:fade for="description" class="label p-1 mt-1.5">
+		<label transition:fade for="description" class="label p-1">
 			<span class="sr-only label-text"> Collection description</span>
 			<Textarea
 				id="description"
 				value={currCollection.description}
 				on:input={handleOnInputCollectionDesc}
 				spellcheck={false}
-				class="w-full textarea textarea-ghost text-base"
+				class="w-full h-8 textarea textarea-ghost text-base"
 			/>
 		</label>
 	{/if}
@@ -592,7 +592,7 @@
 			<Plus class="text-primary" />
 		</div>
 		<input
-			class="w-full h-10 pl-10 text-base font-semibold rounded bg-base-300 placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
+			class="w-full h-10 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
 			placeholder="Add new item"
 			on:keypress={handleKeypressNewItemInput}
 		/>
@@ -607,9 +607,9 @@
 	{transitionParams}
 	bind:hidden={isDrawerHidden}
 	id="itemDrawer"
-	class="absolute w-full lg:w-1/3 p-0 pl-1  bg-gray-200"
+	class="absolute w-full lg:w-1/3 p-0 pl-1"
 >
-	<div class="h-full flex flex-col space-y-1.5 rounded-md bg-gray-50 p-1">
+	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
 		<div class="flex justify-between items-center">
 			<Button
 				variant="secondary"
@@ -741,7 +741,7 @@
 		</div>
 		<div class="grid justify-items-end">
 			<Button variant="secondary" on:click={() => handleAddProperty()} class="space-x-2">
-				<Plus class="w-4 h-4" />
+				<Plus class="icon-sm" />
 				<span> Add a property </span>
 			</Button>
 		</div>

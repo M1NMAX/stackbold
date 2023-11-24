@@ -7,7 +7,7 @@
 }
 
 .textarea {
-	@apply bg-secondary rounded-md border border-transparent;
+	@apply p-1 bg-secondary rounded-md border border-transparent text-secondary-foreground;
 	&-bordered {
 		@apply border-secondary/20;
 	}
@@ -18,14 +18,14 @@
 	&-ghost {
 		@apply bg-opacity-5;
 		&:focus {
-			@apply text-gray-900 bg-opacity-100;
+			@apply text-secondary-foreground bg-opacity-100;
 			box-shadow: none;
 		}
 	}
 }
 
 .input {
-	@apply bg-secondary  rounded-md border border-transparent text-base;
+	@apply p-1  rounded-md bg-secondary border border-transparent text-secondary-foreground;
 	input:focus {
 		@apply outline-none;
 	}
@@ -44,14 +44,14 @@
 		@apply bg-opacity-5;
 		&:focus,
 		&:focus-within {
-			@apply text-gray-900 bg-opacity-100;
+			@apply text-secondary-foreground bg-opacity-100;
 			box-shadow: none;
 		}
 	}
 }
 
 .select {
-	@apply bg-secondary  rounded-md border border-transparent pr-10;
+	@apply p-1 pr-10 rounded-md bg-secondary border border-transparent text-secondary-foreground;
 	&-bordered {
 		@apply border-secondary/20;
 	}
@@ -63,7 +63,7 @@
 	&-ghost {
 		@apply bg-opacity-5;
 		&:focus {
-			@apply text-gray-900 bg-opacity-100;
+			@apply text-secondary-foreground bg-opacity-100;
 		}
 	}
 }
@@ -101,8 +101,8 @@
 		--popover-foreground: 240 10% 3.9%;
 		--primary: 346.8 77.2% 49.8%;
 		--primary-foreground: 355.7 100% 97.3%;
-		--secondary: 180 2% 90%;
-		--secondary-foreground: 215 28% 17%;
+		--secondary: 240 4.8% 95.9%;
+		--secondary-foreground: 240 5.9% 10%;
 		--muted: 240 4.8% 95.9%;
 		--muted-foreground: 240 3.8% 46.1%;
 		--accent: 240 4.8% 95.9%;
@@ -112,7 +112,7 @@
 		--border: 240 5.9% 90%;
 		--input: 240 5.9% 90%;
 		--ring: 346.8 77.2% 49.8%;
-		--radius: 0.3rem;
+		--radius: 0.5rem;
 	}
 	.dark {
 		--background: 20 14.3% 4.1%;

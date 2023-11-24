@@ -15,7 +15,9 @@
 	<title>Collections * Stackbold</title>
 </svelte:head>
 
-<div class="w-full rounded bg-gray-50 flex flex-col justify-between p-1 overflow-hidden">
+<div
+	class="w-full flex flex-col justify-between p-1 overflow-hidden rounded bg-card text-secondary-foreground"
+>
 	<div class="flex items-center space-x-1.5">
 		{#if !$sidebarState}
 			<Button
@@ -32,7 +34,7 @@
 
 	<div class="grow flex flex-col space-y-2 overflow-y-auto">
 		{#each data.collections as collection}
-			<div class="flex flex-col rounded bg-gray-100 py-1 px-2">
+			<div class="flex flex-col py-1 px-2 rounded bg-secondary/40 text-secondary-foreground">
 				<div class="flex items-center justify-between space-x-2">
 					<Folder />
 					<h5 class="grow mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">

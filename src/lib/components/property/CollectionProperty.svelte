@@ -40,7 +40,7 @@
 			class="checkbox"
 		/>
 	{:else if property.type === PropertyType.SELECT}
-		<select {value} on:input={handleOnInput} class="w-full h-7 select select-ghost bg-gray-200">
+		<select {value} on:input={handleOnInput} class="w-full h-8 select select-ghost">
 			{#each property.options as option}
 				<option value={option.id}>
 					{option.value}
@@ -54,7 +54,7 @@
 			{value}
 			on:input={handleOnInput}
 			placeholder="Empty"
-			class="w-full h-7 p-1 textarea textarea-ghost font-medium bg-gray-200"
+			class="w-full h-8 textarea textarea-ghost font-medium"
 		/>
 	{:else}
 		<input
@@ -62,7 +62,7 @@
 			type={property.type.toLowerCase()}
 			{value}
 			on:input={handleOnInput}
-			class="w-full h-7 p-1 input input-ghost font-medium bg-gray-200"
+			class="w-full h-8 input input-ghost font-medium"
 		/>
 	{/if}
 </PropertyWrapper>

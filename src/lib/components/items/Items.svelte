@@ -42,11 +42,13 @@
 	<!-- View handler -->
 	<div class="flex justify-between space-x-2">
 		<div class="flex justify-between items-center space-x-0.5">
-			<RadioGroup.Root bind:value={view} class="flex space-x-0 bg-gray-100 p-1 ">
+			<RadioGroup.Root bind:value={view} class="h-9 flex px-0.5 rounded-sm bg-secondary">
 				<div class="flex items-center space-x-2">
 					<Label
 						for="list"
-						class={`${view === 'list' ? 'bg-white' : 'bg-gray-100'} py-0.5 px-1 rounded-sm`}
+						class={`${
+							view === 'list' ? 'bg-card' : 'bg-secondary'
+						} py-0.5 px-1.5 rounded-sm text-secondary-foreground`}
 					>
 						<RadioGroup.Item value="list" id="list" class="sr-only" />
 
@@ -60,7 +62,9 @@
 				<div class="flex items-center space-x-2">
 					<Label
 						for="table"
-						class={`${view === 'table' ? 'bg-white' : 'bg-gray-100'} py-0.5 px-1 rounded-sm`}
+						class={`${
+							view === 'table' ? 'bg-card' : 'bg-secondary hover:bg-card/90'
+						} py-0.5 px-1 rounded-sm`}
 					>
 						<RadioGroup.Item value="table" id="table" class="sr-only" />
 
@@ -74,7 +78,7 @@
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="outline" size="sm">Sort {currSortLabel}</Button>
+					<Button builders={[builder]} variant="secondary" size="sm">Sort {currSortLabel}</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content class="w-56">
 					<DropdownMenu.Label>Sort By</DropdownMenu.Label>
@@ -99,8 +103,8 @@
 					<Search class="text-primary w-5 h-5" />
 				</div>
 				<input
-					class="w-full h-9 pl-10 text-base font-semibold rounded bg-base-300 placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
-					placeholder="Find Item "
+					class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
+					placeholder="Find Item"
 				/>
 			</div>
 			<Button size="sm" on:click={onClickNewItemBtn}>New item</Button>

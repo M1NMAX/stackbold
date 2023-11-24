@@ -25,8 +25,8 @@
 
 <span
 	class={`${
-		active && 'border-r-2 border-primary bg-secondary dark:bg-gray-600'
-	} flex items-center py-0.5 pl-2 pr-0.5  hover:bg-secondary/90  dark:hover:bg-gray-500 transition duration-75 dark:text-gray-400`}
+		active && 'border-r-2 border-primary bg-secondary'
+	} group flex items-center py-0.5 pl-2 pr-0.5  hover:bg-secondary/95   transition duration-75 text-secondary-foreground`}
 >
 	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">
 		<Folder class="icon-sm" />
@@ -53,7 +53,12 @@
 
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="ghost" size="xs">
+			<Button
+				builders={[builder]}
+				variant="ghost"
+				size="xs"
+				class="invisible group-hover:visible transition-opacity"
+			>
 				<MoreHorizontal class="icon-xs" />
 			</Button>
 		</DropdownMenu.Trigger>

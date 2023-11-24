@@ -2,10 +2,8 @@
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
-
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
-
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -38,8 +36,8 @@
 
 <table class="w-full">
 	<thead class="">
-		<tr class="text-gray-500 text-sm">
-			<th scope="col" class="text-left rounded-t-md hover:bg-base-200 py-2 px-1 cursor-pointer">
+		<tr class="text-muted-foreground text-sm">
+			<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
@@ -53,7 +51,7 @@
 			</th>
 			{#each collectionProperties as property (property.id)}
 				{#if property.isVisibleOnTableView}
-					<th scope="col" class="text-left rounded-t-md hover:bg-base-200 py-2 px-1 cursor-pointer">
+					<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
 						{property.name}
 					</th>
 				{/if}
@@ -62,13 +60,12 @@
 			<th scope="col" class="text-left" title="Row actions">
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild let:builder>
-						<Button variant="outline" builders={[builder]}>
-							<Settings2 class="w-4 h-4" />
-							View
+						<Button variant="ghost" size="xs" builders={[builder]}>
+							<Settings2 class="icon-xs" />
 						</Button>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-56">
-						<DropdownMenu.Label>Toggle columns</DropdownMenu.Label>
+						<DropdownMenu.Label>Toggle property visibility</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 
 						{#each collectionProperties as property (property.id)}
@@ -95,10 +92,8 @@
 			{#each items as item (item.id)}
 				<tr
 					class={`${
-						item.id === currActiveItemId
-							? ' bg-gray-200/50 border-r-2 border-t-0 border-b-0 border-primary'
-							: ''
-					} font-medium text-base border-y-2 border-gray-100 hover:bg-base-200`}
+						item.id === currActiveItemId && 'bg-muted/95 border-r-2 border-y-0  border-primary'
+					} font-medium text-base border-y  border-secondary  hover:bg-muted/95`}
 				>
 					<td class="text-left py-2 px-1"> {item.name}</td>
 

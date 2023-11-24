@@ -5,9 +5,11 @@
 		Dna,
 		Home,
 		LogOut,
+		Moon,
 		PlusSquare,
 		Search,
-		Settings
+		Settings,
+		Sun
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { Sidebar, SidebarCollection, SidebarItem } from '$lib/components';
@@ -23,6 +25,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
+	import { toggleMode } from 'mode-watcher';
 
 	export let data: LayoutData;
 
@@ -65,18 +68,20 @@
 	setContext('sidebarStateStore', sidebarStateStore);
 </script>
 
-<div class="h-screen flex bg-gray-200">
+<div class="h-screen flex bg-secondary">
 	<Sidebar class={`${$sidebarStateStore ? 'w-64' : 'w-0'} transition-all`}>
-		<div class="h-full flex flex-col space-y-4 overflow-hidden px-0 py-1.5 rounded-none bg-gray-50">
+		<div
+			class="h-full flex flex-col space-y-4 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
+		>
 			<div class="space-y-0.5 px-0">
 				<div class="w-full flex justify-between space-x-0.5 px-1">
 					<DropdownMenu.Root>
-						<div class="w-full flex items-center justify-between space-x-1 hover:bg-gray-200">
+						<div class="w-full flex items-center justify-between space-x-1 hover:bg-secondary/90">
 							<DropdownMenu.Trigger asChild let:builder>
 								<Button
 									builders={[builder]}
 									variant="secondary"
-									class="grow h-8 flex justify-start px-1"
+									class="grow h-7 flex justify-start px-1"
 								>
 									<span class="flex items-center space-x-1.5">
 										<img
@@ -157,7 +162,7 @@
 			>
 				<Accordion.Item value="item-0">
 					<Accordion.Trigger
-						class="justify-start py-0 px-1 text-sm font-semibold  hover:no-underline hover:bg-gray-200"
+						class="justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
 					>
 						Favourites</Accordion.Trigger
 					>
@@ -174,7 +179,7 @@
 					)}
 					<Accordion.Item value={`item-${idx + 1}`}>
 						<Accordion.Trigger
-							class="justify-start space-x-2 py-0 px-1 text-sm font-semibold   hover:no-underline hover:bg-gray-200"
+							class="justify-start space-x-2 py-0.5 px-1 text-sm font-semibold   hover:no-underline hover:bg-muted"
 						>
 							{group.name}
 						</Accordion.Trigger>
@@ -188,7 +193,7 @@
 				{/each}
 				<Accordion.Item value="item-x">
 					<Accordion.Trigger
-						class="justify-start py-0 px-1 text-sm font-semibold  hover:no-underline hover:bg-gray-200"
+						class="justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
 					>
 						All Collections
 					</Accordion.Trigger>
@@ -202,7 +207,7 @@
 		</div>
 	</Sidebar>
 
-	<div class="w-full flex space-x-1 m-1 relative">
+	<div class="w-full flex space-x-1 m-1 relative bg-secondary">
 		<slot />
 	</div>
 </div>

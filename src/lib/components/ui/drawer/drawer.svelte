@@ -12,11 +12,11 @@
 	export let bottomOffset: string = 'inset-x-0 bottom-0';
 	export let width: string = 'w-80';
 	export let backdrop: boolean = true;
-	export let bgColor: string = 'bg-gray-900';
+	export let bgColor: string = 'bg-secondary';
 	export let bgOpacity: string = 'bg-opacity-75';
 	export let placement: 'left' | 'right' | 'top' | 'bottom' = 'left';
 	export let id: string = 'drawer-example';
-	export let divClass: string = 'overflow-y-auto z-50 p-4 bg-white dark:bg-gray-800';
+	export let divClass: string = 'overflow-y-auto z-50 p-4 bg-secondary';
 	export let transitionParams: drawerTransitionParamTypes = {};
 	export let transitionType: drawerTransitionTypes = 'fly';
 

@@ -11,7 +11,7 @@
 	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 </script>
 
-<div class="grow p-1 rounded-md bg-gray-50">
+<div class="grow p-1 rounded-md bg-card text-secondary-foreground">
 	<div class="flex items-center space-x-1.5">
 		{#if !$sidebarState}
 			<Button on:click={() => ($sidebarState = true)} class="btn btn-sm mr-1.5">
