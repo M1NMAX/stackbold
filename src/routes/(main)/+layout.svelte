@@ -186,6 +186,18 @@
 						</Accordion.Content>
 					</Accordion.Item>
 				{/each}
+				<Accordion.Item value="item-x">
+					<Accordion.Trigger
+						class="justify-start py-0 px-1 text-sm font-semibold  hover:no-underline hover:bg-gray-200"
+					>
+						All Collections
+					</Accordion.Trigger>
+					<Accordion.Content>
+						{#each data.collections as collection}
+							<SidebarCollection {collection} active={activeCollection(collection.id)} />
+						{/each}
+					</Accordion.Content>
+				</Accordion.Item>
 			</Accordion.Root>
 		</div>
 	</Sidebar>

@@ -22,7 +22,7 @@
 		<div
 			class="px-1 py-4 rounded-sm text-center text-red-200 outline outline-1 outline-red-300 bg-red-700/90"
 		>
-			$message
+			{$message}
 		</div>
 	{/if}
 
