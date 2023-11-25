@@ -1,15 +1,15 @@
 <script lang="ts">
 	import {
-		ChevronsLeft,
 		Database,
 		Dna,
-		Home,
+		KanbanSquare,
 		LogOut,
-		Moon,
-		PlusSquare,
+		PackagePlus,
+		PanelLeftInactive,
+		Plus,
 		Search,
 		Settings,
-		Sun
+		Trash2
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { Sidebar, SidebarCollection, SidebarItem } from '$lib/components';
@@ -25,7 +25,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import { toggleMode } from 'mode-watcher';
 
 	export let data: LayoutData;
 
@@ -71,64 +70,65 @@
 <div class="h-screen flex bg-secondary">
 	<Sidebar class={`${$sidebarStateStore ? 'w-64' : 'w-0'} transition-all`}>
 		<div
-			class="h-full flex flex-col space-y-4 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
+			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
-			<div class="space-y-0.5 px-0">
-				<div class="w-full flex justify-between space-x-0.5 px-1">
-					<DropdownMenu.Root>
-						<div class="w-full flex items-center justify-between space-x-1 hover:bg-secondary/90">
-							<DropdownMenu.Trigger asChild let:builder>
-								<Button
-									builders={[builder]}
-									variant="secondary"
-									class="grow h-7 flex justify-start px-1"
-								>
-									<span class="flex items-center space-x-1.5">
-										<img
-											src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
-											class=" rounded h-6 w-6"
-											alt="avatar"
-										/>
-										<span class="grow font-semibold">{data.user.name}</span>
-									</span>
-								</Button>
-							</DropdownMenu.Trigger>
-							<Button variant="secondary" size="xs" on:click={() => ($sidebarStateStore = false)}>
-								<ChevronsLeft class="icon-xs" />
+			<div class="w-full flex justify-between space-x-0.5 px-1">
+				<DropdownMenu.Root>
+					<div class="w-full flex items-center justify-between space-x-1">
+						<DropdownMenu.Trigger asChild let:builder>
+							<Button
+								builders={[builder]}
+								variant="secondary"
+								class="h-9 w-9 flex items-center justify-center p-0.5 rounded-sm ring-1 ring-card"
+							>
+								<img
+									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
+									class="h-7 w-7 rounded-sm"
+									alt="avatar"
+								/>
 							</Button>
-						</div>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-							<DropdownMenu.Group>
-								<DropdownMenu.Item href="/settings">
-									<Settings class="mr-2 h-4 w-4" />
-									<span>Settings</span>
-								</DropdownMenu.Item>
-							</DropdownMenu.Group>
+						</DropdownMenu.Trigger>
+						<Button variant="secondary" class="grow h-9 justify-start space-x-1 rounded-sm">
+							<Search class="icon-sm" />
+							<span> Search</span>
+						</Button>
 
-							<DropdownMenu.Separator />
+						<Button
+							variant="secondary"
+							size="icon"
+							on:click={() => ($sidebarStateStore = false)}
+							class="rounded-sm"
+						>
+							<PanelLeftInactive class="icon-sm" />
+							<span class="sr-only"> Hide sidebar </span>
+						</Button>
+					</div>
+					<DropdownMenu.Content class="w-56">
+						<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
+						<DropdownMenu.Separator />
+						<DropdownMenu.Group>
+							<DropdownMenu.Item href="/settings">
+								<Settings class="mr-2 h-4 w-4" />
+								<span>Settings</span>
+							</DropdownMenu.Item>
+						</DropdownMenu.Group>
 
-							<form method="post" action="/?/logout" use:enhance>
-								<!-- //TODO: add action -->
-								<DropdownMenu.Item>
-									<LogOut class="mr-2 h-4 w-4" />
-									<span>Log out</span>
-								</DropdownMenu.Item>
-							</form>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				</div>
+						<DropdownMenu.Separator />
 
-				<SidebarItem label="Home" href="/" active={activeUrl === '/'}>
+						<form method="post" action="/?/logout" use:enhance>
+							<!-- //TODO: add action -->
+							<DropdownMenu.Item>
+								<LogOut class="mr-2 h-4 w-4" />
+								<span>Log out</span>
+							</DropdownMenu.Item>
+						</form>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			</div>
+			<div class="space-y-0.5 px-0">
+				<SidebarItem label="Dashboard" href="/" active={activeUrl === '/'}>
 					<svelte:fragment slot="icon">
-						<Home />
-					</svelte:fragment>
-				</SidebarItem>
-
-				<SidebarItem label="Quick Search" active={activeUrl === '/templates'}>
-					<svelte:fragment slot="icon">
-						<Search />
+						<KanbanSquare />
 					</svelte:fragment>
 				</SidebarItem>
 
@@ -148,17 +148,17 @@
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="New collection" on:click={() => (createCollectionModal = true)}>
+				<SidebarItem label="Trash">
 					<svelte:fragment slot="icon">
-						<PlusSquare />
+						<Trash2 />
 					</svelte:fragment>
 				</SidebarItem>
 			</div>
 
 			<Accordion.Root
-				class="w-full space-y-2"
+				class="grow w-full space-y-2"
 				multiple
-				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
+				value={['item-0', 'item-x'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
 				<Accordion.Item value="item-0">
 					<Accordion.Trigger
@@ -193,10 +193,11 @@
 				{/each}
 				<Accordion.Item value="item-x">
 					<Accordion.Trigger
-						class="justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
+						class="  justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
 					>
 						All Collections
 					</Accordion.Trigger>
+
 					<Accordion.Content>
 						{#each data.collections as collection}
 							<SidebarCollection {collection} active={activeCollection(collection.id)} />
@@ -204,6 +205,21 @@
 					</Accordion.Content>
 				</Accordion.Item>
 			</Accordion.Root>
+
+			<div class="flex items-center justify-between space-x-1 px-1">
+				<Button
+					variant="secondary"
+					class="grow h-9 space-x-2 rounded-sm"
+					on:click={() => (createCollectionModal = true)}
+				>
+					<Plus class="icon-sm" />
+					<span> New collection </span>
+				</Button>
+				<Button variant="secondary" size="icon" class="rounded-sm">
+					<PackagePlus class="icon-sm" />
+					<span class="sr-only">New group</span>
+				</Button>
+			</div>
 		</div>
 	</Sidebar>
 
