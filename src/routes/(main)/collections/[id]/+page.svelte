@@ -7,7 +7,6 @@
 		Folder,
 		Heart,
 		HeartOff,
-		Menu,
 		MoreHorizontal,
 		Pencil,
 		Plus,
@@ -24,7 +23,7 @@
 		type Collection,
 		type CollectionProperty as CollectionPropertyType
 	} from '@prisma/client';
-	import { CollectionProperty, Items, Textarea } from '$lib/components';
+	import { CollectionProperty, Items, PageHeader, Textarea } from '$lib/components';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -33,8 +32,6 @@
 	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { fade } from 'svelte/transition';
-	import type { Writable } from 'svelte/store';
-	import { getContext } from 'svelte';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -46,8 +43,6 @@
 	$: currCollection = data.collection;
 	$: currItems = data.items;
 
-	let isPropertyDialogOpen = false;
-	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
 	let selectedItemId: string | null = null;
@@ -466,13 +461,7 @@
 		!isDrawerHidden ? 'w-2/3' : 'w-full'
 	}  ease-in-out duration-300  p-1 rounded-md bg-card text-secondary-foreground  flex flex-col space-y-2.5 overflow-hidden`}
 >
-	<div class="flex items-center space-x-1.5">
-		{#if !$sidebarState}
-			<Button variant="outline" size="icon" on:click={() => ($sidebarState = true)}>
-				<Menu class="w-6 h-6" />
-			</Button>
-		{/if}
-
+	<PageHeader>
 		<Folder class="w-6 h-6" />
 		<h1
 			class="grow font-semibold text-2xl focus:outline-none"
@@ -546,7 +535,7 @@
 				</DropdownMenu.Group>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
-	</div>
+	</PageHeader>
 
 	{#if !currCollection.isDescHidden}
 		<label transition:fade for="description" class="label p-1">

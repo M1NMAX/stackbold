@@ -1,14 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { getContext } from 'svelte';
-	import type { Writable } from 'svelte/store';
-	import { Folder, Menu } from 'lucide-svelte';
+
+	import { Folder } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { PageHeader } from '$lib/components/';
 
 	export let data: PageData;
-
-	const sidebarState = getContext<Writable<boolean>>('sidebarStateStore');
 </script>
 
 <svelte:head>
@@ -18,19 +16,9 @@
 <div
 	class="w-full flex flex-col justify-between p-1 overflow-hidden rounded bg-card text-secondary-foreground"
 >
-	<div class="flex items-center space-x-1.5">
-		{#if !$sidebarState}
-			<Button
-				variant="outline"
-				size="icon"
-				on:click={() => ($sidebarState = true)}
-				class="btn btn-sm mr-1.5"
-			>
-				<Menu />
-			</Button>
-		{/if}
+	<PageHeader>
 		<h1 class=" font-semibold text-2xl">All Collections</h1>
-	</div>
+	</PageHeader>
 
 	<div class="grow flex flex-col space-y-2 overflow-y-auto">
 		{#each data.collections as collection}

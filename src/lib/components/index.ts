@@ -23,3 +23,5 @@ export { default as SidebarItem } from './sidebar/SidebarItem.svelte';
 export { default as SortArrow } from './SortArrow.svelte';
 
 export { default as Textarea } from './Textarea/Textarea.svelte';
+
+export { default as PageHeader } from './PageHeader.svelte';
