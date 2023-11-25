@@ -25,11 +25,11 @@
 
 <span
 	class={`${
-		active && 'border-r-2 border-primary bg-secondary'
-	} group flex items-center py-0.5 pl-2 pr-0.5  hover:bg-secondary/95   transition duration-75 text-secondary-foreground`}
+		active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90'
+	} group flex items-center py-0.5 pl-4 pr-0.5  hover:bg-secondary/90   transition duration-75 text-secondary-foreground`}
 >
 	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">
-		<Folder class="icon-sm" />
+		<Folder class="icon-xs" />
 		<span class="trucante font-semibold text-base">{collection.name}</span>
 	</a>
 
