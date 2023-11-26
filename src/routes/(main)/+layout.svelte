@@ -33,6 +33,7 @@
 	$: favourites = data.collections.filter((collection) => collection.isFavourite);
 
 	$: activeUrl = $page.url.pathname;
+
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
 
 	let createCollectionModal = false;
@@ -132,7 +133,7 @@
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="Templates" active={activeUrl === '/templates'}>
+				<SidebarItem label="Templates" href="/templates" active={activeUrl === '/templates'}>
 					<svelte:fragment slot="icon">
 						<Dna />
 					</svelte:fragment>
@@ -148,7 +149,7 @@
 					</svelte:fragment>
 				</SidebarItem>
 
-				<SidebarItem label="Trash">
+				<SidebarItem label="Trash" href="/trash" active={activeUrl === '/trash'}>
 					<svelte:fragment slot="icon">
 						<Trash2 />
 					</svelte:fragment>
