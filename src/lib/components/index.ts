@@ -5,10 +5,11 @@ export { default as Dropdown } from './Dropdown/Dropdown.svelte';
 export { default as DropdownDivider } from './Dropdown/DropdownDivider.svelte';
 export { default as DropdownItem } from './Dropdown/DropdownItem.svelte';
 
-export { default as ItemProperty } from './property/ItemProperty.svelte';
-
 export { default as CollectionPropertyInputWrapper } from './property/InputWrapper.svelte';
 
+export { default as SidebarGroupMenu } from './sidebar/SidebarGroupMenu.svelte';
+
+export { default as ItemProperty } from './property/ItemProperty.svelte';
 export { default as Items } from './items/Items.svelte';
 export { default as ItemContextMenu } from './items/ItemContextMenu.svelte';
 export { default as ItemsListView } from './items/ItemsListView.svelte';

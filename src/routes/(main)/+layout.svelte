@@ -30,6 +30,7 @@
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
+	import SidebarGroupMenu from '$lib/components/sidebar/SidebarGroupMenu.svelte';
 
 	export let data: LayoutData;
 
@@ -222,9 +223,12 @@
 					)}
 					<Accordion.Item value={`item-${idx + 1}`}>
 						<Accordion.Trigger
-							class="justify-start space-x-2 py-0.5 px-1 text-sm font-semibold   hover:no-underline hover:bg-muted"
+							class="justify-start space-x-2 py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
 						>
 							{group.name}
+							<svelte:fragment slot="extra">
+								<SidebarGroupMenu groupId={group.id} />
+							</svelte:fragment>
 						</Accordion.Trigger>
 
 						<Accordion.Content>
