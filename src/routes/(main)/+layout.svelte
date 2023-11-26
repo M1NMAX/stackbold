@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		CheckCircle2,
 		Database,
 		Dna,
 		KanbanSquare,
@@ -15,57 +16,96 @@
 	import { Sidebar, SidebarCollection, SidebarItem } from '$lib/components';
 	import toast from 'svelte-french-toast';
 	import { trpc } from '$lib/trpc/client';
-	import { TRPCClientError } from '@trpc/client';
+
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
-	import { setContext } from 'svelte';
+	import { setContext, tick } from 'svelte';
 	import { enhance } from '$app/forms';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+	import { Label } from '$lib/components/ui/label';
+	import { cn } from '$lib/utils';
 
 	export let data: LayoutData;
 
-	let error: { message: string; path: string[] }[] | null = null;
+	$: groups = data.groups;
 
 	$: favourites = data.collections.filter((collection) => collection.isFavourite);
 
 	$: activeUrl = $page.url.pathname;
-
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
-
-	let createCollectionModal = false;
-
-	const handleSubmit = async (e: { currentTarget: HTMLFormElement }) => {
-		const formData = new FormData(e.currentTarget);
-
-		const name = formData.get('name') as string;
-		//TODO: input validation
-
-		try {
-			const collection = await trpc().collections.create.mutate({
-				name,
-				isFavourite: true
-			});
-
-			await invalidateAll();
-			createCollectionModal = false;
-			toast.success('Collection created successfully');
-
-			console.log(collection);
-			setTimeout(() => goto(`/collections/${collection.id}`), 1000);
-		} catch (err) {
-			if (err instanceof TRPCClientError) error = JSON.parse(err.message);
-			else throw err;
-
-			toast.error('Something wrong ');
-		}
-	};
 
 	const sidebarStateStore = writable(true);
 	setContext('sidebarStateStore', sidebarStateStore);
+
+	// Feedback
+	const onSuccess = async (msg: string) => {
+		await invalidateAll();
+		toast.success(msg);
+	};
+
+	const onError = async (error: unknown, msg: string | null = null) => {
+		console.log(error);
+		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
+	};
+
+	let isNewGroupInputShow = false;
+
+	const handleCreateGroup = async (name: string) => {
+		try {
+			const createdGroup = await trpc().groups.create.mutate({ name });
+			await onSuccess('New group created successfully');
+		} catch (error) {
+			onError(error);
+		}
+	};
+
+	const handleKeydownGroup = (
+		e: KeyboardEvent & {
+			currentTarget: EventTarget & HTMLInputElement;
+		}
+	) => {
+		const closeTargetInput = () => {
+			tick().then(() => {
+				isNewGroupInputShow = false;
+			});
+		};
+
+		if (e.key === 'Escape') closeTargetInput();
+		else if (e.key === 'Enter') {
+			const name = e.currentTarget.value;
+
+			if (name.length < 1 && name.length > 256) {
+				onError({}, 'Invalid group name');
+			}
+
+			handleCreateGroup(name);
+			closeTargetInput();
+		}
+	};
+
+	let isCreateCollectionModalOpen = false;
+	let createCollectionDetail: { name: string; groupId: string | undefined } = {
+		name: '',
+		groupId: undefined
+	};
+
+	const handleCreateCollection = async () => {
+		try {
+			//TODO: validation
+			const collection = await trpc().collections.create.mutate({ ...createCollectionDetail });
+
+			await onSuccess('New collection created');
+			isCreateCollectionModalOpen = false;
+		} catch (error) {
+			onError(error);
+		}
+	};
 </script>
 
 <div class="h-screen flex bg-secondary">
@@ -174,7 +214,7 @@
 					</Accordion.Content>
 				</Accordion.Item>
 
-				{#each data.groups as group, idx (group.id)}
+				{#each groups as group, idx (group.id)}
 					{@const groupCollections = data.collections.filter(
 						(collection) => collection.groupId && collection.groupId === group.id
 					)}
@@ -207,16 +247,36 @@
 				</Accordion.Item>
 			</Accordion.Root>
 
+			{#if isNewGroupInputShow}
+				<div class="relative px-1">
+					<input
+						id="newGroupInput"
+						placeholder="New group"
+						class="w-full input input-ghost pl-10"
+						on:keydown={handleKeydownGroup}
+					/>
+				</div>
+			{/if}
 			<div class="flex items-center justify-between space-x-1 px-1">
 				<Button
 					variant="secondary"
 					class="grow h-9 space-x-2 rounded-sm"
-					on:click={() => (createCollectionModal = true)}
+					on:click={() => (isCreateCollectionModalOpen = true)}
 				>
 					<Plus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" class="rounded-sm">
+				<Button
+					variant="secondary"
+					size="icon"
+					class="rounded-sm"
+					on:click={() => {
+						isNewGroupInputShow = true;
+						tick().then(() => {
+							document.getElementById('newGroupInput')?.focus();
+						});
+					}}
+				>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>
@@ -229,22 +289,65 @@
 	</div>
 </div>
 
-<Dialog.Root bind:open={createCollectionModal}>
+<Dialog.Root bind:open={isCreateCollectionModalOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmit} class="flex flex-col space-y-2">
-			<label class="label flex flex-col items-start space-y-2">
-				<span class="label-text">Name</span>
-				<input
-					type="text"
-					name="name"
-					placeholder="Tasks"
-					required
-					class="input input-sm input-ghost bg-gray-200"
-				/>
-			</label>
+		<form on:submit|preventDefault={handleCreateCollection} class="flex flex-col space-y-2">
+			<label for="name"> Name </label>
+			<input
+				id="name"
+				type="text"
+				name="name"
+				placeholder="Tasks"
+				required
+				class="input input-sm input-ghost bg-gray-200"
+				bind:value={createCollectionDetail.name}
+			/>
+
+			<label for="location"> Group </label>
+
+			<RadioGroup.Root id="location" bind:value={createCollectionDetail.groupId}>
+				<Label
+					for="no-group"
+					class={cn(
+						'flex justify-between items-center h-7 py-0.5 px-1.5 rounded-sm text-secondary-foreground bg-secondary',
+						createCollectionDetail.groupId === undefined && 'bg-card'
+					)}
+				>
+					<RadioGroup.Item value="no-group" id="no-group" class="sr-only" />
+					<span> Without group </span>
+
+					<CheckCircle2
+						class={cn(
+							'icon-sm text-primary',
+							createCollectionDetail.groupId !== undefined && 'text-transparent'
+						)}
+					/>
+				</Label>
+				{#each groups as group}
+					<Label
+						for={group.id}
+						class={cn(
+							'flex justify-between items-center h-7 py-0.5 px-1.5 rounded-sm text-secondary-foreground bg-secondary',
+							createCollectionDetail.groupId === group.id && 'bg-card'
+						)}
+					>
+						<RadioGroup.Item value={group.id} id={group.id} class="sr-only" />
+						<span>
+							{group.name}
+						</span>
+
+						<CheckCircle2
+							class={cn(
+								'icon-sm text-primary',
+								createCollectionDetail.groupId !== group.id && 'text-transparent'
+							)}
+						/>
+					</Label>
+				{/each}
+			</RadioGroup.Root>
 
 			<!-- //TODO: upd form or change logic  -->
 			<Button type="submit" class="w-ful btn btn-sm btn-primary">Create</Button>
