@@ -3,7 +3,6 @@ import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
-	CollectionCreateWithoutOwnerInputSchema,
 	CollectionPropertyCreateInputSchema,
 	CollectionUpdateInputSchema,
 	ColorSchema,
@@ -21,12 +20,29 @@ export const collections = createTRPCRouter({
 		.input(z.string())
 		.query(({ input }) => prisma.collection.findUniqueOrThrow({ where: { id: input } })),
 
-	create: protectedProcedure.input(CollectionCreateWithoutOwnerInputSchema).mutation(
-		async ({ input: collectionData, ctx: { userId } }) =>
-			await prisma.collection.create({
-				data: { ownerId: userId, ...collectionData }
+	create: protectedProcedure
+		.input(
+			z.object({
+				name: z.string(),
+				isFavourite: z.boolean().optional(),
+				isArchived: z.boolean().optional(),
+				description: z.string().optional(),
+				isDescHidden: z.boolean().optional(),
+				groupId: z.string().optional(),
+				properties: z
+					.union([
+						z.lazy(() => CollectionPropertyCreateInputSchema),
+						z.lazy(() => CollectionPropertyCreateInputSchema).array()
+					])
+					.optional()
 			})
-	),
+		)
+		.mutation(
+			async ({ input: collectionData, ctx: { userId } }) =>
+				await prisma.collection.create({
+					data: { ownerId: userId, ...collectionData }
+				})
+		),
 	update: protectedProcedure
 		.input(z.object({ id: z.string(), data: CollectionUpdateInputSchema }))
 		.mutation(async ({ input: { id, data }, ctx: userId }) => {
