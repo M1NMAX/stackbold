@@ -11,10 +11,10 @@
 	export { className as class };
 </script>
 
-<AccordionPrimitive.Header {level} class="flex">
+<AccordionPrimitive.Header {level} class="group flex items-center  hover:bg-muted">
 	<AccordionPrimitive.Trigger
 		class={cn(
-			'flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-90',
+			' flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-90',
 			className
 		)}
 		{...$$restProps}
@@ -23,4 +23,5 @@
 		<ChevronRight class="h-4 w-4 mr-1 transition-transform duration-200" />
 		<slot />
 	</AccordionPrimitive.Trigger>
+	<slot name="extra" />
 </AccordionPrimitive.Header>
