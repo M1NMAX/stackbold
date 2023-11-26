@@ -196,10 +196,12 @@
 				</SidebarItem>
 			</div>
 
+			<!-- TODO: handle scroll, when there are too many collections -->
+
 			<Accordion.Root
 				class="grow w-full space-y-2"
 				multiple
-				value={['item-0', 'item-x'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
+				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
 				<Accordion.Item value="item-0">
 					<Accordion.Trigger
@@ -234,7 +236,7 @@
 				{/each}
 				<Accordion.Item value="item-x">
 					<Accordion.Trigger
-						class="  justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
+						class="justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
 					>
 						All Collections
 					</Accordion.Trigger>

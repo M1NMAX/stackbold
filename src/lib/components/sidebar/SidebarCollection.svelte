@@ -1,6 +1,15 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
-	import { Copy, Folder, Heart, HeartOff, MoreHorizontal, Pencil, Trash } from 'lucide-svelte';
+	import {
+		Copy,
+		CornerUpRight,
+		Folder,
+		Heart,
+		HeartOff,
+		MoreHorizontal,
+		Pencil,
+		Trash
+	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Popover from '$lib/components/ui/popover';
@@ -82,6 +91,11 @@
 						<Heart class="icon-xs" />
 						<span> Add to Favourites </span>
 					{/if}
+				</DropdownMenu.Item>
+
+				<DropdownMenu.Item class="space-x-2">
+					<CornerUpRight class="icon-xs" />
+					<span>Move to</span>
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Item
