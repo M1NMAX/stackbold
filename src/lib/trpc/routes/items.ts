@@ -1,12 +1,19 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import {
-	ItemCreateWithoutCollectionInputSchema,
-	ItemPropertyCreateInputSchema,
-	ItemUpdateInputSchema
-} from '$prisma-zod';
+import { ItemPropertyCreateInputSchema, ItemUpdateInputSchema } from '$prisma-zod';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+
+const itemCreateSchema = z.object({
+	name: z.string(),
+	collectionId: z.string(),
+	properties: z
+		.union([
+			z.lazy(() => ItemPropertyCreateInputSchema),
+			z.lazy(() => ItemPropertyCreateInputSchema).array()
+		])
+		.optional()
+});
 
 export const items = createTRPCRouter({
 	list: protectedProcedure
@@ -17,11 +24,17 @@ export const items = createTRPCRouter({
 		.input(z.string())
 		.query(({ input }) => prisma.item.findUnique({ where: { id: input } })),
 
-	create: protectedProcedure
-		.input(z.object({ collectionId: z.string(), itemData: ItemCreateWithoutCollectionInputSchema }))
-		.mutation(async ({ input: { collectionId, itemData } }) => {
-			return await prisma.item.create({
-				data: { ...itemData, collection: { connect: { id: collectionId } } }
+	create: protectedProcedure.input(itemCreateSchema).mutation(async ({ input: item }) => {
+		return await prisma.item.create({
+			data: { ...item }
+		});
+	}),
+
+	createMany: protectedProcedure
+		.input(z.array(itemCreateSchema))
+		.mutation(async ({ input: items }) => {
+			await prisma.item.createMany({
+				data: [...items]
 			});
 		}),
 
