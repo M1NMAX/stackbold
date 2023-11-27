@@ -120,7 +120,41 @@
 	};
 
 	const handleSubmitCollection = async () => {
-		handleCreateCollection({ ...createCollectionDetail });
+		handleCreateCollection({
+			...createCollectionDetail,
+			groupId: createCollectionDetail.groupId || null
+		});
+	};
+
+	const handleDuplicateCollection = async (id: string) => {
+		const foundedCollection = data.collections.find((collection) => collection.id === id);
+
+		if (!foundedCollection) {
+			onError({});
+			return;
+		}
+
+		const { id: _, ownerId, name, ...rest } = foundedCollection;
+
+		try {
+			const createdCollection = await trpc().collections.create.mutate({
+				...rest,
+				name: name + ' copy'
+			});
+
+			const collectionItems = await trpc().items.list.query(id);
+
+			await trpc().items.createMany.mutate(
+				collectionItems.map(({ id, collectionId, updatedByUserId, ...rest }) => ({
+					collectionId: createdCollection.id,
+					...rest
+				}))
+			);
+
+			await onSuccess('Collection duplicated');
+		} catch (error) {
+			onError(error);
+		}
 	};
 
 	const handleUpdateCollection = async (args: RouterInputs['collections']['update']) => {
@@ -275,6 +309,7 @@
 							<SidebarCollection
 								{collection}
 								active={activeCollection(collection.id)}
+								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
 								on:renameCollection={(e) =>
 									handleUpdateCollection({
 										id: e.detail.id,
@@ -329,6 +364,7 @@
 								<SidebarCollection
 									{collection}
 									active={activeCollection(collection.id)}
+									on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
 									on:renameCollection={(e) =>
 										handleUpdateCollection({
 											id: e.detail.id,
@@ -360,6 +396,7 @@
 							<SidebarCollection
 								{collection}
 								active={activeCollection(collection.id)}
+								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
 								on:renameCollection={(e) =>
 									handleUpdateCollection({
 										id: e.detail.id,

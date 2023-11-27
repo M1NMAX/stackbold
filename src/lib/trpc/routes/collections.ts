@@ -28,7 +28,7 @@ export const collections = createTRPCRouter({
 				isArchived: z.boolean().optional(),
 				description: z.string().optional(),
 				isDescHidden: z.boolean().optional(),
-				groupId: z.string().optional(),
+				groupId: z.string().nullable(),
 				properties: z
 					.union([
 						z.lazy(() => CollectionPropertyCreateInputSchema),
