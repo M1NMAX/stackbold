@@ -144,20 +144,21 @@
 	};
 
 	const handleDuplicateCollection = async () => {
-		const itemsCopy = data.items.map(({ id, collectionId, ...rest }) => ({
-			...rest
-		}));
-
 		const { id, name, ownerId, ...rest } = data.collection;
 
-		const newCollection = await trpc().collections.create.mutate({
+		const createdCollection = await trpc().collections.create.mutate({
 			...rest,
-			name: name + ' copy',
-			items: { create: itemsCopy }
+			name: name + ' copy'
 		});
 
+		const itemsCopy = data.items.map(({ id, collectionId, updatedByUserId, ...rest }) => ({
+			...rest,
+			collectionId: createdCollection.id
+		}));
+		await trpc().items.createMany.mutate(itemsCopy);
+
 		onSuccess('Collection duplicated');
-		goto(`/collections/${newCollection.id}`);
+		goto(`/collections/${createdCollection.id}`);
 	};
 
 	const handleUpdateCollection = async (detail: RouterInputs['collections']['update']['data']) => {
@@ -203,12 +204,9 @@
 			return;
 		}
 
-		const { id, collectionId, updatedByUserId, name, ...rest } = item;
+		const { id, updatedByUserId, name, ...rest } = item;
 
-		await trpc().items.create.mutate({
-			collectionId,
-			itemData: { ...rest, name: name + ' copy' }
-		});
+		await trpc().items.create.mutate({ ...rest, name: name + ' copy' });
 		isDrawerHidden = true;
 		onSuccess('Item duplicated');
 	};
@@ -249,13 +247,11 @@
 			//TODO: in the future, property may have default value
 			const createItem = await trpc().items.create.mutate({
 				collectionId: currCollection.id,
-				itemData: {
-					name,
-					properties: currCollection.properties.map((prop) => ({
-						id: prop.id,
-						value: prop.type === 'CHECKBOX' ? 'false' : ''
-					}))
-				}
+				name,
+				properties: currCollection.properties.map((prop) => ({
+					id: prop.id,
+					value: prop.type === 'CHECKBOX' ? 'false' : ''
+				}))
 			});
 			await onSuccess('New item add successfully');
 
