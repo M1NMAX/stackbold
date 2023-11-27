@@ -13,15 +13,15 @@
 		Trash2
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
-	import { Sidebar, SidebarCollection, SidebarItem } from '$lib/components';
+	import { Sidebar, SidebarCollection, SidebarGroupMenu, SidebarItem } from '$lib/components';
 	import toast from 'svelte-french-toast';
 	import { trpc } from '$lib/trpc/client';
-
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
 	import { setContext, tick } from 'svelte';
 	import { enhance } from '$app/forms';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -31,7 +31,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
-	import SidebarGroupMenu from '$lib/components/sidebar/SidebarGroupMenu.svelte';
+
 	import type { RouterInputs } from '$lib/trpc/router';
 
 	export let data: LayoutData;
@@ -93,6 +93,15 @@
 		}
 	};
 
+	const handleDeleteGroup = async (id: string) => {
+		try {
+			await trpc().groups.delete.mutate(id);
+			await onSuccess('Group updated');
+		} catch (error) {
+			onError(error);
+		}
+	};
+
 	// COLLECTION HANDLERS
 	let isCreateCollectionModalOpen = false;
 	let createCollectionDetail: { name: string; groupId: string | undefined } = {
@@ -113,6 +122,51 @@
 
 	const handleSubmitCollection = async () => {
 		handleCreateCollection({ ...createCollectionDetail });
+	};
+
+	const handleUpdateCollection = async (args: RouterInputs['collections']['update']) => {
+		try {
+			await trpc().collections.update.mutate({ ...args });
+
+			await onSuccess('Collection updated');
+			isCreateCollectionModalOpen = false;
+		} catch (error) {
+			onError(error);
+		}
+	};
+
+	const handleDeleteCollection = async (id: string) => {
+		try {
+			await trpc().collections.delete.mutate(id);
+
+			await onSuccess('Collection deleted');
+			isCreateCollectionModalOpen = false;
+		} catch (error) {
+			onError(error);
+		}
+	};
+
+	// HANDLE COLLECTION AND GROUP DELETION
+	let isDeleteModalOpen = false;
+	let deleteDetail:
+		| { type: null }
+		| { type: 'collection'; id: string }
+		| { type: 'group'; id: string; includeCollections: boolean } = { type: null };
+
+	$: handleOnClickModalDeleteBtn = () => {
+		switch (deleteDetail.type) {
+			case 'collection':
+				handleDeleteCollection(deleteDetail.id);
+				break;
+
+			case 'group':
+				handleDeleteGroup(deleteDetail.id);
+				break;
+
+			default:
+				break;
+		}
+		isDeleteModalOpen = false;
 	};
 </script>
 
@@ -219,7 +273,14 @@
 					>
 					<Accordion.Content>
 						{#each favourites as collection}
-							<SidebarCollection {collection} active={activeCollection(collection.id)} />
+							<SidebarCollection
+								{collection}
+								active={activeCollection(collection.id)}
+								on:deleteCollection={(e) => {
+									isDeleteModalOpen = true;
+									deleteDetail = { type: 'collection', id: e.detail.id };
+								}}
+							/>
 						{/each}
 					</Accordion.Content>
 				</Accordion.Item>
@@ -233,6 +294,7 @@
 							class="justify-start space-x-2 py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
 						>
 							{group.name}
+
 							<svelte:fragment slot="extra">
 								<SidebarGroupMenu
 									groupId={group.id}
@@ -241,13 +303,28 @@
 										handleCreateCollection({ name: e.detail.name, groupId: e.detail.groupId })}
 									on:renameGroup={(e) =>
 										handleUpdateGroup({ id: e.detail.groupId, data: { name: e.detail.name } })}
+									on:clickDeleteGroup={(e) => {
+										isDeleteModalOpen = true;
+										deleteDetail = {
+											type: 'group',
+											id: e.detail.id,
+											includeCollections: false
+										};
+									}}
 								/>
 							</svelte:fragment>
 						</Accordion.Trigger>
 
 						<Accordion.Content>
 							{#each groupCollections as collection}
-								<SidebarCollection {collection} active={activeCollection(collection.id)} />
+								<SidebarCollection
+									{collection}
+									active={activeCollection(collection.id)}
+									on:deleteCollection={(e) => {
+										isDeleteModalOpen = true;
+										deleteDetail = { type: 'collection', id: e.detail.id };
+									}}
+								/>
 							{/each}
 						</Accordion.Content>
 					</Accordion.Item>
@@ -261,7 +338,14 @@
 
 					<Accordion.Content>
 						{#each data.collections as collection}
-							<SidebarCollection {collection} active={activeCollection(collection.id)} />
+							<SidebarCollection
+								{collection}
+								active={activeCollection(collection.id)}
+								on:deleteCollection={(e) => {
+									isDeleteModalOpen = true;
+									deleteDetail = { type: 'collection', id: e.detail.id };
+								}}
+							/>
 						{/each}
 					</Accordion.Content>
 				</Accordion.Item>
@@ -371,3 +455,22 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
+
+<AlertDialog.Root bind:open={isDeleteModalOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete</AlertDialog.Title>
+			<AlertDialog.Description class="text-lg">
+				Are you sure you want to delete this {deleteDetail.type} ?
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action asChild let:builder>
+				<Button builders={[builder]} variant="destructive" on:click={handleOnClickModalDeleteBtn}>
+					Continue
+				</Button>
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
