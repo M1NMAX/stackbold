@@ -72,52 +72,50 @@
 			</Button>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">
-			<DropdownMenu.Group>
-				<DropdownMenu.Item class="space-x-2" on:click={() => (isRenamePopoverOpen = true)}>
-					<Pencil class="icon-xs" />
-					<span> Rename </span>
-				</DropdownMenu.Item>
+			<DropdownMenu.Item class="space-x-2" on:click={() => (isRenamePopoverOpen = true)}>
+				<Pencil class="icon-xs" />
+				<span> Rename </span>
+			</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					class="space-x-2"
-					on:click={() => {
-						dispatch('toggleFavourite', { id: collection.id, value: !collection.isFavourite });
-					}}
-				>
-					{#if collection.isFavourite}
-						<HeartOff class="icon-xs" />
-						<span> Remove from Favourites </span>
-					{:else}
-						<Heart class="icon-xs" />
-						<span> Add to Favourites </span>
-					{/if}
-				</DropdownMenu.Item>
+			<DropdownMenu.Item
+				class="space-x-2"
+				on:click={() => {
+					dispatch('toggleFavourite', { id: collection.id, value: !collection.isFavourite });
+				}}
+			>
+				{#if collection.isFavourite}
+					<HeartOff class="icon-xs" />
+					<span> Remove from Favourites </span>
+				{:else}
+					<Heart class="icon-xs" />
+					<span> Add to Favourites </span>
+				{/if}
+			</DropdownMenu.Item>
 
-				<DropdownMenu.Item class="space-x-2">
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</DropdownMenu.Item>
+			<DropdownMenu.Item class="space-x-2">
+				<CornerUpRight class="icon-xs" />
+				<span>Move to</span>
+			</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					class="space-x-2"
-					on:click={() => {
-						dispatch('duplicateCollection', { id: collection.id });
-					}}
-				>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</DropdownMenu.Item>
+			<DropdownMenu.Item
+				class="space-x-2"
+				on:click={() => {
+					dispatch('duplicateCollection', { id: collection.id });
+				}}
+			>
+				<Copy class="icon-xs" />
+				<span>Duplicate</span>
+			</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					class="space-x-2"
-					on:click={() => {
-						dispatch('deleteCollection', { id: collection.id });
-					}}
-				>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Group>
+			<DropdownMenu.Item
+				class="space-x-2"
+				on:click={() => {
+					dispatch('deleteCollection', { id: collection.id });
+				}}
+			>
+				<Trash class="icon-xs" />
+				<span>Delete</span>
+			</DropdownMenu.Item>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
 </span>

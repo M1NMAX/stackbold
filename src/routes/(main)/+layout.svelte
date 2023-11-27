@@ -28,9 +28,11 @@
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+	import * as Popover from '$lib/components/ui/popover';
 	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
 	import SidebarGroupMenu from '$lib/components/sidebar/SidebarGroupMenu.svelte';
+	import type { RouterInputs } from '$lib/trpc/router';
 
 	export let data: LayoutData;
 
@@ -55,51 +57,52 @@
 		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
 	};
 
-	let isNewGroupInputShow = false;
-
-	const handleCreateGroup = async (name: string) => {
+	// GROUPS HANDLERS
+	let isNewGroupPopoverOpen = false;
+	const handleCreateGroup = async (args: RouterInputs['groups']['create']) => {
 		try {
-			const createdGroup = await trpc().groups.create.mutate({ name });
+			await trpc().groups.create.mutate({ ...args });
 			await onSuccess('New group created successfully');
 		} catch (error) {
 			onError(error);
 		}
 	};
 
-	const handleKeydownGroup = (
-		e: KeyboardEvent & {
-			currentTarget: EventTarget & HTMLInputElement;
-		}
-	) => {
-		const closeTargetInput = () => {
-			tick().then(() => {
-				isNewGroupInputShow = false;
-			});
-		};
+	const handleKeydownNewGroup = async (e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			const value = (e.target as HTMLInputElement).value;
 
-		if (e.key === 'Escape') closeTargetInput();
-		else if (e.key === 'Enter') {
-			const name = e.currentTarget.value;
-
-			if (name.length < 1 && name.length > 256) {
+			if (value.length < 1 || value.length > 256) {
+				console.log('ERROR');
+				isNewGroupPopoverOpen = false;
 				onError({}, 'Invalid group name');
+				return;
 			}
 
-			handleCreateGroup(name);
-			closeTargetInput();
+			handleCreateGroup({ name: value });
+			isNewGroupPopoverOpen = false;
 		}
 	};
 
+	const handleUpdateGroup = async (args: RouterInputs['groups']['update']) => {
+		try {
+			await trpc().groups.update.mutate({ ...args });
+			await onSuccess('Group updated');
+		} catch (error) {
+			onError(error);
+		}
+	};
+
+	// COLLECTION HANDLERS
 	let isCreateCollectionModalOpen = false;
 	let createCollectionDetail: { name: string; groupId: string | undefined } = {
 		name: '',
 		groupId: undefined
 	};
 
-	const handleCreateCollection = async () => {
+	const handleCreateCollection = async (args: RouterInputs['collections']['create']) => {
 		try {
-			//TODO: validation
-			const collection = await trpc().collections.create.mutate({ ...createCollectionDetail });
+			await trpc().collections.create.mutate({ ...args });
 
 			await onSuccess('New collection created');
 			isCreateCollectionModalOpen = false;
@@ -107,10 +110,14 @@
 			onError(error);
 		}
 	};
+
+	const handleSubmitCollection = async () => {
+		handleCreateCollection({ ...createCollectionDetail });
+	};
 </script>
 
 <div class="h-screen flex bg-secondary">
-	<Sidebar class={`${$sidebarStateStore ? 'w-64' : 'w-0'} transition-all`}>
+	<Sidebar class={cn('transition-all w-0', $sidebarStateStore && 'w-64')}>
 		<div
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
@@ -149,8 +156,8 @@
 						<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
-							<DropdownMenu.Item href="/settings">
-								<Settings class="mr-2 h-4 w-4" />
+							<DropdownMenu.Item href="/settings" class="space-x-2">
+								<Settings class="icon-xs" />
 								<span>Settings</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
@@ -159,8 +166,8 @@
 
 						<form method="post" action="/?/logout" use:enhance>
 							<!-- //TODO: add action -->
-							<DropdownMenu.Item>
-								<LogOut class="mr-2 h-4 w-4" />
+							<DropdownMenu.Item class="space-x-2">
+								<LogOut class="icon-xs" />
 								<span>Log out</span>
 							</DropdownMenu.Item>
 						</form>
@@ -227,7 +234,14 @@
 						>
 							{group.name}
 							<svelte:fragment slot="extra">
-								<SidebarGroupMenu groupId={group.id} />
+								<SidebarGroupMenu
+									groupId={group.id}
+									groupName={group.name}
+									on:addNewCollection={(e) =>
+										handleCreateCollection({ name: e.detail.name, groupId: e.detail.groupId })}
+									on:renameGroup={(e) =>
+										handleUpdateGroup({ id: e.detail.groupId, data: { name: e.detail.name } })}
+								/>
 							</svelte:fragment>
 						</Accordion.Trigger>
 
@@ -253,16 +267,6 @@
 				</Accordion.Item>
 			</Accordion.Root>
 
-			{#if isNewGroupInputShow}
-				<div class="relative px-1">
-					<input
-						id="newGroupInput"
-						placeholder="New group"
-						class="w-full input input-ghost pl-10"
-						on:keydown={handleKeydownGroup}
-					/>
-				</div>
-			{/if}
 			<div class="flex items-center justify-between space-x-1 px-1">
 				<Button
 					variant="secondary"
@@ -272,20 +276,28 @@
 					<Plus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button
-					variant="secondary"
-					size="icon"
-					class="rounded-sm"
-					on:click={() => {
-						isNewGroupInputShow = true;
-						tick().then(() => {
-							document.getElementById('newGroupInput')?.focus();
-						});
-					}}
-				>
-					<PackagePlus class="icon-sm" />
-					<span class="sr-only">New group</span>
-				</Button>
+
+				<Popover.Root bind:open={isNewGroupPopoverOpen}>
+					<Popover.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="secondary" size="icon" class="rounded-sm">
+							<PackagePlus class="icon-sm" />
+							<span class="sr-only">New group</span>
+						</Button>
+					</Popover.Trigger>
+					<Popover.Content>
+						<form class="space-y-1">
+							<div class="flex space-x-1.5">
+								<label for="name" class=" sr-only"> Name </label>
+								<input
+									id="name"
+									name="name"
+									class="grow input input-ghost px-1 font-semibold text-sm bg-base-200"
+									on:keydown={handleKeydownNewGroup}
+								/>
+							</div>
+						</form>
+					</Popover.Content>
+				</Popover.Root>
 			</div>
 		</div>
 	</Sidebar>
@@ -300,7 +312,7 @@
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleCreateCollection} class="flex flex-col space-y-2">
+		<form on:submit|preventDefault={handleSubmitCollection} class="flex flex-col space-y-2">
 			<label for="name"> Name </label>
 			<input
 				id="name"
@@ -308,7 +320,7 @@
 				name="name"
 				placeholder="Tasks"
 				required
-				class="input input-sm input-ghost bg-gray-200"
+				class="input input-ghost bg-gray-200"
 				bind:value={createCollectionDetail.name}
 			/>
 
@@ -355,8 +367,7 @@
 				{/each}
 			</RadioGroup.Root>
 
-			<!-- //TODO: upd form or change logic  -->
-			<Button type="submit" class="w-ful btn btn-sm btn-primary">Create</Button>
+			<Button type="submit" class="w-full">Create</Button>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
