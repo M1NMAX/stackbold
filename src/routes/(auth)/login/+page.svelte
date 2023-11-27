@@ -4,6 +4,7 @@
 	// import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
 
 	import type { PageData } from './$types';
+	import { Button } from '$lib/components/ui/button';
 
 	export let data: PageData;
 	const { form, message, errors, enhance } = superForm(data.form);
@@ -71,7 +72,7 @@
 		</div>
 
 		<div>
-			<button type="submit" class="w-full btn btn-primary normal-case">Sign in</button>
+			<Button type="submit" class="w-full">Sign in</Button>
 		</div>
 	</form>
 

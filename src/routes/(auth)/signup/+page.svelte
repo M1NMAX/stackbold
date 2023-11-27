@@ -3,6 +3,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 
 	import type { PageData } from './$types';
+	import { Button } from '$lib/components/ui/button';
 
 	export let data: PageData;
 	const { form, message, errors, enhance } = superForm(data.form);
@@ -19,7 +20,7 @@
 		<div
 			class="px-1 py-4 rounded-sm text-center text-red-200 outline outline-1 outline-red-300 bg-red-700/90"
 		>
-			$message
+			{$message}
 		</div>
 	{/if}
 	<form method="post" use:enhance class="space-y-4">
@@ -72,7 +73,7 @@
 		</div>
 
 		<div>
-			<button type="submit" class="w-full btn btn-primary normal-case">Sign up</button>
+			<Button type="submit" class="w-full">Sign up</Button>
 		</div>
 	</form>
 </div>

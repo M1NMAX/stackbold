@@ -2,6 +2,7 @@
 	import logoSrc from '$lib/assets/trpc-logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
 	import type { PageData } from './$types';
+	import { Button } from '$lib/components/ui/button';
 
 	export let data: PageData;
 
@@ -40,7 +41,7 @@
 			{/if}
 		</div>
 		<div>
-			<button type="submit" class="w-full btn btn-primary normal-case">Reset password</button>
+			<Button type="submit" class="w-full">Reset password</Button>
 		</div>
 	</form>
 </div>

@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 
 	import type { ActionData } from './$types';
+	import { Button } from '$lib/components/ui/button';
 
 	export let form: ActionData;
 </script>
@@ -27,8 +28,6 @@
 	</p>
 
 	<form method="post" use:enhance>
-		<button type="submit" class="w-full btn btn-primary normal-case"
-			>Resend verification link</button
-		>
+		<Button type="submit" class="w-full">Resend verification link</Button>
 	</form>
 </div>
