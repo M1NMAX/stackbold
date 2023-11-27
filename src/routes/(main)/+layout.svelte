@@ -31,7 +31,6 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
-
 	import type { RouterInputs } from '$lib/trpc/router';
 
 	export let data: LayoutData;
@@ -276,6 +275,16 @@
 							<SidebarCollection
 								{collection}
 								active={activeCollection(collection.id)}
+								on:renameCollection={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { name: e.detail.name }
+									})}
+								on:toggleFavourite={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { isFavourite: e.detail.value }
+									})}
 								on:deleteCollection={(e) => {
 									isDeleteModalOpen = true;
 									deleteDetail = { type: 'collection', id: e.detail.id };
@@ -320,6 +329,16 @@
 								<SidebarCollection
 									{collection}
 									active={activeCollection(collection.id)}
+									on:renameCollection={(e) =>
+										handleUpdateCollection({
+											id: e.detail.id,
+											data: { name: e.detail.name }
+										})}
+									on:toggleFavourite={(e) =>
+										handleUpdateCollection({
+											id: e.detail.id,
+											data: { isFavourite: e.detail.value }
+										})}
 									on:deleteCollection={(e) => {
 										isDeleteModalOpen = true;
 										deleteDetail = { type: 'collection', id: e.detail.id };
@@ -341,6 +360,16 @@
 							<SidebarCollection
 								{collection}
 								active={activeCollection(collection.id)}
+								on:renameCollection={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { name: e.detail.name }
+									})}
+								on:toggleFavourite={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { isFavourite: e.detail.value }
+									})}
 								on:deleteCollection={(e) => {
 									isDeleteModalOpen = true;
 									deleteDetail = { type: 'collection', id: e.detail.id };
