@@ -26,12 +26,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
 	import * as Popover from '$lib/components/ui/popover';
-	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
+	import * as Select from '$lib/components/ui/select';
 
 	export let data: LayoutData;
 
@@ -107,6 +106,7 @@
 		name: '',
 		groupId: undefined
 	};
+	let isGroupComboboxOpen = false;
 
 	const handleCreateCollection = async (args: RouterInputs['collections']['create']) => {
 		try {
@@ -482,49 +482,26 @@
 				class="input input-ghost bg-gray-200"
 				bind:value={createCollectionDetail.name}
 			/>
-
-			<label for="location"> Group </label>
-
-			<RadioGroup.Root id="location" bind:value={createCollectionDetail.groupId}>
-				<Label
-					for="no-group"
-					class={cn(
-						'flex justify-between items-center h-7 py-0.5 px-1.5 rounded-sm text-secondary-foreground bg-secondary',
-						createCollectionDetail.groupId === undefined && 'bg-card'
-					)}
+			<!-- TODO: maybe Use shadcn form -->
+			<label for="location">
+				Group
+				<Select.Root
+					onSelectedChange={(currentItem) => {
+						createCollectionDetail.groupId =
+							typeof currentItem?.value === 'string' ? currentItem.value : undefined;
+					}}
 				>
-					<RadioGroup.Item value="no-group" id="no-group" class="sr-only" />
-					<span> Without group </span>
-
-					<CheckCircle2
-						class={cn(
-							'icon-sm text-primary',
-							createCollectionDetail.groupId !== undefined && 'text-transparent'
-						)}
-					/>
-				</Label>
-				{#each groups as group}
-					<Label
-						for={group.id}
-						class={cn(
-							'flex justify-between items-center h-7 py-0.5 px-1.5 rounded-sm text-secondary-foreground bg-secondary',
-							createCollectionDetail.groupId === group.id && 'bg-card'
-						)}
-					>
-						<RadioGroup.Item value={group.id} id={group.id} class="sr-only" />
-						<span>
-							{group.name}
-						</span>
-
-						<CheckCircle2
-							class={cn(
-								'icon-sm text-primary',
-								createCollectionDetail.groupId !== group.id && 'text-transparent'
-							)}
-						/>
-					</Label>
-				{/each}
-			</RadioGroup.Root>
+					<Select.Trigger class="w-full">
+						<Select.Value placeholder="Select a group" />
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value={undefined}>Without group</Select.Item>
+						{#each groups as group (group.id)}
+							<Select.Item value={group.id}>{group.name}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</label>
 
 			<Button type="submit" class="w-full">Create</Button>
 		</form>
