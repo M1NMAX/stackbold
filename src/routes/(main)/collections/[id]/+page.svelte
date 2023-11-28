@@ -62,22 +62,10 @@
 	// Delete Modal
 	let isDeleteModalOpen = false;
 
-	type noElement = {
-		type: null;
-	};
-
-	type selectElement = {
-		type: 'collection' | 'item' | 'property';
-		id: string;
-	};
-
-	type selectedOption = {
-		type: 'option';
-		id: string;
-		option: string;
-	};
-
-	let elementToBeDelete: noElement | selectElement | selectedOption = { type: null };
+	let elementToBeDelete:
+		| { type: null }
+		| { type: 'collection' | 'item' | 'property'; id: string }
+		| { type: 'option'; id: string; option: string } = { type: null };
 
 	$: handleOnClickModalDeleteBtn = () => {
 		switch (elementToBeDelete.type) {

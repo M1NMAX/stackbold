@@ -19,7 +19,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
-	import { setContext, tick } from 'svelte';
+	import { setContext } from 'svelte';
 	import { enhance } from '$app/forms';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -173,7 +173,8 @@
 			await trpc().collections.delete.mutate(id);
 
 			await onSuccess('Collection deleted');
-			isCreateCollectionModalOpen = false;
+
+			if (activeCollection(id)) goto('/');
 		} catch (error) {
 			onError(error);
 		}
