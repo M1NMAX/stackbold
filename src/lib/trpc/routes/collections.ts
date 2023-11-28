@@ -2,12 +2,54 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import {
-	CollectionPropertyCreateInputSchema,
-	CollectionUpdateInputSchema,
-	ColorSchema,
-	PropertyTypeSchema
-} from '$prisma-zod';
+import { CollectionPropertyCreateInputSchema, ColorSchema, PropertyTypeSchema } from '$prisma-zod';
+
+const collectionCreateSchema = z.object({
+	name: z.string(),
+	isFavourite: z.boolean().optional(),
+	isArchived: z.boolean().optional(),
+	description: z.string().optional(),
+	isDescHidden: z.boolean().optional(),
+	groupId: z.string().nullable(),
+	properties: z
+		.union([
+			z.lazy(() => CollectionPropertyCreateInputSchema),
+			z.lazy(() => CollectionPropertyCreateInputSchema).array()
+		])
+		.optional()
+});
+
+const collectionUpdateSchema = z.object({
+	id: z.string(),
+	data: z.object({
+		name: z.string().optional(),
+		isFavourite: z.boolean().optional(),
+		isArchived: z.boolean().optional(),
+		description: z.string().optional(),
+		isDescHidden: z.boolean().optional(),
+		groupId: z.string().optional()
+	})
+});
+
+const collectionUpdatePropertySchema = z.object({
+	id: z.string(),
+	property: z.object({
+		id: z.string(),
+		name: z.string().optional(),
+		type: PropertyTypeSchema.optional(),
+		isVisibleOnListView: z.boolean().optional(),
+		isVisibleOnTableView: z.boolean().optional(),
+		options: z
+			.array(
+				z.object({
+					id: z.string().optional(),
+					value: z.string(),
+					color: z.lazy(() => ColorSchema).optional()
+				})
+			)
+			.optional()
+	})
+});
 
 export const collections = createTRPCRouter({
 	list: protectedProcedure.query(({ ctx: { userId } }) =>
@@ -20,31 +62,14 @@ export const collections = createTRPCRouter({
 		.input(z.string())
 		.query(({ input }) => prisma.collection.findUniqueOrThrow({ where: { id: input } })),
 
-	create: protectedProcedure
-		.input(
-			z.object({
-				name: z.string(),
-				isFavourite: z.boolean().optional(),
-				isArchived: z.boolean().optional(),
-				description: z.string().optional(),
-				isDescHidden: z.boolean().optional(),
-				groupId: z.string().nullable(),
-				properties: z
-					.union([
-						z.lazy(() => CollectionPropertyCreateInputSchema),
-						z.lazy(() => CollectionPropertyCreateInputSchema).array()
-					])
-					.optional()
+	create: protectedProcedure.input(collectionCreateSchema).mutation(
+		async ({ input: collectionData, ctx: { userId } }) =>
+			await prisma.collection.create({
+				data: { ownerId: userId, ...collectionData }
 			})
-		)
-		.mutation(
-			async ({ input: collectionData, ctx: { userId } }) =>
-				await prisma.collection.create({
-					data: { ownerId: userId, ...collectionData }
-				})
-		),
+	),
 	update: protectedProcedure
-		.input(z.object({ id: z.string(), data: CollectionUpdateInputSchema }))
+		.input(collectionUpdateSchema)
 		.mutation(async ({ input: { id, data }, ctx: userId }) => {
 			await prisma.collection.update({ data, where: { id } });
 		}),
@@ -67,27 +92,7 @@ export const collections = createTRPCRouter({
 		}),
 
 	updateProperty: protectedProcedure
-		.input(
-			z.object({
-				id: z.string(),
-				property: z.object({
-					id: z.string(),
-					name: z.string().optional(),
-					type: PropertyTypeSchema.optional(),
-					isVisibleOnListView: z.boolean().optional(),
-					isVisibleOnTableView: z.boolean().optional(),
-					options: z
-						.array(
-							z.object({
-								id: z.string().optional(),
-								value: z.string(),
-								color: z.lazy(() => ColorSchema).optional()
-							})
-						)
-						.optional()
-				})
-			})
-		)
+		.input(collectionUpdatePropertySchema)
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
 			const { id: pid, ...rest } = property;
 
