@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
 	import {
+		Check,
 		Copy,
 		CornerUpRight,
 		Folder,
@@ -13,16 +14,22 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Popover from '$lib/components/ui/popover';
+	import * as Command from '$lib/components/ui/command';
 	import { createEventDispatcher } from 'svelte';
+	import { cn } from '$lib/utils';
 
 	export let collection: Collection;
 	export let active: boolean;
+	export let groups: { id: string; name: string }[];
+
 	let isRenamePopoverOpen = false;
+	let isGroupComboboxOpen = false;
 
 	const dispatch = createEventDispatcher<{
-		renameCollection: { id: string; name: string };
-		toggleFavourite: { id: string; value: boolean };
 		duplicateCollection: { id: string };
+		renameCollection: { id: string; name: string };
+		moveCollection: { id: string; groupId: string };
+		toggleFavourite: { id: string; value: boolean };
 		deleteCollection: { id: string };
 	}>();
 
@@ -51,6 +58,34 @@
 		<Folder class="icon-xs" />
 		<span class="trucante font-semibold text-base">{collection.name}</span>
 	</a>
+
+	<Popover.Root bind:open={isGroupComboboxOpen}>
+		<Popover.Trigger class="sr-only">Open available group list</Popover.Trigger>
+		<Popover.Content class="w-[200px] p-0">
+			<Command.Root>
+				<Command.Input placeholder="Search groups..." />
+				<Command.Empty>No group found.</Command.Empty>
+				<Command.Group>
+					{#each groups as group (group.id)}
+						<Command.Item
+							value={group.name}
+							onSelect={(currentValue) => {
+								dispatch('moveCollection', { id: collection.id, groupId: group.id });
+								console.log(currentValue);
+							}}
+							class="space-x-2"
+						>
+							<Check
+								class={cn('icon-xxs', group.id !== collection.groupId && 'text-transparent')}
+							/>
+
+							<span> {group.name} </span>
+						</Command.Item>
+					{/each}
+				</Command.Group>
+			</Command.Root>
+		</Popover.Content>
+	</Popover.Root>
 
 	<Popover.Root bind:open={isRenamePopoverOpen}>
 		<Popover.Trigger class="sr-only">Open</Popover.Trigger>
@@ -102,7 +137,7 @@
 				{/if}
 			</DropdownMenu.Item>
 
-			<DropdownMenu.Item class="space-x-2" disabled>
+			<DropdownMenu.Item class="space-x-2" on:click={() => (isGroupComboboxOpen = true)}>
 				<CornerUpRight class="icon-xs" />
 				<span>Move to</span>
 			</DropdownMenu.Item>

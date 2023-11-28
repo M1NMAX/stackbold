@@ -309,6 +309,7 @@
 						{#each favourites as collection}
 							<SidebarCollection
 								{collection}
+								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
 								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
 								on:renameCollection={(e) =>
@@ -364,12 +365,18 @@
 							{#each groupCollections as collection}
 								<SidebarCollection
 									{collection}
+									groups={groups.map(({ id, name }) => ({ id, name }))}
 									active={activeCollection(collection.id)}
 									on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
 									on:renameCollection={(e) =>
 										handleUpdateCollection({
 											id: e.detail.id,
 											data: { name: e.detail.name }
+										})}
+									on:moveCollection={(e) =>
+										handleUpdateCollection({
+											id: e.detail.id,
+											data: { groupId: e.detail.groupId }
 										})}
 									on:toggleFavourite={(e) =>
 										handleUpdateCollection({
@@ -396,6 +403,7 @@
 						{#each data.collections as collection}
 							<SidebarCollection
 								{collection}
+								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
 								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
 								on:renameCollection={(e) =>
