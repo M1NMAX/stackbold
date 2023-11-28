@@ -449,6 +449,7 @@
 								<input
 									id="name"
 									name="name"
+									placeholder="New group"
 									class="grow input input-ghost px-1 font-semibold text-sm bg-base-200"
 									on:keydown={handleKeydownNewGroup}
 								/>

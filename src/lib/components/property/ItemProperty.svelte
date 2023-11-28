@@ -2,13 +2,11 @@
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { createEventDispatcher } from 'svelte';
 	import type { CollectionProperty, Color } from '@prisma/client';
-
 	import { Check } from 'lucide-svelte';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import { tick } from 'svelte';
 
 	export let itemId: string;
 	export let property: CollectionProperty;
@@ -31,16 +29,6 @@
 
 	$: selectedValue =
 		property.options.find((opt) => opt.id === value)?.value ?? 'Select a option...';
-
-	// We want to refocus the trigger button when the user selects
-	// an item from the list so users can continue navigating the
-	// rest of the form with the keyboard.
-	function closeAndFocusTrigger(triggerId: string) {
-		open = false;
-		tick().then(() => {
-			document.getElementById(triggerId)?.focus();
-		});
-	}
 </script>
 
 {#if value}
@@ -53,7 +41,7 @@
 			<span class="label-text font-semibold">{property.name} </span>
 		</label>
 	{:else if property.type === 'SELECT'}
-		<Popover.Root bind:open let:ids>
+		<Popover.Root bind:open>
 			<Popover.Trigger asChild let:builder>
 				<Button
 					builders={[builder]}
@@ -79,13 +67,12 @@
 										itemId,
 										property: { id: property.id, value }
 									});
-									closeAndFocusTrigger(ids.trigger);
 								}}
 								class="space-x-2"
 							>
-								<Check class={cn('mr-2 h-4 w-4', value !== option.id && 'text-transparent')} />
+								<Check class={cn('icon-xs mr-2', value !== option.id && 'text-transparent')} />
 
-								<span class={` ${PROPERTY_COLORS[option.color]} w-4 h-4 mr-2 `} />
+								<span class={cn('icon-xs mr-2', PROPERTY_COLORS[option.color])} />
 								<span>
 									{option.value}
 								</span>
@@ -96,10 +83,31 @@
 			</Popover.Content>
 		</Popover.Root>
 	{:else}
-		<div
-			class={` ${PROPERTY_COLORS[color]} rounded inline-flex items-center justify-center space-x-1 text-sm font-semibold px-1 py-0.5 `}
-		>
-			{value}
-		</div>
+		<Popover.Root bind:open>
+			<Popover.Trigger asChild let:builder>
+				<Button
+					builders={[builder]}
+					variant="secondary"
+					class={cn('h-6 py-1 px-1.5 rounded  font-semibold', PROPERTY_COLORS[color])}
+				>
+					{value}
+				</Button>
+			</Popover.Trigger>
+			<Popover.Content>
+				<form>
+					<label for={property.id} class="sr-only"> {property.name} </label>
+
+					<input
+						id={property.id}
+						name={property.name}
+						placeholder="Empty"
+						class="w-full input input-ghost px-1 font-semibold text-sm"
+						type={property.type.toLowerCase()}
+						{value}
+						on:input={handleOnInput}
+					/>
+				</form>
+			</Popover.Content>
+		</Popover.Root>
 	{/if}
 {/if}
