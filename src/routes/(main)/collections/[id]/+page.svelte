@@ -486,34 +486,36 @@
 				<DropdownMenu.Group>
 					<DropdownMenu.Item
 						on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
+						class="space-x-1"
 					>
 						{#if currCollection.isDescHidden}
-							<Eye class="mr-2 h-4 w-4" />
+							<Eye class="icon-xs" />
 							<span> Show description </span>
 						{:else}
-							<EyeOff class="mr-2 h-4 w-4" />
+							<EyeOff class="icon-xs" />
 							<span> Hide description </span>
 						{/if}
 					</DropdownMenu.Item>
-					<DropdownMenu.Item>
-						<Pencil class="mr-2 h-4 w-4" />
-						<span>Rename</span>
-					</DropdownMenu.Item>
-					<DropdownMenu.Item on:click={handleDuplicateCollection}>
-						<Copy class="mr-2 h-4 w-4" />
+
+					<DropdownMenu.Item on:click={handleDuplicateCollection} class="space-x-1">
+						<Copy class="icon-xs" />
 						<span>Duplicate</span>
 					</DropdownMenu.Item>
-					<DropdownMenu.Item on:click={() => handleUpdateCollection({ isArchived: true })}>
-						<Archive class="mr-2 h-4 w-4" />
+					<DropdownMenu.Item
+						on:click={() => handleUpdateCollection({ isArchived: true })}
+						class="space-x-1"
+					>
+						<Archive class="icon-xs" />
 						<span>Archive</span>
 					</DropdownMenu.Item>
 					<DropdownMenu.Item
+						class="space-x-1"
 						on:click={() => {
 							elementToBeDelete = { id: currCollection.id, type: 'collection' };
 							isDeleteModalOpen = true;
 						}}
 					>
-						<Trash class="mr-2 h-4 w-4" />
+						<Trash class="icon-xs" />
 						<span>Delete</span>
 					</DropdownMenu.Item>
 				</DropdownMenu.Group>

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {
-		CheckCircle2,
 		Database,
 		Dna,
 		KanbanSquare,

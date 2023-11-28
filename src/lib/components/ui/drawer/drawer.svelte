@@ -16,7 +16,7 @@
 	export let bgOpacity: string = 'bg-opacity-75';
 	export let placement: 'left' | 'right' | 'top' | 'bottom' = 'left';
 	export let id: string = 'drawer-example';
-	export let divClass: string = 'overflow-y-auto z-50 p-4 bg-secondary';
+	export let divClass: string = 'overflow-y-auto z-40 p-4 bg-secondary';
 	export let transitionParams: drawerTransitionParamTypes = {};
 	export let transitionType: drawerTransitionTypes = 'fly';
 
