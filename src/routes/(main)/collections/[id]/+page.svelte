@@ -462,7 +462,7 @@
 			{dayjs(currCollection.updatedAt).fromNow()}
 		</span>
 
-		<Button variant="secondary" size="icon">
+		<Button variant="secondary" size="icon" disabled>
 			<UserPlus />
 		</Button>
 
