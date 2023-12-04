@@ -13,9 +13,8 @@
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { Sidebar, SidebarCollection, SidebarGroupMenu, SidebarItem } from '$lib/components';
-
 	import { trpc } from '$lib/trpc/client';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
 	import { setContext } from 'svelte';
@@ -25,12 +24,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
-
 	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
-	import { onError, onSuccess } from '$lib/components/feedback';
+	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
 
 	export let data: LayoutData;
 
@@ -95,13 +93,13 @@
 		name: '',
 		groupId: undefined
 	};
-	let isGroupComboboxOpen = false;
 
 	const handleCreateCollection = async (args: RouterInputs['collections']['create']) => {
 		try {
-			await trpc().collections.create.mutate({ ...args });
+			const createdCollection = await trpc().collections.create.mutate({ ...args });
 
-			await onSuccess('New collection created');
+			redirectToast('New collection created', `/collections/${createdCollection.id}`);
+			await invalidateAll();
 			isCreateCollectionModalOpen = false;
 		} catch (error) {
 			onError(error);

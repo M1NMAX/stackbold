@@ -127,7 +127,7 @@ model Collection {
   isFavourite  Boolean              @default(false)
   isArchived   Boolean              @default(false)
   description  String               @default("")
-  isDescHidden Boolean              @default(false)
+  isDescHidden Boolean              @default(true)
   owner        User                 @relation(fields: [ownerId], references: [id])
   ownerId      String
   items        Item[]

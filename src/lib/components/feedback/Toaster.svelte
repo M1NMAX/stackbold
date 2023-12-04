@@ -32,7 +32,7 @@
 		>
 			<div class="flex w-[24rem] max-w-[calc(100vw-2rem)] items-center justify-between gap-4 p-2">
 				<div class="w-full flex items-center space-x-2">
-					{#if data.type === 'success'}
+					{#if data.type === 'success' || data.type === 'redirect'}
 						<CheckCircle2 class="text-green-500" />
 					{:else if data.type === 'error'}
 						<XCircle class="text-red-500" />
