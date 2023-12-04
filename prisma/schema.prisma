@@ -147,3 +147,19 @@ model Item {
   collectionId    String         @db.ObjectId
   properties      ItemProperty[]
 }
+
+type TemplateItem {
+  id         String         @default(uuid()) @map("_id")
+  name       String
+  properties ItemProperty[]
+}
+
+model Template {
+  id          String               @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String               @default("")
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  properties  CollectionProperty[]
+  items       TemplateItem[]
+}
