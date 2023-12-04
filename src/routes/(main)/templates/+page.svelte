@@ -8,29 +8,17 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import { DEFAULT_FEEDBACK_ERR_MESSAGE, PROPERTY_COLORS } from '$lib/constant';
+	import { PROPERTY_COLORS } from '$lib/constant';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import type { Template, TemplateItem } from '@prisma/client';
 	import { trpc } from '$lib/trpc/client';
-	import toast from 'svelte-french-toast';
-	import { invalidateAll } from '$app/navigation';
+	import { onError, onSuccess } from '$lib/components/feedback';
 
 	export let data: PageData;
 	$: templates = data.templates;
 
 	let isPreviewDialogOpen = false;
 	let sheetActiveTemplate: Template | null = null;
-
-	// Feedback
-	const onSuccess = async (msg: string) => {
-		await invalidateAll();
-		toast.success(msg);
-	};
-
-	const onError = async (error: unknown, msg: string | null = null) => {
-		console.log(error);
-		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
-	};
 
 	let view = 'list';
 

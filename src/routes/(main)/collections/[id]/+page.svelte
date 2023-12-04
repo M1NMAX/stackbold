@@ -29,7 +29,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import toast from 'svelte-french-toast';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { DEFAULT_DEBOUNCE_INTERVAL, DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+	import { DEFAULT_DEBOUNCE_INTERVAL } from '$lib/constant';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { fade } from 'svelte/transition';
 	import dayjs from '$lib/utils/dayjs';
@@ -37,6 +37,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Drawer } from '$lib/components/ui/drawer';
+	import { onError, onSuccess } from '$lib/components/feedback';
 
 	export let data: PageData;
 
@@ -89,17 +90,6 @@
 				break;
 		}
 		isDeleteModalOpen = false;
-	};
-
-	// Feedback
-	const onSuccess = async (msg: string) => {
-		await invalidateAll();
-		toast.success(msg);
-	};
-
-	const onError = async (error: unknown, msg: string | null = null) => {
-		console.log(error);
-		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
 	};
 
 	const preventEnterKeypress = (e: KeyboardEvent) => {
@@ -176,7 +166,7 @@
 	// Item handlers
 	const handleDeleteItem = async () => {
 		if (!selectedItemId) {
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError({ location: '/collections/page[id]', msg: 'Invalid item selected' });
 			return;
 		}
 
@@ -188,7 +178,7 @@
 	const handleDuplicateItem = async (itemId: string) => {
 		const item = currItems.find(({ id }) => id === itemId);
 		if (!item) {
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError({ location: '/collections/page[id]', msg: 'Invalid item selected' });
 			return;
 		}
 
@@ -285,7 +275,7 @@
 	const handleDuplicateProperty = async (pid: string) => {
 		const property = getProperty(currCollection, pid);
 		if (!property) {
-			toast.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			onError({ location: '/collections/page[id]', msg: 'Invalid property selected' });
 			return;
 		}
 

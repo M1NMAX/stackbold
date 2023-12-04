@@ -13,9 +13,9 @@
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { Sidebar, SidebarCollection, SidebarGroupMenu, SidebarItem } from '$lib/components';
-	import toast from 'svelte-french-toast';
+
 	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
 	import { setContext } from 'svelte';
@@ -25,11 +25,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import { DEFAULT_FEEDBACK_ERR_MESSAGE } from '$lib/constant';
+
 	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
+	import { onError, onSuccess } from '$lib/components/feedback';
 
 	export let data: LayoutData;
 
@@ -42,17 +43,6 @@
 
 	const sidebarStateStore = writable(true);
 	setContext('sidebarStateStore', sidebarStateStore);
-
-	// Feedback
-	const onSuccess = async (msg: string) => {
-		await invalidateAll();
-		toast.success(msg);
-	};
-
-	const onError = async (error: unknown, msg: string | null = null) => {
-		console.log(error);
-		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
-	};
 
 	// GROUPS HANDLERS
 	let isNewGroupPopoverOpen = false;

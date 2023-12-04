@@ -1,10 +1,10 @@
 <script lang="ts">
 	import '../app.css';
-	import { Toaster } from 'svelte-french-toast';
+
+	import Toaster from '$lib/components/feedback/Toaster.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 </script>
 
 <ModeWatcher />
-<slot />
-
 <Toaster />
+<slot />
