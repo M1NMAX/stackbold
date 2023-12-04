@@ -8,17 +8,29 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import { PROPERTY_COLORS } from '$lib/constant';
+	import { DEFAULT_FEEDBACK_ERR_MESSAGE, PROPERTY_COLORS } from '$lib/constant';
 	import * as Dialog from '$lib/components/ui/dialog';
-
 	import type { Template, TemplateItem } from '@prisma/client';
 	import { trpc } from '$lib/trpc/client';
+	import toast from 'svelte-french-toast';
+	import { invalidateAll } from '$app/navigation';
 
 	export let data: PageData;
 	$: templates = data.templates;
 
 	let isPreviewDialogOpen = false;
 	let sheetActiveTemplate: Template | null = null;
+
+	// Feedback
+	const onSuccess = async (msg: string) => {
+		await invalidateAll();
+		toast.success(msg);
+	};
+
+	const onError = async (error: unknown, msg: string | null = null) => {
+		console.log(error);
+		toast.error(msg ? msg : DEFAULT_FEEDBACK_ERR_MESSAGE);
+	};
 
 	let view = 'list';
 
@@ -55,7 +67,7 @@
 	// TODO: ref better try catch and feedback
 	const createCollectionBasedOnTemplate = async (id: string) => {
 		try {
-			const { name, description, properties } = await trpc().templates.load.query(id);
+			const { name, description, properties, items } = await trpc().templates.load.query(id);
 
 			const createdCollection = await trpc().collections.create.mutate({
 				name,
@@ -64,18 +76,27 @@
 				groupId: null
 			});
 
-			console.log(createdCollection);
+			const itemsCopy = items.map(({ id, ...rest }) => ({
+				...rest,
+				collectionId: createdCollection.id
+			}));
 
-			// TODO:fill the collection
+			await trpc().items.createMany.mutate(itemsCopy);
+
+			isPreviewDialogOpen = false;
+			await onSuccess('New collection created');
 		} catch (error) {
-			console.log(error);
+			onError(error);
 		}
 	};
 </script>
 
 <div class="grow p-1 rounded-md bg-card text-secondary-foreground">
 	<PageHeader>
-		<div class="font-semibold text-xl">Templates</div>
+		<div class="flex items-center space-x-2">
+			<Dna class="icon-sm" />
+			<div class="font-semibold text-xl">Templates</div>
+		</div>
 	</PageHeader>
 
 	<div class="w-full max-w-7xl mx-auto p-10 space-y-2">
