@@ -282,19 +282,51 @@
 			<!-- TODO: handle scroll, when there are too many collections -->
 
 			<Accordion.Root
-				class="grow w-full space-y-2"
+				class="grow w-full space-y-1.5"
 				multiple
 				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
+				<div class="px-2">
+					<span class="text-sm font-semibold"> Collections</span>
+				</div>
+
+				<div class="space-y-0">
+					{#each data.collections as collection}
+						{#if collection.groupId === null}
+							<SidebarCollection
+								{collection}
+								groups={groups.map(({ id, name }) => ({ id, name }))}
+								active={activeCollection(collection.id)}
+								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
+								on:renameCollection={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { name: e.detail.name }
+									})}
+								on:toggleFavourite={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { isFavourite: e.detail.value }
+									})}
+								on:deleteCollection={(e) => {
+									isDeleteModalOpen = true;
+									deleteDetail = { type: 'collection', id: e.detail.id };
+								}}
+							/>
+						{/if}
+					{/each}
+				</div>
+
 				<Accordion.Item value="item-0">
 					<Accordion.Trigger
-						class="justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
+						class="justify-start py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
 					>
 						Favourites</Accordion.Trigger
 					>
 					<Accordion.Content>
 						{#each favourites as collection}
 							<SidebarCollection
+								asChild
 								{collection}
 								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
@@ -324,7 +356,7 @@
 					)}
 					<Accordion.Item value={`item-${idx + 1}`}>
 						<Accordion.Trigger
-							class="justify-start space-x-2 py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
+							class="justify-start space-x-2 py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
 						>
 							{group.name}
 
@@ -351,6 +383,7 @@
 						<Accordion.Content>
 							{#each groupCollections as collection}
 								<SidebarCollection
+									asChild
 									{collection}
 									groups={groups.map(({ id, name }) => ({ id, name }))}
 									active={activeCollection(collection.id)}
@@ -379,38 +412,6 @@
 						</Accordion.Content>
 					</Accordion.Item>
 				{/each}
-				<Accordion.Item value="item-x">
-					<Accordion.Trigger
-						class="justify-start py-0.5 px-1 text-sm font-semibold  hover:no-underline hover:bg-muted"
-					>
-						All Collections
-					</Accordion.Trigger>
-
-					<Accordion.Content>
-						{#each data.collections as collection}
-							<SidebarCollection
-								{collection}
-								groups={groups.map(({ id, name }) => ({ id, name }))}
-								active={activeCollection(collection.id)}
-								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
-								on:renameCollection={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { name: e.detail.name }
-									})}
-								on:toggleFavourite={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { isFavourite: e.detail.value }
-									})}
-								on:deleteCollection={(e) => {
-									isDeleteModalOpen = true;
-									deleteDetail = { type: 'collection', id: e.detail.id };
-								}}
-							/>
-						{/each}
-					</Accordion.Content>
-				</Accordion.Item>
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">

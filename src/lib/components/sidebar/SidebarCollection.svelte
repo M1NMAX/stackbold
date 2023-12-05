@@ -18,8 +18,9 @@
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 
-	export let collection: Collection;
 	export let active: boolean;
+	export let asChild: boolean = false;
+	export let collection: Collection;
 	export let groups: { id: string; name: string }[];
 
 	let isRenamePopoverOpen = false;
@@ -50,9 +51,11 @@
 </script>
 
 <span
-	class={`${
-		active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90'
-	} group flex items-center py-0.5 pl-4 pr-0.5  hover:bg-secondary/90   transition duration-75 text-secondary-foreground`}
+	class={cn(
+		'group flex items-center py-0.5 pl-3 pr-0.5  hover:bg-secondary/90  transition duration-75 text-secondary-foreground',
+		active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
+		asChild && 'pl-5'
+	)}
 >
 	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">
 		<Folder class="icon-xs" />

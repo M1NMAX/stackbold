@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { PageHeader } from '$lib/components';
-	import { Dna, Expand, List, Search, Table } from 'lucide-svelte';
+	import { Dna, Expand, Search, StretchHorizontal, Table } from 'lucide-svelte';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Label } from '$lib/components/ui/label';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
@@ -12,7 +12,8 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import type { Template, TemplateItem } from '@prisma/client';
 	import { trpc } from '$lib/trpc/client';
-	import { onError, onSuccess } from '$lib/components/feedback';
+	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
+	import { invalidateAll } from '$app/navigation';
 
 	export let data: PageData;
 	$: templates = data.templates;
@@ -72,7 +73,8 @@
 			await trpc().items.createMany.mutate(itemsCopy);
 
 			isPreviewDialogOpen = false;
-			await onSuccess('New collection created');
+			redirectToast('New collection created', `/collections/${createdCollection.id}`);
+			await invalidateAll();
 		} catch (error) {
 			onError(error);
 		}
@@ -94,47 +96,20 @@
 		</div>
 		<p>Page description</p>
 
-		<div>
-			<a href="/templates? id = xpto"> hehehfhe </a>
-		</div>
-
 		<div class="space-y-2">
 			<div class="flex justify-between space-x-2">
-				<div class="flex justify-between items-center space-x-0.5">
-					<RadioGroup.Root bind:value={view} class="h-9 flex px-0.5 rounded-sm bg-secondary">
-						<div class="flex items-center space-x-2">
-							<Label
-								for="list"
-								class={`${
-									view === 'list' ? 'bg-card' : 'bg-secondary'
-								} py-0.5 px-1.5 rounded-sm text-secondary-foreground`}
-							>
-								<RadioGroup.Item value="list" id="list" class="sr-only" />
-
-								<div class="flex items-center justify-between space-x-2 text-base">
-									<List class="icon-xs" />
-									<span> List </span>
-								</div>
-							</Label>
+				<div class="flex justify-between items-center space-x-2">
+					<div class="relative">
+						<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+							<Search class="text-primary w-5 h-5" />
 						</div>
-
-						<div class="flex items-center space-x-2">
-							<Label
-								for="table"
-								class={`${
-									view === 'table' ? 'bg-card' : 'bg-secondary hover:bg-card/90'
-								} py-0.5 px-1 rounded-sm`}
-							>
-								<RadioGroup.Item value="table" id="table" class="sr-only" />
-
-								<div class="flex items-center justify-between space-x-2 text-base">
-									<Table class="icon-xs" />
-									<span> Table </span>
-								</div>
-							</Label>
-						</div>
-					</RadioGroup.Root>
-
+						<input
+							class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
+							placeholder="Find Template"
+						/>
+					</div>
+				</div>
+				<div class="flex justify-between items-center space-x-2">
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
 							<Button builders={[builder]} variant="secondary" size="sm"
@@ -157,17 +132,34 @@
 							</DropdownMenu.Group>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
-				</div>
-				<div class="flex justify-between items-center space-x-2">
-					<div class="relative">
-						<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-							<Search class="text-primary w-5 h-5" />
-						</div>
-						<input
-							class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
-							placeholder="Find Template"
-						/>
-					</div>
+
+					<RadioGroup.Root bind:value={view} class="h-9 flex gap-0.5 rounded-sm  ">
+						<Label
+							for="list"
+							class={cn(
+								'flex items-center justify-center p-1.5 rounded-sm text-secondary-foreground cursor-pointer',
+								view === 'list' && 'bg-secondary'
+							)}
+						>
+							<RadioGroup.Item value="list" id="list" class="sr-only" />
+
+							<div class="flex items-center justify-between space-x-2 text-base">
+								<StretchHorizontal class="icon-md" />
+							</div>
+						</Label>
+
+						<Label
+							for="table"
+							class={cn(
+								'flex items-center justify-center p-1.5 rounded-sm text-secondary-foreground cursor-pointer',
+								view === 'table' && 'bg-secondary'
+							)}
+						>
+							<RadioGroup.Item value="table" id="table" class="sr-only" />
+
+							<Table class="icon-md" />
+						</Label>
+					</RadioGroup.Root>
 				</div>
 			</div>
 
@@ -218,7 +210,7 @@
 </div>
 
 <Dialog.Root bind:open={isPreviewDialogOpen}>
-	<Dialog.Content>
+	<Dialog.Content class="max-w-4xl">
 		{#if sheetActiveTemplate}
 			<Dialog.Header>
 				<Dialog.Title>{sheetActiveTemplate.name} - Template</Dialog.Title>
