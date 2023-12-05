@@ -1,5 +1,8 @@
 <script lang="ts">
 	import {
+		Calculator,
+		Calendar,
+		CreditCard,
 		Database,
 		Dna,
 		KanbanSquare,
@@ -9,7 +12,9 @@
 		Plus,
 		Search,
 		Settings,
-		Trash2
+		Smile,
+		Trash2,
+		User
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { Sidebar, SidebarCollection, SidebarGroupMenu, SidebarItem } from '$lib/components';
@@ -17,7 +22,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
 	import { writable } from 'svelte/store';
-	import { setContext } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { enhance } from '$app/forms';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -29,6 +34,8 @@
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
 	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
+
+	import * as Command from '$lib/components/ui/command';
 
 	export let data: LayoutData;
 
@@ -189,6 +196,23 @@
 		}
 		isDeleteModalOpen = false;
 	};
+
+	// SEARCH HANDLERS
+	let isCommandDialogOpen = false;
+
+	onMount(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				isCommandDialogOpen = !isCommandDialogOpen;
+			}
+		}
+
+		document.addEventListener('keydown', handleKeydown);
+		return () => {
+			document.removeEventListener('keydown', handleKeydown);
+		};
+	});
 </script>
 
 <div class="h-screen flex bg-secondary">
@@ -212,9 +236,21 @@
 								/>
 							</Button>
 						</DropdownMenu.Trigger>
-						<Button variant="secondary" class="grow h-9 justify-start space-x-1 rounded-sm">
-							<Search class="icon-sm" />
-							<span> Search</span>
+						<Button
+							variant="secondary"
+							class="grow h-9 justify-between items-center space-x-1 rounded-sm"
+							on:click={() => (isCommandDialogOpen = true)}
+						>
+							<span class="flex items-center space-x-0.5">
+								<Search class="icon-sm" />
+								<span> Search</span>
+							</span>
+							<kbd
+								class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-0.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+							>
+								<span class="text-xs">Ctrl</span>
+								<span>K</span>
+							</kbd>
 						</Button>
 
 						<Button
@@ -227,6 +263,7 @@
 							<span class="sr-only"> Hide sidebar </span>
 						</Button>
 					</div>
+
 					<DropdownMenu.Content class="w-56">
 						<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
 						<DropdownMenu.Separator />
@@ -515,3 +552,43 @@
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
+
+<!-- TODO: upd cmd item -->
+<Command.Dialog bind:open={isCommandDialogOpen}>
+	<Command.Input placeholder="Type a command or search..." />
+	<Command.List>
+		<Command.Empty>No results found.</Command.Empty>
+		<Command.Group heading="Suggestions">
+			<Command.Item>
+				<Calendar class="mr-2 h-4 w-4" />
+				<span>Calendar</span>
+			</Command.Item>
+			<Command.Item>
+				<Smile class="mr-2 h-4 w-4" />
+				<span>Search Emoji</span>
+			</Command.Item>
+			<Command.Item>
+				<Calculator class="mr-2 h-4 w-4" />
+				<span>Calculator</span>
+			</Command.Item>
+		</Command.Group>
+		<Command.Separator />
+		<Command.Group heading="Settings">
+			<Command.Item>
+				<User class="mr-2 h-4 w-4" />
+				<span>Profile</span>
+				<Command.Shortcut>⌘P</Command.Shortcut>
+			</Command.Item>
+			<Command.Item>
+				<CreditCard class="mr-2 h-4 w-4" />
+				<span>Billing</span>
+				<Command.Shortcut>⌘B</Command.Shortcut>
+			</Command.Item>
+			<Command.Item>
+				<Settings class="mr-2 h-4 w-4" />
+				<span>Settings</span>
+				<Command.Shortcut>⌘S</Command.Shortcut>
+			</Command.Item>
+		</Command.Group>
+	</Command.List>
+</Command.Dialog>
