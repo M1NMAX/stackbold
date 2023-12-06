@@ -2,8 +2,6 @@
 	import type { PageData } from './$types';
 	import { PageHeader } from '$lib/components';
 	import { Dna, Expand, Search, StretchHorizontal, Table } from 'lucide-svelte';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { Label } from '$lib/components/ui/label';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
@@ -12,8 +10,10 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import type { Template, TemplateItem } from '@prisma/client';
 	import { trpc } from '$lib/trpc/client';
-	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
+	import { onError, redirectToast } from '$lib/components/feedback';
 	import { invalidateAll } from '$app/navigation';
+	import { ViewButton, ViewButtonsGroup } from '$lib/components/view/';
+	import { SearchInput } from '$lib/components/search';
 
 	export let data: PageData;
 	$: templates = data.templates;
@@ -89,7 +89,7 @@
 		</div>
 	</PageHeader>
 
-	<div class="w-full max-w-7xl mx-auto p-10 space-y-2">
+	<div class="w-full mx-auto p-2 lg:p-10 space-y-2">
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>
@@ -99,15 +99,7 @@
 		<div class="space-y-2">
 			<div class="flex justify-between space-x-2">
 				<div class="flex justify-between items-center space-x-2">
-					<div class="relative">
-						<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-							<Search class="text-primary w-5 h-5" />
-						</div>
-						<input
-							class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
-							placeholder="Find Template"
-						/>
-					</div>
+					<SearchInput placeholder="Find Template" />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
 					<DropdownMenu.Root>
@@ -133,33 +125,15 @@
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 
-					<RadioGroup.Root bind:value={view} class="h-9 flex gap-0.5 rounded-sm  ">
-						<Label
-							for="list"
-							class={cn(
-								'flex items-center justify-center p-1.5 rounded-sm text-secondary-foreground cursor-pointer',
-								view === 'list' && 'bg-secondary'
-							)}
-						>
-							<RadioGroup.Item value="list" id="list" class="sr-only" />
+					<ViewButtonsGroup bind:value={view}>
+						<ViewButton {view} value="list">
+							<StretchHorizontal class="icon-md" />
+						</ViewButton>
 
-							<div class="flex items-center justify-between space-x-2 text-base">
-								<StretchHorizontal class="icon-md" />
-							</div>
-						</Label>
-
-						<Label
-							for="table"
-							class={cn(
-								'flex items-center justify-center p-1.5 rounded-sm text-secondary-foreground cursor-pointer',
-								view === 'table' && 'bg-secondary'
-							)}
-						>
-							<RadioGroup.Item value="table" id="table" class="sr-only" />
-
+						<ViewButton {view} value="table">
 							<Table class="icon-md" />
-						</Label>
-					</RadioGroup.Root>
+						</ViewButton>
+					</ViewButtonsGroup>
 				</div>
 			</div>
 

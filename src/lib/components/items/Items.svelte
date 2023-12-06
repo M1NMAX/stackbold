@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { List, Search, Table } from 'lucide-svelte';
+	import { StretchHorizontal, Table } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
 	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { ItemsListView, ItemsTableView } from '$lib/components';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { ViewButton, ViewButtonsGroup } from '$lib/components/view/';
+	import { SearchInput } from '$lib/components/search';
 
 	export let items: ItemType[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -42,39 +42,14 @@
 	<!-- View handler -->
 	<div class="flex justify-between space-x-2">
 		<div class="flex justify-between items-center space-x-0.5">
-			<RadioGroup.Root bind:value={view} class="h-9 flex px-0.5 rounded-sm bg-secondary">
-				<div class="flex items-center space-x-2">
-					<Label
-						for="list"
-						class={`${
-							view === 'list' ? 'bg-card' : 'bg-secondary'
-						} py-0.5 px-1.5 rounded-sm text-secondary-foreground`}
-					>
-						<RadioGroup.Item value="list" id="list" class="sr-only" />
-
-						<div class="flex items-center justify-between space-x-2 text-base">
-							<List class="icon-xs" />
-							<span> List </span>
-						</div>
-					</Label>
-				</div>
-
-				<div class="flex items-center space-x-2">
-					<Label
-						for="table"
-						class={`${
-							view === 'table' ? 'bg-card' : 'bg-secondary hover:bg-card/90'
-						} py-0.5 px-1 rounded-sm`}
-					>
-						<RadioGroup.Item value="table" id="table" class="sr-only" />
-
-						<div class="flex items-center justify-between space-x-2 text-base">
-							<Table class="icon-xs" />
-							<span> Table </span>
-						</div>
-					</Label>
-				</div>
-			</RadioGroup.Root>
+			<ViewButtonsGroup bind:value={view}>
+				<ViewButton {view} value="list">
+					<StretchHorizontal class="icon-md" />
+				</ViewButton>
+				<ViewButton {view} value="table">
+					<Table class="icon-md" />
+				</ViewButton>
+			</ViewButtonsGroup>
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
@@ -98,15 +73,7 @@
 			</DropdownMenu.Root>
 		</div>
 		<div class="flex justify-between items-center space-x-2">
-			<div class="relative">
-				<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-					<Search class="text-primary w-5 h-5" />
-				</div>
-				<input
-					class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
-					placeholder="Find Item"
-				/>
-			</div>
+			<SearchInput placeholder="Find Item" />
 			<Button size="sm" on:click={onClickNewItemBtn}>New item</Button>
 		</div>
 	</div>
