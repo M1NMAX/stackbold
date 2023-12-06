@@ -6,7 +6,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import { PROPERTY_COLORS } from '$lib/constant';
+	import { DEFAULT_DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import type { Template, TemplateItem } from '@prisma/client';
 	import { trpc } from '$lib/trpc/client';
@@ -14,6 +14,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view/';
 	import { SearchInput } from '$lib/components/search';
+	import debounce from 'debounce';
 
 	export let data: PageData;
 	$: templates = data.templates;
@@ -79,27 +80,41 @@
 			onError(error);
 		}
 	};
+
+	// SEARCH
+
+	const debounceSearch = debounce((query: string) => {
+		sortedTemplates = sortedTemplates.filter(({ name, description }) => {
+			return name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
+		});
+	}, DEFAULT_DEBOUNCE_INTERVAL * 0.5);
+	const handleOnInputSearch = (e: Event) => {
+		const value = (e.target as HTMLInputElement).value;
+
+		if (value.length > 2) debounceSearch(value);
+		else sortedTemplates = templates.sort(sortFun(sortDetail.field, sortDetail.order));
+	};
 </script>
 
-<div class="grow p-1 rounded-md bg-card text-secondary-foreground">
+<div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
 	<PageHeader>
-		<div class="flex items-center space-x-2">
+		<div class=" flex items-center space-x-2">
 			<Dna class="icon-sm" />
 			<div class="font-semibold text-xl">Templates</div>
 		</div>
 	</PageHeader>
 
-	<div class="w-full mx-auto p-2 lg:p-10 space-y-2">
+	<div class="h-full w-full mx-auto p-2 lg:p-10 space-y-2 overflow-y-auto">
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>
 		</div>
 		<p>Page description</p>
 
-		<div class="space-y-2">
+		<div class=" space-y-2">
 			<div class="flex justify-between space-x-2">
 				<div class="flex justify-between items-center space-x-2">
-					<SearchInput placeholder="Find Template" />
+					<SearchInput placeholder="Find Template" on:input={handleOnInputSearch} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
 					<DropdownMenu.Root>
@@ -137,7 +152,7 @@
 				</div>
 			</div>
 
-			<div class="space-y-2">
+			<div class=" space-y-2">
 				{#each sortedTemplates as template (template.id)}
 					<div
 						class={cn(
