@@ -96,15 +96,15 @@
 	};
 </script>
 
+<svelte:head><title>Templates - Stackbold</title></svelte:head>
+
 <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
 	<PageHeader>
-		<div class=" flex items-center space-x-2">
-			<Dna class="icon-sm" />
-			<div class="font-semibold text-xl">Templates</div>
-		</div>
+		<Dna class="icon-sm" />
+		<div class="font-semibold text-xl">Templates</div>
 	</PageHeader>
 
-	<div class="h-full w-full mx-auto p-2 lg:p-10 space-y-2 overflow-y-auto">
+	<div class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto">
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>
@@ -113,15 +113,15 @@
 
 		<div class=" space-y-2">
 			<div class="flex justify-between space-x-2">
-				<div class="flex justify-between items-center space-x-2">
+				<div class="w-1/3 flex justify-between items-center space-x-2">
 					<SearchInput placeholder="Find Template" on:input={handleOnInputSearch} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="sm"
-								>Sort {currSortLabel}</Button
-							>
+							<Button builders={[builder]} variant="secondary" size="sm">
+								Sort {currSortLabel}
+							</Button>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56">
 							<DropdownMenu.Label>Sort By</DropdownMenu.Label>

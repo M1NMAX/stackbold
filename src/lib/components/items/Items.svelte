@@ -38,18 +38,15 @@
 	)?.label;
 </script>
 
-<div class="h-full p-1 space-y-2">
+<div class="grow space-y-2">
 	<!-- View handler -->
 	<div class="flex justify-between space-x-2">
-		<div class="flex justify-between items-center space-x-0.5">
-			<ViewButtonsGroup bind:value={view}>
-				<ViewButton {view} value="list">
-					<StretchHorizontal class="icon-md" />
-				</ViewButton>
-				<ViewButton {view} value="table">
-					<Table class="icon-md" />
-				</ViewButton>
-			</ViewButtonsGroup>
+		<div class="w-1/3 flex justify-between items-center space-x-0.5">
+			<SearchInput placeholder="Find Item" />
+		</div>
+
+		<div class="flex justify-between items-center space-x-2">
+			<Button size="sm" on:click={onClickNewItemBtn} class="rounded font-semibold">New item</Button>
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
@@ -71,10 +68,14 @@
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
-		</div>
-		<div class="flex justify-between items-center space-x-2">
-			<SearchInput placeholder="Find Item" />
-			<Button size="sm" on:click={onClickNewItemBtn}>New item</Button>
+			<ViewButtonsGroup bind:value={view}>
+				<ViewButton {view} value="list">
+					<StretchHorizontal class="icon-md" />
+				</ViewButton>
+				<ViewButton {view} value="table">
+					<Table class="icon-md" />
+				</ViewButton>
+			</ViewButtonsGroup>
 		</div>
 	</div>
 

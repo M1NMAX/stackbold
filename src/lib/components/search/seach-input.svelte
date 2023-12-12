@@ -5,7 +5,8 @@
 	export let placeholder: string | undefined = undefined;
 </script>
 
-<div class="relative">
+<!-- TODO: turn responsive -->
+<div class="relative w-full">
 	<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
 		<Search class="text-primary icon-sm" />
 	</div>

@@ -427,7 +427,7 @@
 </script>
 
 <svelte:head>
-	<title>{currCollection.name}</title>
+	<title>{currCollection.name} - Stackbold</title>
 </svelte:head>
 
 <div
@@ -436,16 +436,18 @@
 	}  ease-in-out duration-300  p-1 rounded-md bg-card text-secondary-foreground  flex flex-col space-y-2.5 overflow-hidden`}
 >
 	<PageHeader>
-		<Folder class="w-6 h-6" />
-		<h1
-			class="grow font-semibold text-2xl focus:outline-none"
+		<Folder class="icon-sm" />
+		<!-- TODO: find better solution -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div
+			class="grow font-semibold text-xl focus:outline-none"
 			contenteditable
 			spellcheck={false}
 			on:keypress={preventEnterKeypress}
 			on:input={handleOnInputCollectionName}
 		>
 			{currCollection.name}
-		</h1>
+		</div>
 
 		<span class="font-semibold text-xs text-gray-500 mr-2">
 			Updated
@@ -513,54 +515,69 @@
 		</DropdownMenu.Root>
 	</PageHeader>
 
-	{#if !currCollection.isDescHidden}
-		<label transition:fade for="description" class="label p-1">
-			<span class="sr-only label-text"> Collection description</span>
-			<Textarea
-				id="description"
-				value={currCollection.description}
-				on:input={handleOnInputCollectionDesc}
+	<div class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto">
+		<div class="flex items-center space-x-2">
+			<Folder class="icon-lg" />
+			<h1
+				class="font-semibold text-3xl"
+				contenteditable
 				spellcheck={false}
-				class="w-full h-8 textarea textarea-ghost text-base"
-			/>
-		</label>
-	{/if}
-
-	<!-- //TODO: impl rename item menu-->
-	<Items
-		onClickNewItemBtn={() => handleCreateItem('untitle item', true)}
-		currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
-		items={data.items}
-		bind:view={currView}
-		collectionProperties={currCollection.properties}
-		on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-		on:clickRename={(e) => handleUpdateItem({ id: e.detail, data: { name: 'something' } })}
-		on:clickDuplicateItem={(e) => handleDuplicateItem(e.detail)}
-		on:clickDeleteItem={(e) => {
-			elementToBeDelete = { id: e.detail, type: 'item' };
-			isDeleteModalOpen = true;
-			selectedItemId = e.detail;
-		}}
-		on:updPropertyValue={(e) => {
-			handleUpdatePropertyValue(e.detail.itemId, {
-				id: e.detail.property.id,
-				value: e.detail.property.value
-			});
-		}}
-		on:updPropertyVisibility={(e) => {
-			handleUpdateProperty({ id: e.detail.pid, [e.detail.name]: e.detail.value });
-		}}
-	/>
-
-	<div class="relative">
-		<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-			<Plus class="text-primary" />
+				on:keypress={preventEnterKeypress}
+				on:input={handleOnInputCollectionName}
+			>
+				{currCollection.name}
+			</h1>
 		</div>
-		<input
-			class="w-full h-10 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
-			placeholder="Add new item"
-			on:keypress={handleKeypressNewItemInput}
+
+		{#if !currCollection.isDescHidden}
+			<label transition:fade for="description" class="label p-1">
+				<span class="sr-only label-text"> Collection description</span>
+				<Textarea
+					id="description"
+					value={currCollection.description}
+					on:input={handleOnInputCollectionDesc}
+					spellcheck={false}
+					class="w-full h-8 textarea textarea-ghost text-base"
+				/>
+			</label>
+		{/if}
+
+		<!-- //TODO: impl rename item menu-->
+		<Items
+			onClickNewItemBtn={() => handleCreateItem('untitle item', true)}
+			currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
+			items={data.items}
+			bind:view={currView}
+			collectionProperties={currCollection.properties}
+			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+			on:clickRename={(e) => handleUpdateItem({ id: e.detail, data: { name: 'something' } })}
+			on:clickDuplicateItem={(e) => handleDuplicateItem(e.detail)}
+			on:clickDeleteItem={(e) => {
+				elementToBeDelete = { id: e.detail, type: 'item' };
+				isDeleteModalOpen = true;
+				selectedItemId = e.detail;
+			}}
+			on:updPropertyValue={(e) => {
+				handleUpdatePropertyValue(e.detail.itemId, {
+					id: e.detail.property.id,
+					value: e.detail.property.value
+				});
+			}}
+			on:updPropertyVisibility={(e) => {
+				handleUpdateProperty({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+			}}
 		/>
+
+		<div class="relative">
+			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+				<Plus class="text-primary" />
+			</div>
+			<input
+				class="w-full h-10 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
+				placeholder="Add new item"
+				on:keypress={handleKeypressNewItemInput}
+			/>
+		</div>
 	</div>
 </div>
 
