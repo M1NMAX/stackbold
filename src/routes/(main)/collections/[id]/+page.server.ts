@@ -6,7 +6,7 @@ export const load: PageServerLoad = async (event) => {
 	const id = event.params.id;
 
 	return {
-		collection: router.createCaller(await createContext(event)).collections.load(id),
-		items: router.createCaller(await createContext(event)).items.list(id)
+		collection: await router.createCaller(await createContext(event)).collections.load(id),
+		items: await router.createCaller(await createContext(event)).items.list(id)
 	};
 };

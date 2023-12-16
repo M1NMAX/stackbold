@@ -15,8 +15,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.auth.validate();
 
 	if (session) {
-		if (!session.user.emailVerified) throw redirect(302, '/email-verification');
-		throw redirect(302, '/');
+		if (!session.user.emailVerified) redirect(302, '/email-verification');
+		redirect(302, '/');
 	}
 	const form = await superValidate(loginSchema);
 	return { form };
@@ -51,6 +51,6 @@ export const actions: Actions = {
 		}
 		// redirect to
 		// make sure you don't throw inside a try/catch block!
-		throw redirect(302, '/');
+		redirect(302, '/');
 	}
 };

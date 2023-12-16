@@ -3,5 +3,5 @@ import { router } from '$lib/trpc/router';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => ({
-	templates: router.createCaller(await createContext(event)).templates.list()
+	templates: await router.createCaller(await createContext(event)).templates.list()
 });
