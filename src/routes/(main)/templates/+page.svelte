@@ -11,8 +11,8 @@
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/stores';
-	import { PageHeader } from '$lib/components';
 	import { SidebarButton } from '$lib/components/sidebar';
+	import { PageContent } from '$lib/components/page';
 
 	export let data: PageData;
 
@@ -71,7 +71,7 @@
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
-	<div class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto">
+	<PageContent>
 		<SidebarButton />
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
@@ -124,7 +124,7 @@
 				{/each}
 			</div>
 		</div>
-	</div>
+	</PageContent>
 </div>
 
 <DialogRoot

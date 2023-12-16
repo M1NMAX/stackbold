@@ -6,7 +6,7 @@
 	import { onError, redirectToast } from '$lib/components/feedback';
 	import { trpc } from '$lib/trpc/client';
 	import type { TemplateItem } from '@prisma/client';
-	import { PageHeader } from '$lib/components';
+	import { PageHeader } from '$lib/components/page';
 
 	export let data: PageData;
 

@@ -8,5 +8,3 @@ export { default as ItemsListView } from './items/ItemsListView.svelte';
 export { default as ItemsTableView } from './items/ItemsTableView.svelte';
 
 export { default as Textarea } from './Textarea/Textarea.svelte';
-
-export { default as PageHeader } from './PageHeader.svelte';

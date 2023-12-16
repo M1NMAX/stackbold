@@ -23,7 +23,7 @@
 		type Collection,
 		type CollectionProperty as CollectionPropertyType
 	} from '@prisma/client';
-	import { CollectionProperty, Items, PageHeader, Textarea } from '$lib/components';
+	import { CollectionProperty, Items, Textarea } from '$lib/components';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -39,6 +39,7 @@
 	import { Drawer } from '$lib/components/ui/drawer';
 	import { onError, onSuccess } from '$lib/components/feedback';
 	import { SidebarButton } from '$lib/components/sidebar';
+	import { PageHeader, PageContent } from '$lib/components/page';
 
 	export let data: PageData;
 
@@ -503,7 +504,7 @@
 		</DropdownMenu.Root>
 	</PageHeader>
 
-	<div class="h-full w-full mx-auto p-2 lg:py-1 lg:px-8 space-y-2 overflow-y-auto">
+	<PageContent>
 		<SidebarButton />
 		<div class="flex items-center space-x-2">
 			<Folder class="icon-lg" />
@@ -567,7 +568,7 @@
 				on:keypress={handleKeypressNewItemInput}
 			/>
 		</div>
-	</div>
+	</PageContent>
 </div>
 
 <Drawer

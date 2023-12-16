@@ -4,7 +4,8 @@
 
 	import { Folder } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { PageHeader } from '$lib/components/';
+	import { PageContent } from '$lib/components/page';
+	import { SidebarButton } from '$lib/components/sidebar';
 
 	export let data: PageData;
 </script>
@@ -16,27 +17,29 @@
 <div
 	class="w-full flex flex-col justify-between p-1 overflow-hidden rounded bg-card text-secondary-foreground"
 >
-	<PageHeader>
-		<h1 class=" font-semibold text-2xl">All Collections</h1>
-	</PageHeader>
+	<PageContent>
+		<SidebarButton />
 
-	<div class="grow flex flex-col space-y-2 overflow-y-auto">
-		{#each data.collections as collection}
-			<div class="flex flex-col py-1 px-2 rounded bg-secondary/40 text-secondary-foreground">
-				<div class="flex items-center justify-between space-x-2">
-					<Folder />
-					<h5 class="grow mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
-						{collection.name}
-					</h5>
-					<Button variant="outline" on:click={() => goto(`/collections/${collection.id}`)}>
-						Open
-					</Button>
+		<h1 class="font-semibold text-3xl">All Collections</h1>
+
+		<div class="grow flex flex-col space-y-2 overflow-y-auto">
+			{#each data.collections as collection}
+				<div class="flex flex-col py-1 px-2 rounded bg-secondary/40 text-secondary-foreground">
+					<div class="flex items-center justify-between space-x-2">
+						<Folder />
+						<h5 class="grow mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+							{collection.name}
+						</h5>
+						<Button variant="outline" on:click={() => goto(`/collections/${collection.id}`)}>
+							Open
+						</Button>
+					</div>
+
+					<p class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
+						{collection.description}
+					</p>
 				</div>
-
-				<p class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-					{collection.description}
-				</p>
-			</div>
-		{/each}
-	</div>
+			{/each}
+		</div>
+	</PageContent>
 </div>
