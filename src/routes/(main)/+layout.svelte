@@ -17,7 +17,12 @@
 		User
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
-	import { Sidebar, SidebarCollection, SidebarGroupMenu, SidebarItem } from '$lib/components';
+	import {
+		Sidebar,
+		SidebarCollection,
+		SidebarGroupMenu,
+		SidebarItem
+	} from '$lib/components/sidebar';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
