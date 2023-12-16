@@ -1,4 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
+
+import type { Template } from '@prisma/client';
+
 // for information about these interfaces
 declare global {
 	namespace App {
@@ -7,6 +10,11 @@ declare global {
 		// interface Platform {}
 		interface Locals {
 			auth: import('lucia').AuthRequest;
+		}
+		interface PageState {
+			template: {
+				template: Template;
+			};
 		}
 	}
 	namespace svelteHTML {

@@ -1,28 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { PageHeader } from '$lib/components';
-	import { Dna, Expand, StretchHorizontal, Table } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
+	import { Dna } from 'lucide-svelte';
 	import { cn } from '$lib/utils';
 	import { DEFAULT_DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import type { Template, TemplateItem } from '@prisma/client';
-	import { trpc } from '$lib/trpc/client';
-	import { onError, redirectToast } from '$lib/components/feedback';
-	import { invalidateAll } from '$app/navigation';
-	import { ViewButton, ViewButtonsGroup } from '$lib/components/view/';
+	import { Root as DialogRoot, Content as DialogContent } from '$lib/components/ui/dialog';
+	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
 	import debounce from 'debounce';
 	import { SortDropdown } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
+	import TemplatePage from './[id]/+page.svelte';
+	import { page } from '$app/stores';
 
 	export let data: PageData;
 
 	let isPreviewDialogOpen = false;
-	let sheetActiveTemplate: Template | null = null;
-	let view = 'list';
-
-	let currActiveTemplateId: string | undefined = undefined;
 
 	const sortOptions: SortOption[] = [
 		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
@@ -34,38 +26,6 @@
 	];
 	let currentSort: SortOption = sortOptions[0];
 
-	const getPropertyValue = (item: TemplateItem, id: string): string => {
-		const property = item.properties.find((property) => property.id === id);
-		return property ? property.value : '';
-	};
-
-	// TODO: ref better try catch and feedback
-	const createCollectionBasedOnTemplate = async (id: string) => {
-		try {
-			const { name, description, properties, items } = await trpc().templates.load.query(id);
-
-			const createdCollection = await trpc().collections.create.mutate({
-				name,
-				description,
-				properties,
-				groupId: null
-			});
-
-			const itemsCopy = items.map(({ id, ...rest }) => ({
-				...rest,
-				collectionId: createdCollection.id
-			}));
-
-			await trpc().items.createMany.mutate(itemsCopy);
-
-			isPreviewDialogOpen = false;
-			redirectToast('New collection created', `/collections/${createdCollection.id}`);
-			await invalidateAll();
-		} catch (error) {
-			onError(error);
-		}
-	};
-
 	// SEARCH
 
 	const debounceSearch = debounce((query: string) => {
@@ -73,29 +33,48 @@
 			return name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
 		});
 	}, DEFAULT_DEBOUNCE_INTERVAL * 0.5);
-	const handleOnInputSearch = (e: Event) => {
+
+	function handleOnInputSearch(e: Event) {
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length > 2) debounceSearch(value);
 		else sortedTemplates = data.templates.sort(sortFun(currentSort.field, currentSort.order));
-	};
+	}
+
+	async function onTemplateLinkClick(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
+		// bail if opening a new tab, or we're on too small a screen
+		if (e.metaKey || e.ctrlKey || innerWidth < 640) return;
+		e.preventDefault();
+
+		const { href } = e.currentTarget;
+
+		const result = await preloadData(href);
+
+		if (result.load === 'loaded' || result.status === 200) {
+			pushState(href, { template: result.data });
+		} else {
+			goto(href);
+		}
+	}
 
 	$: sortedTemplates = data.templates.sort(sortFun(currentSort.field, currentSort.order));
+
+	$: if ($page.state.template) {
+		isPreviewDialogOpen = true;
+	} else {
+		isPreviewDialogOpen = false;
+	}
 </script>
 
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
-	<PageHeader>
-		<Dna class="icon-sm" />
-		<div class="font-semibold text-xl">Templates</div>
-	</PageHeader>
-
 	<div class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto">
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>
 		</div>
+		<!-- TODO: write the page description -->
 		<p>Page description</p>
 
 		<div class=" space-y-2">
@@ -105,42 +84,18 @@
 				</div>
 				<div class="flex justify-between items-center space-x-2">
 					<SortDropdown {sortOptions} bind:currentSort />
-
-					<ViewButtonsGroup bind:value={view}>
-						<ViewButton {view} value="list">
-							<StretchHorizontal class="icon-md" />
-						</ViewButton>
-
-						<ViewButton {view} value="table">
-							<Table class="icon-md" />
-						</ViewButton>
-					</ViewButtonsGroup>
 				</div>
 			</div>
 
-			<div class=" space-y-2">
+			<div class="space-y-2">
 				{#each sortedTemplates as template (template.id)}
-					<div
-						class={cn(
-							'flex flex-col items-start  py-1 px-2 space-y-2 group rounded bg-secondary/40',
-							template.id === currActiveTemplateId &&
-								'rounded-l-md border-r-2 border-primary bg-secondary/80'
-						)}
+					<a
+						href="/templates/{template.id}"
+						on:click={onTemplateLinkClick}
+						class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 					>
 						<div class="w-full flex justify-between items-center space-x-2">
 							<h2 class="grow text-lg font-semibold">{template.name}</h2>
-
-							<Button
-								variant="ghost"
-								size="xs"
-								on:click={() => {
-									isPreviewDialogOpen = true;
-									sheetActiveTemplate =
-										data.templates.find((temp) => temp.id === template.id) || null;
-								}}
-							>
-								<Expand class="icon-sm" />
-							</Button>
 						</div>
 
 						<div class="flex flex-wrap gap-2">
@@ -158,6 +113,10 @@
 							{/each}
 						</div>
 						<p>{template.description}</p>
+					</a>
+				{:else}
+					<div class="h-[80px] w-full flex items-center justify-center rounded bg-secondary/40">
+						<p class=" font-semibold text-xl">Template not found</p>
 					</div>
 				{/each}
 			</div>
@@ -165,76 +124,15 @@
 	</div>
 </div>
 
-<Dialog.Root bind:open={isPreviewDialogOpen}>
-	<Dialog.Content class="max-w-4xl">
-		{#if sheetActiveTemplate}
-			<Dialog.Header>
-				<Dialog.Title>{sheetActiveTemplate.name} - Template</Dialog.Title>
-				<Dialog.Description>
-					{sheetActiveTemplate.description}
-				</Dialog.Description>
-			</Dialog.Header>
-
-			<div class="grow flex flex-col">
-				<div class="space-y-2">
-					<div>
-						<p>Example of item</p>
-						<div class="flex flex-col space-y-2">
-							{#each sheetActiveTemplate.items as item (item.id)}
-								<span class="w-full px-2 flex flex-col border-l-2 border-primary">
-									<span class="font-semibold text-lg">
-										{item.name}
-									</span>
-
-									{#each sheetActiveTemplate.properties as property (property.id)}
-										<span class="space-x-1">
-											<span>{property.name}</span>
-											<span class="px-1 font-light rounded bg-gray-200 dark:bg-gray-700">
-												{getPropertyValue(item, property.id)}
-											</span>
-										</span>
-									{/each}
-								</span>
-							{/each}
-						</div>
-					</div>
-
-					<div>
-						<p>Properties</p>
-						<table
-							class="w-full border-separate border-spacing-2 border-l-2 border-gray-300 dark:border-gray-600"
-						>
-							<thead>
-								<tr>
-									<th class="rounded-tl border-2 border-gray-300 dark:border-gray-600"> Name </th>
-									<th class="rounded-tr border-2 border-gray-300 dark:border-gray-600"> Type </th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each sheetActiveTemplate.properties as property (property.id)}
-									<tr>
-										<td class="border-2 border-gray-300 dark:border-gray-600">
-											{property.name}
-										</td>
-										<td
-											class="border-2 border-gray-300 dark:border-gray-600 first-letter:uppercase"
-										>
-											{property.type.toLowerCase()}
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-
-			<Button
-				class="w-full"
-				on:click={() => {
-					if (sheetActiveTemplate) createCollectionBasedOnTemplate(sheetActiveTemplate.id);
-				}}>Use this template</Button
-			>
-		{/if}
-	</Dialog.Content>
-</Dialog.Root>
+<DialogRoot
+	open={isPreviewDialogOpen}
+	onOpenChange={(open) => {
+		if (!open) {
+			history.back();
+		}
+	}}
+>
+	<DialogContent class="max-w-4xl">
+		<TemplatePage data={$page.state.template} />
+	</DialogContent>
+</DialogRoot>
