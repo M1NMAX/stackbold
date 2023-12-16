@@ -1,9 +1,2 @@
-import Wrapper from './view-button-wrapper.svelte';
-import Button from './view-button.svelte';
-
-export {
-	Wrapper,
-	Button, //
-	Wrapper as ViewButtonsGroup,
-	Button as ViewButton
-};
+import { default as ViewButtonsGroup } from './view-button-wrapper.svelte';
+import { default as ViewButton } from './view-button.svelte';
