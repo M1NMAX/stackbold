@@ -38,6 +38,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Drawer } from '$lib/components/ui/drawer';
 	import { onError, onSuccess } from '$lib/components/feedback';
+	import { SidebarButton } from '$lib/components/sidebar';
 
 	export let data: PageData;
 
@@ -433,22 +434,9 @@
 <div
 	class={`${
 		!isDrawerHidden ? 'w-2/3' : 'w-full'
-	}  ease-in-out duration-300  p-1 rounded-md bg-card text-secondary-foreground  flex flex-col space-y-2.5 overflow-hidden`}
+	}  ease-in-out duration-300  p-1 rounded-md bg-card text-secondary-foreground flex flex-col space-y-1 overflow-hidden`}
 >
 	<PageHeader>
-		<Folder class="icon-sm" />
-		<!-- TODO: find better solution -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div
-			class="grow font-semibold text-xl focus:outline-none"
-			contenteditable
-			spellcheck={false}
-			on:keypress={preventEnterKeypress}
-			on:input={handleOnInputCollectionName}
-		>
-			{currCollection.name}
-		</div>
-
 		<span class="font-semibold text-xs text-gray-500 mr-2">
 			Updated
 			{dayjs(currCollection.updatedAt).fromNow()}
@@ -515,11 +503,12 @@
 		</DropdownMenu.Root>
 	</PageHeader>
 
-	<div class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto">
+	<div class="h-full w-full mx-auto p-2 lg:py-1 lg:px-8 space-y-2 overflow-y-auto">
+		<SidebarButton />
 		<div class="flex items-center space-x-2">
 			<Folder class="icon-lg" />
 			<h1
-				class="font-semibold text-3xl"
+				class="grow font-semibold text-3xl focus:outline-none"
 				contenteditable
 				spellcheck={false}
 				on:keypress={preventEnterKeypress}
