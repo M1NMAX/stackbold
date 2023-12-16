@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { PageHeader } from '$lib/components';
-	import { Dna, Expand, Search, StretchHorizontal, Table } from 'lucide-svelte';
-	import sortFun, { type IBaseSchema, type OrderType } from '$lib/utils/sort';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { Dna, Expand, StretchHorizontal, Table } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
 	import { DEFAULT_DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
@@ -15,24 +13,16 @@
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view/';
 	import { SearchInput } from '$lib/components/search';
 	import debounce from 'debounce';
+	import { SortDropdown } from '$lib/components/sort';
+	import { sortFun, type SortOption } from '$lib/utils/sort';
 
 	export let data: PageData;
-	$: templates = data.templates;
 
 	let isPreviewDialogOpen = false;
 	let sheetActiveTemplate: Template | null = null;
-
 	let view = 'list';
 
-	let sortDetail: { field: keyof IBaseSchema; order: OrderType } = { field: 'name', order: 'asc' };
-
-	$: sortedTemplates = templates.sort(sortFun(sortDetail.field, sortDetail.order));
-
-	type SortOption = {
-		label: string;
-		field: keyof IBaseSchema;
-		order: OrderType;
-	};
+	let currActiveTemplateId: string | undefined = undefined;
 
 	const sortOptions: SortOption[] = [
 		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
@@ -42,12 +32,7 @@
 		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
 		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
 	];
-
-	$: currSortLabel = sortOptions.find(
-		(option) => option.field === sortDetail.field && option.order === sortDetail.order
-	)?.label;
-
-	let currActiveTemplateId: string | undefined = undefined;
+	let currentSort: SortOption = sortOptions[0];
 
 	const getPropertyValue = (item: TemplateItem, id: string): string => {
 		const property = item.properties.find((property) => property.id === id);
@@ -92,8 +77,10 @@
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length > 2) debounceSearch(value);
-		else sortedTemplates = templates.sort(sortFun(sortDetail.field, sortDetail.order));
+		else sortedTemplates = data.templates.sort(sortFun(currentSort.field, currentSort.order));
 	};
+
+	$: sortedTemplates = data.templates.sort(sortFun(currentSort.field, currentSort.order));
 </script>
 
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
@@ -117,28 +104,7 @@
 					<SearchInput placeholder="Find Template" on:input={handleOnInputSearch} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="sm">
-								Sort {currSortLabel}
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Label>Sort By</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-
-							<DropdownMenu.Group>
-								{#each sortOptions as { label, field, order }}
-									<DropdownMenu.CheckboxItem
-										checked={sortDetail.field === field && sortDetail.order === order}
-										on:click={() => (sortDetail = { field, order })}
-									>
-										{label}
-									</DropdownMenu.CheckboxItem>
-								{/each}
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+					<SortDropdown {sortOptions} bind:currentSort />
 
 					<ViewButtonsGroup bind:value={view}>
 						<ViewButton {view} value="list">
@@ -169,7 +135,8 @@
 								size="xs"
 								on:click={() => {
 									isPreviewDialogOpen = true;
-									sheetActiveTemplate = templates.find((temp) => temp.id === template.id) || null;
+									sheetActiveTemplate =
+										data.templates.find((temp) => temp.id === template.id) || null;
 								}}
 							>
 								<Expand class="icon-sm" />

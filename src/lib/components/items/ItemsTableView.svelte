@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import { ItemContextMenu, ItemProperty, SortArrow } from '$lib/components';
+	import { ItemContextMenu, ItemProperty } from '$lib/components';
+	import { SortArrow } from '$lib/components/sort';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
