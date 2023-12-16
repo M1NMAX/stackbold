@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { ItemsListView, ItemsTableView } from '$lib/components';
 	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
-	import { ViewButton, ViewButtonsGroup } from '$lib/components/view/';
+	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
