@@ -2,11 +2,19 @@
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { createEventDispatcher } from 'svelte';
 	import type { CollectionProperty, Color } from '@prisma/client';
-	import { Check } from 'lucide-svelte';
+	import { CalendarIcon, Check } from 'lucide-svelte';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
+	import { Calendar } from '../ui/calendar';
+
+	import {
+		CalendarDate,
+		type DateValue,
+		DateFormatter,
+		getLocalTimeZone
+	} from '@internationalized/date';
 
 	export let itemId: string;
 	export let property: CollectionProperty;
@@ -29,6 +37,10 @@
 
 	$: selectedValue =
 		property.options.find((opt) => opt.id === value)?.value ?? 'Select a option...';
+
+	const df = new DateFormatter('en-US', { dateStyle: 'long' });
+
+	let dateValue: DateValue | undefined = undefined;
 </script>
 
 {#if value}
@@ -67,6 +79,7 @@
 										itemId,
 										property: { id: property.id, value }
 									});
+									open = false;
 								}}
 								class="space-x-2"
 							>
@@ -80,6 +93,45 @@
 						{/each}
 					</Command.Group>
 				</Command.Root>
+			</Popover.Content>
+		</Popover.Root>
+	{:else if property.type === 'DATE'}
+		{@const valueAsDate = new Date(value)}
+		<Popover.Root bind:open>
+			<Popover.Trigger asChild let:builder>
+				<Button
+					builders={[builder]}
+					variant="secondary"
+					class={cn('h-6 py-1 px-1.5 rounded font-semibold', PROPERTY_COLORS[color])}
+				>
+					<CalendarIcon class="icon-xs mr-2" />
+					{df.format(
+						new CalendarDate(
+							valueAsDate.getFullYear(),
+							valueAsDate.getMonth(),
+							valueAsDate.getDate()
+						).toDate(getLocalTimeZone())
+					)}
+				</Button>
+			</Popover.Trigger>
+			<Popover.Content class="w-auto p-0" align="start">
+				<Calendar
+					value={new CalendarDate(
+						valueAsDate.getFullYear(),
+						valueAsDate.getMonth(),
+						valueAsDate.getDate()
+					)}
+					onValueChange={(dt) => {
+						if (!dt) return;
+						value = dt.toString();
+
+						dispatch('updPropertyValue', {
+							itemId,
+							property: { id: property.id, value }
+						});
+						open = false;
+					}}
+				/>
 			</Popover.Content>
 		</Popover.Root>
 	{:else}
