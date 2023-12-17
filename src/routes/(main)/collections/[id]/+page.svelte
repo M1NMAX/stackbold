@@ -38,7 +38,6 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Drawer } from '$lib/components/ui/drawer';
 	import { onError, onSuccess } from '$lib/components/feedback';
-	import { SidebarButton } from '$lib/components/sidebar';
 	import { PageHeader, PageContent } from '$lib/components/page';
 
 	export let data: PageData;
@@ -504,8 +503,7 @@
 		</DropdownMenu.Root>
 	</PageHeader>
 
-	<PageContent>
-		<SidebarButton />
+	<PageContent class="lg:py-1 lg:px-8">
 		<div class="flex items-center space-x-2">
 			<Folder class="icon-lg" />
 			<h1

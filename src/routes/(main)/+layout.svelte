@@ -51,6 +51,8 @@
 	$: activeUrl = $page.url.pathname;
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
 
+	let innerWidth: number;
+
 	const sidebarStateStore = writable(true);
 	setContext('sidebarStateStore', sidebarStateStore);
 
@@ -218,7 +220,11 @@
 			document.removeEventListener('keydown', handleKeydown);
 		};
 	});
+
+	$: innerWidth < 700 && ($sidebarStateStore = false);
 </script>
+
+<svelte:window bind:innerWidth />
 
 <div class="h-screen flex bg-secondary">
 	<Sidebar class={cn('transition-all w-0', $sidebarStateStore && 'w-64')}>
@@ -329,7 +335,7 @@
 				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
 				<div class="px-2">
-					<span class="text-sm font-semibold"> Collections</span>
+					<a href="/collections/" class="text-sm font-semibold"> Collections</a>
 				</div>
 
 				<div class="space-y-0">

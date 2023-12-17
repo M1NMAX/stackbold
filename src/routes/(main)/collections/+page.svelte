@@ -3,7 +3,6 @@
 
 	import { Database, Folder } from 'lucide-svelte';
 	import { PageContent } from '$lib/components/page';
-	import { SidebarButton } from '$lib/components/sidebar';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { DEFAULT_DEBOUNCE_INTERVAL } from '$lib/constant';
@@ -46,11 +45,12 @@
 
 <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
 	<PageContent>
-		<SidebarButton />
 		<div class="flex items-center space-x-2">
 			<Database class="icon-lg" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
 		</div>
+		<!-- TODO: create page description -->
+		<p>Page description</p>
 
 		<div class="space-y-2">
 			<div class="flex justify-between space-x-2">

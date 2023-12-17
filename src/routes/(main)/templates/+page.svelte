@@ -11,7 +11,6 @@
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/stores';
-	import { SidebarButton } from '$lib/components/sidebar';
 	import { PageContent } from '$lib/components/page';
 
 	export let data: PageData;
@@ -72,7 +71,6 @@
 
 <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
 	<PageContent>
-		<SidebarButton />
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>

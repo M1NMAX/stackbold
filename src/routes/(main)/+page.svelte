@@ -2,7 +2,6 @@
 	import type { PageData } from './$types';
 	import { PageContent, PageHeader } from '$lib/components/page';
 	import { Button } from '$lib/components/ui/button';
-	import { SidebarButton } from '$lib/components/sidebar';
 
 	export let data: PageData;
 </script>
@@ -12,8 +11,6 @@
 </svelte:head>
 <div class="grow p-1 rounded-md bg-card text-secondary-foreground">
 	<PageContent>
-		<SidebarButton />
-
 		<h1 class="font-semibold text-2xl">Welcome back!</h1>
 		<p>User id: {data.user.userId}</p>
 		<p>Username: {data.user.name}</p>
