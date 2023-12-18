@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Option as OptionType } from '@prisma/client';
 	import { fade } from 'svelte/transition';
-	import Option from './Option.svelte';
+	import PropertyOption from './property-option.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { Plus, X } from 'lucide-svelte';
 	import { Button } from '../ui/button';
@@ -37,7 +37,7 @@
 
 	<div class="space-y-1">
 		{#each options as option}
-			<Option {propertyId} {option} on:updOptColor on:updOptValue on:deleteOpt />
+			<PropertyOption {propertyId} {option} on:updOptColor on:updOptValue on:deleteOpt />
 		{/each}
 	</div>
 </div>

@@ -2,7 +2,7 @@
 	import { PropertyType, type CollectionProperty } from '@prisma/client';
 	import Textarea from '../Textarea/Textarea.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import PropertyWrapper from './PropertyWrapper.svelte';
+	import PropertyInputWrapper from './property-input-wrapper.svelte';
 
 	export let property: CollectionProperty;
 	export let value: string;
@@ -20,7 +20,7 @@
 	};
 </script>
 
-<PropertyWrapper
+<PropertyInputWrapper
 	{property}
 	isCheckBox={property.type === PropertyType.CHECKBOX}
 	on:duplicate
@@ -65,4 +65,4 @@
 			class="w-full h-8 input input-ghost font-medium"
 		/>
 	{/if}
-</PropertyWrapper>
+</PropertyInputWrapper>

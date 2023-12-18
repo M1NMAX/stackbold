@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { IBaseSchema, OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
-	import { ItemContextMenu, ItemProperty } from '$lib/components';
+	import { ItemContextMenu } from '$lib/components';
+	import { PropertyValue } from '$lib/components/property';
 	import { SortArrow } from '$lib/components/sort';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
@@ -114,7 +115,7 @@
 							{@const itemProperty = getItemProperty(property.id, item.properties)}
 							<td class="text-left py-2 px-1">
 								{#if itemProperty}
-									<ItemProperty
+									<PropertyValue
 										itemId={item.id}
 										{property}
 										color={property.type === 'SELECT'

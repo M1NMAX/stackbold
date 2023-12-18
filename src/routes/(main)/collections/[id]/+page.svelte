@@ -23,7 +23,8 @@
 		type Collection,
 		type CollectionProperty as CollectionPropertyType
 	} from '@prisma/client';
-	import { CollectionProperty, Items, Textarea } from '$lib/components';
+	import { Items, Textarea } from '$lib/components';
+	import { PropertyInput } from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -661,7 +662,7 @@
 
 			<div class="space-y-2">
 				{#each currCollection.properties as property}
-					<CollectionProperty
+					<PropertyInput
 						{property}
 						value={getItemPropValue(
 							property.id,

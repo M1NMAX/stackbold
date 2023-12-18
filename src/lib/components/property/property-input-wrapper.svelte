@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Popover from '$lib/components/ui/popover';
-	import Options from './Options.svelte';
+	import PropertyOptions from './property-options.svelte';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { Separator } from '$lib/components/ui/separator';
 
@@ -77,7 +77,7 @@
 
 					{#if property.type === 'SELECT'}
 						<Separator />
-						<Options
+						<PropertyOptions
 							propertyId={property.id}
 							options={property.options}
 							on:addOpt

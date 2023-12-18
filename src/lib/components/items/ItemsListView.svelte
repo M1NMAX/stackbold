@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { ItemContextMenu, ItemProperty } from '$lib/components';
+	import { ItemContextMenu } from '$lib/components';
+	import { PropertyValue } from '$lib/components/property';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
@@ -59,7 +60,7 @@
 					{#if property.isVisibleOnListView}
 						{@const itemProperty = getItemProperty(property.id, item.properties)}
 						{#if itemProperty}
-							<ItemProperty
+							<PropertyValue
 								itemId={item.id}
 								{property}
 								color={property.type === 'SELECT'
