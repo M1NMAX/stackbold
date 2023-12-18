@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
 	import { ItemContextMenu, ItemProperty } from '$lib/components';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
-	import { PanelLeftOpen } from 'lucide-svelte';
+	import { cn } from '$lib/utils';
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -30,26 +29,30 @@
 <div class="h-full space-y-2 grow overflow-y-auto">
 	{#each items as item}
 		<div
-			class={` ${
-				item.id === currActiveItemId
-					? 'rounded-l-md border-r-2 border-primary bg-secondary/80'
-					: 'rounded bg-secondary/40'
-			} flex flex-col items-start  py-1 px-2 space-y-2 group`}
+			tabindex="0"
+			role="button"
+			on:click|self={() => dispatch('clickOpenItem', item.id)}
+			on:keydown={(e) => {
+				if (e.key === 'Enter') {
+					dispatch('clickOpenItem', item.id);
+				}
+			}}
+			class={cn(
+				'relative flex flex-col items-start  py-1 px-2 space-y-2 group  rounded bg-secondary/40 hover:bg-secondary/50',
+				item.id === currActiveItemId && 'rounded-l-md border-r-2 border-primary bg-secondary/80'
+			)}
 		>
-			<div class="w-full flex justify-between items-center space-x-2">
-				<span class="grow text-lg font-semibold">{item.name}</span>
-
-				<ItemContextMenu
-					itemId={item.id}
-					on:clickRenameItem
-					on:clickDuplicateItem
-					on:clickDeleteItem
-				/>
-
-				<Button variant="ghost" size="xs" on:click={() => dispatch('clickOpenItem', item.id)}>
-					<PanelLeftOpen class="icon-sm" />
-				</Button>
+			<div class="text-lg font-semibold">
+				{item.name}
 			</div>
+
+			<ItemContextMenu
+				itemId={item.id}
+				on:clickRenameItem
+				on:clickDuplicateItem
+				on:clickDeleteItem
+				class={cn('absolute right-2 top-0 invisible group-hover:visible')}
+			/>
 
 			<div class="flex flex-wrap gap-2">
 				{#each collectionProperties as property (property.id)}

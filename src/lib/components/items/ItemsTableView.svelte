@@ -94,9 +94,20 @@
 				<tr
 					class={`${
 						item.id === currActiveItemId && 'bg-muted/95 border-r-2 border-y-0  border-primary'
-					} font-medium text-base border-y  border-secondary  hover:bg-muted/95`}
+					} font-medium text-base border-y  border-secondary  hover:bg-muted/95 group`}
 				>
-					<td class="text-left py-2 px-1"> {item.name}</td>
+					<td class="relative py-2 px-1">
+						<span class="text-left"> {item.name}</span>
+
+						<Button
+							variant="ghost"
+							size="xs"
+							on:click={() => dispatch('clickOpenItem', item.id)}
+							class="absolute right-0 invisible group-hover:visible"
+						>
+							<PanelLeftOpen class="icon-sm" />
+						</Button>
+					</td>
 
 					{#each collectionProperties as property (property.id)}
 						{#if property.isVisibleOnTableView}
@@ -126,10 +137,6 @@
 							on:clickDuplicateItem
 							on:clickDeleteItem
 						/>
-
-						<Button variant="ghost" size="xs" on:click={() => dispatch('clickOpenItem', item.id)}>
-							<PanelLeftOpen class="icon-sm" />
-						</Button>
 					</td>
 				</tr>
 			{/each}

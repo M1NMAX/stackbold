@@ -8,18 +8,13 @@
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
 	import { Calendar } from '../ui/calendar';
-
-	import {
-		CalendarDate,
-		type DateValue,
-		DateFormatter,
-		getLocalTimeZone
-	} from '@internationalized/date';
+	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 
 	export let itemId: string;
 	export let property: CollectionProperty;
 	export let color: Color = 'GRAY';
 	export let value: string | null;
+	let open = false;
 
 	const dispatch = createEventDispatcher<{
 		updPropertyValue: { itemId: string; property: { id: string; value: string } };
@@ -33,14 +28,8 @@
 		dispatch('updPropertyValue', { itemId, property: { id: property.id, value: currValue } });
 	};
 
-	let open = false;
-
 	$: selectedValue =
 		property.options.find((opt) => opt.id === value)?.value ?? 'Select a option...';
-
-	const df = new DateFormatter('en-US', { dateStyle: 'long' });
-
-	let dateValue: DateValue | undefined = undefined;
 </script>
 
 {#if value}
@@ -97,6 +86,7 @@
 		</Popover.Root>
 	{:else if property.type === 'DATE'}
 		{@const valueAsDate = new Date(value)}
+		{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
 		<Popover.Root bind:open>
 			<Popover.Trigger asChild let:builder>
 				<Button
