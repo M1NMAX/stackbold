@@ -84,7 +84,7 @@ enum PropertyType {
 }
 
 type Icon {
-  name  String @default("")
+  name  String @default("folder")
   color Color  @default(GRAY)
 }
 
@@ -134,6 +134,7 @@ model Collection {
   properties   CollectionProperty[]
   group        Group?               @relation(fields: [groupId], references: [id])
   groupId      String?              @db.ObjectId
+  icon         Icon
 }
 
 model Item {
@@ -162,4 +163,5 @@ model Template {
   updatedAt   DateTime             @updatedAt
   properties  CollectionProperty[]
   items       TemplateItem[]
+  icon        Icon
 }
