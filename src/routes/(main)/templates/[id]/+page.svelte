@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Dna } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { invalidateAll } from '$app/navigation';
 	import { onError, redirectToast } from '$lib/components/feedback';
 	import { trpc } from '$lib/trpc/client';
 	import type { TemplateItem } from '@prisma/client';
 	import { PageHeader } from '$lib/components/page';
+	import { ICON_COLORS, icons } from '$lib/components/icon';
+	import { cn } from '$lib/utils';
 
 	export let data: PageData;
 
@@ -18,9 +19,10 @@
 	// TODO: ref better try catch and feedback
 	async function createCollectionBasedOnTemplate(id: string) {
 		try {
-			const { name, description, properties, items } = await trpc().templates.load.query(id);
+			const { icon, name, description, properties, items } = await trpc().templates.load.query(id);
 
 			const createdCollection = await trpc().collections.create.mutate({
+				icon,
 				name,
 				description,
 				properties,
@@ -50,7 +52,10 @@
 	<PageHeader />
 
 	<div class="flex items-center space-x-2">
-		<Dna class="icon-lg" />
+		<svelte:component
+			this={icons[data.template.icon.name]}
+			class={cn('icon-lg', ICON_COLORS[data.template.icon.color])}
+		/>
 		<h1 class="font-semibold text-3xl">{data.template.name}</h1>
 	</div>
 	<p>{data.template.description}</p>

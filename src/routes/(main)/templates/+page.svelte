@@ -12,6 +12,7 @@
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/stores';
 	import { PageContent } from '$lib/components/page';
+	import { ICON_COLORS, icons } from '$lib/components/icon';
 
 	export let data: PageData;
 
@@ -96,6 +97,10 @@
 						class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 					>
 						<div class="w-full flex justify-between items-center space-x-2">
+							<svelte:component
+								this={icons[template.icon.name]}
+								class={cn('icon-sm', ICON_COLORS[template.icon.color])}
+							/>
 							<h2 class="grow text-lg font-semibold">{template.name}</h2>
 						</div>
 
