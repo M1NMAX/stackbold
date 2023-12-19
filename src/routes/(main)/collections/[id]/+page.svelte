@@ -40,6 +40,7 @@
 	import { Drawer } from '$lib/components/ui/drawer';
 	import { onError, onSuccess } from '$lib/components/feedback';
 	import { PageHeader, PageContent } from '$lib/components/page';
+	import { IconPicker } from '$lib/components/icon';
 
 	export let data: PageData;
 
@@ -506,7 +507,14 @@
 
 	<PageContent class="lg:py-1 lg:px-8">
 		<div class="flex items-center space-x-2">
-			<Folder class="icon-lg" />
+			<IconPicker
+				name={currCollection.icon.name}
+				color={currCollection.icon.color}
+				onIconChange={(icon) => {
+					handleUpdateCollection({ icon });
+				}}
+			/>
+
 			<h1
 				class="grow font-semibold text-3xl focus:outline-none"
 				contenteditable

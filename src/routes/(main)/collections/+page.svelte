@@ -8,6 +8,8 @@
 	import { DEFAULT_DEBOUNCE_INTERVAL } from '$lib/constant';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
+	import { ICON_COLORS, icons } from '$lib/components/icon';
+	import { cn } from '$lib/utils';
 
 	export let data: PageData;
 
@@ -68,7 +70,10 @@
 						class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 					>
 						<div class="flex items-center justify-between space-x-2">
-							<Folder />
+							<svelte:component
+								this={icons[collection.icon.name]}
+								class={cn('icon-md', ICON_COLORS[collection.icon.color])}
+							/>
 							<h2 class="text-lg font-semibold">
 								{collection.name}
 							</h2>

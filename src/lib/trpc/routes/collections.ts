@@ -4,7 +4,13 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { CollectionPropertyCreateInputSchema, ColorSchema, PropertyTypeSchema } from '$prisma-zod';
 
+const iconSchema = z.object({
+	name: z.string().optional(),
+	color: z.lazy(() => ColorSchema).optional()
+});
+
 const collectionCreateSchema = z.object({
+	icon: iconSchema,
 	name: z.string(),
 	isFavourite: z.boolean().optional(),
 	isArchived: z.boolean().optional(),
@@ -22,6 +28,7 @@ const collectionCreateSchema = z.object({
 const collectionUpdateSchema = z.object({
 	id: z.string(),
 	data: z.object({
+		icon: iconSchema.optional(),
 		name: z.string().optional(),
 		isFavourite: z.boolean().optional(),
 		isArchived: z.boolean().optional(),

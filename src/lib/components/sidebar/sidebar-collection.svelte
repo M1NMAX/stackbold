@@ -4,7 +4,6 @@
 		Check,
 		Copy,
 		CornerUpRight,
-		Folder,
 		Heart,
 		HeartOff,
 		MoreHorizontal,
@@ -17,6 +16,7 @@
 	import * as Command from '$lib/components/ui/command';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
+	import { ICON_COLORS, icons } from '../icon/icon-picker.svelte';
 
 	export let active: boolean;
 	export let asChild: boolean = false;
@@ -58,7 +58,10 @@
 	)}
 >
 	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">
-		<Folder class="icon-xs" />
+		<svelte:component
+			this={icons[collection.icon.name]}
+			class={cn('icon-sm', ICON_COLORS[collection.icon.color])}
+		/>
 		<span class="trucante font-semibold text-base">{collection.name}</span>
 	</a>
 
