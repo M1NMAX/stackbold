@@ -35,12 +35,14 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Popover from '$lib/components/ui/popover';
-	import { cn } from '$lib/utils';
+	import { cn, randomIntFromInterval } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
 	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
 
 	import * as Command from '$lib/components/ui/command';
+	import { ICON_COLORS } from '$lib/components/icon';
+	import { Color } from '@prisma/client';
 
 	export let data: LayoutData;
 
@@ -121,9 +123,13 @@
 	};
 
 	const handleSubmitCollection = async () => {
+		const colorKeys = Object.keys(Color);
+		const color = colorKeys[randomIntFromInterval(0, colorKeys.length)] as Color;
+
 		handleCreateCollection({
 			...createCollectionDetail,
-			groupId: createCollectionDetail.groupId || null
+			groupId: createCollectionDetail.groupId || null,
+			icon: { color }
 		});
 	};
 
@@ -351,6 +357,11 @@
 										id: e.detail.id,
 										data: { name: e.detail.name }
 									})}
+								on:moveCollection={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { groupId: e.detail.groupId }
+									})}
 								on:toggleFavourite={(e) =>
 									handleUpdateCollection({
 										id: e.detail.id,
@@ -384,6 +395,11 @@
 										id: e.detail.id,
 										data: { name: e.detail.name }
 									})}
+								on:moveCollection={(e) =>
+									handleUpdateCollection({
+										id: e.detail.id,
+										data: { groupId: e.detail.groupId }
+									})}
 								on:toggleFavourite={(e) =>
 									handleUpdateCollection({
 										id: e.detail.id,
@@ -413,7 +429,11 @@
 									groupId={group.id}
 									groupName={group.name}
 									on:addNewCollection={(e) =>
-										handleCreateCollection({ name: e.detail.name, groupId: e.detail.groupId })}
+										handleCreateCollection({
+											name: e.detail.name,
+											groupId: e.detail.groupId,
+											icon: {}
+										})}
 									on:renameGroup={(e) =>
 										handleUpdateGroup({ id: e.detail.groupId, data: { name: e.detail.name } })}
 									on:clickDeleteGroup={(e) => {

@@ -317,7 +317,8 @@ async function main() {
 					}))
 				})),
 				isFavourite: Math.random() < 0.5,
-				groupId: Math.random() > 0.7 ? undefined : groupsIds[randomIntFromInterval(0, 1)]
+				groupId: Math.random() > 0.7 ? undefined : groupsIds[randomIntFromInterval(0, 1)],
+				icon: {}
 			}
 		});
 
@@ -350,7 +351,8 @@ async function main() {
 						value,
 						color: colorsNames[randomIntFromInterval(0, 2)]
 					}))
-				}))
+				})),
+				icon: {}
 			}
 		});
 
