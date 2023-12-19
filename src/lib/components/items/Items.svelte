@@ -7,6 +7,8 @@
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
+	import { DEFAULT_DEBOUNCE_INTERVAL } from '$lib/constant';
+	import debounce from 'debounce';
 
 	export let items: ItemType[];
 	export let currActiveItemId: string | undefined = undefined;
@@ -24,6 +26,20 @@
 	];
 
 	let currentSort: SortOption = sortOptions[0];
+
+	const debounceSearch = debounce((query: string) => {
+		sortedItems = sortedItems.filter(({ name }) => {
+			return name.toLowerCase().includes(query);
+		});
+	}, DEFAULT_DEBOUNCE_INTERVAL * 0.5);
+
+	function handleOnInputSearch(e: Event) {
+		const value = (e.target as HTMLInputElement).value;
+
+		if (value.length > 2) debounceSearch(value);
+		else sortedItems = items.sort(sortFun(currentSort.field, currentSort.order));
+	}
+
 	$: sortedItems = items.sort(sortFun(currentSort.field, currentSort.order));
 </script>
 
@@ -31,8 +47,8 @@
 	<div class="grow space-y-2">
 		<!-- View handler -->
 		<div class="flex justify-between space-x-2">
-			<div class="w-1/3 flex justify-between items-center space-x-0.5">
-				<SearchInput placeholder="Find Item" />
+			<div class="w-1/3 flex justify-between items-center space-x-">
+				<SearchInput placeholder="Find Item" on:input={handleOnInputSearch} />
 			</div>
 
 			<div class="flex justify-between items-center space-x-2">
