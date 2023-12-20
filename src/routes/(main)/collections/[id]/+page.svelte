@@ -4,7 +4,6 @@
 		Copy,
 		Eye,
 		EyeOff,
-		Folder,
 		Heart,
 		HeartOff,
 		MoreHorizontal,
@@ -41,11 +40,10 @@
 	import { onError, onSuccess } from '$lib/components/feedback';
 	import { PageHeader, PageContent } from '$lib/components/page';
 	import { IconPicker } from '$lib/components/icon';
+	import { page } from '$app/stores';
 
 	export let data: PageData;
-
-	$: currCollection = data.collection;
-	$: currItems = data.items;
+	$: ({ collection, items } = data);
 
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
@@ -100,21 +98,18 @@
 	};
 
 	const handleClickOpenItem = async (itemId: string) => {
-		isDrawerHidden = false;
-		drawerSelectedItem = data.items.find((item) => item.id === itemId) || null;
-
-		// drawerSelectedItem = await trpc().items.load.query(itemId);
+		goto(`/collections/${collection.id}?id=${itemId}`);
 	};
 
 	// Collection handlers
 	const handleDeleteCollection = async () => {
-		if (currCollection.ownerId !== data.user.userId) {
+		if (collection.ownerId !== data.user.userId) {
 			toast.error('Unauthorized');
 			return;
 		}
 
 		try {
-			await trpc().collections.delete.mutate(currCollection.id);
+			await trpc().collections.delete.mutate(collection.id);
 			await invalidateAll();
 
 			goto('/collections');
@@ -144,7 +139,7 @@
 
 	const handleUpdateCollection = async (detail: RouterInputs['collections']['update']['data']) => {
 		await trpc().collections.update.mutate({
-			id: currCollection.id,
+			id: collection.id,
 			data: detail
 		});
 
@@ -179,7 +174,7 @@
 	};
 
 	const handleDuplicateItem = async (itemId: string) => {
-		const item = currItems.find(({ id }) => id === itemId);
+		const item = items.find(({ id }) => id === itemId);
 		if (!item) {
 			onError({ location: '/collections/page[id]', msg: 'Invalid item selected' });
 			return;
@@ -227,9 +222,9 @@
 		try {
 			//TODO: in the future, property may have default value
 			const createItem = await trpc().items.create.mutate({
-				collectionId: currCollection.id,
+				collectionId: collection.id,
 				name,
-				properties: currCollection.properties.map((prop) => ({
+				properties: collection.properties.map((prop) => ({
 					id: prop.id,
 					value: prop.type === 'CHECKBOX' ? 'false' : ''
 				}))
@@ -263,7 +258,7 @@
 		collection.properties.find((prop) => prop.id === pid) || null;
 
 	const getItemPropValue = (pid: string, itemProps: ItemPropertyType[]) => {
-		const collectionProp = currCollection.properties.find((prop) => prop.id === pid);
+		const collectionProp = collection.properties.find((prop) => prop.id === pid);
 		const itemProp = itemProps.find((property) => property.id === pid);
 
 		if (!collectionProp || !itemProp) return '';
@@ -276,7 +271,7 @@
 	};
 
 	const handleDuplicateProperty = async (pid: string) => {
-		const property = getProperty(currCollection, pid);
+		const property = getProperty(collection, pid);
 		if (!property) {
 			onError({ location: '/collections/page[id]', msg: 'Invalid property selected' });
 			return;
@@ -286,7 +281,7 @@
 			const { id, name, createdAt, ...rest } = property;
 
 			const updatedCollectionData = await trpc().collections.addProperty.mutate({
-				id: currCollection.id,
+				id: collection.id,
 				property: { ...rest, name: name + ' copy' }
 			});
 
@@ -295,7 +290,7 @@
 			const lastProperty = updatedProperties[updatedProperties.length - 1];
 
 			await trpc().items.addProperty.mutate({
-				ids: currItems.map(({ id }) => id),
+				ids: items.map(({ id }) => id),
 				property: {
 					id: lastProperty.id,
 					value: ''
@@ -309,10 +304,10 @@
 
 	const handleDeleteProperty = async (pid: string) => {
 		try {
-			await trpc().collections.deleteProperty.mutate({ id: currCollection.id, propertyId: pid });
+			await trpc().collections.deleteProperty.mutate({ id: collection.id, propertyId: pid });
 
 			await trpc().items.deleteProperty.mutate({
-				ids: currItems.map(({ id }) => id),
+				ids: items.map(({ id }) => id),
 				propertyId: pid
 			});
 
@@ -325,7 +320,7 @@
 	const handleAddProperty = async () => {
 		try {
 			const updatedCollectionData = await trpc().collections.addProperty.mutate({
-				id: currCollection.id,
+				id: collection.id,
 				property: {
 					name: capitalizeFirstLetter(PropertyType.TEXT.toString()),
 					type: PropertyType.TEXT
@@ -337,7 +332,7 @@
 			const lastProperty = updatedProperties[updatedProperties.length - 1];
 
 			await trpc().items.addProperty.mutate({
-				ids: currItems.map(({ id }) => id),
+				ids: items.map(({ id }) => id),
 				property: {
 					id: lastProperty.id,
 					value: ''
@@ -353,7 +348,7 @@
 		async (property: RouterInputs['collections']['updateProperty']['property']) => {
 			try {
 				const updatedCollectionData = await trpc().collections.updateProperty.mutate({
-					id: currCollection.id,
+					id: collection.id,
 					property
 				});
 
@@ -370,7 +365,7 @@
 	const handleAddPropertyOption = async (pid: string, value: string) => {
 		try {
 			const updatedCollection = await trpc().collections.addPropertyOption.mutate({
-				id: currCollection.id,
+				id: collection.id,
 				property: { id: pid, option: { value } }
 			});
 
@@ -398,13 +393,13 @@
 		pid: string,
 		option: RouterInputs['collections']['updatePropertyOption']['property']['option']
 	) => {
-		debouncedUpdatePropertyOption({ id: currCollection.id, property: { id: pid, option } });
+		debouncedUpdatePropertyOption({ id: collection.id, property: { id: pid, option } });
 	};
 
 	const handleDeletePropertyOption = async (pid: string, optionId: string) => {
 		try {
 			const updatedCollection = await trpc().collections.deletePropertyOption.mutate({
-				id: currCollection.id,
+				id: collection.id,
 				property: { id: pid, optionId }
 			});
 			selectedProperty = updatedCollection.properties.find((prop) => prop.id === pid) || null;
@@ -427,10 +422,21 @@
 		},
 		DEFAULT_DEBOUNCE_INTERVAL
 	);
+
+	$: if ($page.url.searchParams.has('id')) {
+		isDrawerHidden = false;
+
+		const itemId = $page.url.searchParams.get('id');
+
+		drawerSelectedItem = data.items.find((item) => item.id === itemId) || null;
+	} else {
+		isDrawerHidden = true;
+		drawerSelectedItem = null;
+	}
 </script>
 
 <svelte:head>
-	<title>{currCollection.name} - Stackbold</title>
+	<title>{collection.name} - Stackbold</title>
 </svelte:head>
 
 <div
@@ -441,7 +447,7 @@
 	<PageHeader>
 		<span class="font-semibold text-xs text-gray-500 mr-2">
 			Updated
-			{dayjs(currCollection.updatedAt).fromNow()}
+			{dayjs(collection.updatedAt).fromNow()}
 		</span>
 
 		<Button variant="secondary" size="icon" disabled>
@@ -451,9 +457,9 @@
 		<Button
 			variant="secondary"
 			size="icon"
-			on:click={() => handleUpdateCollection({ isFavourite: !currCollection.isFavourite })}
+			on:click={() => handleUpdateCollection({ isFavourite: !collection.isFavourite })}
 		>
-			{#if currCollection.isFavourite}
+			{#if collection.isFavourite}
 				<HeartOff />
 			{:else}
 				<Heart />
@@ -467,10 +473,10 @@
 			<DropdownMenu.Content class="w-56">
 				<DropdownMenu.Group>
 					<DropdownMenu.Item
-						on:click={() => handleUpdateCollection({ isDescHidden: !currCollection.isDescHidden })}
+						on:click={() => handleUpdateCollection({ isDescHidden: !collection.isDescHidden })}
 						class="space-x-1"
 					>
-						{#if currCollection.isDescHidden}
+						{#if collection.isDescHidden}
 							<Eye class="icon-xs" />
 							<span> Show description </span>
 						{:else}
@@ -493,7 +499,7 @@
 					<DropdownMenu.Item
 						class="space-x-1"
 						on:click={() => {
-							elementToBeDelete = { id: currCollection.id, type: 'collection' };
+							elementToBeDelete = { id: collection.id, type: 'collection' };
 							isDeleteModalOpen = true;
 						}}
 					>
@@ -508,8 +514,8 @@
 	<PageContent class="lg:py-1 lg:px-8">
 		<div class="flex items-center space-x-2">
 			<IconPicker
-				name={currCollection.icon.name}
-				color={currCollection.icon.color}
+				name={collection.icon.name}
+				color={collection.icon.color}
 				onIconChange={(icon) => {
 					handleUpdateCollection({ icon });
 				}}
@@ -522,16 +528,16 @@
 				on:keypress={preventEnterKeypress}
 				on:input={handleOnInputCollectionName}
 			>
-				{currCollection.name}
+				{collection.name}
 			</h1>
 		</div>
 
-		{#if !currCollection.isDescHidden}
+		{#if !collection.isDescHidden}
 			<label transition:fade for="description" class="label p-1">
 				<span class="sr-only label-text"> Collection description</span>
 				<Textarea
 					id="description"
-					value={currCollection.description}
+					value={collection.description}
 					on:input={handleOnInputCollectionDesc}
 					spellcheck={false}
 					class="w-full h-8 textarea textarea-ghost text-base"
@@ -545,7 +551,7 @@
 			currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
 			items={data.items}
 			bind:view={currView}
-			collectionProperties={currCollection.properties}
+			collectionProperties={collection.properties}
 			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
 			on:clickRename={(e) => handleUpdateItem({ id: e.detail, data: { name: 'something' } })}
 			on:clickDuplicateItem={(e) => handleDuplicateItem(e.detail)}
@@ -594,6 +600,8 @@
 				variant="secondary"
 				size="icon"
 				on:click={() => {
+					goto(`/collections/${collection.id}`);
+
 					isDrawerHidden = true;
 					drawerSelectedItem = null;
 				}}
@@ -669,7 +677,7 @@
 			</h2>
 
 			<div class="space-y-2">
-				{#each currCollection.properties as property}
+				{#each collection.properties as property}
 					<PropertyInput
 						{property}
 						value={getItemPropValue(
