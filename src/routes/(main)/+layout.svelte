@@ -39,14 +39,11 @@
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
 	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
-
 	import * as Command from '$lib/components/ui/command';
-	import { ICON_COLORS } from '$lib/components/icon';
 	import { Color } from '@prisma/client';
 
 	export let data: LayoutData;
-
-	$: groups = data.groups;
+	$: ({ groups, collections } = data);
 
 	$: favourites = data.collections.filter((collection) => collection.isFavourite);
 
@@ -74,7 +71,6 @@
 			const value = (e.target as HTMLInputElement).value;
 
 			if (value.length < 1 || value.length > 256) {
-				console.log('ERROR');
 				isNewGroupPopoverOpen = false;
 				onError({}, 'Invalid group name');
 				return;
@@ -345,7 +341,7 @@
 				</div>
 
 				<div class="space-y-0">
-					{#each data.collections as collection}
+					{#each collections as collection}
 						{#if collection.groupId === null}
 							<SidebarCollection
 								{collection}
@@ -415,7 +411,7 @@
 				</Accordion.Item>
 
 				{#each groups as group, idx (group.id)}
-					{@const groupCollections = data.collections.filter(
+					{@const groupCollections = collections.filter(
 						(collection) => collection.groupId && collection.groupId === group.id
 					)}
 					<Accordion.Item value={`item-${idx + 1}`}>

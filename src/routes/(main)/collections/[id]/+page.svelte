@@ -427,7 +427,6 @@
 		isDrawerHidden = false;
 
 		const itemId = $page.url.searchParams.get('id');
-
 		drawerSelectedItem = data.items.find((item) => item.id === itemId) || null;
 	} else {
 		isDrawerHidden = true;
