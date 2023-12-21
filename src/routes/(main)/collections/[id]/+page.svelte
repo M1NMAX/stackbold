@@ -50,7 +50,7 @@
 	let selectedItemId: string | null = null;
 
 	// View
-	let currView = 'table';
+	let currView = 'list';
 
 	// Drawer
 	let isDrawerHidden = true;
@@ -169,8 +169,12 @@
 		}
 
 		await trpc().items.delete.mutate(selectedItemId);
-		if (selectedItemId === drawerSelectedItem?.id) isDrawerHidden = true;
 		await onSuccess('item deleted');
+		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === selectedItemId) {
+			isDrawerHidden = true;
+			$page.url.searchParams.delete('id');
+			goto(`/collections/${collection.id}`);
+		}
 	};
 
 	const handleDuplicateItem = async (itemId: string) => {
