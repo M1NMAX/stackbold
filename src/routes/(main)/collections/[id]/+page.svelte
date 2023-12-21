@@ -16,11 +16,10 @@
 	import { sineIn } from 'svelte/easing';
 	import type { PageData } from './$types';
 	import {
-		type ItemProperty as ItemPropertyType,
+		type ItemProperty,
 		type Item as ItemType,
 		PropertyType,
-		type Collection,
-		type CollectionProperty as CollectionPropertyType
+		type Collection
 	} from '@prisma/client';
 	import { Items, Textarea } from '$lib/components';
 	import { AddPropertyPopover, PropertyInput } from '$lib/components/property';
@@ -46,7 +45,6 @@
 	$: ({ collection, items } = data);
 	$: ({ properties } = collection);
 
-	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
 	let selectedItemId: string | null = null;
 
@@ -262,7 +260,7 @@
 	const getProperty = (collection: Collection, pid: string) =>
 		collection.properties.find((prop) => prop.id === pid) || null;
 
-	const getItemPropValue = (pid: string, itemProps: ItemPropertyType[]) => {
+	const getItemPropValue = (pid: string, itemProps: ItemProperty[]) => {
 		const collectionProp = collection.properties.find((prop) => prop.id === pid);
 		const itemProp = itemProps.find((property) => property.id === pid);
 
@@ -358,12 +356,10 @@
 	const handleUpdateProperty = debounce(
 		async (property: RouterInputs['collections']['updateProperty']['property']) => {
 			try {
-				const updatedCollectionData = await trpc().collections.updateProperty.mutate({
+				await trpc().collections.updateProperty.mutate({
 					id: collection.id,
 					property
 				});
-
-				selectedProperty = getProperty(updatedCollectionData, property.id);
 
 				await onSuccess('Property update');
 			} catch (error) {
@@ -375,12 +371,10 @@
 
 	const handleAddPropertyOption = async (pid: string, value: string) => {
 		try {
-			const updatedCollection = await trpc().collections.addPropertyOption.mutate({
+			await trpc().collections.addPropertyOption.mutate({
 				id: collection.id,
 				property: { id: pid, option: { value } }
 			});
-
-			selectedProperty = getProperty(updatedCollection, pid);
 
 			await onSuccess('Property Option added ');
 		} catch (error) {
@@ -409,11 +403,10 @@
 
 	const handleDeletePropertyOption = async (pid: string, optionId: string) => {
 		try {
-			const updatedCollection = await trpc().collections.deletePropertyOption.mutate({
+			await trpc().collections.deletePropertyOption.mutate({
 				id: collection.id,
 				property: { id: pid, optionId }
 			});
-			selectedProperty = updatedCollection.properties.find((prop) => prop.id === pid) || null;
 
 			await onSuccess('Property Option deleted ');
 		} catch (error) {

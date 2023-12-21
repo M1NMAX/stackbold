@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { PropertyType, type CollectionProperty } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, setContext } from 'svelte';
 	import { Copy, EyeOff, FileSignature, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -12,12 +12,13 @@
 	export let property: CollectionProperty;
 	export let isCheckBox: boolean = false;
 
+	let isPopoverOpen = false;
+
 	const dispatch = createEventDispatcher<{
 		duplicate: string;
 		delete: string;
 		updPropertyField: { pid: string; name: string; value: boolean | string | PropertyType };
 	}>();
-	let isPopoverOpen = false;
 
 	const handleOnInputPropertyField = (e: Event) => {
 		//TODO: correct item value when property change
@@ -45,7 +46,7 @@
 		<Popover.Root bind:open={isPopoverOpen}>
 			<!-- TODO: find better solution -->
 			<Popover.Trigger class="sr-only">Open</Popover.Trigger>
-			<Popover.Content>
+			<Popover.Content class="p-2">
 				<form class="space-y-1">
 					<div class="flex space-x-1.5">
 						<label for={`${property.id}-name`} class="font-semibold"> Name </label>

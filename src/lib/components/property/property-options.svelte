@@ -5,13 +5,21 @@
 	import { createEventDispatcher } from 'svelte';
 	import { Plus, X } from 'lucide-svelte';
 	import { Button } from '../ui/button';
+	import { cn } from '$lib/utils';
 
 	export let propertyId: string;
 	export let options: OptionType[];
 
+	let showInput = false;
+
 	const dispatch = createEventDispatcher<{ addOpt: { propertyId: string; value: string } }>();
 
-	let showInput = false;
+	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		if (e.key !== 'Enter') return;
+		const value = e.currentTarget.value;
+		dispatch('addOpt', { propertyId, value });
+		e.currentTarget.value = '';
+	}
 </script>
 
 <div class=" flex flex-col space-y-1.5 pt-1">
@@ -28,11 +36,10 @@
 
 	<input
 		transition:fade
-		class={`  input input-xs input-ghost bg-base-200  ${showInput ? 'block' : 'hidden'}`}
+		on:keypress|stopPropagation={handleKeypress}
+		id="add-option"
 		placeholder="Enter option value"
-		on:keypress|stopPropagation={(e) => {
-			if (e.key === 'Enter') dispatch('addOpt', { propertyId, value: e.currentTarget.value });
-		}}
+		class={cn('input input-xs input-ghost bg-base-200 hidden', showInput && 'block')}
 	/>
 
 	<div class="space-y-1">
