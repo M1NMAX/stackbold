@@ -23,7 +23,7 @@
 		type CollectionProperty as CollectionPropertyType
 	} from '@prisma/client';
 	import { Items, Textarea } from '$lib/components';
-	import { PropertyInput } from '$lib/components/property';
+	import { AddPropertyPopover, PropertyInput } from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -44,6 +44,7 @@
 
 	export let data: PageData;
 	$: ({ collection, items } = data);
+	$: ({ properties } = collection);
 
 	let selectedProperty: CollectionPropertyType | null = null;
 	let drawerSelectedItem: ItemType | null = null;
@@ -289,9 +290,11 @@
 				property: { ...rest, name: name + ' copy' }
 			});
 
-			const updatedProperties = updatedCollectionData.properties;
-
+			const updatedProperties = updatedCollectionData.properties.sort(
+				(a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+			);
 			const lastProperty = updatedProperties[updatedProperties.length - 1];
+			properties = [...properties, lastProperty];
 
 			await trpc().items.addProperty.mutate({
 				ids: items.map(({ id }) => id),
@@ -321,19 +324,22 @@
 		}
 	};
 
-	const handleAddProperty = async () => {
+	const handleAddProperty = async (type: PropertyType) => {
 		try {
+			const name = capitalizeFirstLetter(type);
+
 			const updatedCollectionData = await trpc().collections.addProperty.mutate({
 				id: collection.id,
-				property: {
-					name: capitalizeFirstLetter(PropertyType.TEXT.toString()),
-					type: PropertyType.TEXT
-				}
+				property: { name, type }
 			});
 
-			const updatedProperties = updatedCollectionData.properties;
+			const updatedProperties = updatedCollectionData.properties.sort(
+				(a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+			);
 
 			const lastProperty = updatedProperties[updatedProperties.length - 1];
+
+			properties = [...properties, lastProperty];
 
 			await trpc().items.addProperty.mutate({
 				ids: items.map(({ id }) => id),
@@ -342,6 +348,7 @@
 					value: ''
 				}
 			});
+
 			await onSuccess('Property Added');
 		} catch (error) {
 			onError(error);
@@ -680,7 +687,7 @@
 			</h2>
 
 			<div class="space-y-2">
-				{#each collection.properties as property}
+				{#each properties as property}
 					<PropertyInput
 						{property}
 						value={getItemPropValue(
@@ -701,7 +708,6 @@
 						on:duplicate={(e) => handleDuplicateProperty(e.detail)}
 						on:delete={(e) => {
 							elementToBeDelete = { id: e.detail, type: 'property' };
-
 							isDeleteModalOpen = true;
 						}}
 						on:addOpt={({ detail }) => handleAddPropertyOption(detail.propertyId, detail.value)}
@@ -729,11 +735,8 @@
 				{/each}
 			</div>
 		</div>
-		<div class="grid justify-items-end">
-			<Button variant="secondary" on:click={() => handleAddProperty()} class="space-x-2">
-				<Plus class="icon-sm" />
-				<span> Add a property </span>
-			</Button>
+		<div class="grid justify-items-start">
+			<AddPropertyPopover on:clickPropType={(e) => handleAddProperty(e.detail)} />
 		</div>
 	</div>
 </Drawer>
