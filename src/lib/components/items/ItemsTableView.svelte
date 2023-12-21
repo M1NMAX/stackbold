@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { IBaseSchema, OrderType } from '$lib/utils';
+	import { cn, type IBaseSchema, type OrderType } from '$lib/utils';
 	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
 	import { ItemContextMenu } from '$lib/components';
 	import { PropertyValue } from '$lib/components/property';
@@ -94,36 +94,43 @@
 			{#each items as item (item.id)}
 				<tr
 					class={`${
-						item.id === currActiveItemId && 'bg-muted/95 border-r-2 border-y-0  border-primary'
-					} font-medium text-base border-y  border-secondary  hover:bg-muted/95 group`}
+						item.id === currActiveItemId && 'bg-card/50 border-r-2 border-y-0  border-primary'
+					} font-medium text-base border-y  border-secondary  hover:bg-opacity-20  group`}
 				>
-					<td class="relative py-2 px-1">
-						<span class="text-left"> {item.name}</span>
+					<td class="flex items-center justify-between">
+						<span class="text-left py-2 px-1"> {item.name}</span>
 
 						<Button
-							variant="ghost"
-							size="xs"
+							variant="secondary"
+							size="sm"
 							on:click={() => dispatch('clickOpenItem', item.id)}
-							class="absolute right-0 invisible group-hover:visible"
+							class="items-center space-x-2 py-0.5 px-1 rounded invisible group-hover:visible"
 						>
-							<PanelLeftOpen class="icon-sm" />
+							<span> Open </span>
+
+							<PanelLeftOpen class="icon-xs" />
 						</Button>
 					</td>
 
 					{#each collectionProperties as property (property.id)}
-						{#if property.isVisibleOnTableView}
-							{@const itemProperty = getItemProperty(property.id, item.properties)}
-							<td class="text-left py-2 px-1">
+						{@const itemProperty = getItemProperty(property.id, item.properties)}
+						{#if property.isVisibleOnTableView && itemProperty}
+							{@const value =
+								property.type === 'SELECT'
+									? getOptionValue(property, itemProperty.value)
+									: itemProperty.value}
+
+							{@const color =
+								property.type === 'SELECT' ? getOptionColor(property, itemProperty.value) : 'GRAY'}
+
+							<td class="text-left border">
 								{#if itemProperty}
 									<PropertyValue
-										itemId={item.id}
+										isTableView
 										{property}
-										color={property.type === 'SELECT'
-											? getOptionColor(property, itemProperty.value)
-											: 'GRAY'}
-										value={property.type === 'SELECT'
-											? getOptionValue(property, itemProperty.value)
-											: itemProperty.value}
+										{color}
+										{value}
+										itemId={item.id}
 										on:updPropertyValue
 									/>
 								{/if}

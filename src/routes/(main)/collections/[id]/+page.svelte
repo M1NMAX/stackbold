@@ -50,7 +50,7 @@
 	let selectedItemId: string | null = null;
 
 	// View
-	let currView = 'list';
+	let currView = 'table';
 
 	// Drawer
 	let isDrawerHidden = true;

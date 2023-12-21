@@ -9,11 +9,13 @@
 	import { cn } from '$lib/utils';
 	import { Calendar } from '../ui/calendar';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
+	import PropertyValueWrapper from './property-value-wrapper.svelte';
 
 	export let itemId: string;
 	export let property: CollectionProperty;
 	export let color: Color = 'GRAY';
 	export let value: string | null;
+	export let isTableView: boolean = false;
 	let open = false;
 
 	const dispatch = createEventDispatcher<{
@@ -28,128 +30,137 @@
 		dispatch('updPropertyValue', { itemId, property: { id: property.id, value: currValue } });
 	};
 
-	$: selectedValue =
-		property.options.find((opt) => opt.id === value)?.value ?? 'Select a option...';
+	const buttonClass = cn(
+		'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
+		!isTableView && 'h-6 w-fit rounded outline-none  py-1 px-1.5 font-semibold',
+		!isTableView && PROPERTY_COLORS[color]
+	);
+
+	$: selectedValue = property.options.find((opt) => opt.id === value)?.value ?? '';
 </script>
 
-{#if value}
-	{#if property.type === 'CHECKBOX'}
-		<label
-			class={` ${PROPERTY_COLORS[color]} label rounded inline-flex items-center justify-center space-x-1 text-sm   font-semibold px-1 py-0.5  `}
-		>
-			<input type="checkbox" checked={value === 'true'} on:input={handleOnInput} class="checkbox" />
+{#if property.type === 'CHECKBOX'}
+	<label
+		class={cn(
+			'flex justify-center',
+			!isTableView &&
+				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded text-sm font-semibold ',
+			!isTableView && PROPERTY_COLORS[color]
+		)}
+	>
+		<input type="checkbox" checked={value === 'true'} on:input={handleOnInput} class="checkbox" />
 
-			<span class="label-text font-semibold">{property.name} </span>
-		</label>
-	{:else if property.type === 'SELECT'}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="outline"
-					role="combobox"
-					aria-expanded={open}
-					class={`${PROPERTY_COLORS[color]} h-6 rounded outline-none border-0 py-1 px-1.5 font-semibold `}
-				>
+		<span class={cn('font-semibold', isTableView && 'sr-only')}>{property.name} </span>
+	</label>
+{:else if property.type === 'SELECT' && (value || isTableView)}
+	<Popover.Root bind:open>
+		<Popover.Trigger asChild let:builder>
+			<Button
+				builders={[builder]}
+				variant="outline"
+				role="combobox"
+				aria-expanded={open}
+				class={cn(buttonClass, !isTableView && PROPERTY_COLORS[color])}
+			>
+				<PropertyValueWrapper isWrappered={!!value && isTableView} class={PROPERTY_COLORS[color]}>
 					{selectedValue}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content class="w-[200px] p-0">
-				<Command.Root>
-					<Command.Input placeholder={`Search ${property.name} options...`} />
-					<Command.Empty>No option found.</Command.Empty>
-					<Command.Group>
-						{#each property.options as option}
-							<Command.Item
-								value={option.value}
-								onSelect={() => {
-									value = option.id;
-									dispatch('updPropertyValue', {
-										itemId,
-										property: { id: property.id, value }
-									});
-									open = false;
-								}}
-								class="space-x-2"
-							>
-								<Check class={cn('icon-xs mr-2', value !== option.id && 'text-transparent')} />
+				</PropertyValueWrapper>
+			</Button>
+		</Popover.Trigger>
+		<Popover.Content class="w-[200px] p-0">
+			<Command.Root>
+				<Command.Input placeholder={`Search ${property.name} options...`} />
+				<Command.Empty>No option found.</Command.Empty>
+				<Command.Group>
+					{#each property.options as option}
+						<Command.Item
+							value={option.value}
+							onSelect={() => {
+								value = option.id;
+								dispatch('updPropertyValue', {
+									itemId,
+									property: { id: property.id, value }
+								});
+								open = false;
+							}}
+							class="space-x-2"
+						>
+							<Check class={cn('icon-xs mr-2', value !== option.id && 'text-transparent')} />
 
-								<span class={cn('icon-xs mr-2', PROPERTY_COLORS[option.color])} />
-								<span>
-									{option.value}
-								</span>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-				</Command.Root>
-			</Popover.Content>
-		</Popover.Root>
-	{:else if property.type === 'DATE'}
-		{@const valueAsDate = new Date(value)}
-		{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="secondary"
-					class={cn('h-6 py-1 px-1.5 rounded font-semibold', PROPERTY_COLORS[color])}
-				>
-					<CalendarIcon class="icon-xs mr-2" />
-					{df.format(
-						new CalendarDate(
-							valueAsDate.getFullYear(),
-							valueAsDate.getMonth(),
-							valueAsDate.getDate()
-						).toDate(getLocalTimeZone())
-					)}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content class="w-auto p-0" align="start">
-				<Calendar
-					value={new CalendarDate(
-						valueAsDate.getFullYear(),
-						valueAsDate.getMonth(),
-						valueAsDate.getDate()
-					)}
-					onValueChange={(dt) => {
-						if (!dt) return;
-						value = dt.toString();
+							<span class={cn('icon-xs mr-2', PROPERTY_COLORS[option.color])} />
+							<span>
+								{option.value}
+							</span>
+						</Command.Item>
+					{/each}
+				</Command.Group>
+			</Command.Root>
+		</Popover.Content>
+	</Popover.Root>
+{:else if property.type === 'DATE' && (value || isTableView)}
+	<!--js current need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
+	{@const plus = value ? 0 : 1}
+	{@const valueAsDate = value ? new Date(value) : new Date()}
+	{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
 
-						dispatch('updPropertyValue', {
-							itemId,
-							property: { id: property.id, value }
-						});
-						open = false;
-					}}
-				/>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="secondary"
-					class={cn('h-6 py-1 px-1.5 rounded  font-semibold', PROPERTY_COLORS[color])}
-				>
+	<Popover.Root bind:open>
+		<Popover.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class={buttonClass}>
+				{#if value}
+					<PropertyValueWrapper isWrappered={!!value && isTableView} class={PROPERTY_COLORS[color]}>
+						<CalendarIcon class="icon-xs mr-2" />
+						{df.format(
+							new CalendarDate(
+								valueAsDate.getFullYear(),
+								valueAsDate.getMonth(),
+								valueAsDate.getDate()
+							).toDate(getLocalTimeZone())
+						)}
+					</PropertyValueWrapper>
+				{/if}
+			</Button>
+		</Popover.Trigger>
+		<Popover.Content class="w-auto p-0" align="start">
+			<Calendar
+				value={new CalendarDate(
+					valueAsDate.getFullYear(),
+					valueAsDate.getMonth() + plus,
+					valueAsDate.getDate()
+				)}
+				onValueChange={(dt) => {
+					if (!dt) return;
+					value = dt.toString();
+
+					dispatch('updPropertyValue', {
+						itemId,
+						property: { id: property.id, value }
+					});
+					open = false;
+				}}
+			/>
+		</Popover.Content>
+	</Popover.Root>
+{:else if value || isTableView}
+	<Popover.Root bind:open>
+		<Popover.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class={buttonClass}>
+				{value}
+			</Button>
+		</Popover.Trigger>
+		<Popover.Content>
+			<form>
+				<label for={property.id} class="sr-only"> {property.name} </label>
+
+				<input
+					id={property.id}
+					name={property.name}
+					placeholder="Empty"
+					class="w-full input input-ghost px-1 font-semibold text-sm"
+					type={property.type.toLowerCase()}
 					{value}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content>
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
-
-					<input
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="w-full input input-ghost px-1 font-semibold text-sm"
-						type={property.type.toLowerCase()}
-						{value}
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Popover.Content>
-		</Popover.Root>
-	{/if}
+					on:input={handleOnInput}
+				/>
+			</form>
+		</Popover.Content>
+	</Popover.Root>
 {/if}
