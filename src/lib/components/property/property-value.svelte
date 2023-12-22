@@ -2,7 +2,7 @@
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { createEventDispatcher } from 'svelte';
 	import type { CollectionProperty, Color } from '@prisma/client';
-	import { CalendarIcon, Check } from 'lucide-svelte';
+	import { CalendarIcon, CheckCheck } from 'lucide-svelte';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
@@ -69,9 +69,9 @@
 		</Popover.Trigger>
 		<Popover.Content class="w-[200px] p-0">
 			<Command.Root>
-				<Command.Input placeholder={`Search ${property.name} options...`} />
+				<Command.Input placeholder="Search for an options..." />
 				<Command.Empty>No option found.</Command.Empty>
-				<Command.Group>
+				<Command.Group heading="Select an option">
 					{#each property.options as option}
 						<Command.Item
 							value={option.value}
@@ -83,14 +83,19 @@
 								});
 								open = false;
 							}}
-							class="space-x-2"
+							class="justify-between"
 						>
-							<Check class={cn('icon-xs mr-2', value !== option.id && 'text-transparent')} />
-
-							<span class={cn('icon-xs mr-2', PROPERTY_COLORS[option.color])} />
-							<span>
+							<span
+								class={cn(
+									'h-6 flex items-center py-1 px-1.5 rounded',
+									PROPERTY_COLORS[option.color]
+								)}
+							>
 								{option.value}
 							</span>
+							<CheckCheck
+								class={cn('icon-xs text-primary', value !== option.id && 'text-transparent')}
+							/>
 						</Command.Item>
 					{/each}
 				</Command.Group>
@@ -98,7 +103,7 @@
 		</Popover.Content>
 	</Popover.Root>
 {:else if property.type === 'DATE' && (value || isTableView)}
-	<!--js current need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
+	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
 	{@const plus = value ? 0 : 1}
 	{@const valueAsDate = value ? new Date(value) : new Date()}
 	{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
