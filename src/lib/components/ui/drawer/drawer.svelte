@@ -2,8 +2,9 @@
 	import { twMerge } from 'tailwind-merge';
 	import type { drawerTransitionParamTypes, drawerTransitionTypes } from '.';
 	import { fly, slide, blur, fade } from 'svelte/transition';
+	import { sineIn } from 'svelte/easing';
 
-	export let activateClickOutside: boolean = true;
+	export let activateClickOutside: boolean = false;
 	export let hidden: boolean = true;
 	export let position: 'fixed' | 'absolute' = 'fixed';
 	export let leftOffset: string = 'inset-y-0 left-0';
@@ -11,14 +12,18 @@
 	export let topOffset: string = 'inset-x-0 top-0';
 	export let bottomOffset: string = 'inset-x-0 bottom-0';
 	export let width: string = 'w-80';
-	export let backdrop: boolean = true;
+	export let backdrop: boolean = false;
 	export let bgColor: string = 'bg-secondary';
 	export let bgOpacity: string = 'bg-opacity-75';
-	export let placement: 'left' | 'right' | 'top' | 'bottom' = 'left';
+	export let placement: 'left' | 'right' | 'top' | 'bottom' = 'right';
 	export let id: string = 'drawer-example';
 	export let divClass: string = 'overflow-y-auto z-40 p-4 bg-secondary';
-	export let transitionParams: drawerTransitionParamTypes = {};
 	export let transitionType: drawerTransitionTypes = 'fly';
+	export let transitionParams: drawerTransitionParamTypes = {
+		x: 320,
+		duration: 300,
+		easing: sineIn
+	};
 
 	function multiple(node: HTMLElement, params: any) {
 		switch (transitionType) {
