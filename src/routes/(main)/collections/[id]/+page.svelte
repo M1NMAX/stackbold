@@ -40,6 +40,7 @@
 	import { PageHeader, PageContent } from '$lib/components/page';
 	import { IconPicker } from '$lib/components/icon';
 	import { page } from '$app/stores';
+	import PropertyInputWrapper from '$lib/components/property/property-input-wrapper.svelte';
 
 	export let data: PageData;
 	$: ({ collection, items } = data);
@@ -668,7 +669,7 @@
 			</div>
 		</div>
 
-		<div class="grow flex flex-col space-y-4">
+		<div class="grow flex flex-col space-y-4 overflow-y-auto">
 			<h2
 				contenteditable
 				spellcheck={false}
@@ -681,22 +682,11 @@
 
 			<div class="space-y-2">
 				{#each properties as property}
-					<PropertyInput
+					<PropertyInputWrapper
 						{property}
-						value={getItemPropValue(
-							property.id,
-							drawerSelectedItem ? drawerSelectedItem.properties : []
-						)}
+						isCheckBox={property.type === PropertyType.CHECKBOX}
 						on:updPropertyField={(e) => {
 							handleUpdateProperty({ id: e.detail.pid, [e.detail.name]: e.detail.value });
-						}}
-						on:updPropertyValue={(e) => {
-							if (!drawerSelectedItem) return;
-
-							handleUpdatePropertyValue(drawerSelectedItem.id, {
-								id: e.detail.pid,
-								value: e.detail.value
-							});
 						}}
 						on:duplicate={(e) => handleDuplicateProperty(e.detail)}
 						on:delete={(e) => {
@@ -724,7 +714,23 @@
 							};
 							isDeleteModalOpen = true;
 						}}
-					/>
+					>
+						<PropertyInput
+							{property}
+							value={getItemPropValue(
+								property.id,
+								drawerSelectedItem ? drawerSelectedItem.properties : []
+							)}
+							on:updPropertyValue={(e) => {
+								if (!drawerSelectedItem) return;
+
+								handleUpdatePropertyValue(drawerSelectedItem.id, {
+									id: e.detail.pid,
+									value: e.detail.value
+								});
+							}}
+						/>
+					</PropertyInputWrapper>
 				{/each}
 			</div>
 		</div>

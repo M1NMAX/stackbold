@@ -69,8 +69,10 @@
 		</Popover.Trigger>
 		<Popover.Content class="w-[200px] p-0">
 			<Command.Root>
-				<Command.Input placeholder="Search for an options..." />
-				<Command.Empty>No option found.</Command.Empty>
+				<Command.Input
+					placeholder={property.options.length > 0 ? 'Search for an options...' : undefined}
+				/>
+
 				<Command.Group heading="Select an option">
 					{#each property.options as option}
 						<Command.Item
@@ -99,6 +101,7 @@
 						</Command.Item>
 					{/each}
 				</Command.Group>
+				<Command.Empty>No option found.</Command.Empty>
 			</Command.Root>
 		</Popover.Content>
 	</Popover.Root>
