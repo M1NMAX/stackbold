@@ -162,7 +162,7 @@ export const collections = createTRPCRouter({
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
 			const { id: oid, ...rest } = property.option;
 
-			await prisma.collection.update({
+			return await prisma.collection.update({
 				data: {
 					properties: {
 						updateMany: {
