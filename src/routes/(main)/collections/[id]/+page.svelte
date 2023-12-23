@@ -334,7 +334,8 @@
 		try {
 			const updatedItem = await trpc().items.updateProperty.mutate({ id, property });
 
-			drawerSelectedItem = updatedItem;
+			if (drawerSelectedItem && drawerSelectedItem.id === updatedItem.id)
+				drawerSelectedItem = updatedItem;
 
 			// update items overview
 			const itemsCopy = items.filter((item) => item.id !== id);
@@ -406,7 +407,7 @@
 		isDrawerHidden = false;
 
 		const itemId = $page.url.searchParams.get('id');
-		drawerSelectedItem = data.items.find((item) => item.id === itemId) || null;
+		drawerSelectedItem = items.find((item) => item.id === itemId) || null;
 	} else {
 		isDrawerHidden = true;
 		drawerSelectedItem = null;
@@ -557,10 +558,10 @@
 				deleteDetail = { type: 'item', id: e.detail };
 				isDeleteModalOpen = true;
 			}}
-			on:updPropertyValue={(e) => {
-				updPropertyValueDebounced(e.detail.itemId, {
-					id: e.detail.property.id,
-					value: e.detail.property.value
+			on:updPropertyValue={({ detail }) => {
+				updPropertyValueDebounced(detail.itemId, {
+					id: detail.property.id,
+					value: detail.property.value
 				});
 			}}
 			on:updPropertyVisibility={(e) => {
@@ -690,18 +691,20 @@
 							isDeleteModalOpen = true;
 						}}
 					>
-						<PropertyInput
-							{property}
-							value={getPropertyValue(property.id)}
-							on:updPropertyValue={({ detail }) => {
-								if (!drawerSelectedItem) return;
+						{#key drawerSelectedItem?.id}
+							<PropertyInput
+								{property}
+								value={getPropertyValue(property.id)}
+								on:updPropertyValue={({ detail }) => {
+									if (!drawerSelectedItem) return;
 
-								updPropertyValueDebounced(drawerSelectedItem.id, {
-									id: detail.pid,
-									value: detail.value
-								});
-							}}
-						/>
+									updPropertyValueDebounced(drawerSelectedItem.id, {
+										id: detail.pid,
+										value: detail.value
+									});
+								}}
+							/>
+						{/key}
 					</PropertyInputWrapper>
 				{/each}
 			</div>
