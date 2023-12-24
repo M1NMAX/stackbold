@@ -227,7 +227,7 @@
 
 		if (!itemProperty || !collectionProperty) return '';
 
-		if (collectionProperty.type !== PropertyType.SELECT) return itemProperty.value;
+		if (collectionProperty.type !== 'SELECT') return itemProperty.value;
 
 		const option = collectionProperty.options.find((opt) => opt.id === itemProperty.value);
 
@@ -657,7 +657,7 @@
 				{#each properties as property}
 					<PropertyInputWrapper
 						{property}
-						isCheckBox={property.type === PropertyType.CHECKBOX}
+						isCheckBox={property.type === 'CHECKBOX'}
 						on:updPropertyField={({ detail }) =>
 							updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
 						on:duplicate={(e) => duplicateProperty(e.detail)}

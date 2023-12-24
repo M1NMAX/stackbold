@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { CheckCheck } from 'lucide-svelte';
-	import { PropertyType, type CollectionProperty } from '@prisma/client';
+	import type { CollectionProperty } from '@prisma/client';
 	import Textarea from '../Textarea/Textarea.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
@@ -37,7 +37,7 @@
 	$: selectedValue = property.options.find((opt) => opt.id === value) ?? 'Empty';
 </script>
 
-{#if property.type === PropertyType.CHECKBOX}
+{#if property.type === 'CHECKBOX'}
 	<input
 		id={property.id}
 		type="checkbox"
@@ -45,7 +45,7 @@
 		on:input={handleOnInput}
 		class="checkbox"
 	/>
-{:else if property.type === PropertyType.SELECT}
+{:else if property.type === 'SELECT'}
 	<Popover.Root bind:open>
 		<Popover.Trigger asChild let:builder>
 			<Button
@@ -107,7 +107,7 @@
 			</Command.Root>
 		</Popover.Content>
 	</Popover.Root>
-{:else if property.type === PropertyType.DATE}
+{:else if property.type === 'DATE'}
 	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
 	{@const plus = value ? 0 : 1}
 	{@const valueAsDate = value ? new Date(value) : new Date()}
@@ -153,7 +153,7 @@
 			</Button>
 		</Popover.Content>
 	</Popover.Root>
-{:else if property.type === PropertyType.TEXT}
+{:else if property.type === 'TEXT'}
 	<Textarea
 		id={property.id}
 		name={property.name}

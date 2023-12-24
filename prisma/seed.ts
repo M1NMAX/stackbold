@@ -2,7 +2,7 @@ import { type CollectionProperty, Color, PrismaClient, PropertyType } from '@pri
 
 const prisma = new PrismaClient();
 
-const colorsNames = [Color.RED, Color.BLUE, Color.GREEN];
+const colorsNames = ['RED', 'BLUE', 'GREEN'];
 
 const groupsNames = ['Work', 'Personal'];
 const collectionsData = [
@@ -11,7 +11,7 @@ const collectionsData = [
 		properties: [
 			{
 				name: 'rating',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [
 					{ value: '1-Appaling' },
 					{ value: '2-Horrible' },
@@ -27,7 +27,7 @@ const collectionsData = [
 			},
 			{
 				name: 'status',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [
 					{ value: 'Reading' },
 					{ value: 'Plan to read' },
@@ -50,17 +50,17 @@ const collectionsData = [
 		properties: [
 			{
 				name: 'Done',
-				type: PropertyType.CHECKBOX,
+				type: 'CHECKBOX' as PropertyType,
 				options: [{ value: 'true' }, { value: 'false' }]
 			},
 			{
 				name: 'Conclusion date',
-				type: PropertyType.DATE,
+				type: 'DATE' as PropertyType,
 				options: [{ value: '2023-12-24' }, { value: '2023-11-19' }, { value: '2023-10-30' }]
 			},
 			{
 				name: 'Notes',
-				type: PropertyType.TEXT,
+				type: 'TEXT' as PropertyType,
 				options: [
 					{ value: 'I John for help' },
 					{ value: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.' }
@@ -79,12 +79,12 @@ const collectionsData = [
 		properties: [
 			{
 				name: 'Status',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [{ value: 'Plan to watch' }, { value: 'Watching' }, { value: 'Watched' }]
 			},
 			{
 				name: 'Score',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [
 					{ value: '1-Appaling' },
 					{ value: '2-Horrible' },
@@ -100,7 +100,7 @@ const collectionsData = [
 			},
 			{
 				name: 'Plataform',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [{ value: 'Netflix' }, { value: 'Vizer.tv' }, { value: 'Stremio' }]
 			}
 		],
@@ -119,12 +119,12 @@ const collectionsData = [
 		properties: [
 			{
 				name: 'Date',
-				type: PropertyType.DATE,
+				type: 'DATE' as PropertyType,
 				options: [{ value: '2024-01-24' }, { value: '2023-11-24' }, { value: '2023-12-12' }]
 			},
 			{
 				name: 'Notes',
-				type: PropertyType.TEXT,
+				type: 'TEXT' as PropertyType,
 				options: []
 			}
 		],
@@ -144,12 +144,12 @@ const templatesData = [
 		properties: [
 			{
 				name: 'Date',
-				type: PropertyType.DATE,
+				type: 'DATE' as PropertyType,
 				options: []
 			},
 			{
 				name: 'Notes',
-				type: PropertyType.TEXT,
+				type: 'TEXT' as PropertyType,
 				options: []
 			}
 		],
@@ -171,17 +171,17 @@ const templatesData = [
 		properties: [
 			{
 				name: 'Done',
-				type: PropertyType.CHECKBOX,
+				type: 'CHECKBOX' as PropertyType,
 				options: []
 			},
 			{
 				name: 'Conclusion date',
-				type: PropertyType.DATE,
+				type: 'DATE' as PropertyType,
 				options: []
 			},
 			{
 				name: 'Notes',
-				type: PropertyType.DATE,
+				type: 'DATE' as PropertyType,
 				options: []
 			}
 		],
@@ -202,7 +202,7 @@ const templatesData = [
 		properties: [
 			{
 				name: 'url',
-				type: PropertyType.URL,
+				type: 'URL' as PropertyType,
 				options: []
 			}
 		],
@@ -225,12 +225,12 @@ const templatesData = [
 		properties: [
 			{
 				name: 'Status',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [{ value: 'Plan to watch' }, { value: 'Watching' }, { value: 'Watched' }]
 			},
 			{
 				name: 'Score',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [
 					{ value: '1-Appaling' },
 					{ value: '2-Horrible' },
@@ -246,7 +246,7 @@ const templatesData = [
 			},
 			{
 				name: 'Plataform',
-				type: PropertyType.SELECT,
+				type: 'SELECT' as PropertyType,
 				options: [{ value: 'Netflix' }, { value: 'Vizer.tv' }, { value: 'Stremio' }]
 			}
 		],
@@ -303,17 +303,18 @@ async function main() {
 	}
 
 	for (const collection of collectionsData) {
+		const { name, properties } = collection;
 		const createdCollection = await prisma.collection.create({
 			data: {
 				ownerId: user.id,
-				name: collection.name,
+				name,
 				description: Math.random() < 0.5 ? mockDescrp : '',
-				properties: collection.properties.map((prop) => ({
-					name: prop.name,
-					type: prop.type,
-					options: prop.options.map(({ value }) => ({
+				properties: properties.map(({ name, type, options }) => ({
+					name,
+					type,
+					options: options.map(({ value }) => ({
 						value,
-						color: colorsNames[randomIntFromInterval(0, 2)]
+						color: colorsNames[randomIntFromInterval(0, 2)] as Color
 					}))
 				})),
 				isFavourite: Math.random() < 0.5,
@@ -349,7 +350,7 @@ async function main() {
 					type,
 					options: options.map(({ value }) => ({
 						value,
-						color: colorsNames[randomIntFromInterval(0, 2)]
+						color: colorsNames[randomIntFromInterval(0, 2)] as Color
 					}))
 				})),
 				icon: {}
