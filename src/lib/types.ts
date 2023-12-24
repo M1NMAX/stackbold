@@ -10,5 +10,6 @@ export type Sizes = {
 export type DeleteDetail =
 	| { type: null }
 	| { type: 'item' | 'property'; id: string }
+	| { type: 'option'; id: string; option: string }
 	| { type: 'collection'; id: string; name: string }
-	| { type: 'option'; id: string; option: string };
+	| { type: 'group'; id: string; name: string; includeCollections: boolean };

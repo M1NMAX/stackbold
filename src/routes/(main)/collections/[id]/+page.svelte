@@ -160,7 +160,7 @@
 		}
 	}
 
-	async function handleDuplicateItem(itemId: string) {
+	async function duplicateItem(itemId: string) {
 		const item = items.find(({ id }) => id === itemId);
 		if (!item) {
 			onError({ location: '/collections/page[id]', msg: 'Invalid item selected' });
@@ -177,7 +177,7 @@
 		successToast(`Item [${createdItem.name}] duplicated successfully `);
 	}
 
-	async function handleDeleteItem(id: string) {
+	async function deleteItem(id: string) {
 		await trpc().items.delete.mutate(id);
 
 		items = items.filter((item) => item.id !== id);
@@ -241,7 +241,7 @@
 		return sortedProps[sortedProps.length - 1];
 	}
 
-	async function handleAddProperty(type: PropertyType) {
+	async function addProperty(type: PropertyType) {
 		try {
 			const name = capitalizeFirstLetter(type);
 
@@ -263,7 +263,7 @@
 			onError(error);
 		}
 	}
-	async function handleDuplicateProperty(pid: string) {
+	async function duplicateProperty(pid: string) {
 		const property = getProperty(pid);
 		if (!property) {
 			onError({ location: '/collections/page[id]', msg: 'Invalid property selected' });
@@ -310,7 +310,7 @@
 		}
 	}
 
-	async function handleDeleteProperty(pid: string) {
+	async function deleteProperty(pid: string) {
 		try {
 			await trpc().collections.deleteProperty.mutate({ id: collection.id, propertyId: pid });
 
@@ -382,7 +382,7 @@
 		}
 	}
 
-	async function handleDeletePropertyOption(pid: string, optionId: string) {
+	async function deletePropertyOption(pid: string, optionId: string) {
 		try {
 			const updatedCollection = await trpc().collections.deletePropertyOption.mutate({
 				id: collection.id,
@@ -399,6 +399,27 @@
 		}
 	}
 
+	async function handleDelete() {
+		switch (deleteDetail.type) {
+			case 'collection':
+				deleteCollection(deleteDetail.id, deleteDetail.name);
+				break;
+
+			case 'item':
+				deleteItem(deleteDetail.id);
+				break;
+
+			case 'property':
+				deleteProperty(deleteDetail.id);
+				break;
+
+			case 'option':
+				deletePropertyOption(deleteDetail.id, deleteDetail.option);
+				break;
+		}
+		isDeleteModalOpen = false;
+	}
+
 	function preventEnterKeypress(e: KeyboardEvent) {
 		if (e.key == 'Enter') e.preventDefault();
 	}
@@ -412,30 +433,6 @@
 		isDrawerHidden = true;
 		drawerSelectedItem = null;
 	}
-
-	$: handleClickModalDeleteBtn = () => {
-		switch (deleteDetail.type) {
-			case 'collection':
-				deleteCollection(deleteDetail.id, deleteDetail.name);
-				break;
-
-			case 'item':
-				handleDeleteItem(deleteDetail.id);
-				break;
-
-			case 'property':
-				handleDeleteProperty(deleteDetail.id);
-				break;
-
-			case 'option':
-				handleDeletePropertyOption(deleteDetail.id, deleteDetail.option);
-				break;
-
-			default:
-				break;
-		}
-		isDeleteModalOpen = false;
-	};
 </script>
 
 <svelte:head>
@@ -553,7 +550,7 @@
 			onClickNewItemBtn={() => handleCreateItem('Untitled', true)}
 			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
 			on:clickRename={(e) => updItem({ id: e.detail, data: { name: 'something' } })}
-			on:clickDuplicateItem={(e) => handleDuplicateItem(e.detail)}
+			on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
 			on:clickDeleteItem={(e) => {
 				deleteDetail = { type: 'item', id: e.detail };
 				isDeleteModalOpen = true;
@@ -620,8 +617,7 @@
 
 							<DropdownMenu.Item
 								class="space-x-2"
-								on:click={() =>
-									handleDuplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
+								on:click={() => duplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
 							>
 								<Copy class="icon-xs" />
 								<span>Duplicate</span>
@@ -664,7 +660,7 @@
 						isCheckBox={property.type === PropertyType.CHECKBOX}
 						on:updPropertyField={({ detail }) =>
 							updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
-						on:duplicate={(e) => handleDuplicateProperty(e.detail)}
+						on:duplicate={(e) => duplicateProperty(e.detail)}
 						on:delete={(e) => {
 							deleteDetail = { id: e.detail, type: 'property' };
 							isDeleteModalOpen = true;
@@ -710,7 +706,7 @@
 			</div>
 		</div>
 		<div class="grid justify-items-start">
-			<AddPropertyPopover on:clickPropType={(e) => handleAddProperty(e.detail)} />
+			<AddPropertyPopover on:clickPropType={(e) => addProperty(e.detail)} />
 		</div>
 	</div>
 </Drawer>
@@ -726,9 +722,7 @@
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleClickModalDeleteBtn}>
-					Continue
-				</Button>
+				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
 			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

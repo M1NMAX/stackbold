@@ -6,8 +6,8 @@
 
 	import { createEventDispatcher } from 'svelte';
 
-	export let groupId: string;
-	export let groupName: string;
+	export let id: string;
+	export let name: string;
 
 	let isPopoverOpen = false;
 	let isNewCollection = false;
@@ -15,18 +15,20 @@
 	const dispatch = createEventDispatcher<{
 		addNewCollection: { name: string; groupId: string };
 		renameGroup: { name: string; groupId: string };
-		clickDeleteGroup: { id: string };
+		clickDeleteGroup: { id: string; name: string };
 	}>();
 
-	const handleKeydown = (e: KeyboardEvent) => {
-		const targetElement = e.target as HTMLInputElement;
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key !== 'Enter') return;
 
-		if (e.key === 'Enter') {
-			if (isNewCollection) dispatch('addNewCollection', { name: targetElement.value, groupId });
-			else dispatch('renameGroup', { name: targetElement.value, groupId });
-			isPopoverOpen = false;
-		}
-	};
+		e.preventDefault();
+
+		const targetEl = e.target as HTMLInputElement;
+
+		if (isNewCollection) dispatch('addNewCollection', { name: targetEl.value, groupId: id });
+		else dispatch('renameGroup', { name: targetEl.value, groupId: id });
+		isPopoverOpen = false;
+	}
 </script>
 
 <div>
@@ -47,7 +49,7 @@
 					{:else}
 						<input
 							id="name"
-							value={groupName}
+							value={name}
 							name="name"
 							class="grow input input-ghost px-1 font-semibold text-sm"
 							on:keydown={handleKeydown}
@@ -94,7 +96,7 @@
 
 			<DropdownMenu.Separator />
 			<DropdownMenu.Item
-				on:click={() => dispatch('clickDeleteGroup', { id: groupId })}
+				on:click={() => dispatch('clickDeleteGroup', { id, name })}
 				class="space-x-2"
 			>
 				<Trash class="icon-xs" />

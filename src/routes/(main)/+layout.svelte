@@ -21,13 +21,13 @@
 		Sidebar,
 		SidebarCollection,
 		SidebarGroupMenu,
-		SidebarItem
+		SidebarItem,
+		setSidebarState
 	} from '$lib/components/sidebar';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { LayoutData } from './$types';
-	import { writable } from 'svelte/store';
-	import { onMount, setContext } from 'svelte';
+	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -41,72 +41,79 @@
 	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
 	import * as Command from '$lib/components/ui/command';
 	import { Color } from '@prisma/client';
+	import type { DeleteDetail } from '$lib/types';
 
 	export let data: LayoutData;
 	$: ({ groups, collections } = data);
 
-	$: favourites = data.collections.filter((collection) => collection.isFavourite);
-
-	$: activeUrl = $page.url.pathname;
-	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
-
 	let innerWidth: number;
-
-	const sidebarStateStore = writable(true);
-	setContext('sidebarStateStore', sidebarStateStore);
-
-	// GROUPS HANDLERS
+	let isCommandDialogOpen = false;
 	let isNewGroupPopoverOpen = false;
-	const handleCreateGroup = async (args: RouterInputs['groups']['create']) => {
+
+	let isCreateCollectionModalOpen = false;
+
+	type CreateCollectionDetail = { name: string; groupId: string | undefined };
+	let createCollectionDetail: CreateCollectionDetail = { name: '', groupId: undefined };
+
+	let isDeleteModalOpen = false;
+	let deleteDetail: DeleteDetail = { type: null };
+
+	const sidebarState = setSidebarState();
+
+	const SIDEBAR_ITEMS = [
+		{ label: 'Dashboard', url: '/', icon: KanbanSquare },
+		{ label: 'Templates', url: '/templates', icon: Dna },
+		{ label: 'All Collections', url: '/collections', icon: Database },
+		{ label: 'Tash', url: '/trash', icon: Trash2 }
+	];
+
+	// Groups services
+	async function createGroup(args: RouterInputs['groups']['create']) {
 		try {
 			await trpc().groups.create.mutate({ ...args });
 			await onSuccess('New group created successfully');
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
-	const handleKeydownNewGroup = async (e: KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			const value = (e.target as HTMLInputElement).value;
+	async function handleKeydownNewGroup(e: KeyboardEvent) {
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
 
-			if (value.length < 1 || value.length > 256) {
-				isNewGroupPopoverOpen = false;
-				onError({}, 'Invalid group name');
-				return;
-			}
+		const value = (e.target as HTMLInputElement).value;
 
-			handleCreateGroup({ name: value });
+		if (value.length < 1 || value.length > 256) {
 			isNewGroupPopoverOpen = false;
+			onError({ msg: '(main)/+layout: Invalid group name' }, 'Invalid group name');
+			return;
 		}
-	};
 
-	const handleUpdateGroup = async (args: RouterInputs['groups']['update']) => {
+		await createGroup({ name: value });
+		isNewGroupPopoverOpen = false;
+	}
+
+	async function updGroup(args: RouterInputs['groups']['update']) {
 		try {
 			await trpc().groups.update.mutate({ ...args });
 			await onSuccess('Group updated');
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
-	const handleDeleteGroup = async (id: string) => {
+	async function deleteGroup(id: string, name: string) {
 		try {
 			await trpc().groups.delete.mutate(id);
-			await onSuccess('Group updated');
+			await onSuccess(`Group [${name}] deleted successfully`);
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
 	// COLLECTION HANDLERS
-	let isCreateCollectionModalOpen = false;
-	let createCollectionDetail: { name: string; groupId: string | undefined } = {
-		name: '',
-		groupId: undefined
-	};
 
-	const handleCreateCollection = async (args: RouterInputs['collections']['create']) => {
+	async function createCollection(args: RouterInputs['collections']['create']) {
 		try {
 			const createdCollection = await trpc().collections.create.mutate({ ...args });
 
@@ -116,28 +123,28 @@
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
-	const handleSubmitCollection = async () => {
+	async function handleSubmitCollection() {
 		const colorKeys = Object.keys(Color);
 		const color = colorKeys[randomIntFromInterval(0, colorKeys.length)] as Color;
 
-		handleCreateCollection({
+		createCollection({
 			...createCollectionDetail,
 			groupId: createCollectionDetail.groupId || null,
 			icon: { color }
 		});
-	};
+	}
 
-	const handleDuplicateCollection = async (id: string) => {
-		const foundedCollection = data.collections.find((collection) => collection.id === id);
+	async function duplicateCollection(id: string) {
+		const targetCollection = collections.find((collection) => collection.id === id);
 
-		if (!foundedCollection) {
-			onError({});
+		if (!targetCollection) {
+			onError({ msg: '(main)/+layout: Invalid collection' }, 'Selection invalid collection');
 			return;
 		}
 
-		const { id: _, ownerId, name, ...rest } = foundedCollection;
+		const { id: _, ownerId, name, ...rest } = targetCollection;
 
 		try {
 			const createdCollection = await trpc().collections.create.mutate({
@@ -154,60 +161,45 @@
 				}))
 			);
 
-			await onSuccess('Collection duplicated');
+			await invalidateAll();
+			redirectToast(
+				`Collection [${name}] duplicated successfully`,
+				`/collections/${createdCollection.id}`
+			);
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
-	const handleUpdateCollection = async (args: RouterInputs['collections']['update']) => {
+	async function updCollection(args: RouterInputs['collections']['update']) {
 		try {
-			await trpc().collections.update.mutate({ ...args });
+			await trpc().collections.update.mutate(args);
 
 			await onSuccess('Collection updated');
 			isCreateCollectionModalOpen = false;
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
-	const handleDeleteCollection = async (id: string) => {
+	async function deleteCollection(id: string, name: string) {
 		try {
 			await trpc().collections.delete.mutate(id);
 
-			await onSuccess('Collection deleted');
+			await onSuccess(`Collection [${name}] deleted successfully`);
 
 			if (activeCollection(id)) goto('/');
 		} catch (error) {
 			onError(error);
 		}
-	};
+	}
 
-	// HANDLE COLLECTION AND GROUP DELETION
-	let isDeleteModalOpen = false;
-	let deleteDetail:
-		| { type: null }
-		| { type: 'collection'; id: string }
-		| { type: 'group'; id: string; includeCollections: boolean } = { type: null };
+	async function handleDelete() {
+		if (deleteDetail.type === 'collection') deleteCollection(deleteDetail.id, deleteDetail.name);
+		else if (deleteDetail.type === 'group') deleteGroup(deleteDetail.id, deleteDetail.name);
 
-	$: handleOnClickModalDeleteBtn = () => {
-		switch (deleteDetail.type) {
-			case 'collection':
-				handleDeleteCollection(deleteDetail.id);
-				break;
-
-			case 'group':
-				handleDeleteGroup(deleteDetail.id);
-				break;
-
-			default:
-				break;
-		}
 		isDeleteModalOpen = false;
-	};
-
-	// SEARCH HANDLERS
-	let isCommandDialogOpen = false;
+	}
 
 	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
@@ -223,13 +215,18 @@
 		};
 	});
 
-	$: innerWidth < 700 && ($sidebarStateStore = false);
+	$: innerWidth < 700 && ($sidebarState = false);
+
+	$: favourites = collections.filter((collection) => collection.isFavourite);
+
+	$: activeUrl = $page.url.pathname;
+	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
 </script>
 
 <svelte:window bind:innerWidth />
 
 <div class="h-screen flex bg-secondary">
-	<Sidebar class={cn('transition-all w-0', $sidebarStateStore && 'w-64')}>
+	<Sidebar class={cn('transition-all w-0', $sidebarState && 'w-64')}>
 		<div
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
@@ -269,7 +266,7 @@
 						<Button
 							variant="secondary"
 							size="icon"
-							on:click={() => ($sidebarStateStore = false)}
+							on:click={() => ($sidebarState = false)}
 							class="rounded-sm"
 						>
 							<PanelLeftInactive class="icon-sm" />
@@ -300,33 +297,11 @@
 				</DropdownMenu.Root>
 			</div>
 			<div class="space-y-0.5 px-0">
-				<SidebarItem label="Dashboard" href="/" active={activeUrl === '/'}>
-					<svelte:fragment slot="icon">
-						<KanbanSquare />
-					</svelte:fragment>
-				</SidebarItem>
-
-				<SidebarItem label="Templates" href="/templates" active={activeUrl === '/templates'}>
-					<svelte:fragment slot="icon">
-						<Dna />
-					</svelte:fragment>
-				</SidebarItem>
-
-				<SidebarItem
-					label="All Collections"
-					href="/collections"
-					active={activeUrl === '/collections'}
-				>
-					<svelte:fragment slot="icon">
-						<Database />
-					</svelte:fragment>
-				</SidebarItem>
-
-				<SidebarItem label="Trash" href="/trash" active={activeUrl === '/trash'}>
-					<svelte:fragment slot="icon">
-						<Trash2 />
-					</svelte:fragment>
-				</SidebarItem>
+				{#each SIDEBAR_ITEMS as item (item.url)}
+					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
+						<svelte:component this={item.icon} slot="icon" />
+					</SidebarItem>
+				{/each}
 			</div>
 
 			<!-- TODO: handle scroll, when there are too many collections -->
@@ -347,25 +322,25 @@
 								{collection}
 								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
-								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
-								on:renameCollection={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { name: e.detail.name }
+								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
+								on:renameCollection={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { name: detail.name }
 									})}
-								on:moveCollection={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { groupId: e.detail.groupId }
+								on:moveCollection={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { groupId: detail.groupId }
 									})}
-								on:toggleFavourite={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { isFavourite: e.detail.value }
+								on:toggleFavourite={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { isFavourite: detail.value }
 									})}
-								on:deleteCollection={(e) => {
+								on:deleteCollection={({ detail }) => {
+									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
 									isDeleteModalOpen = true;
-									deleteDetail = { type: 'collection', id: e.detail.id };
 								}}
 							/>
 						{/if}
@@ -385,25 +360,25 @@
 								{collection}
 								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
-								on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
-								on:renameCollection={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { name: e.detail.name }
+								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
+								on:renameCollection={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { name: detail.name }
 									})}
-								on:moveCollection={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { groupId: e.detail.groupId }
+								on:moveCollection={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { groupId: detail.groupId }
 									})}
-								on:toggleFavourite={(e) =>
-									handleUpdateCollection({
-										id: e.detail.id,
-										data: { isFavourite: e.detail.value }
+								on:toggleFavourite={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { isFavourite: detail.value }
 									})}
-								on:deleteCollection={(e) => {
+								on:deleteCollection={({ detail }) => {
 									isDeleteModalOpen = true;
-									deleteDetail = { type: 'collection', id: e.detail.id };
+									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
 								}}
 							/>
 						{/each}
@@ -422,21 +397,22 @@
 
 							<svelte:fragment slot="extra">
 								<SidebarGroupMenu
-									groupId={group.id}
-									groupName={group.name}
-									on:addNewCollection={(e) =>
-										handleCreateCollection({
-											name: e.detail.name,
-											groupId: e.detail.groupId,
+									id={group.id}
+									name={group.name}
+									on:addNewCollection={({ detail }) =>
+										createCollection({
+											name: detail.name,
+											groupId: detail.groupId,
 											icon: {}
 										})}
-									on:renameGroup={(e) =>
-										handleUpdateGroup({ id: e.detail.groupId, data: { name: e.detail.name } })}
-									on:clickDeleteGroup={(e) => {
+									on:renameGroup={({ detail }) =>
+										updGroup({ id: detail.groupId, data: { name: detail.name } })}
+									on:clickDeleteGroup={({ detail }) => {
 										isDeleteModalOpen = true;
 										deleteDetail = {
 											type: 'group',
-											id: e.detail.id,
+											id: detail.id,
+											name: detail.name,
 											includeCollections: false
 										};
 									}}
@@ -451,25 +427,25 @@
 									{collection}
 									groups={groups.map(({ id, name }) => ({ id, name }))}
 									active={activeCollection(collection.id)}
-									on:duplicateCollection={(e) => handleDuplicateCollection(e.detail.id)}
-									on:renameCollection={(e) =>
-										handleUpdateCollection({
-											id: e.detail.id,
-											data: { name: e.detail.name }
+									on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
+									on:renameCollection={({ detail }) =>
+										updCollection({
+											id: detail.id,
+											data: { name: detail.name }
 										})}
-									on:moveCollection={(e) =>
-										handleUpdateCollection({
-											id: e.detail.id,
-											data: { groupId: e.detail.groupId }
+									on:moveCollection={({ detail }) =>
+										updCollection({
+											id: detail.id,
+											data: { groupId: detail.groupId }
 										})}
-									on:toggleFavourite={(e) =>
-										handleUpdateCollection({
-											id: e.detail.id,
-											data: { isFavourite: e.detail.value }
+									on:toggleFavourite={({ detail }) =>
+										updCollection({
+											id: detail.id,
+											data: { isFavourite: detail.value }
 										})}
-									on:deleteCollection={(e) => {
+									on:deleteCollection={({ detail }) => {
 										isDeleteModalOpen = true;
-										deleteDetail = { type: 'collection', id: e.detail.id };
+										deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
 									}}
 								/>
 							{/each}
@@ -572,9 +548,7 @@
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleOnClickModalDeleteBtn}>
-					Continue
-				</Button>
+				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
 			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

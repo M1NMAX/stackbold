@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { PropertyType, type CollectionProperty } from '@prisma/client';
-	import { createEventDispatcher, setContext } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { Copy, EyeOff, FileSignature, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -46,7 +46,8 @@
 		<Popover.Root bind:open={isPopoverOpen}>
 			<!-- TODO: find better solution -->
 			<Popover.Trigger class="sr-only">Open</Popover.Trigger>
-			<Popover.Content class="p-2">
+			<Popover.Content class="p-2 space-y-1">
+				<h3 class="font-semibold text-sm text-center">Edit Property</h3>
 				<form class="space-y-1">
 					<div class="flex space-x-1.5">
 						<label for={`${property.id}-name`} class="font-semibold"> Name </label>

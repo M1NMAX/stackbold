@@ -23,6 +23,8 @@
 	export let collection: Collection;
 	export let groups: { id: string; name: string }[];
 
+	$: ({ id, name, icon } = collection);
+
 	let isRenamePopoverOpen = false;
 	let isGroupComboboxOpen = false;
 
@@ -31,23 +33,24 @@
 		renameCollection: { id: string; name: string };
 		moveCollection: { id: string; groupId: string };
 		toggleFavourite: { id: string; value: boolean };
-		deleteCollection: { id: string };
+		deleteCollection: { id: string; name: string };
 	}>();
 
-	const handleOnInput = (e: Event) => {
+	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		dispatch('renameCollection', { id: collection.id, name: targetEl.value });
-	};
+		dispatch('renameCollection', { id, name: targetEl.value });
+	}
 
 	// TODO: maybe couple this with on input for realibility
 	// TODO: add validation
-	const handleKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			const value = (e.target as HTMLInputElement).value;
-			dispatch('renameCollection', { id: collection.id, name: value });
-			isRenamePopoverOpen = false;
-		}
-	};
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
+
+		const value = (e.target as HTMLInputElement).value;
+		dispatch('renameCollection', { id, name: value });
+		isRenamePopoverOpen = false;
+	}
 </script>
 
 <span
@@ -57,12 +60,9 @@
 		asChild && 'pl-5'
 	)}
 >
-	<a href={`/collections/${collection.id}`} class="grow flex items-center space-x-1.5">
-		<svelte:component
-			this={icons[collection.icon.name]}
-			class={cn('icon-sm', ICON_COLORS[collection.icon.color])}
-		/>
-		<span class="trucante font-semibold text-base">{collection.name}</span>
+	<a href={`/collections/${id}`} class="grow flex items-center space-x-1.5">
+		<svelte:component this={icons[icon.name]} class={cn('icon-sm', ICON_COLORS[icon.color])} />
+		<span class="trucante font-semibold text-base">{name}</span>
 	</a>
 
 	<Popover.Root bind:open={isGroupComboboxOpen}>
@@ -75,10 +75,7 @@
 					{#each groups as group (group.id)}
 						<Command.Item
 							value={group.name}
-							onSelect={(currentValue) => {
-								dispatch('moveCollection', { id: collection.id, groupId: group.id });
-								console.log(currentValue);
-							}}
+							onSelect={() => dispatch('moveCollection', { id, groupId: group.id })}
 							class="space-x-2"
 						>
 							<Check
@@ -101,7 +98,7 @@
 					<label for="name" class=" sr-only"> Name </label>
 					<input
 						id="name"
-						value={collection.name}
+						value={name}
 						name="name"
 						class="grow input input-ghost px-1 font-semibold text-sm bg-base-200"
 						on:keydown={handleKeydown}
@@ -131,7 +128,7 @@
 			<DropdownMenu.Item
 				class="space-x-2"
 				on:click={() => {
-					dispatch('toggleFavourite', { id: collection.id, value: !collection.isFavourite });
+					dispatch('toggleFavourite', { id, value: !collection.isFavourite });
 				}}
 			>
 				{#if collection.isFavourite}
@@ -148,21 +145,14 @@
 				<span>Move to</span>
 			</DropdownMenu.Item>
 
-			<DropdownMenu.Item
-				class="space-x-2"
-				on:click={() => {
-					dispatch('duplicateCollection', { id: collection.id });
-				}}
-			>
+			<DropdownMenu.Item class="space-x-2" on:click={() => dispatch('duplicateCollection', { id })}>
 				<Copy class="icon-xs" />
 				<span>Duplicate</span>
 			</DropdownMenu.Item>
 
 			<DropdownMenu.Item
 				class="space-x-2"
-				on:click={() => {
-					dispatch('deleteCollection', { id: collection.id });
-				}}
+				on:click={() => dispatch('deleteCollection', { id, name })}
 			>
 				<Trash class="icon-xs" />
 				<span>Delete</span>
