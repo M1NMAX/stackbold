@@ -570,8 +570,8 @@
 				<Plus class="text-primary" />
 			</div>
 			<input
-				class="w-full h-10 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
-				placeholder="Add new item"
+				class="w-full h-10 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-secondary-foreground"
+				placeholder="New item"
 				on:keypress={handleKeypressNewItemInput}
 			/>
 		</div>
@@ -597,7 +597,7 @@
 				{#if $activeItem}
 					<span class="font-semibold text-xs text-gray-500">
 						Updated
-						{dayjs($activeItem?.updatedAt).fromNow()}
+						{dayjs($activeItem.updatedAt).fromNow()}
 					</span>
 				{/if}
 
@@ -704,7 +704,7 @@
 			</div>
 		</div>
 		<div class="grid justify-items-start">
-			<AddPropertyPopover on:clickPropType={(e) => addProperty(e.detail)} />
+			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
 		</div>
 	</div>
 </Drawer>

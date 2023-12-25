@@ -353,7 +353,7 @@ async function main() {
 						color: colorsNames[randomIntFromInterval(0, 2)] as Color
 					}))
 				})),
-				icon: {}
+				icon: { color: colorsNames[randomIntFromInterval(0, 2)] as Color }
 			}
 		});
 
