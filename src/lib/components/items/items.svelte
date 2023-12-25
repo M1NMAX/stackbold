@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { StretchHorizontal, Table } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { ItemsListView, ItemsTableView } from '$lib/components';
 	import type { Property, Item } from '@prisma/client';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
+	import { ItemsListView, ItemsTableView } from '.';
 
 	export let items: Item[];
-	export let currActiveItemId: string | undefined = undefined;
 	export let properties: Property[];
 	export let view: string;
 	export let onClickNewItemBtn: () => void;
@@ -73,7 +72,6 @@
 		{#if view === 'table'}
 			<ItemsTableView
 				items={sortedItems}
-				{currActiveItemId}
 				{properties}
 				bind:order={currentSort.order}
 				on:clickTableHead={(e) =>
@@ -92,7 +90,6 @@
 		{:else}
 			<ItemsListView
 				items={sortedItems}
-				{currActiveItemId}
 				{properties}
 				on:clickOpenItem
 				on:clickRenameItem

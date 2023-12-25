@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn, type IBaseSchema, type OrderType } from '$lib/utils';
 	import type { Property, PropertyRef, Item } from '@prisma/client';
-	import { ItemContextMenu } from '$lib/components';
+	import { getActiveItemState, ItemMenu } from '.';
 	import { PropertyValue } from '$lib/components/property';
 	import { SortArrow } from '$lib/components/sort';
 	import { fade } from 'svelte/transition';
@@ -11,9 +11,10 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	export let items: Item[];
-	export let currActiveItemId: string | undefined = undefined;
 	export let properties: Property[];
 	export let order: OrderType = 'asc';
+
+	const activeItem = getActiveItemState();
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
@@ -21,7 +22,7 @@
 		updPropertyVisibility: { pid: string; name: string; value: boolean };
 	}>();
 
-	const getItemProperty = (pid: string, properties: PropertyRef[]) => {
+	const getPropertyRef = (pid: string, properties: PropertyRef[]) => {
 		return properties.find((property) => property.id === pid) || null;
 	};
 
@@ -93,9 +94,10 @@
 		{#if items.length}
 			{#each items as item (item.id)}
 				<tr
-					class={`${
-						item.id === currActiveItemId && 'bg-card/50 border-r-2 border-y-0  border-primary'
-					} font-medium text-base border-y  border-secondary  hover:bg-opacity-20  group`}
+					class={cn(
+						'font-medium text-base border-y  border-secondary  hover:bg-opacity-20  group',
+						item.id === $activeItem?.id && 'bg-card/50 border-r-2 border-y-0  border-primary'
+					)}
 				>
 					<td class="flex items-center justify-between">
 						<span class="text-left py-2 px-1"> {item.name}</span>
@@ -113,7 +115,7 @@
 					</td>
 
 					{#each properties as property (property.id)}
-						{@const itemProperty = getItemProperty(property.id, item.properties)}
+						{@const itemProperty = getPropertyRef(property.id, item.properties)}
 						{#if property.isVisibleOnTableView && itemProperty}
 							{@const value =
 								property.type === 'SELECT'
@@ -139,12 +141,7 @@
 					{/each}
 
 					<td class="flex items-center space-x-2 text-left whitespace-nowrap px-2">
-						<ItemContextMenu
-							itemId={item.id}
-							on:clickRename
-							on:clickDuplicateItem
-							on:clickDeleteItem
-						/>
+						<ItemMenu itemId={item.id} on:clickRename on:clickDuplicateItem on:clickDeleteItem />
 					</td>
 				</tr>
 			{/each}

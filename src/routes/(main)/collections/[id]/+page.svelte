@@ -14,8 +14,9 @@
 		X
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
-	import { type Item, PropertyType } from '@prisma/client';
-	import { Items, Textarea } from '$lib/components';
+	import { PropertyType } from '@prisma/client';
+	import { Textarea } from '$lib/components';
+	import { Items, setActiveItemState } from '$lib/components/items';
 	import { AddPropertyPopover, PropertyInput } from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
@@ -39,6 +40,8 @@
 	$: ({ collection, items } = data);
 	$: ({ properties } = collection);
 
+	const activeItem = setActiveItemState(null);
+
 	let view = 'list';
 
 	// Delete Modal
@@ -47,7 +50,6 @@
 
 	// Drawer
 	let isDrawerHidden = true;
-	let drawerSelectedItem: Item | null = null;
 
 	const DEBOUNCE_INTERVAL = 1000;
 
@@ -191,8 +193,8 @@
 
 	// Item input handlers
 	async function handleOnInputItemName(e: { currentTarget: EventTarget & HTMLHeadingElement }) {
-		if (!drawerSelectedItem) return;
-		const id = drawerSelectedItem.id;
+		if (!$activeItem) return;
+		const id = $activeItem.id;
 
 		//TODO:valide inner text
 		const name = e.currentTarget.innerText;
@@ -218,9 +220,9 @@
 	}
 
 	function getPropertyValue(pid: string) {
-		if (!drawerSelectedItem) return '';
+		if (!$activeItem) return '';
 
-		const itemProperty = drawerSelectedItem.properties.find((property) => property.id === pid);
+		const itemProperty = $activeItem.properties.find((property) => property.id === pid);
 
 		const collectionProperty = properties.find((property) => property.id === pid);
 
@@ -333,8 +335,7 @@
 		try {
 			const updatedItem = await trpc().items.updateProperty.mutate({ id, property });
 
-			if (drawerSelectedItem && drawerSelectedItem.id === updatedItem.id)
-				drawerSelectedItem = updatedItem;
+			if ($activeItem && $activeItem.id === updatedItem.id) $activeItem = updatedItem;
 
 			// update items overview
 			const itemsCopy = items.filter((item) => item.id !== id);
@@ -427,10 +428,10 @@
 		isDrawerHidden = false;
 
 		const itemId = $page.url.searchParams.get('id');
-		drawerSelectedItem = items.find((item) => item.id === itemId) || null;
+		$activeItem = items.find((item) => item.id === itemId) || null;
 	} else {
 		isDrawerHidden = true;
-		drawerSelectedItem = null;
+		$activeItem = null;
 	}
 </script>
 
@@ -542,9 +543,8 @@
 
 		<!-- //TODO: impl rename item menu-->
 		<Items
-			currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
-			{items}
 			bind:view
+			{items}
 			{properties}
 			onClickNewItemBtn={() => handleCreateItem('Untitled', true)}
 			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
@@ -586,19 +586,18 @@
 				size="icon"
 				on:click={() => {
 					goto(`/collections/${collection.id}`);
-
 					isDrawerHidden = true;
-					drawerSelectedItem = null;
+					$activeItem = null;
 				}}
 			>
 				<X />
 			</Button>
 
 			<div class="flex items-center space-x-1.5">
-				{#if drawerSelectedItem}
+				{#if $activeItem}
 					<span class="font-semibold text-xs text-gray-500">
 						Updated
-						{dayjs(drawerSelectedItem?.updatedAt).fromNow()}
+						{dayjs($activeItem?.updatedAt).fromNow()}
 					</span>
 				{/if}
 
@@ -616,7 +615,7 @@
 
 							<DropdownMenu.Item
 								class="space-x-2"
-								on:click={() => duplicateItem(drawerSelectedItem ? drawerSelectedItem.id : '')}
+								on:click={() => duplicateItem($activeItem ? $activeItem.id : '')}
 							>
 								<Copy class="icon-xs" />
 								<span>Duplicate</span>
@@ -625,9 +624,9 @@
 							<DropdownMenu.Item
 								class="space-x-2"
 								on:click={() => {
-									if (!drawerSelectedItem) return;
+									if (!$activeItem) return;
 
-									deleteDetail = { type: 'item', id: drawerSelectedItem.id };
+									deleteDetail = { type: 'item', id: $activeItem.id };
 									isDeleteModalOpen = true;
 								}}
 							>
@@ -649,7 +648,7 @@
 				on:input={handleOnInputItemName}
 				class="pt-1 text-2xl font-semibold focus:outline-none"
 			>
-				{drawerSelectedItem?.name}
+				{$activeItem?.name}
 			</h2>
 
 			<div class="space-y-2">
@@ -686,14 +685,14 @@
 							isDeleteModalOpen = true;
 						}}
 					>
-						{#key drawerSelectedItem?.id}
+						{#key $activeItem?.id}
 							<PropertyInput
 								{property}
 								value={getPropertyValue(property.id)}
 								on:updPropertyValue={({ detail }) => {
-									if (!drawerSelectedItem) return;
+									if (!$activeItem) return;
 
-									updPropertyValueDebounced(drawerSelectedItem.id, {
+									updPropertyValueDebounced($activeItem.id, {
 										id: detail.pid,
 										value: detail.value
 									});

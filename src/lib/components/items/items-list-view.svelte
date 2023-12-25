@@ -1,17 +1,18 @@
 <script lang="ts">
-	import { ItemContextMenu } from '$lib/components';
+	import { ItemMenu, getActiveItemState } from '.';
 	import { PropertyValue } from '$lib/components/property';
 	import type { Property, PropertyRef, Item } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 
 	export let items: Item[];
-	export let currActiveItemId: string | undefined = undefined;
 	export let properties: Property[];
+
+	const activeItem = getActiveItemState();
 
 	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
 
-	const getItemProperty = (pid: string, properties: PropertyRef[]) => {
+	const getPropertyRef = (pid: string, properties: PropertyRef[]) => {
 		return properties.find((property) => property.id === pid) || null;
 	};
 
@@ -39,14 +40,14 @@
 			}}
 			class={cn(
 				'relative flex flex-col items-start  py-1 px-2 space-y-2 group  rounded bg-secondary/40 hover:bg-secondary/50',
-				item.id === currActiveItemId && 'rounded-l-md border-r-2 border-primary bg-secondary/80'
+				item.id === $activeItem?.id && 'rounded-l-md border-r-2 border-primary bg-secondary/80'
 			)}
 		>
 			<div class="text-lg font-semibold">
 				{item.name}
 			</div>
 
-			<ItemContextMenu
+			<ItemMenu
 				itemId={item.id}
 				on:clickRenameItem
 				on:clickDuplicateItem
@@ -57,7 +58,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each properties as property (property.id)}
 					{#if property.isVisibleOnListView}
-						{@const itemProperty = getItemProperty(property.id, item.properties)}
+						{@const itemProperty = getPropertyRef(property.id, item.properties)}
 						{#if itemProperty}
 							<PropertyValue
 								itemId={item.id}
