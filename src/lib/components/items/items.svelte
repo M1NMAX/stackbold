@@ -4,8 +4,8 @@
 	import type { Property, Item } from '@prisma/client';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { SearchInput } from '$lib/components/search';
-	import { SortDropdown } from '$lib/components/sort';
-	import { sortFun, type SortOption } from '$lib/utils/sort';
+	import { SortDropdown, setSortState, sortOptions } from '$lib/components/sort';
+	import { sortFun } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { ItemsListView, ItemsTableView } from '.';
 
@@ -14,19 +14,9 @@
 	export let view: string;
 	export let onClickNewItemBtn: () => void;
 
+	const sort = setSortState(sortOptions[0]);
+
 	const DEBOUNCE_INTERVAL = 500;
-
-	const sortOptions: SortOption[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
-		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
-		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
-	];
-
-	let currentSort: SortOption = sortOptions[0];
-
 	const debounceSearch = debounce((query: string) => {
 		sortedItems = sortedItems.filter(({ name }) => {
 			return name.toLowerCase().includes(query);
@@ -37,10 +27,10 @@
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length > 2) debounceSearch(value);
-		else sortedItems = items.sort(sortFun(currentSort.field, currentSort.order));
+		else sortedItems = items.sort(sortFun($sort.field, $sort.order));
 	}
 
-	$: sortedItems = items.sort(sortFun(currentSort.field, currentSort.order));
+	$: sortedItems = items.sort(sortFun($sort.field, $sort.order));
 </script>
 
 {#if items.length > 0}
@@ -56,7 +46,7 @@
 					New item
 				</Button>
 
-				<SortDropdown {sortOptions} bind:currentSort />
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
 				<ViewButtonsGroup bind:view>
 					<ViewButton {view} value="list">
@@ -73,13 +63,6 @@
 			<ItemsTableView
 				items={sortedItems}
 				{properties}
-				bind:order={currentSort.order}
-				on:clickTableHead={(e) =>
-					(currentSort = {
-						...currentSort,
-						field: e.detail.field,
-						order: currentSort.order === 'asc' ? 'desc' : 'asc'
-					})}
 				on:clickOpenItem
 				on:clickRenameItem
 				on:clickDuplicateItem

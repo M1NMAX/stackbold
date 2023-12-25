@@ -7,8 +7,8 @@
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
 	import debounce from 'debounce';
-	import { SortDropdown } from '$lib/components/sort';
-	import { sortFun, type SortOption } from '$lib/utils/sort';
+	import { SortDropdown, setSortState, sortOptions } from '$lib/components/sort';
+	import { sortFun } from '$lib/utils/sort';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/stores';
 	import { PageContent } from '$lib/components/page';
@@ -19,15 +19,7 @@
 
 	let isPreviewDialogOpen = false;
 
-	const sortOptions: SortOption[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
-		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
-		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
-	];
-	let currentSort: SortOption = sortOptions[0];
+	const sort = setSortState(sortOptions[0]);
 
 	// SEARCH
 
@@ -42,7 +34,7 @@
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length > 2) debounceSearch(value);
-		else sortedTemplates = templates.sort(sortFun(currentSort.field, currentSort.order));
+		else sortedTemplates = templates.sort(sortFun($sort.field, $sort.order));
 	}
 
 	async function onTemplateLinkClick(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -61,7 +53,7 @@
 		}
 	}
 
-	$: sortedTemplates = templates.sort(sortFun(currentSort.field, currentSort.order));
+	$: sortedTemplates = templates.sort(sortFun($sort.field, $sort.order));
 
 	$: if ($page.state.template) {
 		isPreviewDialogOpen = true;
@@ -87,7 +79,7 @@
 					<SearchInput placeholder="Find Template" on:input={handleOnInputSearch} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
-					<SortDropdown {sortOptions} bind:currentSort />
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 				</div>
 			</div>
 

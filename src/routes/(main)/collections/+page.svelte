@@ -2,24 +2,17 @@
 	import type { PageData } from './$types';
 	import { Database } from 'lucide-svelte';
 	import { PageContent } from '$lib/components/page';
-	import { sortFun, type SortOption } from '$lib/utils/sort';
+	import { sortFun } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { SearchInput } from '$lib/components/search';
-	import { SortDropdown } from '$lib/components/sort';
+	import { setSortState, SortDropdown, sortOptions } from '$lib/components/sort';
 	import { ICON_COLORS, icons } from '$lib/components/icon';
 	import { cn } from '$lib/utils';
 
 	export let data: PageData;
+	$: ({ collections } = data);
 
-	const sortOptions: SortOption[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
-		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
-		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
-	];
-	let currentSort: SortOption = sortOptions[0];
+	const sort = setSortState(sortOptions[0]);
 
 	// SEARCH
 	const DEBOUNCE_INTERVAL = 500;
@@ -33,10 +26,10 @@
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length > 2) debounceSearch(value);
-		else sortedCollections = data.collections.sort(sortFun(currentSort.field, currentSort.order));
+		else sortedCollections = collections.sort(sortFun($sort.field, $sort.order));
 	}
 
-	$: sortedCollections = data.collections.sort(sortFun(currentSort.field, currentSort.order));
+	$: sortedCollections = collections.sort(sortFun($sort.field, $sort.order));
 </script>
 
 <svelte:head>
@@ -58,7 +51,7 @@
 					<SearchInput placeholder="Find Collection" on:input={handleOnInputSearch} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
-					<SortDropdown {sortOptions} bind:currentSort />
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 				</div>
 			</div>
 			<div class="space-y-2">

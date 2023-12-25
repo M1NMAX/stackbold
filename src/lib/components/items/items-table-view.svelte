@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { cn, type IBaseSchema, type OrderType } from '$lib/utils';
+	import { cn, type IBaseSchema } from '$lib/utils';
 	import type { Property, PropertyRef, Item } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
 	import { PropertyValue } from '$lib/components/property';
-	import { SortArrow } from '$lib/components/sort';
+	import { getSortState, SortArrow } from '$lib/components/sort';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
@@ -12,44 +12,53 @@
 
 	export let items: Item[];
 	export let properties: Property[];
-	export let order: OrderType = 'asc';
 
 	const activeItem = getActiveItemState();
+	const sort = getSortState();
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
-		clickTableHead: { field: keyof IBaseSchema };
 		updPropertyVisibility: { pid: string; name: string; value: boolean };
 	}>();
 
-	const getPropertyRef = (pid: string, properties: PropertyRef[]) => {
+	function getPropertyRef(pid: string, properties: PropertyRef[]) {
 		return properties.find((property) => property.id === pid) || null;
-	};
+	}
 
-	const getOptionValue = (property: Property, value: string) => {
+	function getOptionValue(property: Property, value: string) {
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.id : '';
-	};
+	}
 
-	const getOptionColor = (property: Property, value: string) => {
+	function getOptionColor(property: Property, value: string) {
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.color : 'GRAY';
-	};
+	}
+
+	function handleClickTableHead(field: keyof IBaseSchema) {
+		$sort = { ...$sort, field, order: $sort.order === 'asc' ? 'desc' : 'asc' };
+	}
+
+	function handleKeypress(e: KeyboardEvent, field: keyof IBaseSchema) {
+		if (e.key !== 'Enter') return;
+		handleClickTableHead(field);
+	}
 </script>
 
 <table class="w-full">
 	<thead class="">
 		<tr class="text-muted-foreground text-sm">
 			<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
-					on:click={() => dispatch('clickTableHead', { field: 'name' })}
+					tabindex="0"
+					role="button"
+					on:click={() => handleClickTableHead('name')}
+					on:keypress={(e) => handleKeypress(e, 'name')}
 					class="flex justify-between items-center"
 				>
 					<span> Name </span>
 
-					<SortArrow bind:order />
+					<SortArrow bind:order={$sort.order} />
 				</div>
 			</th>
 			{#each properties as property (property.id)}

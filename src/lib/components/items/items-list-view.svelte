@@ -12,19 +12,19 @@
 
 	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
 
-	const getPropertyRef = (pid: string, properties: PropertyRef[]) => {
+	function getPropertyRef(pid: string, properties: PropertyRef[]) {
 		return properties.find((property) => property.id === pid) || null;
-	};
+	}
 
-	const getOptionValue = (property: Property, value: string) => {
+	function getOptionValue(property: Property, value: string) {
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.id : '';
-	};
+	}
 
-	const getOptionColor = (property: Property, value: string) => {
+	function getOptionColor(property: Property, value: string) {
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.color : 'GRAY';
-	};
+	}
 </script>
 
 <div class="h-full space-y-2 grow overflow-y-auto">
