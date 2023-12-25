@@ -15,6 +15,7 @@
 	import { ICON_COLORS, icons } from '$lib/components/icon';
 
 	export let data: PageData;
+	$: ({ templates } = data);
 
 	let isPreviewDialogOpen = false;
 
@@ -41,7 +42,7 @@
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length > 2) debounceSearch(value);
-		else sortedTemplates = data.templates.sort(sortFun(currentSort.field, currentSort.order));
+		else sortedTemplates = templates.sort(sortFun(currentSort.field, currentSort.order));
 	}
 
 	async function onTemplateLinkClick(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -60,7 +61,7 @@
 		}
 	}
 
-	$: sortedTemplates = data.templates.sort(sortFun(currentSort.field, currentSort.order));
+	$: sortedTemplates = templates.sort(sortFun(currentSort.field, currentSort.order));
 
 	$: if ($page.state.template) {
 		isPreviewDialogOpen = true;

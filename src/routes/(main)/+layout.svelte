@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		Bug,
 		Calculator,
 		Calendar,
 		CreditCard,
@@ -13,10 +14,12 @@
 		Search,
 		Settings,
 		Smile,
+		SunMoon,
 		Trash2,
 		User
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
+	import { mode, setMode } from 'mode-watcher';
 	import {
 		Sidebar,
 		SidebarCollection,
@@ -278,9 +281,34 @@
 						<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
+							<DropdownMenu.Sub>
+								<DropdownMenu.SubTrigger class="space-x-1">
+									<SunMoon class="icon-xs" />
+									<span>Theme</span>
+								</DropdownMenu.SubTrigger>
+								<DropdownMenu.SubContent class="w-46">
+									<DropdownMenu.RadioGroup value={$mode}>
+										<DropdownMenu.RadioItem value="light" on:click={() => setMode('light')}
+											>Light</DropdownMenu.RadioItem
+										>
+										<DropdownMenu.RadioItem value="dark" on:click={() => setMode('dark')}
+											>Dark</DropdownMenu.RadioItem
+										>
+										<DropdownMenu.RadioItem value="system" on:click={() => setMode('system')}
+											>System</DropdownMenu.RadioItem
+										>
+									</DropdownMenu.RadioGroup>
+								</DropdownMenu.SubContent>
+							</DropdownMenu.Sub>
+
 							<DropdownMenu.Item href="/settings" class="space-x-2">
 								<Settings class="icon-xs" />
 								<span>Settings</span>
+							</DropdownMenu.Item>
+
+							<DropdownMenu.Item href="#" class="space-x-2">
+								<Bug class="icon-xs" />
+								<span>Report Issue</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
 

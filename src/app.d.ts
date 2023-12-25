@@ -12,9 +12,7 @@ declare global {
 			auth: import('lucia').AuthRequest;
 		}
 		interface PageState {
-			template: {
-				template: Template;
-			};
+			template: Template;
 		}
 	}
 	namespace svelteHTML {

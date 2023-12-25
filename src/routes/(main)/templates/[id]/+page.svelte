@@ -10,6 +10,7 @@
 	import { cn } from '$lib/utils';
 
 	export let data: PageData;
+	$: ({ template } = data);
 
 	function getPropertyValue(item: TemplateItem, id: string) {
 		const property = item.properties.find((property) => property.id === id);
@@ -45,7 +46,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.template.name} - Templates - Stackbold</title>
+	<title>{template.name} - Templates - Stackbold</title>
 </svelte:head>
 
 <div class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto">
@@ -54,24 +55,24 @@
 	<div class="flex items-center space-x-2">
 		<svelte:component
 			this={icons[data.template.icon.name]}
-			class={cn('icon-lg', ICON_COLORS[data.template.icon.color])}
+			class={cn('icon-lg', ICON_COLORS[template.icon.color])}
 		/>
-		<h1 class="font-semibold text-3xl">{data.template.name}</h1>
+		<h1 class="font-semibold text-3xl">{template.name}</h1>
 	</div>
-	<p>{data.template.description}</p>
+	<p>{template.description}</p>
 
 	<div class="grow flex flex-col">
 		<div class="space-y-2">
 			<div>
 				<p>Example of item</p>
 				<div class="flex flex-col space-y-2">
-					{#each data.template.items as item (item.id)}
+					{#each template.items as item (item.id)}
 						<span class="w-full px-2 flex flex-col border-l-2 border-primary">
 							<span class="font-semibold text-lg">
 								{item.name}
 							</span>
 
-							{#each data.template.properties as property (property.id)}
+							{#each template.properties as property (property.id)}
 								<span class="space-x-1">
 									<span>{property.name}</span>
 									<span class="px-1 font-light rounded bg-gray-200 dark:bg-gray-700">
@@ -112,12 +113,7 @@
 		</div>
 	</div>
 
-	<Button
-		class="w-full"
-		on:click={() => {
-			createCollectionBasedOnTemplate(data.template.id);
-		}}
-	>
+	<Button class="w-full" on:click={() => createCollectionBasedOnTemplate(template.id)}>
 		Use this template
 	</Button>
 </div>
