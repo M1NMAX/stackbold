@@ -2,7 +2,7 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { CollectionPropertyCreateInputSchema, ColorSchema, PropertyTypeSchema } from '$prisma-zod';
+import { PropertyCreateInputSchema, ColorSchema, PropertyTypeSchema } from '$prisma-zod';
 
 const iconSchema = z.object({
 	name: z.string().optional(),
@@ -19,8 +19,8 @@ const collectionCreateSchema = z.object({
 	groupId: z.string().nullable(),
 	properties: z
 		.union([
-			z.lazy(() => CollectionPropertyCreateInputSchema),
-			z.lazy(() => CollectionPropertyCreateInputSchema).array()
+			z.lazy(() => PropertyCreateInputSchema),
+			z.lazy(() => PropertyCreateInputSchema).array()
 		])
 		.optional()
 });
@@ -90,7 +90,7 @@ export const collections = createTRPCRouter({
 	}),
 
 	addProperty: protectedProcedure
-		.input(z.object({ id: z.string(), property: CollectionPropertyCreateInputSchema }))
+		.input(z.object({ id: z.string(), property: PropertyCreateInputSchema }))
 		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
 			return await prisma.collection.update({
 				data: { properties: { push: [property] } },

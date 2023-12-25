@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { ItemPropertyCreateInputSchema, ItemUpdateInputSchema } from '$prisma-zod';
+import { PropertyRefCreateInputSchema, ItemUpdateInputSchema } from '$prisma-zod';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -9,8 +9,8 @@ const itemCreateSchema = z.object({
 	collectionId: z.string(),
 	properties: z
 		.union([
-			z.lazy(() => ItemPropertyCreateInputSchema),
-			z.lazy(() => ItemPropertyCreateInputSchema).array()
+			z.lazy(() => PropertyRefCreateInputSchema),
+			z.lazy(() => PropertyRefCreateInputSchema).array()
 		])
 		.optional()
 });
@@ -59,7 +59,7 @@ export const items = createTRPCRouter({
 		await prisma.item.delete({ where: { id } });
 	}),
 	addProperty: protectedProcedure
-		.input(z.object({ ids: z.array(z.string()), property: ItemPropertyCreateInputSchema }))
+		.input(z.object({ ids: z.array(z.string()), property: PropertyRefCreateInputSchema }))
 		.mutation(async ({ input: { ids, property }, ctx: { userId } }) => {
 			//TODO: find better alt
 			for (const id of ids) {

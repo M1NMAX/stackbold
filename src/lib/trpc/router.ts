@@ -1,5 +1,5 @@
 import { collections } from '$lib/trpc/routes/collections';
-import { groups } from './routes/groups';
+import { groups } from '$lib/trpc/routes/groups';
 import { items } from '$lib/trpc/routes/items';
 import { templates } from '$lib/trpc/routes/templates';
 import { t } from '$lib/trpc/t';

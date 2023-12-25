@@ -13,9 +13,6 @@
 	<title>Dashboard - Stackbold</title>
 </svelte:head>
 <div class="grow p-1 rounded-md bg-card text-secondary-foreground">
-	<!-- <pre>
-		{JSON.stringify(items[collections[0].id], null, 2)}
-	</pre> -->
 	<PageContent>
 		<h1 class="font-semibold text-2xl">Welcome back!, {user.name}</h1>
 
@@ -29,7 +26,7 @@
 						currActiveItemId={undefined}
 						items={items[collection.id]}
 						bind:view
-						collectionProperties={collection.properties}
+						properties={collection.properties}
 						onClickNewItemBtn={() => {}}
 					/>
 				</div>

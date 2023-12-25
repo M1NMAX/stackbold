@@ -7,7 +7,7 @@
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
-	export let collectionProperties: Property[];
+	export let properties: Property[];
 
 	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
 
@@ -24,7 +24,6 @@
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.color : 'GRAY';
 	};
-	// class="invisible group-hover:visible"
 </script>
 
 <div class="h-full space-y-2 grow overflow-y-auto">
@@ -56,7 +55,7 @@
 			/>
 
 			<div class="flex flex-wrap gap-2">
-				{#each collectionProperties as property (property.id)}
+				{#each properties as property (property.id)}
 					{#if property.isVisibleOnListView}
 						{@const itemProperty = getItemProperty(property.id, item.properties)}
 						{#if itemProperty}

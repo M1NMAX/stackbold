@@ -11,7 +11,7 @@
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
-	export let collectionProperties: Property[];
+	export let properties: Property[];
 	export let view: string;
 	export let onClickNewItemBtn: () => void;
 
@@ -59,7 +59,7 @@
 
 				<SortDropdown {sortOptions} bind:currentSort />
 
-				<ViewButtonsGroup bind:value={view}>
+				<ViewButtonsGroup bind:view>
 					<ViewButton {view} value="list">
 						<StretchHorizontal class="icon-md" />
 					</ViewButton>
@@ -74,7 +74,7 @@
 			<ItemsTableView
 				items={sortedItems}
 				{currActiveItemId}
-				{collectionProperties}
+				{properties}
 				bind:order={currentSort.order}
 				on:clickTableHead={(e) =>
 					(currentSort = {
@@ -93,7 +93,7 @@
 			<ItemsListView
 				items={sortedItems}
 				{currActiveItemId}
-				{collectionProperties}
+				{properties}
 				on:clickOpenItem
 				on:clickRenameItem
 				on:clickDuplicateItem

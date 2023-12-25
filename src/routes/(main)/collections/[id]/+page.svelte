@@ -39,8 +39,7 @@
 	$: ({ collection, items } = data);
 	$: ({ properties } = collection);
 
-	// View
-	let currView = 'list';
+	let view = 'list';
 
 	// Delete Modal
 	let isDeleteModalOpen = false;
@@ -545,8 +544,8 @@
 		<Items
 			currActiveItemId={drawerSelectedItem ? drawerSelectedItem.id : undefined}
 			{items}
-			bind:view={currView}
-			collectionProperties={properties}
+			bind:view
+			{properties}
 			onClickNewItemBtn={() => handleCreateItem('Untitled', true)}
 			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
 			on:clickRename={(e) => updItem({ id: e.detail, data: { name: 'something' } })}

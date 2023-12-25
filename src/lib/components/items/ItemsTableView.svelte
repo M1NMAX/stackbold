@@ -12,7 +12,7 @@
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
-	export let collectionProperties: Property[];
+	export let properties: Property[];
 	export let order: OrderType = 'asc';
 
 	const dispatch = createEventDispatcher<{
@@ -51,7 +51,7 @@
 					<SortArrow bind:order />
 				</div>
 			</th>
-			{#each collectionProperties as property (property.id)}
+			{#each properties as property (property.id)}
 				{#if property.isVisibleOnTableView}
 					<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
 						{property.name}
@@ -70,7 +70,7 @@
 						<DropdownMenu.Label>Toggle property visibility</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 
-						{#each collectionProperties as property (property.id)}
+						{#each properties as property (property.id)}
 							<DropdownMenu.CheckboxItem
 								checked={property.isVisibleOnTableView}
 								on:click={() => {
@@ -112,7 +112,7 @@
 						</Button>
 					</td>
 
-					{#each collectionProperties as property (property.id)}
+					{#each properties as property (property.id)}
 						{@const itemProperty = getItemProperty(property.id, item.properties)}
 						{#if property.isVisibleOnTableView && itemProperty}
 							{@const value =
@@ -150,7 +150,7 @@
 			{/each}
 		{:else}
 			<tr>
-				<td colspan={collectionProperties.length + 3}>
+				<td colspan={properties.length + 3}>
 					<div class="empty" in:fade>
 						<!-- <div class="empty-icon"><IconEmpty size="5em" /></div> -->
 						No items found.
