@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { Dna } from 'lucide-svelte';
 	import { cn } from '$lib/utils';
-	import { DEFAULT_DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
+	import { PROPERTY_COLORS } from '$lib/constant';
 	import { Root as DialogRoot, Content as DialogContent } from '$lib/components/ui/dialog';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
@@ -30,11 +30,12 @@
 
 	// SEARCH
 
+	const DEBOUNCE_INTERVAL = 500;
 	const debounceSearch = debounce((query: string) => {
 		sortedTemplates = sortedTemplates.filter(({ name, description }) => {
 			return name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
 		});
-	}, DEFAULT_DEBOUNCE_INTERVAL * 0.5);
+	}, DEBOUNCE_INTERVAL);
 
 	function handleOnInputSearch(e: Event) {
 		const value = (e.target as HTMLInputElement).value;

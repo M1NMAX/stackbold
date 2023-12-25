@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PropertyType, type CollectionProperty } from '@prisma/client';
+	import { PropertyType, type Property } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { Copy, EyeOff, FileSignature, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -9,7 +9,7 @@
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { Separator } from '$lib/components/ui/separator';
 
-	export let property: CollectionProperty;
+	export let property: Property;
 	export let isCheckBox: boolean = false;
 
 	let isPopoverOpen = false;

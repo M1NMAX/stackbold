@@ -1,4 +1,4 @@
-import { type CollectionProperty, Color, PrismaClient, PropertyType } from '@prisma/client';
+import { type Property, Color, PrismaClient, PropertyType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -272,7 +272,7 @@ const templatesData = [
 const randomIntFromInterval = (min: number, max: number) =>
 	Math.floor(Math.random() * (max - min + 1) + min);
 
-const assignPropertyValue = (property: CollectionProperty) => {
+const assignPropertyValue = (property: Property) => {
 	const rand = randomIntFromInterval(0, property.options.length - 1);
 	if (property.type === 'SELECT') return property.options[rand].id;
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { createEventDispatcher } from 'svelte';
-	import type { CollectionProperty, Color } from '@prisma/client';
+	import type { Property, Color } from '@prisma/client';
 	import { CalendarIcon, CheckCheck } from 'lucide-svelte';
 	import * as Command from '$lib/components/ui/command';
 	import * as Popover from '$lib/components/ui/popover';
@@ -12,7 +12,7 @@
 	import PropertyValueWrapper from './property-value-wrapper.svelte';
 
 	export let itemId: string;
-	export let property: CollectionProperty;
+	export let property: Property;
 	export let color: Color = 'GRAY';
 	export let value: string | null;
 	export let isTableView: boolean = false;

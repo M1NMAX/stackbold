@@ -1,7 +1,5 @@
 import type { Colors } from '$lib/types';
 
-export const DEFAULT_DEBOUNCE_INTERVAL = 1000;
-
 export const PROPERTY_COLORS: Colors = {
 	GRAY: 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-100',
 	RED: 'bg-red-500 text-white dark:bg-red-800 dark:text-red-100',

@@ -1,26 +1,26 @@
 <script lang="ts">
 	import { ItemContextMenu } from '$lib/components';
 	import { PropertyValue } from '$lib/components/property';
-	import type { CollectionProperty, Item, ItemProperty as ItemPropertyType } from '@prisma/client';
+	import type { Property, PropertyRef, Item } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 
 	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
-	export let collectionProperties: CollectionProperty[];
+	export let collectionProperties: Property[];
 
 	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
 
-	const getItemProperty = (pid: string, properties: ItemPropertyType[]) => {
+	const getItemProperty = (pid: string, properties: PropertyRef[]) => {
 		return properties.find((property) => property.id === pid) || null;
 	};
 
-	const getOptionValue = (property: CollectionProperty, value: string) => {
+	const getOptionValue = (property: Property, value: string) => {
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.id : '';
 	};
 
-	const getOptionColor = (property: CollectionProperty, value: string) => {
+	const getOptionColor = (property: Property, value: string) => {
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.color : 'GRAY';
 	};

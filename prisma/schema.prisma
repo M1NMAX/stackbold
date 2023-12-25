@@ -94,7 +94,7 @@ type Option {
   color Color  @default(GRAY)
 }
 
-type CollectionProperty {
+type Property {
   id                   String       @default(uuid()) @map("_id")
   name                 String
   createdAt            DateTime     @default(now())
@@ -104,7 +104,7 @@ type CollectionProperty {
   isVisibleOnTableView Boolean      @default(true)
 }
 
-type ItemProperty {
+type PropertyRef {
   id    String @map("_id")
   value String @default("")
 }
@@ -120,48 +120,48 @@ model Group {
 }
 
 model Collection {
-  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
   name         String
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  isFavourite  Boolean              @default(false)
-  isArchived   Boolean              @default(false)
-  description  String               @default("")
-  isDescHidden Boolean              @default(true)
-  owner        User                 @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  isFavourite  Boolean    @default(false)
+  isArchived   Boolean    @default(false)
+  description  String     @default("")
+  isDescHidden Boolean    @default(true)
+  owner        User       @relation(fields: [ownerId], references: [id])
   ownerId      String
   items        Item[]
-  properties   CollectionProperty[]
-  group        Group?               @relation(fields: [groupId], references: [id])
-  groupId      String?              @db.ObjectId
+  properties   Property[]
+  group        Group?     @relation(fields: [groupId], references: [id])
+  groupId      String?    @db.ObjectId
   icon         Icon
 }
 
 model Item {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
   name            String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   updatedByUserId String?
-  updatedBy       User?          @relation(fields: [updatedByUserId], references: [id])
-  collection      Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId    String         @db.ObjectId
-  properties      ItemProperty[]
+  updatedBy       User?         @relation(fields: [updatedByUserId], references: [id])
+  collection      Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId    String        @db.ObjectId
+  properties      PropertyRef[]
 }
 
 type TemplateItem {
-  id         String         @default(uuid()) @map("_id")
+  id         String        @default(uuid()) @map("_id")
   name       String
-  properties ItemProperty[]
+  properties PropertyRef[]
 }
 
 model Template {
-  id          String               @id @default(auto()) @map("_id") @db.ObjectId
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  description String               @default("")
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  properties  CollectionProperty[]
+  description String         @default("")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  properties  Property[]
   items       TemplateItem[]
   icon        Icon
 }

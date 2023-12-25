@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { CheckCheck } from 'lucide-svelte';
-	import type { CollectionProperty } from '@prisma/client';
+	import type { Property } from '@prisma/client';
 	import Textarea from '../Textarea/Textarea.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
@@ -12,7 +12,7 @@
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { cn } from '$lib/utils';
 
-	export let property: CollectionProperty;
+	export let property: Property;
 	export let value: string;
 
 	let open = false;

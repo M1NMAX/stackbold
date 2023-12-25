@@ -2,19 +2,20 @@
 	import { StretchHorizontal, Table } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { ItemsListView, ItemsTableView } from '$lib/components';
-	import type { CollectionProperty, Item as ItemType } from '@prisma/client';
+	import type { Property, Item } from '@prisma/client';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { DEFAULT_DEBOUNCE_INTERVAL } from '$lib/constant';
 	import debounce from 'debounce';
 
-	export let items: ItemType[];
+	export let items: Item[];
 	export let currActiveItemId: string | undefined = undefined;
-	export let collectionProperties: CollectionProperty[];
+	export let collectionProperties: Property[];
 	export let view: string;
 	export let onClickNewItemBtn: () => void;
+
+	const DEBOUNCE_INTERVAL = 500;
 
 	const sortOptions: SortOption[] = [
 		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
@@ -31,7 +32,7 @@
 		sortedItems = sortedItems.filter(({ name }) => {
 			return name.toLowerCase().includes(query);
 		});
-	}, DEFAULT_DEBOUNCE_INTERVAL * 0.5);
+	}, DEBOUNCE_INTERVAL);
 
 	function handleOnInputSearch(e: Event) {
 		const value = (e.target as HTMLInputElement).value;

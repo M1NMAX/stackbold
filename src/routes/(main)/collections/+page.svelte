@@ -1,11 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-
-	import { Database, Folder } from 'lucide-svelte';
+	import { Database } from 'lucide-svelte';
 	import { PageContent } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
-	import { DEFAULT_DEBOUNCE_INTERVAL } from '$lib/constant';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import { ICON_COLORS, icons } from '$lib/components/icon';
@@ -24,12 +22,12 @@
 	let currentSort: SortOption = sortOptions[0];
 
 	// SEARCH
-
+	const DEBOUNCE_INTERVAL = 500;
 	const debounceSearch = debounce((query: string) => {
 		sortedCollections = sortedCollections.filter(({ name, description }) => {
 			return name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
 		});
-	}, DEFAULT_DEBOUNCE_INTERVAL * 0.5);
+	}, DEBOUNCE_INTERVAL);
 
 	function handleOnInputSearch(e: Event) {
 		const value = (e.target as HTMLInputElement).value;
