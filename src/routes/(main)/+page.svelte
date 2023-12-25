@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { PageContent } from '$lib/components/page';
-	import { Button } from '$lib/components/ui/button';
 	import { Items } from '$lib/components';
 
 	export let data: PageData;
 	$: ({ user, collections, items } = data);
 
-	let currView = 'list';
+	let view = 'list';
 </script>
 
 <svelte:head>
@@ -23,11 +22,13 @@
 		<div class="space-y-2">
 			{#each collections as collection (collection.id)}
 				<div>
-					<div>{collection.name}</div>
+					<div>
+						<h2>{collection.name}</h2>
+					</div>
 					<Items
 						currActiveItemId={undefined}
 						items={items[collection.id]}
-						bind:view={currView}
+						bind:view
 						collectionProperties={collection.properties}
 						onClickNewItemBtn={() => {}}
 					/>

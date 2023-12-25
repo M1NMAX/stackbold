@@ -5,7 +5,7 @@
 		CreditCard,
 		Database,
 		Dna,
-		KanbanSquare,
+		LayoutDashboard,
 		LogOut,
 		PackagePlus,
 		PanelLeftInactive,
@@ -61,7 +61,7 @@
 	const sidebarState = setSidebarState();
 
 	const SIDEBAR_ITEMS = [
-		{ label: 'Dashboard', url: '/', icon: KanbanSquare },
+		{ label: 'Dashboard', url: '/', icon: LayoutDashboard },
 		{ label: 'Templates', url: '/templates', icon: Dna },
 		{ label: 'All Collections', url: '/collections', icon: Database },
 		{ label: 'Tash', url: '/trash', icon: Trash2 }
