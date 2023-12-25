@@ -12,6 +12,10 @@
 <svelte:head>
 	<title>Dashboard - Stackbold</title>
 </svelte:head>
+
+<pre>
+	{JSON.stringify(user, null, 2)}
+</pre>
 <div class="grow p-1 rounded-md bg-card text-secondary-foreground">
 	<PageContent>
 		<h1 class="font-semibold text-2xl">Welcome back!</h1>

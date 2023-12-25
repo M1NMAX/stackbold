@@ -44,7 +44,8 @@ export const actions: Actions = {
 				attributes: {
 					name,
 					email: email.toLocaleLowerCase(),
-					email_verified: false
+					email_verified: false,
+					role: 'MEMBER'
 				}
 			});
 			const session = await auth.createSession({
