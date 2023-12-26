@@ -1,16 +1,14 @@
 <script lang="ts">
-	import logoSrc from '$lib/assets/trpc-logo.png';
-	import { superForm } from 'sveltekit-superforms/client';
-	// import SuperDebug from 'sveltekit-superforms/client/SuperDebug.svelte';
-
 	import type { PageData } from './$types';
+	import { superForm } from 'sveltekit-superforms/client';
 	import { Button } from '$lib/components/ui/button';
+	import logoSrc from '$lib/assets/trpc-logo.png';
 
 	export let data: PageData;
 	const { form, message, errors, enhance } = superForm(data.form);
 </script>
 
-<!-- <SuperDebug data={$form} /> -->
+<svelte:head><title>Sign in - Stackbold</title></svelte:head>
 
 <div>
 	<div class="flex justify-center pb-8">

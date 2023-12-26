@@ -9,6 +9,8 @@
 	const { form, message, errors, enhance } = superForm(data.form);
 </script>
 
+<svelte:head><title>Sign up - Stackbold</title></svelte:head>
+
 <div>
 	<div class="flex justify-center pb-8">
 		<img src={logoSrc} alt="logo" />
@@ -80,6 +82,6 @@
 <div class="my-8 leading-8 font-medium text-sm">
 	<p class="text-center text-gray-500">
 		Already have an account?
-		<a href="/login" class="no-underline text-primary hover:text-primary/70"> Sign in </a>
+		<a href="/signin" class="no-underline text-primary hover:text-primary/70"> Sign in </a>
 	</p>
 </div>
