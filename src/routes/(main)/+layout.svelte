@@ -238,14 +238,10 @@
 				<DropdownMenu.Root>
 					<div class="w-full flex items-center justify-between space-x-1">
 						<DropdownMenu.Trigger asChild let:builder>
-							<Button
-								builders={[builder]}
-								variant="secondary"
-								class="h-9 w-9 flex items-center justify-center p-0.5 rounded-sm ring-1 ring-card"
-							>
+							<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5 rounded-sm">
 								<img
 									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
-									class="h-7 w-7 rounded-sm"
+									class="icon-lg object-contain rounded-md"
 									alt="avatar"
 								/>
 							</Button>
@@ -324,11 +320,14 @@
 						<DropdownMenu.Separator />
 
 						<form method="post" action="/?/logout" use:enhance>
-							<!-- //TODO: add action -->
-							<DropdownMenu.Item class="space-x-2">
+							<Button
+								variant="ghost"
+								type="submit"
+								class="w-full h-8 flex justify-start items-center space-x-2 py-1.5 px-2 text-sm rounded-sm"
+							>
 								<LogOut class="icon-xs" />
 								<span>Log out</span>
-							</DropdownMenu.Item>
+							</Button>
 						</form>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
