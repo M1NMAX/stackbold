@@ -7,6 +7,7 @@
 		Database,
 		Dna,
 		LayoutDashboard,
+		Lock,
 		LogOut,
 		PackagePlus,
 		PanelLeftInactive,
@@ -47,7 +48,7 @@
 	import type { DeleteDetail } from '$lib/types';
 
 	export let data: LayoutData;
-	$: ({ groups, collections } = data);
+	$: ({ user, groups, collections } = data);
 
 	let innerWidth: number;
 	let isCommandDialogOpen = false;
@@ -243,7 +244,7 @@
 								class="h-9 w-9 flex items-center justify-center p-0.5 rounded-sm ring-1 ring-card"
 							>
 								<img
-									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${data.user.name}`}
+									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
 									class="h-7 w-7 rounded-sm"
 									alt="avatar"
 								/>
@@ -278,7 +279,15 @@
 					</div>
 
 					<DropdownMenu.Content class="w-56">
-						<DropdownMenu.Label>{data.user.name} | {data.user.email}</DropdownMenu.Label>
+						<DropdownMenu.Label>{user.name} | {user.email}</DropdownMenu.Label>
+
+						{#if user.role === 'ADMIN'}
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item href="/admin" class="space-x-2">
+								<Lock class="icon-xs" />
+								<span>Admin</span>
+							</DropdownMenu.Item>
+						{/if}
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
 							<DropdownMenu.Sub>
