@@ -33,6 +33,8 @@ model User {
   collections            Collection[]
   updatedItems           Item[]
   Group                  Group[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
 }
 
 model Session {
