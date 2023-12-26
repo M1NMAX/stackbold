@@ -83,7 +83,7 @@
 	@apply w-6 h-6 focus:outline-none;
 }
 .icon-lg {
-	@apply w-8 h-8 focus:outline-none;
+	@apply w-9 h-9 focus:outline-none;
 }
 .icon-xl {
 	@apply w-10 h-10 focus:outline-none;

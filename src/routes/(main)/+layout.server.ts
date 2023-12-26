@@ -6,7 +6,7 @@ import type { LayoutServerLoad } from './$types';
 export const load: LayoutServerLoad = async (event) => {
 	const session = await event.locals.auth.validate();
 
-	if (!session) redirect(302, '/login');
+	if (!session) redirect(302, '/signin');
 
 	if (!session.user.emailVerified) {
 		redirect(302, '/email-verification');
