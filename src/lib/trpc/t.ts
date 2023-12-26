@@ -14,12 +14,22 @@ export const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
 });
 
 export const authMiddleware = t.middleware(async ({ next, ctx }) => {
-	if (!ctx.userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
-	return next();
+	if (!ctx.session?.user.email) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+	return next({ ctx: { session: ctx.session, userId: ctx.session.user.userId } });
 });
 
+export const adminMiddleware = t.middleware(async ({ next, ctx }) => {
+	if (ctx.session?.user.role !== 'ADMIN') throw new TRPCError({ code: 'UNAUTHORIZED' });
+	return next();
+});
 export const createTRPCRouter = t.router;
 
 export const publicProcedure = t.procedure.use(loggerMiddleware);
 
 export const protectedProcedure = t.procedure.use(loggerMiddleware).use(authMiddleware);
+
+export const adminProcedure = t.procedure
+	.use(loggerMiddleware)
+	.use(authMiddleware)
+	.use(adminMiddleware);
