@@ -39,12 +39,11 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Popover from '$lib/components/ui/popover';
-	import { cn, randomIntFromInterval } from '$lib/utils';
+	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
 	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
 	import * as Command from '$lib/components/ui/command';
-	import { Color } from '@prisma/client';
 	import type { DeleteDetail } from '$lib/types';
 
 	export let data: LayoutData;
@@ -130,13 +129,9 @@
 	}
 
 	async function handleSubmitCollection() {
-		const colorKeys = Object.keys(Color);
-		const color = colorKeys[randomIntFromInterval(0, colorKeys.length)] as Color;
-
 		createCollection({
 			...createCollectionDetail,
-			groupId: createCollectionDetail.groupId || null,
-			icon: { color }
+			groupId: createCollectionDetail.groupId || null
 		});
 	}
 
@@ -335,7 +330,11 @@
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<svelte:component this={item.icon} slot="icon" />
+						<svelte:component
+							this={item.icon}
+							slot="icon"
+							class={cn('icon-sm', activeUrl === item.url && 'text-primary')}
+						/>
 					</SidebarItem>
 				{/each}
 			</div>
@@ -438,8 +437,7 @@
 									on:addNewCollection={({ detail }) =>
 										createCollection({
 											name: detail.name,
-											groupId: detail.groupId,
-											icon: {}
+											groupId: detail.groupId
 										})}
 									on:renameGroup={({ detail }) =>
 										updGroup({ id: detail.groupId, data: { name: detail.name } })}

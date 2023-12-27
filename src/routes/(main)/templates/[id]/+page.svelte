@@ -6,7 +6,7 @@
 	import { trpc } from '$lib/trpc/client';
 	import type { TemplateItem } from '@prisma/client';
 	import { PageHeader } from '$lib/components/page';
-	import { ICON_COLORS, icons } from '$lib/components/icon';
+	import { icons } from '$lib/components/icon';
 	import { cn } from '$lib/utils';
 
 	export let data: PageData;
@@ -53,10 +53,7 @@
 	<PageHeader />
 
 	<div class="flex items-center space-x-2">
-		<svelte:component
-			this={icons[data.template.icon.name]}
-			class={cn('icon-lg', ICON_COLORS[template.icon.color])}
-		/>
+		<svelte:component this={icons[template.icon]} class="icon icon-lg" />
 		<h1 class="font-semibold text-3xl">{template.name}</h1>
 	</div>
 	<p>{template.description}</p>

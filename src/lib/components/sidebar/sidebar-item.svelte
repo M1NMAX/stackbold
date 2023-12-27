@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { cn } from '$lib/utils';
+
 	export let href: string | undefined = undefined;
 	export let active = false;
 	export let label: string;
@@ -24,7 +26,7 @@
 >
 	<slot name="icon" />
 
-	<span class="font-semibold">
+	<span class={cn('font-semibold', active && 'text-primary')}>
 		{label}
 	</span>
 </svelte:element>

@@ -16,7 +16,7 @@
 	import * as Command from '$lib/components/ui/command';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
-	import { ICON_COLORS, icons } from '../icon/icon-picker.svelte';
+	import { icons } from '$lib/components/icon';
 
 	export let active: boolean;
 	export let asChild: boolean = false;
@@ -61,8 +61,8 @@
 	)}
 >
 	<a href={`/collections/${id}`} class="grow flex items-center space-x-1.5">
-		<svelte:component this={icons[icon.name]} class={cn('icon-sm', ICON_COLORS[icon.color])} />
-		<span class="trucante font-semibold text-base">{name}</span>
+		<svelte:component this={icons[icon]} class={cn('icon-sm', active && 'text-primary')} />
+		<span class={cn('trucante font-semibold text-base', active && 'text-primary')}>{name}</span>
 	</a>
 
 	<Popover.Root bind:open={isGroupComboboxOpen}>

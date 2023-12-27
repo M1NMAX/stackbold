@@ -91,11 +91,6 @@ enum PropertyType {
   NUMBER   @map("number")
 }
 
-type Icon {
-  name  String @default("folder")
-  color Color  @default(GRAY)
-}
-
 type Option {
   id    String @default(uuid()) @map("_id")
   value String
@@ -142,7 +137,7 @@ model Collection {
   properties   Property[]
   group        Group?     @relation(fields: [groupId], references: [id])
   groupId      String?    @db.ObjectId
-  icon         Icon
+  icon         String     @default("folder")
 }
 
 model Item {
@@ -171,5 +166,5 @@ model Template {
   updatedAt   DateTime       @updatedAt
   properties  Property[]
   items       TemplateItem[]
-  icon        Icon
+  icon        String         @default("folder")
 }

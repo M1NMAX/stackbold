@@ -6,8 +6,7 @@
 	import debounce from 'debounce';
 	import { SearchInput } from '$lib/components/search';
 	import { setSortState, SortDropdown } from '$lib/components/sort';
-	import { ICON_COLORS, icons } from '$lib/components/icon';
-	import { cn } from '$lib/utils';
+	import { icons } from '$lib/components/icon';
 	import type { Collection } from '@prisma/client';
 
 	export let data: PageData;
@@ -71,10 +70,7 @@
 						class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 					>
 						<div class="flex items-center justify-between space-x-2">
-							<svelte:component
-								this={icons[collection.icon.name]}
-								class={cn('icon-md', ICON_COLORS[collection.icon.color])}
-							/>
+							<svelte:component this={icons[collection.icon]} class="icon icon-md" />
 							<h2 class="text-lg font-semibold">
 								{collection.name}
 							</h2>

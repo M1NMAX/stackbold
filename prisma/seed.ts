@@ -318,8 +318,7 @@ async function main() {
 					}))
 				})),
 				isFavourite: Math.random() < 0.5,
-				groupId: Math.random() > 0.7 ? undefined : groupsIds[randomIntFromInterval(0, 1)],
-				icon: {}
+				groupId: Math.random() > 0.7 ? undefined : groupsIds[randomIntFromInterval(0, 1)]
 			}
 		});
 
@@ -352,8 +351,7 @@ async function main() {
 						value,
 						color: colorsNames[randomIntFromInterval(0, 2)] as Color
 					}))
-				})),
-				icon: { color: colorsNames[randomIntFromInterval(0, 2)] as Color }
+				}))
 			}
 		});
 

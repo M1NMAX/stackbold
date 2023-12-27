@@ -511,11 +511,7 @@
 
 	<PageContent class="lg:py-1 lg:px-8">
 		<div class="flex items-center space-x-2">
-			<IconPicker
-				name={collection.icon.name}
-				color={collection.icon.color}
-				onIconChange={(icon) => updCollection({ icon })}
-			/>
+			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
 			<h1
 				class="grow font-semibold text-3xl focus:outline-none"
