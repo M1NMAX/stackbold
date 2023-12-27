@@ -16,7 +16,6 @@
 		Settings,
 		Smile,
 		SunMoon,
-		Trash2,
 		User
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';

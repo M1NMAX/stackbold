@@ -6,38 +6,35 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Separator } from '$lib/components/ui/separator';
 	import { ArrowLeft } from 'lucide-svelte';
-	import * as Tabs from '$lib/components/ui/tabs';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 </script>
 
 <svelte:head>
-	<title>Settings * Stackbold</title>
+	<title>Settings - Stackbold</title>
 </svelte:head>
 
-<div class="grow p-2 bg-gray-50">
-	<div class="flex items-center space-x-2">
-		<Button variant="secondary" size="icon" on:click={() => history.back()}><ArrowLeft /></Button>
-		<h1 class="font-semibold text-2xl">Settings</h1>
-	</div>
+<div class="h-screen p-1 bg-secondary overflow-hidden">
+	<main
+		class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 rounded-md bg-card text-secondary-foreground"
+	>
+		<!-- <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden"> -->
+		<div class="flex items-center space-x-2">
+			<Button variant="secondary" size="icon" on:click={() => history.back()}>
+				<ArrowLeft />
+			</Button>
+			<h1 class="font-semibold text-2xl">Settings</h1>
+		</div>
 
-	<Tabs.Root value="appearance" orientation="vertical" class="w-full flex space-x-4 mt-4 ">
-		<Tabs.List class="flex flex-col h-full ">
-			<Tabs.Trigger value="appearance">Appearance</Tabs.Trigger>
-			<Tabs.Trigger value="account">Account</Tabs.Trigger>
-		</Tabs.List>
-		<Tabs.Content value="appearance"
-			><div>
-				<h3 class="text-lg font-medium">Appearance</h3>
-				<p class="text-sm text-muted-foreground">
-					Customize the appearance of the app. Automatically switch between day and night themes.
-				</p>
-			</div>
-			<Separator />
-
-			<div>
+		<div
+			class="flex flex-col lg:flex-row justify-center space-y-4 lg:space-y-0.5 lg:space-x-10 mx-auto"
+		>
+			<div class="w-full lg:max-w-xl p-4 rounded border">
 				<h4>Theme</h4>
 				<p>Select the theme for the application</p>
 
-				<RadioGroup.Root value={$mode} class="flex">
+				<RadioGroup.Root value={$mode} class="flex my-4">
 					<div class="flex items-center space-x-2">
 						<Label for="light" class="[&:has([data-state=checked])>div]:border-primary">
 							<RadioGroup.Item
@@ -117,14 +114,38 @@
 					</div>
 				</RadioGroup.Root>
 			</div>
-		</Tabs.Content>
+			<div class="w-full lg:max-w-xl p-4 rounded border">
+				<h2>Account</h2>
 
-		<Tabs.Content value="account">
-			<div>
-				<form method="post" action="?/logout" use:enhance>
-					<Button type="submit">Log out</Button>
-				</form>
+				<p>Manage your account settings</p>
+
+				<div class="flex flex-col my-4">
+					<label for="name"> Name </label>
+
+					<input
+						id="name"
+						type="text"
+						name="name"
+						class="w-fll h-9 input input-ghost bg-gray-200"
+					/>
+				</div>
+
+				<div class="flex flex-col my-4">
+					<label for="password"> Password </label>
+
+					<input
+						id="password"
+						type="password"
+						name="password"
+						class="w-fll h-9 input input-ghost bg-gray-200"
+					/>
+				</div>
+
+				<Separator />
+				<div class="mt-4">
+					<Button variant="destructive" class="w-full">Delete account</Button>
+				</div>
 			</div>
-		</Tabs.Content>
-	</Tabs.Root>
+		</div>
+	</main>
 </div>
