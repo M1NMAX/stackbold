@@ -66,8 +66,7 @@
 	const SIDEBAR_ITEMS = [
 		{ label: 'Dashboard', url: '/', icon: LayoutDashboard },
 		{ label: 'Templates', url: '/templates', icon: Dna },
-		{ label: 'All Collections', url: '/collections', icon: Database },
-		{ label: 'Tash', url: '/trash', icon: Trash2 }
+		{ label: 'All Collections', url: '/collections', icon: Database }
 	];
 
 	// Groups services
