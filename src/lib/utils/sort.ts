@@ -1,50 +1,42 @@
-export interface IBaseSchema {
-	id: string;
-	name: string;
-	createdAt: Date;
-	updatedAt: Date;
-}
-
 export type OrderType = 'asc' | 'desc';
 
-export type SortOption = {
+export type SortOption<T> = {
 	label: string;
-	field: keyof IBaseSchema;
+	field: keyof T;
 	order: OrderType;
 };
 
-type DateKey<T> = keyof T & (T[keyof T] extends Date ? keyof T : never);
+export function sortFun<T, K extends keyof T>(field: K, order: OrderType) {
+	function sortStr(a: T, b: T, field: K) {
+		const left = a[field];
+		const right = b[field];
 
-const sortDate = <T extends IBaseSchema, K extends DateKey<T>>(a: T, b: T, field: K) => {
-	const left = a[field] as Date;
-	const right = b[field] as Date;
+		if (left < right) return -1;
 
-	if (left.getTime() < right.getTime()) return -1;
-	if (left.getTime() > right.getTime()) return 1;
+		if (left > right) return 1;
 
-	return 0;
-};
+		return 0;
+	}
 
-const sortString = <T extends IBaseSchema, K extends keyof T>(a: T, b: T, field: K) => {
-	const left = a[field];
-	const right = b[field];
+	type DateKey<D> = D & (D extends Date ? D : never);
 
-	if (left < right) return -1;
+	function sortDate(a: T, b: T, field: DateKey<K>) {
+		const left = a[field] as Date;
+		const right = b[field] as Date;
 
-	if (left > right) return 1;
+		if (left.getTime() < right.getTime()) return -1;
+		if (left.getTime() > right.getTime()) return 1;
 
-	return 0;
-};
+		return 0;
+	}
 
-export const sortFun = <K extends keyof IBaseSchema>(field: K, order: OrderType) => {
-	return <T extends IBaseSchema>(a: T, b: T) => {
-		if (a[field] === b[field]) return 0;
-
+	return function (a: T, b: T) {
 		let result = 0;
+		if (a[field] === b[field]) return result;
 
-		if (typeof a[field] === 'string') result = sortString(a, b, field);
-		else if (a[field] instanceof Date) result = sortDate(a, b, field as DateKey<IBaseSchema>);
+		if (typeof a[field] === 'string') result = sortStr(a, b, field);
+		else if (a[field] instanceof Date) result = sortDate(a, b, field as DateKey<K>);
 
 		return order === 'asc' ? +result : -result;
 	};
-};
+}

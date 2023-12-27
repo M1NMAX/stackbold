@@ -7,17 +7,27 @@
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
 	import debounce from 'debounce';
-	import { SortDropdown, setSortState, sortOptions } from '$lib/components/sort';
-	import { sortFun } from '$lib/utils/sort';
+	import { SortDropdown, setSortState } from '$lib/components/sort';
+	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/stores';
 	import { PageContent } from '$lib/components/page';
 	import { ICON_COLORS, icons } from '$lib/components/icon';
+	import type { Template } from '@prisma/client';
 
 	export let data: PageData;
 	$: ({ templates } = data);
 
 	let isPreviewDialogOpen = false;
+
+	const sortOptions: SortOption<Template>[] = [
+		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
+		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
+		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
+		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
+		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
+		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
+	];
 
 	const sort = setSortState(sortOptions[0]);
 

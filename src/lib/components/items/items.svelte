@@ -4,8 +4,8 @@
 	import type { Property, Item } from '@prisma/client';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { SearchInput } from '$lib/components/search';
-	import { SortDropdown, setSortState, sortOptions } from '$lib/components/sort';
-	import { sortFun } from '$lib/utils/sort';
+	import { SortDropdown, setSortState } from '$lib/components/sort';
+	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { ItemsListView, ItemsTableView } from '.';
 
@@ -13,6 +13,15 @@
 	export let properties: Property[];
 	export let view: string;
 	export let onClickNewItemBtn: () => void;
+
+	const sortOptions: SortOption<Item>[] = [
+		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
+		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
+		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
+		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
+		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
+		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
+	];
 
 	const sort = setSortState(sortOptions[0]);
 

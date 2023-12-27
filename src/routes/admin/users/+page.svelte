@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 	import { MoreVertical, Trash2, Users } from 'lucide-svelte';
-	import { SortArrow, SortDropdown, setSortState, sortOptions } from '$lib/components/sort';
+	import { SortArrow, SortDropdown, setSortState } from '$lib/components/sort';
 	import { SearchInput } from '$lib/components/search';
-	import { capitalizeFirstLetter, cn, sortFun } from '$lib/utils';
+	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
@@ -14,6 +14,7 @@
 	import type { DeleteDetail } from '$lib/types';
 	import { onError, successToast } from '$lib/components/feedback';
 	import { trpc } from '$lib/trpc/client';
+	import type { User } from '@prisma/client';
 
 	export let data: PageData;
 	$: ({ users } = data);
@@ -23,7 +24,17 @@
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
 
-	const sort = setSortState(sortOptions[0]);
+	const sortOptions: SortOption<User>[] = [
+		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
+		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
+		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
+		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
+		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
+		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
+	];
+
+	const sort = setSortState<User>(sortOptions[0]);
+
 	const DEBOUNCE_INTERVAL = 500;
 	const { form, message, errors, enhance } = superForm(data.form, {
 		onResult(event) {
@@ -64,7 +75,17 @@
 		isDeleteModalOpen = false;
 	}
 
+	// let field: keyof User = 'name';
+	// let order: OrderType = 'asc';
+
 	$: sortedUsers = users.sort(sortFun($sort.field, $sort.order));
+
+	function clickHead(head: string) {
+		const field = head as keyof User;
+		const order = $sort.order === 'asc' ? 'desc' : 'asc';
+
+		$sort = { ...$sort, field, order };
+	}
 </script>
 
 <svelte:head><title>Users - Admin - Stackbold</title></svelte:head>
@@ -97,7 +118,8 @@
 								scope="col"
 								class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer"
 							>
-								<div class="flex justify-between items-center">
+								<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+								<div class="flex justify-between items-center" on:click={() => clickHead(item)}>
 									<span>{capitalizeFirstLetter(item)}</span>
 
 									<SortArrow bind:order={$sort.order} />

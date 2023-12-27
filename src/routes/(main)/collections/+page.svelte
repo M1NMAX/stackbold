@@ -2,15 +2,25 @@
 	import type { PageData } from './$types';
 	import { Database } from 'lucide-svelte';
 	import { PageContent } from '$lib/components/page';
-	import { sortFun } from '$lib/utils/sort';
+	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { SearchInput } from '$lib/components/search';
-	import { setSortState, SortDropdown, sortOptions } from '$lib/components/sort';
+	import { setSortState, SortDropdown } from '$lib/components/sort';
 	import { ICON_COLORS, icons } from '$lib/components/icon';
 	import { cn } from '$lib/utils';
+	import type { Collection } from '@prisma/client';
 
 	export let data: PageData;
 	$: ({ collections } = data);
+
+	const sortOptions: SortOption<Collection>[] = [
+		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
+		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
+		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
+		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
+		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
+		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
+	];
 
 	const sort = setSortState(sortOptions[0]);
 

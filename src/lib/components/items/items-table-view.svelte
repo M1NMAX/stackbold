@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cn, type IBaseSchema } from '$lib/utils';
+	import { cn } from '$lib/utils';
 	import type { Property, PropertyRef, Item } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
 	import { PropertyValue } from '$lib/components/property';
@@ -14,7 +14,7 @@
 	export let properties: Property[];
 
 	const activeItem = getActiveItemState();
-	const sort = getSortState();
+	const sort = getSortState<Item>();
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
@@ -35,11 +35,11 @@
 		return option ? option.color : 'GRAY';
 	}
 
-	function handleClickTableHead(field: keyof IBaseSchema) {
+	function handleClickTableHead(field: keyof Item) {
 		$sort = { ...$sort, field, order: $sort.order === 'asc' ? 'desc' : 'asc' };
 	}
 
-	function handleKeypress(e: KeyboardEvent, field: keyof IBaseSchema) {
+	function handleKeypress(e: KeyboardEvent, field: keyof Item) {
 		if (e.key !== 'Enter') return;
 		handleClickTableHead(field);
 	}
