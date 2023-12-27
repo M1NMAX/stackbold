@@ -11,5 +11,5 @@ export type DeleteDetail =
 	| { type: null }
 	| { type: 'item' | 'property'; id: string }
 	| { type: 'option'; id: string; option: string }
-	| { type: 'collection'; id: string; name: string }
+	| { type: 'collection' | 'user'; id: string; name: string }
 	| { type: 'group'; id: string; name: string; includeCollections: boolean };
