@@ -6,7 +6,7 @@
 		CreditCard,
 		Database,
 		Dna,
-		LayoutDashboard,
+		Home,
 		Lock,
 		LogOut,
 		PackagePlus,
@@ -63,7 +63,7 @@
 	const sidebarState = setSidebarState();
 
 	const SIDEBAR_ITEMS = [
-		{ label: 'Dashboard', url: '/', icon: LayoutDashboard },
+		{ label: 'Home', url: '/', icon: Home },
 		{ label: 'Templates', url: '/templates', icon: Dna },
 		{ label: 'All Collections', url: '/collections', icon: Database }
 	];
@@ -380,44 +380,6 @@
 					{/each}
 				</div>
 
-				<Accordion.Item value="item-0">
-					<Accordion.Trigger
-						class="justify-start py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
-					>
-						Favourites</Accordion.Trigger
-					>
-					<Accordion.Content>
-						{#each favourites as collection}
-							<SidebarCollection
-								asChild
-								{collection}
-								groups={groups.map(({ id, name }) => ({ id, name }))}
-								active={activeCollection(collection.id)}
-								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-								on:renameCollection={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { name: detail.name }
-									})}
-								on:moveCollection={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { groupId: detail.groupId }
-									})}
-								on:toggleFavourite={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { isFavourite: detail.value }
-									})}
-								on:deleteCollection={({ detail }) => {
-									isDeleteModalOpen = true;
-									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
-								}}
-							/>
-						{/each}
-					</Accordion.Content>
-				</Accordion.Item>
-
 				{#each groups as group, idx (group.id)}
 					{@const groupCollections = collections.filter(
 						(collection) => collection.groupId && collection.groupId === group.id
@@ -484,6 +446,43 @@
 						</Accordion.Content>
 					</Accordion.Item>
 				{/each}
+				<Accordion.Item value="item-0">
+					<Accordion.Trigger
+						class="justify-start py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
+					>
+						Favourites</Accordion.Trigger
+					>
+					<Accordion.Content>
+						{#each favourites as collection}
+							<SidebarCollection
+								asChild
+								{collection}
+								groups={groups.map(({ id, name }) => ({ id, name }))}
+								active={activeCollection(collection.id)}
+								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
+								on:renameCollection={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { name: detail.name }
+									})}
+								on:moveCollection={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { groupId: detail.groupId }
+									})}
+								on:toggleFavourite={({ detail }) =>
+									updCollection({
+										id: detail.id,
+										data: { isFavourite: detail.value }
+									})}
+								on:deleteCollection={({ detail }) => {
+									isDeleteModalOpen = true;
+									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
+								}}
+							/>
+						{/each}
+					</Accordion.Content>
+				</Accordion.Item>
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">

@@ -15,7 +15,7 @@
 
 <div class="grow p-1 rounded-md bg-card text-secondary-foreground">
 	<PageContent>
-		<h1 class="font-semibold text-2xl">Welcome back!</h1>
+		<h1 class="font-semibold text-2xl">Welcome back, {user.name}!</h1>
 
 		<div class="space-y-2">
 			{#each collections as collection (collection.id)}
@@ -23,12 +23,7 @@
 					<div>
 						<h2>{collection.name}</h2>
 					</div>
-					<Items
-						items={items[collection.id]}
-						bind:view
-						properties={collection.properties}
-						onClickNewItemBtn={() => {}}
-					/>
+					<Items bind:view items={items[collection.id]} properties={collection.properties} />
 				</div>
 			{/each}
 		</div>
