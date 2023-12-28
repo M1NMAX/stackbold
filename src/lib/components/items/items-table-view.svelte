@@ -14,7 +14,6 @@
 	export let properties: Property[];
 
 	const activeItem = getActiveItemState();
-	const sort = getSortState<Item>();
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
@@ -34,32 +33,13 @@
 		const option = property.options.find((opt) => opt.id === value);
 		return option ? option.color : 'GRAY';
 	}
-
-	function handleClickTableHead(field: keyof Item) {
-		$sort = { ...$sort, field, order: $sort.order === 'asc' ? 'desc' : 'asc' };
-	}
-
-	function handleKeypress(e: KeyboardEvent, field: keyof Item) {
-		if (e.key !== 'Enter') return;
-		handleClickTableHead(field);
-	}
 </script>
 
 <table class="w-full">
 	<thead class="">
 		<tr class="text-muted-foreground text-sm">
 			<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
-				<div
-					tabindex="0"
-					role="button"
-					on:click={() => handleClickTableHead('name')}
-					on:keypress={(e) => handleKeypress(e, 'name')}
-					class="flex justify-between items-center"
-				>
-					<span> Name </span>
-
-					<SortArrow bind:order={$sort.order} />
-				</div>
+				Name
 			</th>
 			{#each properties as property (property.id)}
 				{#if property.isVisibleOnTableView}
