@@ -17,19 +17,18 @@ export const actions: Actions = {
 
 export const load: PageServerLoad = async (event) => {
 	const { collections } = await event.parent();
-	const favCollections = collections.filter((collection) => collection.isFavourite);
 
-	let items: Record<string, Item[]> = {};
+	let items: Record<string, number> = {};
 
-	for (const collection of favCollections) {
+	for (const collection of collections) {
 		const tempItems = await router
 			.createCaller(await createContext(event))
 			.items.list(collection.id);
 
-		if (!items[collection.id]) items[collection.id] = [];
+		if (!items[collection.id]) items[collection.id] = 0;
 
-		items[collection.id].push(...tempItems);
+		items[collection.id] = tempItems.length;
 	}
 
-	return { collections: favCollections, items };
+	return { collections, items };
 };
