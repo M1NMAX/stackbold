@@ -22,13 +22,13 @@
 	function getUpdCollections(collections: Collection[]) {
 		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
-		//TODO: consider reducing the number of collections if above X
-		return sorted;
+		// return the first 9 most recent collection
+		return sorted.slice(0, 10);
 	}
 </script>
 
 <svelte:head>
-	<title>Dashboard - Stackbold</title>
+	<title>Home - Stackbold</title>
 </svelte:head>
 
 <svelte:window bind:innerWidth />
@@ -79,7 +79,7 @@
 
 		<section class="mt-10 space-y-1.5">
 			<div class="flex items-centers justify-between">
-				<h2 class="text-xl">Recently updated</h2>
+				<h2 class="text-xl">Recently updated collections</h2>
 
 				<Button href="/collections" variant="ghost" size="icon"><ArrowRight /></Button>
 			</div>

@@ -44,6 +44,7 @@
 	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
+	import { setModalState } from '$lib/components/modal';
 
 	export let data: LayoutData;
 	$: ({ user, groups, collections } = data);
@@ -56,6 +57,8 @@
 
 	type CreateCollectionDetail = { name: string; groupId: string | undefined };
 	let createCollectionDetail: CreateCollectionDetail = { name: '', groupId: undefined };
+
+	const crtCollectionModal = setModalState();
 
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
@@ -116,11 +119,10 @@
 
 	async function createCollection(args: RouterInputs['collections']['create']) {
 		try {
-			const createdCollection = await trpc().collections.create.mutate({ ...args });
+			const createdCollection = await trpc().collections.create.mutate(args);
 
 			redirectToast('New collection created', `/collections/${createdCollection.id}`);
 			await invalidateAll();
-			isCreateCollectionModalOpen = false;
 		} catch (error) {
 			onError(error);
 		}
@@ -131,6 +133,7 @@
 			...createCollectionDetail,
 			groupId: createCollectionDetail.groupId || null
 		});
+		$crtCollectionModal = false;
 	}
 
 	async function duplicateCollection(id: string) {
@@ -489,7 +492,7 @@
 				<Button
 					variant="secondary"
 					class="grow h-9 space-x-2 rounded-sm"
-					on:click={() => (isCreateCollectionModalOpen = true)}
+					on:click={() => ($crtCollectionModal = true)}
 				>
 					<Plus class="icon-sm" />
 					<span> New collection </span>
@@ -526,7 +529,7 @@
 	</div>
 </div>
 
-<Dialog.Root bind:open={isCreateCollectionModalOpen}>
+<Dialog.Root bind:open={$crtCollectionModal}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
