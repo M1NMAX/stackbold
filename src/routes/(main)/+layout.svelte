@@ -1,11 +1,9 @@
 <script lang="ts">
 	import {
 		Bug,
-		Calculator,
-		Calendar,
-		CreditCard,
 		Database,
 		Dna,
+		Hash,
 		Home,
 		Lock,
 		LogOut,
@@ -14,9 +12,7 @@
 		Plus,
 		Search,
 		Settings,
-		Smile,
-		SunMoon,
-		User
+		SunMoon
 	} from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { mode, setMode } from 'mode-watcher';
@@ -45,15 +41,14 @@
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
 	import { setModalState } from '$lib/components/modal';
+	import { icons } from '$lib/components/icon';
 
 	export let data: LayoutData;
-	$: ({ user, groups, collections } = data);
+	$: ({ user, groups, collections, items } = data);
 
 	let innerWidth: number;
 	let isCommandDialogOpen = false;
 	let isNewGroupPopoverOpen = false;
-
-	let isCreateCollectionModalOpen = false;
 
 	type CreateCollectionDetail = { name: string; groupId: string | undefined };
 	let createCollectionDetail: CreateCollectionDetail = { name: '', groupId: undefined };
@@ -176,7 +171,6 @@
 			await trpc().collections.update.mutate(args);
 
 			await onSuccess('Collection updated');
-			isCreateCollectionModalOpen = false;
 		} catch (error) {
 			onError(error);
 		}
@@ -589,41 +583,43 @@
 </AlertDialog.Root>
 
 <!-- TODO: upd cmd item -->
+
 <Command.Dialog bind:open={isCommandDialogOpen}>
 	<Command.Input placeholder="Type a command or search..." />
 	<Command.List>
 		<Command.Empty>No results found.</Command.Empty>
-		<Command.Group heading="Suggestions">
-			<Command.Item>
-				<Calendar class="mr-2 h-4 w-4" />
-				<span>Calendar</span>
-			</Command.Item>
-			<Command.Item>
-				<Smile class="mr-2 h-4 w-4" />
-				<span>Search Emoji</span>
-			</Command.Item>
-			<Command.Item>
-				<Calculator class="mr-2 h-4 w-4" />
-				<span>Calculator</span>
-			</Command.Item>
+		<Command.Group heading="Collections">
+			{#each collections as collection}
+				<Command.Item
+					class="space-x-2"
+					value={collection.name}
+					onSelect={() => {
+						goto(`/collections/${collection.id}`);
+						isCommandDialogOpen = false;
+					}}
+				>
+					<svelte:component this={icons[collection.icon]} class="icon-xs" />
+					<span>{collection.name}</span>
+				</Command.Item>
+			{/each}
 		</Command.Group>
 		<Command.Separator />
-		<Command.Group heading="Settings">
-			<Command.Item>
-				<User class="mr-2 h-4 w-4" />
-				<span>Profile</span>
-				<Command.Shortcut>⌘P</Command.Shortcut>
-			</Command.Item>
-			<Command.Item>
-				<CreditCard class="mr-2 h-4 w-4" />
-				<span>Billing</span>
-				<Command.Shortcut>⌘B</Command.Shortcut>
-			</Command.Item>
-			<Command.Item>
-				<Settings class="mr-2 h-4 w-4" />
-				<span>Settings</span>
-				<Command.Shortcut>⌘S</Command.Shortcut>
-			</Command.Item>
+		<Command.Group heading="Items">
+			{#each items as item}
+				<Command.Item
+					class="space-x-2"
+					value={`${item.collection.name} ${item.name}`}
+					onSelect={() => {
+						goto(`/collections/${item.collection.id}?id=${item.id}`);
+						isCommandDialogOpen = false;
+					}}
+				>
+					<Hash class="icon-xs" />
+					<span
+						>{item.name} <span class="text-xs font-light"> - {item.collection.name}</span>
+					</span>
+				</Command.Item>
+			{/each}
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
