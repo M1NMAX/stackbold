@@ -21,9 +21,9 @@
 	type Filters = 'all' | 'favourites' | 'archived';
 	let filter: Filters = 'all';
 
-	$: filter, (sortedCollections = filterCollection());
-
 	let view = 'grid';
+
+	const crtCollectionModal = getModalState();
 
 	const sortOptions: SortOption<Collection>[] = [
 		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
@@ -33,10 +33,7 @@
 		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
 		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
 	];
-
 	const sort = setSortState(sortOptions[0]);
-
-	const crtCollectionModal = getModalState();
 
 	// SEARCH
 	const DEBOUNCE_INTERVAL = 500;
@@ -57,7 +54,7 @@
 		filter = newFilter as Filters;
 	}
 
-	function filterCollection() {
+	function filterCollections() {
 		switch (filter) {
 			case 'all':
 				return collections;
@@ -67,7 +64,9 @@
 				return collections.filter((collection) => collection.isArchived);
 		}
 	}
-	$: sortedCollections = collections.sort(sortFun($sort.field, $sort.order));
+
+	$: sortedCollections = filterCollections().sort(sortFun($sort.field, $sort.order));
+	$: filter, (sortedCollections = filterCollections());
 </script>
 
 <svelte:head>

@@ -84,10 +84,10 @@
 	/>
 
 	<Button
-		variant="destructive"
+		variant="ghost"
 		size="xs"
 		on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}
-		class="rounded-md"
+		class="rounded-md hover:text-primary"
 	>
 		<Trash class="icon-xs" />
 	</Button>

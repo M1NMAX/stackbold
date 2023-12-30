@@ -15,11 +15,6 @@ declare global {
 			template: Template;
 		}
 	}
-	namespace svelteHTML {
-		interface HTMLAttributes<T> {
-			'on:clickoutside'?: (event: CustomEvent) => void;
-		}
-	}
 }
 
 /// <reference types='lucia' />
