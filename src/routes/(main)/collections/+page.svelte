@@ -14,6 +14,7 @@
 	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
 	import { getModalState } from '$lib/components/modal';
+	import { CollectionOverview } from '$lib/components/collection';
 
 	export let data: PageData;
 	$: ({ collections } = data);
@@ -116,48 +117,9 @@
 				</div>
 			</div>
 			<div class={cn('flex flex-col gap-2', view === 'grid' && 'grid grid-cols-2 md:grid-cols-3')}>
-				{#each sortedCollections as collection}
-					<a
-						href="/collections/{collection.id}"
-						class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
-					>
-						<div class="flex items-center justify-between space-x-2">
-							<svelte:component this={icons[collection.icon]} class="icon icon-md" />
-							<h2 class="text-lg font-semibold">
-								{collection.name}
-							</h2>
-						</div>
-
-						<div class="flex items-center space-x-2">
-							{#each collection.properties as property}
-								<span
-									class={cn(
-										'h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold ',
-										PROPERTY_COLORS['GRAY']
-									)}
-								>
-									{property.name}
-								</span>
-							{/each}
-						</div>
-
-						<div class="flex items-center space-x-2">
-							<!-- TODO: add item count -->
-							<span> # Items </span>
-							<span> Updated {dayjs(collection.updatedAt).fromNow()} </span>
-						</div>
-
-						{#if collection.description}
-							<p
-								class={cn(
-									'hidden text-ellipsis font-normal text-gray-700 dark:text-gray-400 leading-tight',
-									view === 'list' && 'inline '
-								)}
-							>
-								{collection.description.slice(0, 186).concat('...')}
-							</p>
-						{/if}
-					</a>
+				{#each sortedCollections as collection (collection.id)}
+					<CollectionOverview {collection} {view} nItems={0} />
+					<!-- TODO: add item count -->
 				{/each}
 			</div>
 		</div>

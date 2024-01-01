@@ -2,12 +2,9 @@
 	import type { PageData } from './$types';
 	import type { Collection } from '@prisma/client';
 	import { PageContent } from '$lib/components/page';
-	import { icons } from '$lib/components/icon';
 	import { ArrowRight } from 'lucide-svelte';
-	import { cn } from '$lib/utils';
-	import { PROPERTY_COLORS } from '$lib/constant';
 	import { Button } from '$lib/components/ui/button';
-	import dayjs from '$lib/utils/dayjs';
+	import { CollectionOverview } from '$lib/components/collection';
 
 	export let data: PageData;
 	$: ({ user, collections, items } = data);
@@ -43,35 +40,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
 				{#each collections as collection (collection.id)}
 					{#if collection.isFavourite}
-						<a
-							href="/collections/{collection.id}"
-							class="w-full p-2 space-y-1.5 rounded border duration-300 transition-colors hover:bg-accent"
-						>
-							<div class="flex items-center space-x-2">
-								<svelte:component this={icons[collection.icon]} class="icon-md" />
-								<h2 class="grow text-xl truncate">{collection.name}</h2>
-							</div>
-
-							<div class="flex items-center space-x-2">
-								{#each collection.properties as property}
-									<span
-										class={cn(
-											'h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold ',
-											PROPERTY_COLORS['GRAY']
-										)}
-									>
-										{property.name}
-									</span>
-								{/each}
-							</div>
-
-							<div class="flex items-center space-x-2">
-								<span>
-									{items[collection.id]} Items
-								</span>
-								<span> Updated {dayjs(collection.updatedAt).fromNow()} </span>
-							</div>
-						</a>
+						<CollectionOverview {collection} {view} nItems={items[collection.id]} />
 					{/if}
 				{/each}
 			</div>
@@ -86,35 +55,7 @@
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
 				{#each updCollections as collection}
-					<a
-						href="/collections/{collection.id}"
-						class="w-full p-2 space-y-1.5 rounded border transition-colors hover:bg-accent"
-					>
-						<div class="flex items-center space-x-2">
-							<svelte:component this={icons[collection.icon]} class="icon-md" />
-							<h2 class="grow text-xl truncate">{collection.name}</h2>
-						</div>
-
-						<div class="flex items-center space-x-2">
-							{#each collection.properties as property}
-								<span
-									class={cn(
-										'h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold ',
-										PROPERTY_COLORS['GRAY']
-									)}
-								>
-									{property.name}
-								</span>
-							{/each}
-						</div>
-
-						<div class="flex items-center space-x-2">
-							<span>
-								{items[collection.id]} Items
-							</span>
-							<span> Updated {dayjs(collection.updatedAt).fromNow()} </span>
-						</div>
-					</a>
+					<CollectionOverview {collection} {view} nItems={items[collection.id]} />
 				{/each}
 			</div>
 		</section>

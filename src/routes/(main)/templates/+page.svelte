@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Dna } from 'lucide-svelte';
-	import { cn } from '$lib/utils';
-	import { PROPERTY_COLORS } from '$lib/constant';
 	import { Root as DialogRoot, Content as DialogContent } from '$lib/components/ui/dialog';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
@@ -108,10 +106,7 @@
 						<div class="flex flex-wrap gap-2">
 							{#each template.properties as property (property.id)}
 								<span
-									class={cn(
-										'h-6 py-1 px-1.5 flex items-center rounded font-semibold',
-										PROPERTY_COLORS['GRAY']
-									)}
+									class="h-6 py-1 px-1.5 flex items-center rounded font-semibold bg-primary text-primary-foreground"
 								>
 									{property.name}
 								</span>
