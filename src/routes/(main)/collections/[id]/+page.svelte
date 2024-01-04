@@ -5,7 +5,6 @@
 		Eye,
 		EyeOff,
 		Heart,
-		HeartOff,
 		MoreHorizontal,
 		Pencil,
 		Plus,
@@ -491,11 +490,7 @@
 			size="icon"
 			on:click={() => updCollection({ isFavourite: !collection.isFavourite })}
 		>
-			{#if collection.isFavourite}
-				<HeartOff />
-			{:else}
-				<Heart />
-			{/if}
+			<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
 		</Button>
 
 		<DropdownMenu.Root>

@@ -1,10 +1,5 @@
 <script lang="ts" context="module">
 	import {
-		Smile,
-		Heart,
-		Star,
-		Folder,
-		Medal,
 		Activity,
 		AlarmClock,
 		AlertTriangle,
@@ -14,7 +9,16 @@
 		Archive,
 		Armchair,
 		Angry,
-		Axe
+		Axe,
+		Award,
+		Baby,
+		Smile,
+		Heart,
+		Star,
+		Folder,
+		Medal,
+		Backpack,
+		Banana
 	} from 'lucide-svelte';
 
 	export const icons: { [index: string]: any } = {
@@ -27,12 +31,17 @@
 		archive: Archive,
 		armchair: Armchair,
 		angry: Angry,
+		award: Award,
 		axe: Axe,
+		baby: Baby,
+		banana: Banana,
+
 		smile: Smile,
 		folder: Folder,
 		heart: Heart,
 		star: Star,
-		medal: Medal
+		medal: Medal,
+		backpack: Backpack
 	};
 </script>
 

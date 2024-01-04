@@ -7,11 +7,14 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { clickOutside, escapeKeydown } from '$lib/actions';
+	import { setOutsideClickState } from './context';
 
 	export let property: Property;
 	export let isCheckBox: boolean = false;
 
-	let isEditEnable = false;
+	let isEditorEnable = false;
+
+	const outsideClickState = setOutsideClickState(false);
 
 	const dispatch = createEventDispatcher<{
 		duplicate: string;
@@ -29,20 +32,20 @@
 		dispatch('updPropertyField', { pid: property.id, name, value });
 	}
 
-	function enableEdit() {
-		isEditEnable = true;
+	function enableEditor() {
+		isEditorEnable = true;
 		tick().then(() => {
 			document.getElementById(`${property.id}-name`)?.focus();
 		});
 	}
 
-	function desableEdit() {
-		isEditEnable = false;
+	function desableEditor() {
+		if ($outsideClickState) isEditorEnable = false;
 	}
 </script>
 
 <div class="py-0.5 px-1 rounded bg-secondary/40 text-secondary-foreground">
-	{#if !isEditEnable}
+	{#if !isEditorEnable}
 		<div class="flex justify-between items-center space-x-1">
 			{#if isCheckBox}
 				<slot />
@@ -61,12 +64,7 @@
 					</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content class="w-56">
-					<DropdownMenu.Item
-						on:click={() => {
-							enableEdit();
-						}}
-						class="space-x-1"
-					>
+					<DropdownMenu.Item on:click={enableEditor} class="space-x-1">
 						<FileSignature class="icon-xs" />
 						<span> Edit property </span>
 					</DropdownMenu.Item>
@@ -129,11 +127,11 @@
 		{/if}
 	{/if}
 
-	{#if isEditEnable}
+	{#if isEditorEnable}
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div
-			on:escapeKey={desableEdit}
-			on:clickoutside={desableEdit}
+			on:escapeKey={desableEditor}
+			on:clickoutside={desableEditor}
 			use:clickOutside
 			use:escapeKeydown
 			class="p-1 space-y-2"

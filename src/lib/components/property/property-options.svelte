@@ -4,11 +4,12 @@
 	import PropertyOption from './property-option.svelte';
 	import { createEventDispatcher, tick } from 'svelte';
 	import { Plus, X } from 'lucide-svelte';
-	import { Button } from '../ui/button';
+	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
 
 	export let propertyId: string;
 	export let options: OptionType[];
+
 	let show = false;
 
 	const dispatch = createEventDispatcher<{ addOpt: { propertyId: string; value: string } }>();

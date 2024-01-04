@@ -26,13 +26,13 @@
 		<div
 			class="h-full flex flex-col justify-between space-y-2 py-1.5 px-0 bg-card text-card-foreground"
 		>
-			<div class="w-full flex flex-col items-center justify-center space-y-4">
+			<div class="w-full flex flex-col items-center justify-center space-y-0.5">
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					<a
 						href={item.url}
 						class={cn(
-							'p-1.5 rounded-md hover:bg-secondary',
-							activeUrl === item.url && 'border border-primary'
+							'w-full flex items-center justify-center py-1 px-0  hover:bg-secondary',
+							activeUrl === item.url && 'border-r-2 border-primary'
 						)}
 					>
 						<svelte:component

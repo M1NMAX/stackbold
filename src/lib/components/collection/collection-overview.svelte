@@ -3,6 +3,7 @@
 	import { icons } from '$lib/components/icon';
 	import { cn } from '$lib/utils';
 	import dayjs from '$lib/utils/dayjs';
+	import { Circle, Hash } from 'lucide-svelte';
 
 	export let collection: Collection;
 	export let nItems: number;
@@ -23,25 +24,26 @@
 	<div class="flex items-center space-x-2">
 		{#each collection.properties as property}
 			<span
-				class="h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold bg-primary text-primary-foreground"
+				class="h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold bg-primary/70 text-primary-foreground"
 			>
 				{property.name}
 			</span>
 		{/each}
 	</div>
 
-	<div class="flex items-center space-x-2">
-		<span> {nItems > 0 ? nItems + ' Items' : 'Empty'} </span>
-		<span> Updated {dayjs(collection.updatedAt).fromNow()} </span>
+	<div class="flex space-x-4 text-sm text-muted-foreground">
+		<div class="flex items-center">
+			<Hash class="icon-xxs mr-1 text-primary" />
+
+			{nItems > 0 ? nItems + ' Items' : 'Empty'}
+		</div>
+		<div>
+			Updated {dayjs(collection.updatedAt).fromNow()}
+		</div>
 	</div>
 
-	{#if collection.description}
-		<p
-			class={cn(
-				'hidden text-ellipsis font-normal text-gray-700 dark:text-gray-400 leading-tight',
-				view === 'list' && 'inline'
-			)}
-		>
+	{#if collection.description && view === 'list'}
+		<p class="text-ellipsis font-normal text-gray-700 dark:text-gray-400 leading-tight">
 			{collection.description.slice(0, 186).concat('...')}
 		</p>
 	{/if}
