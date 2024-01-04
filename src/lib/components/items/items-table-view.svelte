@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import type { Property, PropertyRef, Item } from '@prisma/client';
+	import type { Property, Item } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
-	import { PropertyValue } from '$lib/components/property';
-	import { getSortState, SortArrow } from '$lib/components/sort';
+	import {
+		PropertyValue,
+		// helpers
+		getOptionColor,
+		getOptionValue,
+		getPropertyRef
+	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
@@ -19,20 +24,6 @@
 		clickOpenItem: string;
 		updPropertyVisibility: { pid: string; name: string; value: boolean };
 	}>();
-
-	function getPropertyRef(pid: string, properties: PropertyRef[]) {
-		return properties.find((property) => property.id === pid) || null;
-	}
-
-	function getOptionValue(property: Property, value: string) {
-		const option = property.options.find((opt) => opt.id === value);
-		return option ? option.id : '';
-	}
-
-	function getOptionColor(property: Property, value: string) {
-		const option = property.options.find((opt) => opt.id === value);
-		return option ? option.color : 'GRAY';
-	}
 </script>
 
 <table class="w-full">
@@ -104,18 +95,13 @@
 					</td>
 
 					{#each properties as property (property.id)}
-						{@const itemProperty = getPropertyRef(property.id, item.properties)}
-						{#if property.isVisibleOnTableView && itemProperty}
-							{@const value =
-								property.type === 'SELECT'
-									? getOptionValue(property, itemProperty.value)
-									: itemProperty.value}
-
-							{@const color =
-								property.type === 'SELECT' ? getOptionColor(property, itemProperty.value) : 'GRAY'}
+						{@const propertyRef = getPropertyRef(item.properties, property.id)}
+						{#if property.isVisibleOnTableView && propertyRef}
+							{@const color = getOptionColor(property, propertyRef.value)}
+							{@const value = getOptionValue(property, propertyRef.value)}
 
 							<td class="text-left border">
-								{#if itemProperty}
+								{#if propertyRef}
 									<PropertyValue
 										isTableView
 										{property}

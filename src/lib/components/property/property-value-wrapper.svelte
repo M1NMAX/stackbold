@@ -10,12 +10,7 @@
 {#if !isWrappered}
 	<slot />
 {:else}
-	<span
-		class={cn(
-			'h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold',
-			className
-		)}
-	>
+	<span class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', className)}>
 		<slot />
 	</span>
 {/if}

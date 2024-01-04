@@ -53,6 +53,7 @@
 		<span class={cn('font-semibold', isTableView && 'sr-only')}>{property.name} </span>
 	</label>
 {:else if property.type === 'SELECT' && (value || isTableView)}
+	{@const currValue = property.options.find((opt) => opt.id === value)?.value ?? ''}
 	<Popover.Root bind:open>
 		<Popover.Trigger asChild let:builder>
 			<Button
@@ -78,10 +79,10 @@
 						<Command.Item
 							value={option.value}
 							onSelect={() => {
-								value = option.id;
+								// value = option.id;
 								dispatch('updPropertyValue', {
 									itemId,
-									property: { id: property.id, value }
+									property: { id: property.id, value: option.id }
 								});
 								open = false;
 							}}
