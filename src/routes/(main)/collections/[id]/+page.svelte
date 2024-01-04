@@ -200,7 +200,7 @@
 		if (!$activeItem) return;
 		const id = $activeItem.id;
 
-		//TODO:valide inner text
+		//TODO: valide inner text
 		const name = e.currentTarget.innerText;
 
 		updItemDebounced({ id, data: { name } });
@@ -585,13 +585,11 @@
 			</div>
 		</div>
 
-		<!-- //TODO: impl rename item menu-->
 		<Items
 			bind:view
 			items={sortedItems}
 			{properties}
 			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-			on:clickRename={(e) => updItem({ id: e.detail, data: { name: 'something' } })}
 			on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
 			on:clickDeleteItem={(e) => {
 				deleteDetail = { type: 'item', id: e.detail };
@@ -650,12 +648,6 @@
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-56">
 						<DropdownMenu.Group>
-							<!-- TODO: Implement rename -->
-							<DropdownMenu.Item disabled class="space-x-2">
-								<Pencil class="icon-xs" />
-								<span> Rename </span>
-							</DropdownMenu.Item>
-
 							<DropdownMenu.Item
 								class="space-x-2"
 								on:click={() => duplicateItem($activeItem ? $activeItem.id : '')}

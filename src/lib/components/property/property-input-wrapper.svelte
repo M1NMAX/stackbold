@@ -14,7 +14,7 @@
 
 	let isEditorEnable = false;
 
-	const outsideClickState = setOutsideClickState(false);
+	const outsideClickState = setOutsideClickState(true);
 
 	const dispatch = createEventDispatcher<{
 		duplicate: string;

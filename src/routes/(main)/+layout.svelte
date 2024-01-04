@@ -527,7 +527,7 @@
 				name="name"
 				placeholder="Tasks"
 				required
-				class="input input-ghost bg-gray-200"
+				class="input input-ghost"
 				bind:value={createCollectionDetail.name}
 			/>
 			<!-- TODO: maybe Use shadcn form -->
@@ -572,8 +572,6 @@
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
-
-<!-- TODO: upd cmd item -->
 
 <Command.Dialog bind:open={isCommandDialogOpen}>
 	<Command.Input placeholder="Type a command or search..." />

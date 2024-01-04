@@ -25,7 +25,7 @@
 }
 
 .input {
-	@apply p-1  rounded-md bg-secondary border border-transparent text-secondary-foreground;
+	@apply p-1  rounded bg-secondary border border-transparent text-secondary-foreground;
 	input:focus {
 		@apply outline-none;
 	}

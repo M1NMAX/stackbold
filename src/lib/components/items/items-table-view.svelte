@@ -130,7 +130,7 @@
 					{/each}
 
 					<td class="flex items-center space-x-2 text-left whitespace-nowrap px-2">
-						<ItemMenu itemId={item.id} on:clickRename on:clickDuplicateItem on:clickDeleteItem />
+						<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
 					</td>
 				</tr>
 			{/each}

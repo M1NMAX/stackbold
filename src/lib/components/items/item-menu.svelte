@@ -12,7 +12,6 @@
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
-		clickRenameItem: string;
 		clickDuplicateItem: string;
 		clickDeleteItem: string;
 	}>();
@@ -34,11 +33,6 @@
 			<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)} class="space-x-2">
 				<PanelLeftOpen class="icon-xs" />
 				<span> Open in side </span>
-			</DropdownMenu.Item>
-
-			<DropdownMenu.Item on:click={() => dispatch('clickRenameItem', itemId)} class="space-x-2">
-				<Pencil class="icon-xs" />
-				<span> Rename </span>
 			</DropdownMenu.Item>
 
 			<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)} class="space-x-2">

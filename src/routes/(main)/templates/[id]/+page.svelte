@@ -7,7 +7,6 @@
 	import type { TemplateItem } from '@prisma/client';
 	import { PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
-	import { cn } from '$lib/utils';
 
 	export let data: PageData;
 	$: ({ template } = data);

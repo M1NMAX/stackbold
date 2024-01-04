@@ -6,12 +6,9 @@
 	import debounce from 'debounce';
 	import { SearchInput } from '$lib/components/search';
 	import { setSortState, SortDropdown } from '$lib/components/sort';
-	import { icons } from '$lib/components/icon';
 	import type { Collection } from '@prisma/client';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
-	import { PROPERTY_COLORS } from '$lib/constant';
-	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
 	import { getModalState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';

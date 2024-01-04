@@ -39,8 +39,8 @@
 				}
 			}}
 			class={cn(
-				'relative flex flex-col items-start  py-1 px-2 space-y-2 group  rounded bg-secondary/40 hover:bg-secondary/50',
-				item.id === $activeItem?.id && 'rounded-l-md border-r-2 border-primary bg-secondary/80'
+				'relative flex flex-col items-start  py-1 px-2 space-y-2 rounded-sm  bg-secondary/40 hover:bg-secondary/50 group',
+				item.id === $activeItem?.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			)}
 		>
 			<div class="text-lg font-semibold">
@@ -49,10 +49,10 @@
 
 			<ItemMenu
 				itemId={item.id}
-				on:clickRenameItem
+				on:clickOpenItem={(e) => dispatch('clickOpenItem', e.detail)}
 				on:clickDuplicateItem
 				on:clickDeleteItem
-				class={cn('absolute right-2 top-0 invisible group-hover:visible')}
+				class="absolute right-2 top-0 invisible group-hover:visible"
 			/>
 
 			<div class="flex flex-wrap gap-2">
