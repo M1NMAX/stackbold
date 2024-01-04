@@ -11,7 +11,7 @@
 		<Search class="text-primary icon-sm" />
 	</div>
 	<input
-		class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-gray-800"
+		class="w-full h-9 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 		{placeholder}
 		bind:value
 		on:input

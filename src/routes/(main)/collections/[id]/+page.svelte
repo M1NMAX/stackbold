@@ -570,11 +570,7 @@
 			</div>
 
 			<div class="flex justify-between items-center space-x-2">
-				<Button
-					size="sm"
-					on:click={() => handleCreateItem('Untitled', true)}
-					class="rounded font-semibold">New item</Button
-				>
+				<Button size="sm" on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
 
 				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
@@ -617,7 +613,7 @@
 				<Plus class="text-primary" />
 			</div>
 			<input
-				class="w-full h-10 pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:outline-none focus:placeholder:text-secondary-foreground"
+				class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 				placeholder="New item"
 				on:keypress={handleKeypressNewItemInput}
 			/>

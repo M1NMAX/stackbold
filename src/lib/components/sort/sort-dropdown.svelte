@@ -3,8 +3,10 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import type { SortOption } from '$lib/utils/sort';
 
-	export let sortOptions: SortOption[];
-	export let currentSort: SortOption;
+	type T = $$Generic;
+
+	export let sortOptions: SortOption<T>[];
+	export let currentSort: SortOption<T>;
 </script>
 
 <DropdownMenu.Root>

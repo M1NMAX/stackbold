@@ -25,14 +25,13 @@
 		deleteOpt: { propertyId: string; optionId: string };
 	}>();
 
-	const handleOnInput = (e: Event) => {
+	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 		dispatch('updOptValue', { propertyId, optionId: option.id, value: targetEl.value });
-	};
+	}
 
-	const handleSelectColor = (currValue: string, triggerId: string) => {
-		console.log(currValue);
-		value = currValue;
+	function handleSelectColor(selectedKey: string, triggerId: string) {
+		value = selectedKey;
 		dispatch('updOptColor', { propertyId, optionId: option.id, color: value as Color });
 
 		// Refocus the trigger btn when user selects and item from the list,
@@ -42,13 +41,11 @@
 			document.getElementById(triggerId)?.focus();
 			$outsideClickState = true;
 		});
-	};
-	console.log(value);
+	}
 
 	function onOpenChange(open: boolean) {
 		tick().then(() => {
-			if (open) $outsideClickState = false;
-			if (!open) $outsideClickState = true;
+			$outsideClickState = !open;
 		});
 	}
 </script>

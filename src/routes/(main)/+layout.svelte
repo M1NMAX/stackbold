@@ -228,7 +228,7 @@
 				<DropdownMenu.Root>
 					<div class="w-full flex items-center justify-between space-x-1">
 						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5 rounded-sm">
+							<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
 								<img
 									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
 									class="icon-lg object-contain rounded-md"
@@ -238,7 +238,7 @@
 						</DropdownMenu.Trigger>
 						<Button
 							variant="secondary"
-							class="grow h-9 justify-between items-center space-x-1 rounded-sm"
+							class="grow h-9 justify-between items-center space-x-1"
 							on:click={() => (isCommandDialogOpen = true)}
 						>
 							<span class="flex items-center space-x-0.5">
@@ -253,12 +253,7 @@
 							</kbd>
 						</Button>
 
-						<Button
-							variant="secondary"
-							size="icon"
-							on:click={() => ($sidebarState = false)}
-							class="rounded-sm"
-						>
+						<Button variant="secondary" size="icon" on:click={() => ($sidebarState = false)}>
 							<PanelLeftInactive class="icon-sm" />
 							<span class="sr-only"> Hide sidebar </span>
 						</Button>
@@ -483,18 +478,14 @@
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
-				<Button
-					variant="secondary"
-					class="grow h-9 space-x-2 rounded-sm"
-					on:click={() => ($crtCollectionModal = true)}
-				>
+				<Button variant="secondary" class="grow h-9" on:click={() => ($crtCollectionModal = true)}>
 					<Plus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
 
 				<Popover.Root bind:open={isNewGroupPopoverOpen}>
 					<Popover.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="secondary" size="icon" class="rounded-sm">
+						<Button builders={[builder]} variant="secondary" size="icon">
 							<PackagePlus class="icon-sm" />
 							<span class="sr-only">New group</span>
 						</Button>
