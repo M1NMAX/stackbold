@@ -3,9 +3,9 @@
 	import {
 		PropertyValue,
 		// helpers
-		getOptionColor,
-		getOptionValue,
-		getPropertyRef
+		getPropertyColor,
+		getPropertyRef,
+		getPropertyValue
 	} from '$lib/components/property';
 	import type { Property, Item } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
@@ -52,8 +52,8 @@
 					{#if property.isVisibleOnListView}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
-							{@const color = getOptionColor(property, propertyRef.value)}
-							{@const value = getOptionValue(property, propertyRef.value)}
+							{@const color = getPropertyColor(property, propertyRef.value)}
+							{@const value = getPropertyValue(property, propertyRef.value, false)}
 							<PropertyValue itemId={item.id} {property} {color} {value} on:updPropertyValue />
 						{/if}
 					{/if}

@@ -4,10 +4,10 @@
 	import { getActiveItemState, ItemMenu } from '.';
 	import {
 		PropertyValue,
+		getPropertyColor,
 		// helpers
-		getOptionColor,
-		getOptionValue,
-		getPropertyRef
+		getPropertyRef,
+		getPropertyValue
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
@@ -97,8 +97,8 @@
 					{#each properties as property (property.id)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if property.isVisibleOnTableView && propertyRef}
-							{@const color = getOptionColor(property, propertyRef.value)}
-							{@const value = getOptionValue(property, propertyRef.value)}
+							{@const color = getPropertyColor(property, propertyRef.value)}
+							{@const value = getPropertyValue(property, propertyRef.value, false)}
 
 							<td class="text-left border">
 								{#if propertyRef}

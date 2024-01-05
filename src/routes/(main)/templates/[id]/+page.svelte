@@ -4,17 +4,14 @@
 	import { invalidateAll } from '$app/navigation';
 	import { onError, redirectToast } from '$lib/components/feedback';
 	import { trpc } from '$lib/trpc/client';
-	import type { TemplateItem } from '@prisma/client';
 	import { PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
+	import { cn } from '$lib/utils';
+	import { PROPERTY_COLORS } from '$lib/constant';
+	import { getPropertyColor, getPropertyRef, getPropertyValue } from '$lib/components/property';
 
 	export let data: PageData;
 	$: ({ template } = data);
-
-	function getPropertyValue(item: TemplateItem, id: string) {
-		const property = item.properties.find((property) => property.id === id);
-		return property ? property.value : '';
-	}
 
 	// TODO: ref better try catch and feedback
 	async function createCollectionBasedOnTemplate(id: string) {
@@ -60,36 +57,12 @@
 	<div class="grow flex flex-col">
 		<div class="space-y-2">
 			<div>
-				<p>Example of item</p>
-				<div class="flex flex-col space-y-2">
-					{#each template.items as item (item.id)}
-						<span class="w-full px-2 flex flex-col border-l-2 border-primary">
-							<span class="font-semibold text-lg">
-								{item.name}
-							</span>
-
-							{#each template.properties as property (property.id)}
-								<span class="space-x-1">
-									<span>{property.name}</span>
-									<span class="px-1 font-light rounded bg-gray-200 dark:bg-gray-700">
-										{getPropertyValue(item, property.id)}
-									</span>
-								</span>
-							{/each}
-						</span>
-					{/each}
-				</div>
-			</div>
-
-			<div>
-				<p>Properties</p>
-				<table
-					class="w-full border-separate border-spacing-2 border-l-2 border-gray-300 dark:border-gray-600"
-				>
+				<h2>Properties</h2>
+				<table class="w-full border-2 border-gray-300 dark:border-gray-600">
 					<thead>
 						<tr>
-							<th class="rounded-tl border-2 border-gray-300 dark:border-gray-600"> Name </th>
-							<th class="rounded-tr border-2 border-gray-300 dark:border-gray-600"> Type </th>
+							<th class=" border-gray-300 dark:border-gray-600"> Name </th>
+							<th class="border-2 border-gray-300 dark:border-gray-600"> Type </th>
 						</tr>
 					</thead>
 					<tbody>
@@ -105,6 +78,38 @@
 						{/each}
 					</tbody>
 				</table>
+			</div>
+
+			<div>
+				<h2>Example of item</h2>
+				<div class="flex flex-col space-y-2">
+					{#each template.items as item (item.id)}
+						<div
+							class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
+						>
+							<div class="font-semibold text-lg">
+								{item.name}
+							</div>
+
+							<div class="flex flex-wrap gap-2">
+								{#each template.properties as property (property.id)}
+									{@const propertyRef = getPropertyRef(item.properties, property.id)}
+									{#if propertyRef}
+										{@const color = getPropertyColor(property, propertyRef.value)}
+										<span
+											class={cn(
+												'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
+												PROPERTY_COLORS[color]
+											)}
+										>
+											{getPropertyValue(property, propertyRef.value)}
+										</span>
+									{/if}
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
