@@ -11,7 +11,8 @@ const collectionCreateSchema = z.object({
 	isArchived: z.boolean().optional(),
 	description: z.string().optional(),
 	isDescHidden: z.boolean().optional(),
-	groupId: z.string().nullable(),
+	groupId: z.string().nullable().optional(),
+	groupItemsBy: z.string().nullable().optional(),
 	properties: z
 		.union([
 			z.lazy(() => PropertyCreateInputSchema),
@@ -29,7 +30,8 @@ const collectionUpdateSchema = z.object({
 		isArchived: z.boolean().optional(),
 		description: z.string().optional(),
 		isDescHidden: z.boolean().optional(),
-		groupId: z.string().optional()
+		groupId: z.string().optional(),
+		groupItemsBy: z.string().nullable().optional()
 	})
 });
 

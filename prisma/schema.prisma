@@ -134,6 +134,7 @@ model Collection {
   owner        User       @relation(fields: [ownerId], references: [id])
   ownerId      String
   items        Item[]
+  groupItemsBy String?
   properties   Property[]
   group        Group?     @relation(fields: [groupId], references: [id])
   groupId      String?    @db.ObjectId

@@ -1,13 +1,14 @@
 <script lang="ts">
 	import {
 		Archive,
+		CheckSquare2,
 		Copy,
 		Eye,
 		EyeOff,
 		Heart,
 		MoreHorizontal,
-		Pencil,
 		Plus,
+		Square,
 		StretchHorizontal,
 		Table,
 		Trash,
@@ -17,8 +18,15 @@
 	import type { PageData } from './$types';
 	import { PropertyType, type Item } from '@prisma/client';
 	import { Textarea } from '$lib/components';
-	import { Items, setActiveItemState } from '$lib/components/items';
-	import { AddPropertyPopover, PropertyInput } from '$lib/components/property';
+	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
+	import {
+		AddPropertyPopover,
+		PropertyInput,
+		PropertyValueWrapper,
+		//helpers
+		getOption,
+		getPropertyColor
+	} from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -39,6 +47,8 @@
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
+	import * as Accordion from '$lib/components/ui/accordion';
+	import { PROPERTY_COLORS } from '$lib/constant';
 
 	export let data: PageData;
 	$: ({ collection, items } = data);
@@ -449,6 +459,7 @@
 
 	const sort = setSortState(sortOptions[0]);
 
+	// TODO:refactor search functions
 	const debounceSearch = debounce((query: string) => {
 		sortedItems = sortedItems.filter(({ name }) => {
 			return name.toLowerCase().includes(query);
@@ -463,6 +474,11 @@
 	}
 
 	$: sortedItems = items.sort(sortFun($sort.field, $sort.order));
+	$: groupedItems = items.reduce(groupItemsByPropertyValue(collection.groupItemsBy || ''), {});
+
+	function includesGroupableProperties() {
+		return properties.some(({ type }) => type === 'SELECT' || 'CHECKBOX');
+	}
 </script>
 
 <svelte:head>
@@ -569,6 +585,34 @@
 				<SearchInput placeholder="Find Item" on:input={handleOnInputSearch} />
 			</div>
 
+			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
+			{#if view === 'list' && includesGroupableProperties()}
+				<div>
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger asChild let:builder>
+							<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content class="w-56">
+							<DropdownMenu.RadioGroup
+								value={collection.groupItemsBy || 'none'}
+								onValueChange={(value) =>
+									updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+							>
+								<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
+
+								{#each properties as property (property.id)}
+									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
+										<DropdownMenu.RadioItem value={property.id}>
+											{property.name}
+										</DropdownMenu.RadioItem>
+									{/if}
+								{/each}
+							</DropdownMenu.RadioGroup>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				</div>
+			{/if}
+
 			<div class="flex justify-between items-center space-x-2">
 				<Button size="sm" on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
 
@@ -585,26 +629,84 @@
 			</div>
 		</div>
 
-		<Items
-			bind:view
-			items={sortedItems}
-			{properties}
-			on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-			on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
-			on:clickDeleteItem={(e) => {
-				deleteDetail = { type: 'item', id: e.detail };
-				isDeleteModalOpen = true;
-			}}
-			on:updPropertyValue={({ detail }) => {
-				updPropertyValueDebounced(detail.itemId, {
-					id: detail.property.id,
-					value: detail.property.value
-				});
-			}}
-			on:updPropertyVisibility={(e) => {
-				updPropertyDebounced({ id: e.detail.pid, [e.detail.name]: e.detail.value });
-			}}
-		/>
+		{#if view === 'table' || !collection.groupItemsBy}
+			<Items
+				items={sortedItems}
+				{view}
+				{properties}
+				on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+				on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
+				on:clickDeleteItem={(e) => {
+					deleteDetail = { type: 'item', id: e.detail };
+					isDeleteModalOpen = true;
+				}}
+				on:updPropertyValue={({ detail }) => {
+					updPropertyValueDebounced(detail.itemId, {
+						id: detail.property.id,
+						value: detail.property.value
+					});
+				}}
+				on:updPropertyVisibility={(e) => {
+					updPropertyDebounced({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+				}}
+			/>
+		{/if}
+
+		{#if view === 'list' && collection.groupItemsBy}
+			<Accordion.Root
+				multiple
+				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
+				class="w-full"
+			>
+				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
+					{@const property = getProperty(groupedItems[key].pid)}
+
+					{#if property}
+						{@const color = getPropertyColor(property, key)}
+						<Accordion.Item value={`accordion-item-${key}`}>
+							<Accordion.Trigger class="justify-start p-2 hover:no-underline">
+								<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
+									{#if property.type === 'SELECT'}
+										{@const option = getOption(property.options, key)}
+										{option.value}
+									{:else if property.type === 'CHECKBOX'}
+										{#if key === 'true'}
+											<CheckSquare2 class="icon-xs mr-1.5" />
+										{:else}
+											<Square class="icon-xs mr-1.5" />
+										{/if}
+
+										{property.name}
+									{/if}
+								</PropertyValueWrapper>
+							</Accordion.Trigger>
+							<Accordion.Content>
+								<Items
+									items={groupedItems[key].items}
+									{view}
+									{properties}
+									on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+									on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
+									on:clickDeleteItem={(e) => {
+										deleteDetail = { type: 'item', id: e.detail };
+										isDeleteModalOpen = true;
+									}}
+									on:updPropertyValue={({ detail }) => {
+										updPropertyValueDebounced(detail.itemId, {
+											id: detail.property.id,
+											value: detail.property.value
+										});
+									}}
+									on:updPropertyVisibility={(e) => {
+										updPropertyDebounced({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+									}}
+								/>
+							</Accordion.Content>
+						</Accordion.Item>
+					{/if}
+				{/each}
+			</Accordion.Root>
+		{/if}
 
 		<div class="relative">
 			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">

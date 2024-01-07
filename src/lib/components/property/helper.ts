@@ -1,4 +1,4 @@
-import type { Color, Property, PropertyRef } from '@prisma/client';
+import type { Color, Property, PropertyRef, Option } from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
@@ -18,4 +18,9 @@ export function getPropertyColor(property: Property, value: string) {
 	if (property.type !== 'SELECT') return 'GRAY' as Color;
 	const option = property.options.find((opt) => opt.id === value);
 	return option ? option.color : ('GRAY' as Color);
+}
+
+// TODO: take another look, tip: remove  the non-null assertion operator !
+export function getOption(options: Option[], id: string) {
+	return options.find((opt) => opt.id === id)!;
 }

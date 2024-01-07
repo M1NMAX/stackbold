@@ -22,8 +22,7 @@
 				icon,
 				name,
 				description,
-				properties,
-				groupId: null
+				properties
 			});
 
 			const itemsCopy = items.map(({ id, ...rest }) => ({
@@ -91,6 +90,7 @@
 								{item.name}
 							</div>
 
+							<!-- TODO: take property type in consideration and show values accordin  -->
 							<div class="flex flex-wrap gap-2">
 								{#each template.properties as property (property.id)}
 									{@const propertyRef = getPropertyRef(item.properties, property.id)}
