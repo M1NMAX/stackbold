@@ -37,7 +37,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
-	import { Drawer } from '$lib/components/ui/drawer';
+	import { Sheet } from '$lib/components/sheet';
 	import { errorToast, onError, redirectToast, successToast } from '$lib/components/feedback';
 	import { PageHeader, PageContent } from '$lib/components/page';
 	import { IconPicker } from '$lib/components/icon';
@@ -62,8 +62,8 @@
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
 
-	// Drawer
-	let isDrawerHidden = true;
+	// Sheet
+	let isOpen = false;
 
 	const DEBOUNCE_INTERVAL = 1000;
 
@@ -199,7 +199,7 @@
 
 		successToast('Item deleted successfully');
 		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === id) {
-			isDrawerHidden = true;
+			isOpen = false;
 			$page.url.searchParams.delete('id');
 			goto(`/collections/${collection.id}`);
 		}
@@ -439,12 +439,12 @@
 	}
 
 	$: if ($page.url.searchParams.has('id')) {
-		isDrawerHidden = false;
+		isOpen = true;
 
 		const itemId = $page.url.searchParams.get('id');
 		$activeItem = items.find((item) => item.id === itemId) || null;
 	} else {
-		isDrawerHidden = true;
+		isOpen = false;
 		$activeItem = null;
 	}
 
@@ -477,7 +477,7 @@
 	$: groupedItems = items.reduce(groupItemsByPropertyValue(collection.groupItemsBy || ''), {});
 
 	function includesGroupableProperties() {
-		return properties.some(({ type }) => type === 'SELECT' || 'CHECKBOX');
+		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
 	}
 </script>
 
@@ -488,7 +488,7 @@
 <div
 	class={cn(
 		'w-full flex flex-col space-y-1 p-1 ease-in-out duration-300 rounded-md bg-card text-secondary-foreground overflow-hidden',
-		!isDrawerHidden && 'w-2/3'
+		isOpen && 'w-2/3'
 	)}
 >
 	<PageHeader>
@@ -586,33 +586,34 @@
 			</div>
 
 			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-			{#if view === 'list' && includesGroupableProperties()}
-				<div>
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.RadioGroup
-								value={collection.groupItemsBy || 'none'}
-								onValueChange={(value) =>
-									updCollection({ groupItemsBy: value !== 'none' ? value : null })}
-							>
-								<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
+			{#key properties}
+				{#if view === 'list' && includesGroupableProperties()}
+					<div>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger asChild let:builder>
+								<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content class="w-56">
+								<DropdownMenu.RadioGroup
+									value={collection.groupItemsBy || 'none'}
+									onValueChange={(value) =>
+										updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+								>
+									<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
 
-								{#each properties as property (property.id)}
-									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-										<DropdownMenu.RadioItem value={property.id}>
-											{property.name}
-										</DropdownMenu.RadioItem>
-									{/if}
-								{/each}
-							</DropdownMenu.RadioGroup>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				</div>
-			{/if}
-
+									{#each properties as property (property.id)}
+										{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
+											<DropdownMenu.RadioItem value={property.id}>
+												{property.name}
+											</DropdownMenu.RadioItem>
+										{/if}
+									{/each}
+								</DropdownMenu.RadioGroup>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					</div>
+				{/if}
+			{/key}
 			<div class="flex justify-between items-center space-x-2">
 				<Button size="sm" on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
 
@@ -721,7 +722,7 @@
 	</PageContent>
 </div>
 
-<Drawer bind:hidden={isDrawerHidden} id="itemDrawer" class="absolute w-full lg:w-1/3 p-0 pl-1">
+<Sheet bind:open={isOpen} id="itemDrawer" class="absolute w-full lg:w-1/3 p-0 pl-1">
 	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
 		<div class="flex justify-between items-center">
 			<Button
@@ -729,7 +730,7 @@
 				size="icon"
 				on:click={() => {
 					goto(`/collections/${collection.id}`);
-					isDrawerHidden = true;
+					isOpen = false;
 					$activeItem = null;
 				}}
 			>
@@ -844,7 +845,7 @@
 			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
 		</div>
 	</div>
-</Drawer>
+</Sheet>
 
 <AlertDialog.Root bind:open={isDeleteModalOpen}>
 	<AlertDialog.Content>

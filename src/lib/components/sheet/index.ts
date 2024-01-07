@@ -1,8 +1,8 @@
-import Drawer from './drawer.svelte';
+import Drawer from './sheet.svelte';
 
-export { Drawer };
+export { default as Sheet } from './sheet.svelte';
 
-export interface drawerTransitionParamTypes {
+export interface sheetTransitionParamTypes {
 	amount?: number;
 	delay?: number;
 	duration?: number;
@@ -12,7 +12,7 @@ export interface drawerTransitionParamTypes {
 	y?: number;
 }
 
-export type drawerTransitionTypes =
+export type sheetTransitionTypes =
 	| 'fade'
 	| 'fly'
 	| 'slide'

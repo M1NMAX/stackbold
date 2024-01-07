@@ -1,25 +1,26 @@
 <script lang="ts">
-	import { twMerge } from 'tailwind-merge';
-	import type { drawerTransitionParamTypes, drawerTransitionTypes } from '.';
+	import type { sheetTransitionParamTypes, sheetTransitionTypes } from '.';
 	import { fly, slide, blur, fade } from 'svelte/transition';
 	import { sineIn } from 'svelte/easing';
+	import { cn } from '$lib/utils';
+	import { clickOutside } from '$lib/actions';
+
+	export let id: string = 'drawer-id';
+	export let open: boolean = false;
+
+	export let backdrop: boolean = false;
+	export let backdropClass: string | undefined = undefined;
 
 	export let activateClickOutside: boolean = false;
-	export let hidden: boolean = true;
-	export let position: 'fixed' | 'absolute' = 'fixed';
+
 	export let leftOffset: string = 'inset-y-0 left-0';
 	export let rightOffset: string = 'inset-y-0 right-0';
 	export let topOffset: string = 'inset-x-0 top-0';
 	export let bottomOffset: string = 'inset-x-0 bottom-0';
-	export let width: string = 'w-80';
-	export let backdrop: boolean = false;
-	export let bgColor: string = 'bg-secondary';
-	export let bgOpacity: string = 'bg-opacity-75';
 	export let placement: 'left' | 'right' | 'top' | 'bottom' = 'right';
-	export let id: string = 'drawer-example';
-	export let divClass: string = 'overflow-y-auto z-40 p-4 bg-secondary';
-	export let transitionType: drawerTransitionTypes = 'fly';
-	export let transitionParams: drawerTransitionParamTypes = {
+
+	export let transitionType: sheetTransitionTypes = 'fly';
+	export let transitionParams: sheetTransitionParamTypes = {
 		x: 320,
 		duration: 300,
 		easing: sineIn
@@ -46,21 +47,26 @@
 	};
 
 	const handleDrawer = () => {
-		hidden = !hidden;
+		open = !open;
 	};
 
-	const handleClickOutside = () => activateClickOutside && !hidden && handleDrawer();
+	const handleClickOutside = () => activateClickOutside && open && handleDrawer();
 
-	let backdropDivClass = twMerge(
-		'fixed top-0 left-0 z-50 w-full h-full',
-		backdrop && bgColor,
-		backdrop && bgOpacity
+	let backdropDivClass = cn(
+		'fixed top-0 left-0 z-50 w-full h-full bg-secondary bg-opacity-75',
+		backdropClass
 	);
 </script>
 
-{#if !hidden}
+{#if open}
 	{#if backdrop && activateClickOutside}
-		<div role="presentation" class={backdropDivClass} on:click={() => !hidden && handleDrawer()} />
+		<div
+			role="presentation"
+			on:clickoutside={handleClickOutside}
+			use:clickOutside
+			on:click={() => open && handleDrawer()}
+			class={backdropDivClass}
+		/>
 	{:else if backdrop && !activateClickOutside}
 		<div role="presentation" class={backdropDivClass} />
 	{/if}
@@ -68,12 +74,16 @@
 	<div
 		{id}
 		{...$$restProps}
-		class={twMerge(divClass, width, position, placements[placement], $$props.class)}
+		class={cn(
+			'fixed w-80 overflow-y-auto z-40 p-4 bg-secondary',
+			placements[placement],
+			$$props.class
+		)}
 		transition:multiple={transitionParams}
 		tabindex="-1"
 		aria-controls={id}
 		aria-labelledby={id}
 	>
-		<slot {hidden} />
+		<slot {open} />
 	</div>
 {/if}
