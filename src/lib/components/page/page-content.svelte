@@ -11,11 +11,11 @@
 </script>
 
 <div class={cn('h-full w-full mx-auto p-2 lg:p-8 space-y-2 overflow-y-auto', className)}>
-	{#if !$sidebarState}
+	<!-- {#if !$sidebarState}
 		<Button variant="ghost" size="icon" on:click={() => ($sidebarState = true)} class="mr-2">
 			<PanelLeft class="icon-sm" />
 			<span class="sr-only"> Show sidebar</span>
 		</Button>
-	{/if}
+	{/if} -->
 	<slot />
 </div>

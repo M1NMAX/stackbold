@@ -9,7 +9,7 @@
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/stores';
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
 	import type { Template } from '@prisma/client';
 
@@ -73,6 +73,7 @@
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <PageContainer>
+	<PageHeader />
 	<PageContent>
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
@@ -134,7 +135,7 @@
 		}
 	}}
 >
-	<DialogContent class="max-w-4xl">
+	<DialogContent class="max-w-4xl ">
 		<TemplatePage data={$page.state.template} />
 	</DialogContent>
 </DialogRoot>
