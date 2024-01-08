@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { Collection } from '@prisma/client';
-	import { PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent } from '$lib/components/page';
 	import { ArrowRight } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview } from '$lib/components/collection';
@@ -30,7 +30,7 @@
 
 <svelte:window bind:innerWidth />
 
-<div class="grow p-1 rounded-md bg-card text-secondary-foreground">
+<PageContainer>
 	<PageContent class="space-y-5">
 		<h1 class="font-semibold text-2xl">Welcome back, {user.name}!</h1>
 
@@ -60,4 +60,4 @@
 			</div>
 		</section>
 	</PageContent>
-</div>
+</PageContainer>

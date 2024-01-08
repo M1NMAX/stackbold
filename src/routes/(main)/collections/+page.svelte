@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Database, LayoutGrid, StretchHorizontal } from 'lucide-svelte';
-	import { PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { SearchInput } from '$lib/components/search';
@@ -71,7 +71,7 @@
 	<title>Collections - Stackbold</title>
 </svelte:head>
 
-<div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden">
+<PageContainer>
 	<PageContent>
 		<div class="flex items-center space-x-2">
 			<Database class="icon-lg" />
@@ -121,4 +121,4 @@
 			</div>
 		</div>
 	</PageContent>
-</div>
+</PageContainer>

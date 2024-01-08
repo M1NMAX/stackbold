@@ -22,6 +22,7 @@
 	import {
 		AddPropertyPopover,
 		PropertyInput,
+		PropertyInputWrapper,
 		PropertyValueWrapper,
 		//helpers
 		getOption,
@@ -39,10 +40,9 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Sheet } from '$lib/components/sheet';
 	import { errorToast, onError, redirectToast, successToast } from '$lib/components/feedback';
-	import { PageHeader, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker } from '$lib/components/icon';
 	import { page } from '$app/stores';
-	import PropertyInputWrapper from '$lib/components/property/property-input-wrapper.svelte';
 	import type { DeleteDetail } from '$lib/types';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
@@ -485,14 +485,9 @@
 	<title>{collection.name} - Stackbold</title>
 </svelte:head>
 
-<div
-	class={cn(
-		'w-full flex flex-col space-y-1 p-1 ease-in-out duration-300 rounded-md bg-card text-secondary-foreground overflow-hidden',
-		isOpen && 'w-2/3'
-	)}
->
+<PageContainer class={cn('flex flex-col space-y-1 ease-in-out duration-300', isOpen && 'w-2/3')}>
 	<PageHeader>
-		<span class="font-semibold text-xs text-gray-500 mr-2">
+		<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
 			Updated
 			{dayjs(collection.updatedAt).fromNow()}
 		</span>
@@ -720,9 +715,9 @@
 			/>
 		</div>
 	</PageContent>
-</div>
+</PageContainer>
 
-<Sheet bind:open={isOpen} id="itemDrawer" class="absolute w-full lg:w-1/3 p-0 pl-1">
+<Sheet bind:open={isOpen} id="itemDrawer" class=" w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
 	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
 		<div class="flex justify-between items-center">
 			<Button
