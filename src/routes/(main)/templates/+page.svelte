@@ -55,6 +55,8 @@
 		const result = await preloadData(href);
 
 		if (result.load === 'loaded' || result.status === 200) {
+			result.data.isModal = true;
+
 			pushState(href, { template: result.data });
 		} else {
 			goto(href);
@@ -67,6 +69,10 @@
 		isPreviewDialogOpen = true;
 	} else {
 		isPreviewDialogOpen = false;
+	}
+
+	function noCheck(x: any) {
+		return x;
 	}
 </script>
 
@@ -136,6 +142,6 @@
 	}}
 >
 	<DialogContent class="max-w-4xl ">
-		<TemplatePage data={$page.state.template} />
+		<TemplatePage data={noCheck($page.state.template)} />
 	</DialogContent>
 </DialogRoot>

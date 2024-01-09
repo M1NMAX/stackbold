@@ -6,6 +6,7 @@ export const load: PageServerLoad = async (event) => {
 	const id = event.params.id;
 
 	return {
-		template: await router.createCaller(await createContext(event)).templates.load(id)
+		template: await router.createCaller(await createContext(event)).templates.load(id),
+		isModal: false
 	};
 };
