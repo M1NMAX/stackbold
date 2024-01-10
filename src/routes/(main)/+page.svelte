@@ -1,22 +1,21 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Collection } from '@prisma/client';
+
 	import { PageContainer, PageContent } from '$lib/components/page';
 	import { ArrowRight } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview } from '$lib/components/collection';
+	import type { RouterOutputs } from '$lib/trpc/router';
 
 	export let data: PageData;
-	$: ({ user, collections, items } = data);
+	$: ({ user, collections } = data);
 
 	$: updCollections = getUpdCollections(collections);
 
-	$: innerWidth < 640 && (view = 'list');
-	let view = 'grid';
-
 	let innerWidth: number;
 
-	function getUpdCollections(collections: Collection[]) {
+	type CollectionArray = RouterOutputs['collections']['list'];
+	function getUpdCollections(collections: CollectionArray) {
 		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
 		// return the first 9 most recent collection
@@ -40,7 +39,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
 				{#each collections as collection (collection.id)}
 					{#if collection.isFavourite}
-						<CollectionOverview {collection} {view} nItems={items[collection.id]} />
+						<CollectionOverview {collection} />
 					{/if}
 				{/each}
 			</div>
@@ -55,7 +54,7 @@
 
 			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
 				{#each updCollections as collection}
-					<CollectionOverview {collection} {view} nItems={items[collection.id]} />
+					<CollectionOverview {collection} />
 				{/each}
 			</div>
 		</section>

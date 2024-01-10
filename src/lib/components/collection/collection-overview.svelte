@@ -3,48 +3,36 @@
 	import { icons } from '$lib/components/icon';
 	import { cn } from '$lib/utils';
 	import dayjs from '$lib/utils/dayjs';
-	import { Circle, Hash } from 'lucide-svelte';
+	import { Hash, Heart } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button';
+	import type { RouterOutputs } from '$lib/trpc/router';
 
-	export let collection: Collection;
-	export let nItems: number;
-	export let view = 'view';
+	export let collection: RouterOutputs['collections']['list'][0];
 </script>
 
 <a
 	href="/collections/{collection.id}"
-	class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
+	class="flex flex-col items-start p-1.5 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 >
-	<div class="flex items-center justify-between space-x-2">
+	<div class="w-full flex items-center justify-between space-x-2">
 		<svelte:component this={icons[collection.icon]} class="icon icon-md" />
-		<h2 class="text-lg font-semibold">
+		<h2 class="grow text-lg font-semibold">
 			{collection.name}
 		</h2>
-	</div>
 
-	<div class="flex items-center space-x-2">
-		{#each collection.properties as property}
-			<span
-				class="h-6 w-fit flex items-center rounded outline-none border-0 py-1 px-1.5 font-semibold bg-primary/70 text-primary-foreground"
-			>
-				{property.name}
-			</span>
-		{/each}
+		<Button variant="ghost" size="xs">
+			<Heart class={cn('icon-xs', collection.isFavourite && 'fill-primary text-primary')} />
+		</Button>
 	</div>
 
 	<div class="flex space-x-4 text-sm text-muted-foreground">
 		<div class="flex items-center">
 			<Hash class="icon-xxs mr-1 text-primary" />
 
-			{nItems > 0 ? nItems + ' Items' : 'Empty'}
+			{collection.nItems > 0 ? collection.nItems + ' Items' : 'Empty'}
 		</div>
 		<div>
 			Updated {dayjs(collection.updatedAt).fromNow()}
 		</div>
 	</div>
-
-	{#if collection.description && view === 'list'}
-		<p class="text-ellipsis font-normal text-gray-700 dark:text-gray-400 leading-tight">
-			{collection.description.slice(0, 186).concat('...')}
-		</p>
-	{/if}
 </a>
