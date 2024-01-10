@@ -1,20 +1,21 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
+	import { onDestroy } from 'svelte';
 	import { MoreVertical, Trash2, Users } from 'lucide-svelte';
 	import { SortArrow, SortDropdown, setSortState } from '$lib/components/sort';
-	import { SearchInput } from '$lib/components/search';
+	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import dayjs from '$lib/utils/dayjs';
-	import debounce from 'debounce';
 	import { superForm, type FormResult } from 'sveltekit-superforms/client';
 	import { fade } from 'svelte/transition';
 	import type { DeleteDetail } from '$lib/types';
-	import { onError, successToast } from '$lib/components/feedback';
+	import { errorToast, onError, successToast } from '$lib/components/feedback';
 	import { trpc } from '$lib/trpc/client';
 	import type { User } from '@prisma/client';
+	import { invalidateAll } from '$app/navigation';
 
 	export let data: PageData;
 	$: ({ users } = data);
@@ -35,26 +36,23 @@
 
 	const sort = setSortState<User>(sortOptions[0]);
 
-	const DEBOUNCE_INTERVAL = 500;
 	const { form, message, errors, enhance } = superForm(data.form, {
 		onResult(event) {
 			const result = event.result as FormResult<ActionData>;
-			if (result.type == 'success') open = false;
+
+			switch (result.type) {
+				case 'success':
+					open = false;
+					successToast('User added successfully');
+					invalidateAll();
+					break;
+
+				case 'error':
+					errorToast('Unable to add user');
+					break;
+			}
 		}
 	});
-
-	const debounceSearch = debounce((query: string) => {
-		sortedUsers = sortedUsers.filter(({ name, email }) => {
-			return name.toLowerCase().includes(query) || email.toLowerCase().includes(query);
-		});
-	}, DEBOUNCE_INTERVAL);
-
-	function handleOnInputSearch(e: Event) {
-		const value = (e.target as HTMLInputElement).value;
-
-		if (value.length > 2) debounceSearch(value);
-		else sortedUsers = users.sort(sortFun($sort.field, $sort.order));
-	}
 
 	async function deleteUser(id: string, name: string) {
 		try {
@@ -75,17 +73,25 @@
 		isDeleteModalOpen = false;
 	}
 
-	// let field: keyof User = 'name';
-	// let order: OrderType = 'asc';
-
-	$: sortedUsers = users.sort(sortFun($sort.field, $sort.order));
-
 	function clickHead(head: string) {
 		const field = head as keyof User;
 		const order = $sort.order === 'asc' ? 'desc' : 'asc';
 
 		$sort = { ...$sort, field, order };
 	}
+
+	const searchUsers = data.users.map((user) => ({
+		...user,
+		searchTerms: `${user.name} ${user.email} ${user.role}`
+	}));
+	const searchStore = createSearchStore(searchUsers);
+
+	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
+
+	onDestroy(() => {
+		unsubscribe();
+	});
+	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 </script>
 
 <svelte:head><title>Users - Admin - Stackbold</title></svelte:head>
@@ -100,12 +106,12 @@
 		<div class=" space-y-2">
 			<div class="flex justify-between space-x-2">
 				<div class="w-1/3 flex justify-between items-center space-x-2">
-					<SearchInput placeholder="Find User" on:input={handleOnInputSearch} />
+					<SearchInput placeholder="Find User" bind:value={$searchStore.search} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
-					<Button size="sm" class="rounded font-semibold" on:click={() => (open = true)}
-						>New user</Button
-					>
+					<Button size="sm" class="rounded font-semibold" on:click={() => (open = true)}>
+						New user
+					</Button>
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 				</div>
 			</div>
@@ -133,7 +139,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each sortedUsers as user (user.id)}
+					{#each $searchStore.filtered as user (user.id)}
 						<tr
 							class={cn(
 								'font-medium text-base border-y border-secondary hover:bg-opacity-20',
@@ -187,58 +193,56 @@
 		</Dialog.Header>
 
 		{#if $message}
-			<div
-				class="px-1 py-4 rounded-sm text-center text-red-200 outline outline-1 outline-red-300 bg-red-700/90"
-			>
+			<div class="form-error-msg">
 				{$message}
 			</div>
 		{/if}
 		<form method="post" use:enhance class="space-y-4">
 			<div>
-				<label for="name" class="px-0"> Name </label>
+				<label for="name" class="label"> Name </label>
 				<input
 					id="name"
 					type="text"
 					name="name"
 					required
 					bind:value={$form.name}
-					class="w-full h-9 input input-sm input-ghost bg-gray-200 outline outline-gray-50"
+					class="input input-ghost"
 				/>
 
 				{#if $errors.name}
-					<span class="mt-2 text-error"> {$errors.name} </span>
+					<span class="text-error"> {$errors.name} </span>
 				{/if}
 			</div>
 
 			<div>
-				<label for="email" class=" px-0"> Email </label>
+				<label for="email" class="label"> Email </label>
 				<input
 					id="email"
 					type="text"
 					name="email"
 					required
 					bind:value={$form.email}
-					class="w-full h-9 input input-sm input-ghost bg-gray-200 outline outline-gray-50"
+					class="input input-ghost"
 				/>
 
 				{#if $errors.email}
-					<span class="mt-2 text-error"> {$errors.email} </span>
+					<span class="text-error"> {$errors.email} </span>
 				{/if}
 			</div>
 
 			<div>
-				<label for="password" class=" px-0"> Password </label>
+				<label for="password" class="label"> Password </label>
 				<input
 					id="password"
 					type="text"
 					name="password"
 					required
 					bind:value={$form.password}
-					class="w-full h-9 input input-sm input-ghost bg-gray-200 outline outline-gray-50"
+					class="input input-ghost"
 				/>
 
 				{#if $errors.password}
-					<span class="mt-2 text-error"> {$errors.password} </span>
+					<span class="text-error"> {$errors.password} </span>
 				{/if}
 			</div>
 

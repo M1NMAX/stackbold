@@ -83,6 +83,14 @@
 	}
 }
 
+.msg-error {
+	@apply px-1 py-4 rounded-sm text-center bg-destructive text-destructive-foreground;
+}
+
+.text-error {
+	@apply w-full p-1.5 mt-2 text-sm rounded-sm bg-destructive text-destructive-foreground;
+}
+
 /* ICON   */
 
 .icon {
