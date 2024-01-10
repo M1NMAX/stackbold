@@ -21,7 +21,7 @@
 	on:mouseleave
 	class={`${
 		active && 'border-r-2 border-primary bg-secondary '
-	} w-full flex items-center space-x-2.5 py-0.5 px-1.5  hover:bg-secondary/95
+	} w-full flex items-center space-x-1.5 py-0.5 px-1.5  hover:bg-secondary/95
        transition duration-75 text-secondary-foreground`}
 >
 	<slot name="icon" />

@@ -62,8 +62,7 @@
 
 	const SIDEBAR_ITEMS = [
 		{ label: 'Home', url: '/', icon: Home },
-		{ label: 'Templates', url: '/templates', icon: Dna },
-		{ label: 'All Collections', url: '/collections', icon: Database }
+		{ label: 'Templates', url: '/templates', icon: Dna }
 	];
 
 	// Groups services
@@ -336,9 +335,11 @@
 				multiple
 				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
-				<div class="px-2">
-					<a href="/collections/" class="text-sm font-semibold"> Collections</a>
-				</div>
+				<SidebarItem
+					label="Collections"
+					href="/collections"
+					active={activeUrl === '/collections'}
+				/>
 
 				<div class="space-y-0">
 					{#each collections as collection}

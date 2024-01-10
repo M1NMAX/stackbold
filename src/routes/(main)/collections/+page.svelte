@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Database, LayoutGrid, StretchHorizontal } from 'lucide-svelte';
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { Database } from 'lucide-svelte';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import debounce from 'debounce';
 	import { SearchInput } from '$lib/components/search';
 	import { setSortState, SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
-	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { getModalState } from '$lib/components/modal';
@@ -18,8 +17,6 @@
 
 	type Filters = 'all' | 'favourites' | 'archived';
 	let filter: Filters = 'all';
-
-	let view = 'grid';
 
 	const crtCollectionModal = getModalState();
 
@@ -72,6 +69,7 @@
 </svelte:head>
 
 <PageContainer>
+	<PageHeader />
 	<PageContent>
 		<div class="flex items-center space-x-2">
 			<Database class="icon-lg" />
@@ -89,36 +87,28 @@
 						<Button
 							variant={filter === item ? 'secondary' : 'ghost'}
 							size="sm"
-							class="rounded font-semibold"
-							on:click={() => setFilter(item)}>{capitalizeFirstLetter(item)}</Button
+							on:click={() => setFilter(item)}
 						>
+							{capitalizeFirstLetter(item)}
+						</Button>
 					{/each}
 				</div>
 				<div class="flex justify-between items-center space-x-2">
-					<Button
-						size="sm"
-						class="rounded font-semibold"
-						on:click={() => ($crtCollectionModal = true)}>New Collection</Button
-					>
+					<Button size="sm" on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
 
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-
-					<ViewButtonsGroup bind:view>
-						<ViewButton {view} value="grid">
-							<LayoutGrid class="icon-md" />
-						</ViewButton>
-						<ViewButton {view} value="list">
-							<StretchHorizontal class="icon-md" />
-						</ViewButton>
-					</ViewButtonsGroup>
 				</div>
 			</div>
-			<div class={cn('flex flex-col gap-2', view === 'grid' && 'grid grid-cols-2 md:grid-cols-3')}>
-				{#each sortedCollections as collection (collection.id)}
-					<CollectionOverview {collection} {view} nItems={0} />
-					<!-- TODO: add item count -->
-				{/each}
-			</div>
+
+			{#if sortedCollections.length > 0}
+				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
+					{#each sortedCollections as collection (collection.id)}
+						<CollectionOverview {collection} />
+					{/each}
+				</div>
+			{:else}
+				<p class="py-10 text-center text-lg font-semibold">No collection found</p>
+			{/if}
 		</div>
 	</PageContent>
 </PageContainer>
