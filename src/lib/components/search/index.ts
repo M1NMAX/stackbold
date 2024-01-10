@@ -1,3 +1,3 @@
-import Search from './seach-input.svelte';
+export { default as SearchInput } from './seach-input.svelte';
 
-export { Search as SearchInput };
+export * from './store';
