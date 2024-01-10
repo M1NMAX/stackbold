@@ -57,10 +57,15 @@ const collectionUpdatePropertySchema = z.object({
 
 export const collections = createTRPCRouter({
 	list: protectedProcedure.query(({ ctx: { userId } }) =>
-		prisma.collection.findMany({
-			where: { ownerId: userId },
-			orderBy: { createdAt: 'asc' }
-		})
+		prisma.collection
+			.findMany({
+				where: { ownerId: userId },
+				orderBy: { createdAt: 'asc' },
+				include: { _count: { select: { items: true } } }
+			})
+			.then((collections) =>
+				collections.map(({ _count: { items }, ...rest }) => ({ nItems: items, ...rest }))
+			)
 	),
 	load: protectedProcedure
 		.input(z.string())
