@@ -1,40 +1,132 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import type { ActionData, PageData } from './$types';
 	import { mode, setMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Separator } from '$lib/components/ui/separator';
 	import { ArrowLeft } from 'lucide-svelte';
-	import type { PageData } from './$types';
+	import { PageContainer } from '$lib/components/page';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { trpc } from '$lib/trpc/client';
+	import { errorToast, successToast } from '$lib/components/feedback';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { superForm, type FormResult } from 'sveltekit-superforms/client';
 
 	export let data: PageData;
+	$: ({ user } = data);
+
+	let open = false;
+	let confirmed = false;
+	let isSaveDisabled = true;
+
+	const { form, message, errors, enhance } = superForm(data.form, {
+		onResult(event) {
+			const result = event.result as FormResult<ActionData>;
+
+			switch (result.type) {
+				case 'success':
+					successToast('Accout data updated successfully');
+					invalidateAll();
+					break;
+				case 'failure':
+				case 'error':
+					errorToast('Unable to update account data');
+					break;
+			}
+		}
+	});
+
+	// FIXME
+	async function handleClickDeleteAccount() {
+		try {
+			await trpc().users.delete.mutate(user.userId);
+			successToast('Account deleted successfully');
+			goto('/');
+		} catch (error) {
+			errorToast('Unable to delete your account, please try again');
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>Settings - Stackbold</title>
 </svelte:head>
 
-<div class="h-screen p-1 bg-secondary overflow-hidden">
-	<main
-		class="h-full w-full mx-auto p-2 lg:p-8 space-y-2 rounded-md bg-card text-secondary-foreground"
-	>
-		<!-- <div class="grow rounded-md bg-card text-secondary-foreground overflow-hidden"> -->
-		<div class="flex items-center space-x-2">
-			<Button variant="secondary" size="icon" on:click={() => history.back()}>
-				<ArrowLeft />
-			</Button>
-			<h1 class="font-semibold text-2xl">Settings</h1>
-		</div>
+<PageContainer>
+	<div class="flex items-center space-x-2">
+		<Button variant="secondary" size="icon" on:click={() => history.back()}>
+			<ArrowLeft />
+		</Button>
+		<h1 class="font-semibold text-2xl">Settings</h1>
+	</div>
 
-		<div
-			class="flex flex-col lg:flex-row justify-center space-y-4 lg:space-y-0.5 lg:space-x-10 mx-auto"
-		>
-			<div class="w-full lg:max-w-xl p-4 rounded border">
-				<h4>Theme</h4>
-				<p>Select the theme for the application</p>
+	<Tabs.Root value="appearance" class="w-full max-w-xl mx-auto my-2">
+		<Tabs.List>
+			<Tabs.Trigger value="account">Account</Tabs.Trigger>
+			<Tabs.Trigger value="appearance">Appearance</Tabs.Trigger>
+		</Tabs.List>
+		<Tabs.Content value="account" class="tab-content">
+			<h2 class="text-lg font-semibold">Account</h2>
 
-				<RadioGroup.Root value={$mode} class="flex my-4">
+			<p>Manage your account settings</p>
+
+			<form method="post" action="?/updUserData" use:enhance class="space-y-4 my-4">
+				<div>
+					<label for="email" class="label"> Email </label>
+
+					<input
+						disabled
+						id="email"
+						type="email"
+						name="email"
+						value={user.email}
+						class="input input-ghost"
+					/>
+				</div>
+
+				<div>
+					<label for="name" class="label"> Name </label>
+					<input
+						id="name"
+						type="text"
+						name="name"
+						value={user.name ?? $form.name}
+						on:input={() => (isSaveDisabled = false)}
+						class="input input-ghost"
+					/>
+					{#if $errors.name}
+						<span class="mt-2 text-error"> {$errors.name} </span>
+					{/if}
+				</div>
+
+				<div class="flex items-center justify-end">
+					<Button variant="secondary" type="submit" disabled={isSaveDisabled}>Save</Button>
+				</div>
+			</form>
+
+			<Separator />
+
+			<div class="flex items-center mt-4">
+				<div>
+					<h3 class="text-base font-semibold">Delete account</h3>
+					<p class="text-sm">
+						Once you delete your account, there is no going back. Please be certain.
+					</p>
+				</div>
+				<Button variant="destructive" on:click={() => (open = true)}>Delete account</Button>
+			</div>
+		</Tabs.Content>
+		<Tabs.Content value="appearance" class="tab-content">
+			<h2 class="text-lg font-semibold">Appearance</h2>
+			<p>Customize the appearance of the app</p>
+
+			<div class="hidden md:block my-4 space-y-1.5">
+				<label for="theme-radio" class="font-medium"> Theme </label>
+				<p class="text-xs">Select the theme</p>
+
+				<RadioGroup.Root id="theme-radio" value={$mode} class="flex">
 					<div class="flex items-center space-x-2">
 						<Label for="light" class="[&:has([data-state=checked])>div]:border-primary">
 							<RadioGroup.Item
@@ -114,38 +206,44 @@
 					</div>
 				</RadioGroup.Root>
 			</div>
-			<div class="w-full lg:max-w-xl p-4 rounded border">
-				<h2>Account</h2>
 
-				<p>Manage your account settings</p>
+			<div class="flex md:hidden items-center space-x-1.5 mt-4">
+				<label for="theme" class="label"> Theme </label>
 
-				<div class="flex flex-col my-4">
-					<label for="name"> Name </label>
-
-					<input
-						id="name"
-						type="text"
-						name="name"
-						class="w-fll h-9 input input-ghost bg-gray-200"
-					/>
-				</div>
-
-				<div class="flex flex-col my-4">
-					<label for="password"> Password </label>
-
-					<input
-						id="password"
-						type="password"
-						name="password"
-						class="w-fll h-9 input input-ghost bg-gray-200"
-					/>
-				</div>
-
-				<Separator />
-				<div class="mt-4">
-					<Button variant="destructive" class="w-full">Delete account</Button>
-				</div>
+				<select id="theme" name="theme" value={$mode} class="select select-ghost">
+					<option value="light" on:click={() => setMode('light')}> Light </option>
+					<option value="dark" on:click={() => setMode('dark')}> Dark </option>
+					<option value="system" on:click={() => setMode('system')}> System </option>
+				</select>
 			</div>
-		</div>
-	</main>
-</div>
+		</Tabs.Content>
+	</Tabs.Root>
+</PageContainer>
+
+<AlertDialog.Root bind:open>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete your account</AlertDialog.Title>
+			<AlertDialog.Description class="text-lg">
+				This will permanently delete all your collections and items, and cannot be undone
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+
+		<label class="label">
+			<input type="checkbox" bind:checked={confirmed} class="checkbox" />
+
+			Yes, I want to delete my account
+		</label>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action asChild let:builder>
+				<Button
+					builders={[builder]}
+					variant="destructive"
+					disabled={!confirmed}
+					on:click={handleClickDeleteAccount}>Delete</Button
+				>
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>

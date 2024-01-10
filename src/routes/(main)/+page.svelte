@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { ArrowRight } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview } from '$lib/components/collection';
@@ -30,6 +29,7 @@
 <svelte:window bind:innerWidth />
 
 <PageContainer>
+	<PageHeader />
 	<PageContent class="space-y-5">
 		<h1 class="font-semibold text-2xl">Welcome back, {user.name}!</h1>
 

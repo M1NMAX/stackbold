@@ -2,6 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
+.label {
+	@apply font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+}
+
+.input {
+	@apply h-9 w-full flex p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background file:border-0  file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+
+	&:focus,
+	&:focus-within {
+		@apply outline outline-primary outline-offset-0;
+		box-shadow: none;
+	}
+
+	&-bordered {
+		@apply bg-secondary/50;
+
+		&:focus,
+		&:focus-within {
+			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
+			box-shadow: none;
+		}
+	}
+
+	&-ghost {
+		@apply bg-opacity-10;
+		&:focus,
+		&:focus-within {
+			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
+			box-shadow: none;
+		}
+	}
+}
+.select {
+	@apply h-9 w-full flex items-center justify-between p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+	&:focus,
+	&:focus-within {
+		@apply outline outline-primary outline-offset-0;
+		box-shadow: none;
+	}
+
+	&-bordered {
+		@apply bg-secondary/50;
+		&:focus,
+		&:focus-within {
+			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
+			box-shadow: none;
+		}
+	}
+
+	&-ghost {
+		@apply bg-opacity-10;
+		&:focus,
+		&:focus-within {
+			@apply bg-opacity-90  outline outline-secondary outline-offset-0;
+			box-shadow: none;
+		}
+	}
+}
+
 .checkbox {
 	@apply h-4 w-4 cursor-pointer  rounded-md border-2 border-gray-300 bg-gray-100 hover:bg-gray-200 checked:accent-primary;
 }
@@ -20,50 +79,6 @@
 		&:focus {
 			@apply text-secondary-foreground bg-opacity-100;
 			box-shadow: none;
-		}
-	}
-}
-
-.input {
-	@apply p-1  rounded bg-secondary border border-transparent text-secondary-foreground;
-	input:focus {
-		@apply outline-none;
-	}
-	&[list]::-webkit-calendar-picker-indicator {
-		line-height: 1em;
-	}
-	&-bordered {
-		@apply border-secondary/20;
-	}
-	&:focus,
-	&:focus-within {
-		box-shadow: none;
-		@apply border-secondary/20 outline-secondary/20 outline outline-2 outline-offset-2;
-	}
-	&-ghost {
-		@apply bg-opacity-5;
-		&:focus,
-		&:focus-within {
-			@apply text-secondary-foreground bg-opacity-100;
-			box-shadow: none;
-		}
-	}
-}
-
-.select {
-	@apply p-1 pr-10 rounded-md bg-secondary border border-transparent text-secondary-foreground;
-	&-bordered {
-		@apply border-secondary/20;
-	}
-
-	&:focus {
-		box-shadow: none;
-		@apply border-secondary/20 outline-secondary/20 outline outline-2 outline-offset-2;
-	}
-	&-ghost {
-		@apply bg-opacity-5;
-		&:focus {
-			@apply text-secondary-foreground bg-opacity-100;
 		}
 	}
 }
@@ -94,6 +109,11 @@
 }
 .icon-3xl {
 	@apply w-14 h-14 focus:outline-none;
+}
+
+/* Settings page */
+.tab-content {
+	@apply w-full p-4 rounded-sm border bg-background;
 }
 @layer base {
 	:root {
