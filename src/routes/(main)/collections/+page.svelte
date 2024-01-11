@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { onDestroy } from 'svelte';
 	import { Database } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import debounce from 'debounce';
-	import { SearchInput } from '$lib/components/search';
+	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { setSortState, SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
@@ -13,7 +13,6 @@
 	import { CollectionOverview } from '$lib/components/collection';
 
 	export let data: PageData;
-	$: ({ collections } = data);
 
 	type Filters = 'all' | 'favourites' | 'archived';
 	let filter: Filters = 'all';
@@ -30,21 +29,6 @@
 	];
 	const sort = setSortState(sortOptions[0]);
 
-	// SEARCH
-	const DEBOUNCE_INTERVAL = 500;
-	const debounceSearch = debounce((query: string) => {
-		sortedCollections = sortedCollections.filter(({ name, description }) => {
-			return name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
-		});
-	}, DEBOUNCE_INTERVAL);
-
-	function handleOnInputSearch(e: Event) {
-		const value = (e.target as HTMLInputElement).value;
-
-		if (value.length > 2) debounceSearch(value);
-		else sortedCollections = collections.sort(sortFun($sort.field, $sort.order));
-	}
-
 	function setFilter(newFilter: string) {
 		filter = newFilter as Filters;
 	}
@@ -52,16 +36,30 @@
 	function filterCollections() {
 		switch (filter) {
 			case 'all':
-				return collections;
+				return searchCollections;
 			case 'favourites':
-				return collections.filter((collection) => collection.isFavourite);
+				return searchCollections.filter((collection) => collection.isFavourite);
 			case 'archived':
-				return collections.filter((collection) => collection.isArchived);
+				return searchCollections.filter((collection) => collection.isArchived);
 		}
 	}
 
-	$: sortedCollections = filterCollections().sort(sortFun($sort.field, $sort.order));
-	$: filter, (sortedCollections = filterCollections());
+	// SEARCH
+	const searchCollections = data.collections.map((collection) => ({
+		...collection,
+		searchTerms: collection.name
+	}));
+
+	const searchStore = createSearchStore(searchCollections);
+
+	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
+
+	onDestroy(() => {
+		unsubscribe();
+	});
+
+	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
+	$: filter, ($searchStore.data = filterCollections());
 </script>
 
 <svelte:head>
@@ -79,7 +77,7 @@
 		<div class="space-y-2">
 			<div class="flex justify-between space-x-2">
 				<div class="w-1/3 flex justify-between items-center space-x-2">
-					<SearchInput placeholder="Find Collection" on:input={handleOnInputSearch} />
+					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
 				</div>
 
 				<div class="space-x-1">
@@ -100,9 +98,9 @@
 				</div>
 			</div>
 
-			{#if sortedCollections.length > 0}
+			{#if $searchStore.filtered.length > 0}
 				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
-					{#each sortedCollections as collection (collection.id)}
+					{#each $searchStore.filtered as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}
 				</div>

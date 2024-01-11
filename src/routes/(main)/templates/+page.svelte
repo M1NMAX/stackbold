@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { onDestroy } from 'svelte';
 	import { Dna } from 'lucide-svelte';
 	import { Root as DialogRoot, Content as DialogContent } from '$lib/components/ui/dialog';
 	import { goto, preloadData, pushState } from '$app/navigation';
-	import { SearchInput } from '$lib/components/search';
-	import debounce from 'debounce';
+	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import TemplatePage from './[id]/+page.svelte';
@@ -14,7 +14,6 @@
 	import type { Template } from '@prisma/client';
 
 	export let data: PageData;
-	$: ({ templates } = data);
 
 	let isPreviewDialogOpen = false;
 
@@ -28,22 +27,6 @@
 	];
 
 	const sort = setSortState(sortOptions[0]);
-
-	// SEARCH
-
-	const DEBOUNCE_INTERVAL = 500;
-	const debounceSearch = debounce((query: string) => {
-		sortedTemplates = sortedTemplates.filter(({ name, description }) => {
-			return name.toLowerCase().includes(query) || description.toLowerCase().includes(query);
-		});
-	}, DEBOUNCE_INTERVAL);
-
-	function handleOnInputSearch(e: Event) {
-		const value = (e.target as HTMLInputElement).value;
-
-		if (value.length > 2) debounceSearch(value);
-		else sortedTemplates = templates.sort(sortFun($sort.field, $sort.order));
-	}
 
 	async function onTemplateLinkClick(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
 		// bail if opening a new tab, or we're on too small a screen
@@ -62,17 +45,30 @@
 			goto(href);
 		}
 	}
+	function noCheck(x: any) {
+		return x;
+	}
 
-	$: sortedTemplates = templates.sort(sortFun($sort.field, $sort.order));
+	// SEARCH
+	const searchTemplates = data.templates.map((template) => ({
+		...template,
+		searchTerms: `${template.name} ${template.description}`
+	}));
+
+	const searchStore = createSearchStore(searchTemplates);
+
+	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
+
+	onDestroy(() => {
+		unsubscribe();
+	});
+
+	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 
 	$: if ($page.state.template) {
 		isPreviewDialogOpen = true;
 	} else {
 		isPreviewDialogOpen = false;
-	}
-
-	function noCheck(x: any) {
-		return x;
 	}
 </script>
 
@@ -91,7 +87,7 @@
 		<div class=" space-y-2">
 			<div class="flex justify-between space-x-2">
 				<div class="w-1/3 flex justify-between items-center space-x-2">
-					<SearchInput placeholder="Find Template" on:input={handleOnInputSearch} />
+					<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
 				</div>
 				<div class="flex justify-between items-center space-x-2">
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
@@ -99,7 +95,7 @@
 			</div>
 
 			<div class="space-y-2">
-				{#each sortedTemplates as template (template.id)}
+				{#each $searchStore.filtered as template (template.id)}
 					<a
 						href="/templates/{template.id}"
 						on:click={onTemplateLinkClick}
