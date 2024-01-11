@@ -1,7 +1,7 @@
 <script lang="ts">
+	import type { PageData } from './$types';
 	import logoSrc from '$lib/assets/trpc-logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
-	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button';
 
 	export let data: PageData;
@@ -17,9 +17,7 @@
 	<h1 class="mb-6 text-center text-3xl font-medium">Reset your password</h1>
 
 	{#if $message}
-		<div
-			class="px-1 py-4 rounded-sm text-center text-red-200 outline outline-1 outline-red-300 bg-red-700/90"
-		>
+		<div class="msg-error">
 			{$message}
 		</div>
 	{/if}
@@ -33,11 +31,11 @@
 				name="email"
 				required
 				bind:value={$form.email}
-				class="w-full h-9 input input-sm input-ghost bg-gray-200 outline outline-gray-50"
+				class="input input-bordered"
 			/>
 
 			{#if $errors.email}
-				<span class="mt-2 text-error"> {$errors.email} </span>
+				<span class="text-error"> {$errors.email} </span>
 			{/if}
 		</div>
 		<div>
@@ -47,6 +45,6 @@
 </div>
 <div class="my-8 leading-8 font-medium text-sm">
 	<p class="text-center text-gray-500">
-		<a href="/login" class="no-underline text-primary hover:text-primary/70"> Back to Sign in </a>
+		<a href="/signin" class="no-underline text-primary hover:text-primary/70"> Back to Sign in </a>
 	</p>
 </div>

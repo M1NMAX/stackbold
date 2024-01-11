@@ -44,7 +44,7 @@ export const actions: Actions = {
 				(e.message === 'AUTH_INVALID_KEY_ID' || e.message === 'AUTH_INVALID_PASSWORD')
 			) {
 				// user does not exist or invalid password
-				return message(form, 'Incorrect username or password');
+				return message(form, 'Incorrect email or password');
 			}
 
 			return message(form, 'An unknown error occurred');
