@@ -23,7 +23,21 @@
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
 		updPropertyVisibility: { pid: string; name: string; value: boolean };
+		renameItem: { id: string; name: string };
 	}>();
+
+	//TODO: validate inner text
+	function handleOnInput(e: { currentTarget: EventTarget & HTMLDivElement }) {
+		const targetEl = e.currentTarget;
+
+		const id = targetEl.dataset.id!;
+		const name = targetEl.innerText;
+		dispatch('renameItem', { id, name });
+	}
+
+	function preventEnterKeypress(e: KeyboardEvent) {
+		if (e.key === 'Enter') e.preventDefault();
+	}
 </script>
 
 <table class="w-full">
@@ -80,7 +94,17 @@
 					)}
 				>
 					<td class="flex items-center justify-between">
-						<span class="text-left py-2 px-1"> {item.name}</span>
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<div
+							contenteditable
+							spellcheck={false}
+							on:keypress={preventEnterKeypress}
+							on:input={handleOnInput}
+							data-id={item.id}
+							class=" text-left py-2 px-1 focus:outline-none"
+						>
+							{item.name}
+						</div>
 
 						<Button
 							variant="secondary"

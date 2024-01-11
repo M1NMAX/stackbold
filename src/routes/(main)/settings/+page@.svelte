@@ -62,7 +62,7 @@
 		<h1 class="font-semibold text-2xl">Settings</h1>
 	</div>
 
-	<Tabs.Root value="appearance" class="w-full max-w-xl mx-auto my-2">
+	<Tabs.Root value="account" class="w-full max-w-xl mx-auto my-2">
 		<Tabs.List>
 			<Tabs.Trigger value="account">Account</Tabs.Trigger>
 			<Tabs.Trigger value="appearance">Appearance</Tabs.Trigger>

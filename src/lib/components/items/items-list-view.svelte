@@ -16,7 +16,23 @@
 
 	const activeItem = getActiveItemState();
 
-	const dispatch = createEventDispatcher<{ clickOpenItem: string }>();
+	const dispatch = createEventDispatcher<{
+		clickOpenItem: string;
+		renameItem: { id: string; name: string };
+	}>();
+
+	//TODO: validate inner text
+	function handleOnInput(e: { currentTarget: EventTarget & HTMLDivElement }) {
+		const targetEl = e.currentTarget;
+
+		const id = targetEl.dataset.id!;
+		const name = targetEl.innerText;
+		dispatch('renameItem', { id, name });
+	}
+
+	function preventEnterKeypress(e: KeyboardEvent) {
+		if (e.key === 'Enter') e.preventDefault();
+	}
 </script>
 
 <div class="h-full space-y-2 grow overflow-y-auto">
@@ -35,7 +51,15 @@
 				item.id === $activeItem?.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			)}
 		>
-			<div class="text-lg font-semibold">
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				contenteditable
+				spellcheck={false}
+				on:keypress={preventEnterKeypress}
+				on:input={handleOnInput}
+				data-id={item.id}
+				class="text-lg font-semibold focus:outline-none"
+			>
 				{item.name}
 			</div>
 

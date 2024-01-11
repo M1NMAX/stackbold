@@ -14,9 +14,9 @@
 				{items}
 				{properties}
 				on:clickOpenItem
-				on:clickRenameItem
 				on:clickDuplicateItem
 				on:clickDeleteItem
+				on:renameItem
 				on:updPropertyValue
 				on:updPropertyVisibility
 			/>
@@ -25,9 +25,9 @@
 				{items}
 				{properties}
 				on:clickOpenItem
-				on:clickRenameItem
 				on:clickDuplicateItem
 				on:clickDeleteItem
+				on:renameItem
 				on:updPropertyValue
 			/>
 		{/if}

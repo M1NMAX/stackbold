@@ -653,8 +653,11 @@
 						value: detail.property.value
 					});
 				}}
-				on:updPropertyVisibility={(e) => {
-					updPropertyDebounced({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+				on:updPropertyVisibility={({ detail }) => {
+					updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+				}}
+				on:renameItem={({ detail }) => {
+					updItemDebounced({ id: detail.id, data: { name: detail.name } });
 				}}
 			/>
 		{/if}
@@ -704,8 +707,11 @@
 											value: detail.property.value
 										});
 									}}
-									on:updPropertyVisibility={(e) => {
-										updPropertyDebounced({ id: e.detail.pid, [e.detail.name]: e.detail.value });
+									on:updPropertyVisibility={({ detail }) => {
+										updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+									}}
+									on:renameItem={({ detail }) => {
+										updItemDebounced({ id: detail.id, data: { name: detail.name } });
 									}}
 								/>
 							</Accordion.Content>
