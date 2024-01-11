@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { PageData } from './$types';
+	import { onDestroy } from 'svelte';
 	import {
 		Archive,
 		CheckSquare2,
@@ -15,7 +17,6 @@
 		UserPlus,
 		X
 	} from 'lucide-svelte';
-	import type { PageData } from './$types';
 	import { PropertyType, type Item } from '@prisma/client';
 	import { Textarea } from '$lib/components';
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
@@ -44,7 +45,7 @@
 	import { IconPicker } from '$lib/components/icon';
 	import { page } from '$app/stores';
 	import type { DeleteDetail } from '$lib/types';
-	import { SearchInput } from '$lib/components/search';
+	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
@@ -459,26 +460,36 @@
 
 	const sort = setSortState(sortOptions[0]);
 
-	// TODO:refactor search functions
-	const debounceSearch = debounce((query: string) => {
-		sortedItems = sortedItems.filter(({ name }) => {
-			return name.toLowerCase().includes(query);
-		});
-	}, DEBOUNCE_INTERVAL * 0.5);
-
-	function handleOnInputSearch(e: Event) {
-		const value = (e.target as HTMLInputElement).value;
-
-		if (value.length > 2) debounceSearch(value);
-		else sortedItems = items.sort(sortFun($sort.field, $sort.order));
-	}
-
-	$: sortedItems = items.sort(sortFun($sort.field, $sort.order));
-	$: groupedItems = items.reduce(groupItemsByPropertyValue(collection.groupItemsBy || ''), {});
-
 	function includesGroupableProperties() {
 		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
 	}
+
+	function addSearchTerms() {
+		return data.items.map((item) => ({ ...item, searchTerms: item.name }));
+	}
+
+	function removeSearchTerms(data: typeof searchItems) {
+		return data.map(({ searchTerms, ...rest }) => ({ ...rest }));
+	}
+
+	const searchItems = addSearchTerms();
+
+	const searchStore = createSearchStore(searchItems);
+
+	const unsubscribe = searchStore.subscribe((modal) => searchHandler(modal));
+
+	onDestroy(() => {
+		unsubscribe();
+	});
+
+	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
+	$: groupedItems = $searchStore.filtered.reduce(
+		groupItemsByPropertyValue(collection.groupItemsBy || ''),
+		{}
+	);
+
+	$: collection.id, ($searchStore.data = addSearchTerms());
+	$: collection.id, ($searchStore.search = '');
 </script>
 
 <svelte:head>
@@ -577,7 +588,7 @@
 		<!-- upper navigation handler -->
 		<div class="flex justify-between space-x-2">
 			<div class="w-1/3 flex justify-between items-center space-x-">
-				<SearchInput placeholder="Find Item" on:input={handleOnInputSearch} />
+				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
 			</div>
 
 			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
@@ -627,7 +638,7 @@
 
 		{#if view === 'table' || !collection.groupItemsBy}
 			<Items
-				items={sortedItems}
+				items={removeSearchTerms($searchStore.filtered)}
 				{view}
 				{properties}
 				on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}

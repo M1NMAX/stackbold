@@ -60,7 +60,7 @@
 		asChild && 'pl-5'
 	)}
 >
-	<a href={`/collections/${id}`} class="grow flex items-center space-x-1.5">
+	<a href="/collections/{id}" class="grow flex items-center space-x-1.5">
 		<svelte:component this={icons[icon]} class={cn('icon-sm', active && 'text-primary')} />
 		<span class={cn('trucante font-semibold text-base', active && 'text-primary')}>{name}</span>
 	</a>
