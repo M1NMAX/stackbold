@@ -626,10 +626,10 @@
 				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
 				<ViewButtonsGroup bind:view>
-					<ViewButton {view} value="list">
+					<ViewButton value="list">
 						<StretchHorizontal class="icon-md" />
 					</ViewButton>
-					<ViewButton {view} value="table">
+					<ViewButton value="table">
 						<Table class="icon-md" />
 					</ViewButton>
 				</ViewButtonsGroup>
