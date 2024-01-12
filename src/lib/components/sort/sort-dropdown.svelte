@@ -11,10 +11,12 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" size="sm">Sort {currentSort.label}</Button>
+		<Button builders={[builder]} variant="secondary" size="sm" class="w-44">
+			Sort by {currentSort.label}
+		</Button>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content class="w-56">
-		<DropdownMenu.Label>Sort By</DropdownMenu.Label>
+	<DropdownMenu.Content class="w-44">
+		<DropdownMenu.Label>Sort by</DropdownMenu.Label>
 		<DropdownMenu.Separator />
 
 		<DropdownMenu.Group>
