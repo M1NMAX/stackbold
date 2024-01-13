@@ -61,7 +61,7 @@
 			<label for="password" class="label"> Password </label>
 			<input
 				id="password"
-				type="text"
+				type="password"
 				name="password"
 				required
 				bind:value={$form.password}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import {
 		Archive,
 		CheckSquare2,
@@ -49,7 +49,9 @@
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import { PROPERTY_COLORS } from '$lib/constant';
+	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
+	import { storage } from '$lib/storage';
+	import { browser } from '$app/environment';
 
 	export let data: PageData;
 	$: ({ collection, items } = data);
@@ -449,16 +451,18 @@
 		$activeItem = null;
 	}
 
-	const sortOptions: SortOption<Item>[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
-		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
-		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
-	];
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
 
-	const sort = setSortState(sortOptions[0]);
+	const sort = storage(`sort-collection-${data.collection.id}`, sortOptions[0]);
+
+	function loadSortFromLocalStorage(): SortOption<Item> {
+		if (!browser) return sortOptions[0];
+
+		const storedValueStr = localStorage.getItem(`sort-collection-${data.collection.id}`);
+		if (!storedValueStr) return sortOptions[0];
+
+		return JSON.parse(storedValueStr);
+	}
 
 	function includesGroupableProperties() {
 		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
@@ -482,14 +486,15 @@
 		unsubscribe();
 	});
 
+	$: collection.id, ($searchStore.data = addSearchTerms());
+	$: collection.id, ($searchStore.search = '');
+	$: collection.id, ($sort = loadSortFromLocalStorage());
+
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 	$: groupedItems = $searchStore.filtered.reduce(
 		groupItemsByPropertyValue(collection.groupItemsBy || ''),
 		{}
 	);
-
-	$: collection.id, ($searchStore.data = addSearchTerms());
-	$: collection.id, ($searchStore.search = '');
 </script>
 
 <svelte:head>

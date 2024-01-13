@@ -12,19 +12,13 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
 	import type { Template } from '@prisma/client';
+	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 
 	export let data: PageData;
 
 	let isPreviewDialogOpen = false;
 
-	const sortOptions: SortOption<Template>[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
-		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
-		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
-	];
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
 
 	const sort = setSortState(sortOptions[0]);
 

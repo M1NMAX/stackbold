@@ -5,12 +5,14 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
-	import { setSortState, SortDropdown } from '$lib/components/sort';
+	import { SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { getModalState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';
+	import { storage } from '$lib/storage';
+	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 
 	export let data: PageData;
 
@@ -19,15 +21,8 @@
 
 	const crtCollectionModal = getModalState();
 
-	const sortOptions: SortOption<Collection>[] = [
-		{ label: 'By name (A-Z)', field: 'name', order: 'asc' },
-		{ label: 'By name (Z-A)', field: 'name', order: 'desc' },
-		{ label: 'By lastest updated', field: 'updatedAt', order: 'asc' },
-		{ label: 'By oldest updated', field: 'updatedAt', order: 'desc' },
-		{ label: 'By Recently added ', field: 'createdAt', order: 'asc' },
-		{ label: 'By oldest added', field: 'createdAt', order: 'desc' }
-	];
-	const sort = setSortState(sortOptions[0]);
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
+	const sort = storage('sort-collections', sortOptions[0]);
 
 	function setFilter(newFilter: string) {
 		filter = newFilter as Filters;

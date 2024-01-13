@@ -6,3 +6,12 @@ export const PROPERTY_COLORS: Colors = {
 	GREEN: 'bg-green-500 text-white dark:bg-green-800 dark:text-green-100',
 	BLUE: 'bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100'
 };
+
+export const DEFAULT_SORT_OPTIONS = [
+	{ label: 'Name Ascending', field: 'name', order: 'asc' },
+	{ label: 'Name Descending', field: 'name', order: 'desc' },
+	{ label: 'Lastest Updated', field: 'updatedAt', order: 'asc' },
+	{ label: 'Oldest Updated', field: 'updatedAt', order: 'desc' },
+	{ label: 'Recently Added', field: 'createdAt', order: 'asc' },
+	{ label: 'Oldest Added', field: 'createdAt', order: 'desc' }
+];
