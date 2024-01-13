@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import {
 		Archive,
+		ArrowLeft,
 		CheckSquare2,
 		Copy,
 		Eye,
@@ -46,7 +47,7 @@
 	import { page } from '$app/stores';
 	import type { DeleteDetail } from '$lib/types';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
-	import { SortDropdown, setSortState } from '$lib/components/sort';
+	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
@@ -488,7 +489,7 @@
 
 	$: collection.id, ($searchStore.data = addSearchTerms());
 	$: collection.id, ($searchStore.search = '');
-	$: collection.id, ($sort = loadSortFromLocalStorage());
+	// $: collection.id, ($sort = loadSortFromLocalStorage());
 
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 	$: groupedItems = $searchStore.filtered.reduce(
@@ -592,9 +593,7 @@
 
 		<!-- upper navigation handler -->
 		<div class="flex justify-between space-x-2">
-			<div class="w-1/3 flex justify-between items-center space-x-">
-				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
-			</div>
+			<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
 
 			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
 			{#key properties}
@@ -605,6 +604,8 @@
 								<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content class="w-56">
+								<DropdownMenu.Label>Group by</DropdownMenu.Label>
+								<DropdownMenu.Separator />
 								<DropdownMenu.RadioGroup
 									value={collection.groupItemsBy || 'none'}
 									onValueChange={(value) =>
@@ -625,20 +626,18 @@
 					</div>
 				{/if}
 			{/key}
-			<div class="flex justify-between items-center space-x-2">
-				<Button size="sm" on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
 
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+			<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
-				<ViewButtonsGroup bind:view>
-					<ViewButton value="list">
-						<StretchHorizontal class="icon-md" />
-					</ViewButton>
-					<ViewButton value="table">
-						<Table class="icon-md" />
-					</ViewButton>
-				</ViewButtonsGroup>
-			</div>
+			<ViewButtonsGroup bind:view>
+				<ViewButton value="list">
+					<StretchHorizontal class="icon-md" />
+				</ViewButton>
+				<ViewButton value="table">
+					<Table class="icon-md" />
+				</ViewButton>
+			</ViewButtonsGroup>
+			<Button on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
 		</div>
 
 		{#if view === 'table' || !collection.groupItemsBy}

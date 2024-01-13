@@ -492,17 +492,15 @@
 						</Button>
 					</Popover.Trigger>
 					<Popover.Content>
-						<form class="space-y-1">
-							<div class="flex space-x-1.5">
-								<label for="name" class=" sr-only"> Name </label>
-								<input
-									id="name"
-									name="name"
-									placeholder="New group"
-									class="grow input input-ghost px-1 font-semibold text-sm bg-base-200"
-									on:keydown={handleKeydownNewGroup}
-								/>
-							</div>
+						<form>
+							<label for="name" class=" sr-only"> Name </label>
+							<input
+								id="name"
+								name="name"
+								placeholder="New group"
+								class="input input-ghost"
+								on:keydown={handleKeydownNewGroup}
+							/>
 						</form>
 					</Popover.Content>
 				</Popover.Root>

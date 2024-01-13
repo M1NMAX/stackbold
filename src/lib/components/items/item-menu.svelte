@@ -40,6 +40,8 @@
 				<span>Duplicate</span>
 			</DropdownMenu.Item>
 
+			<DropdownMenu.Separator />
+
 			<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="space-x-2">
 				<Trash class="icon-xs" />
 				<span>Delete</span>

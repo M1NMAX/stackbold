@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
-	import { Database } from 'lucide-svelte';
+	import { Database, ListFilter } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
@@ -13,6 +13,7 @@
 	import { CollectionOverview } from '$lib/components/collection';
 	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	export let data: PageData;
 
@@ -71,26 +72,34 @@
 
 		<div class="space-y-2">
 			<div class="flex justify-between space-x-2">
-				<div class="w-1/3 flex justify-between items-center space-x-2">
-					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
-				</div>
+				<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
 
-				<div class="space-x-1">
-					{#each ['all', 'favourites', 'archived'] as item}
-						<Button
-							variant={filter === item ? 'secondary' : 'ghost'}
-							size="sm"
-							on:click={() => setFilter(item)}
-						>
-							{capitalizeFirstLetter(item)}
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
+							<ListFilter />
+							<span class="sr-only"> {filter} </span>
 						</Button>
-					{/each}
-				</div>
-				<div class="flex justify-between items-center space-x-2">
-					<Button size="sm" on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content class="w-44">
+						<DropdownMenu.Label>Filter</DropdownMenu.Label>
+						<DropdownMenu.Separator />
 
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-				</div>
+						<DropdownMenu.Group>
+							{#each ['all', 'favourites', 'archived'] as option}
+								<DropdownMenu.CheckboxItem
+									checked={option === filter}
+									on:click={() => setFilter(option)}
+								>
+									{capitalizeFirstLetter(option)}
+								</DropdownMenu.CheckboxItem>
+							{/each}
+						</DropdownMenu.Group>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				<Button on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
 			</div>
 
 			{#if $searchStore.filtered.length > 0}

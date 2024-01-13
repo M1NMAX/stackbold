@@ -11,7 +11,7 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" size="sm" class="w-44">
+		<Button builders={[builder]} variant="secondary" size="sm" class="h-9 w-44">
 			Sort by {currentSort.label}
 		</Button>
 	</DropdownMenu.Trigger>

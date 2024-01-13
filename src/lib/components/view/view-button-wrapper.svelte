@@ -13,7 +13,7 @@
 <RadioGroupRoot
 	bind:value={view}
 	onValueChange={(value) => ($viewState = value)}
-	class={cn('h-9 flex gap-0.5 rounded-sm', className)}
+	class={cn('h-9 flex gap-0.5 rounded-sm bg-secondary/55', className)}
 >
 	<slot />
 </RadioGroupRoot>

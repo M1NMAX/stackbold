@@ -79,13 +79,9 @@
 		<p>Page description</p>
 
 		<div class=" space-y-2">
-			<div class="flex justify-between space-x-2">
-				<div class="w-1/3 flex justify-between items-center space-x-2">
-					<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
-				</div>
-				<div class="flex justify-between items-center space-x-2">
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-				</div>
+			<div class="w-full flex justify-between space-x-2">
+				<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 			</div>
 
 			<div class="space-y-2">
