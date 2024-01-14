@@ -53,6 +53,7 @@
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { browser } from '$app/environment';
+	import { mediaQuery } from 'svelte-legos';
 
 	export let data: PageData;
 	$: ({ collection, items } = data);
@@ -68,6 +69,8 @@
 
 	// Sheet
 	let isOpen = false;
+
+	const isDesktop = mediaQuery('(min-width: 768px)');
 
 	const DEBOUNCE_INTERVAL = 1000;
 
@@ -563,7 +566,7 @@
 		</DropdownMenu.Root>
 	</PageHeader>
 
-	<PageContent class="lg:py-1 lg:px-8">
+	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-8">
 		<div class="flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -591,54 +594,102 @@
 			</label>
 		{/if}
 
-		<!-- upper navigation handler -->
-		<div class="flex justify-between space-x-2">
+		{#if $isDesktop}
+			<!-- upper navigation handler -->
+			<div class="flex justify-between space-x-2">
+				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
+
+				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
+				{#key properties}
+					{#if view === 'list' && includesGroupableProperties()}
+						<div>
+							<DropdownMenu.Root>
+								<DropdownMenu.Trigger asChild let:builder>
+									<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
+								</DropdownMenu.Trigger>
+								<DropdownMenu.Content class="w-56">
+									<DropdownMenu.Label>Group by</DropdownMenu.Label>
+									<DropdownMenu.Separator />
+									<DropdownMenu.RadioGroup
+										value={collection.groupItemsBy || 'none'}
+										onValueChange={(value) =>
+											updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+									>
+										<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
+
+										{#each properties as property (property.id)}
+											{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
+												<DropdownMenu.RadioItem value={property.id}>
+													{property.name}
+												</DropdownMenu.RadioItem>
+											{/if}
+										{/each}
+									</DropdownMenu.RadioGroup>
+								</DropdownMenu.Content>
+							</DropdownMenu.Root>
+						</div>
+					{/if}
+				{/key}
+
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+
+				<ViewButtonsGroup bind:view>
+					<ViewButton value="list">
+						<StretchHorizontal class="icon-md" />
+					</ViewButton>
+					<ViewButton value="table">
+						<Table class="icon-md" />
+					</ViewButton>
+				</ViewButtonsGroup>
+				<Button on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
+			</div>
+		{:else}
 			<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
+			<div class="flex items-center justify-between">
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
-			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-			{#key properties}
-				{#if view === 'list' && includesGroupableProperties()}
-					<div>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger asChild let:builder>
-								<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content class="w-56">
-								<DropdownMenu.Label>Group by</DropdownMenu.Label>
-								<DropdownMenu.Separator />
-								<DropdownMenu.RadioGroup
-									value={collection.groupItemsBy || 'none'}
-									onValueChange={(value) =>
-										updCollection({ groupItemsBy: value !== 'none' ? value : null })}
-								>
-									<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
+				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
+				{#key properties}
+					{#if view === 'list' && includesGroupableProperties()}
+						<div>
+							<DropdownMenu.Root>
+								<DropdownMenu.Trigger asChild let:builder>
+									<Button variant="secondary" builders={[builder]}>Group by</Button>
+								</DropdownMenu.Trigger>
+								<DropdownMenu.Content class="w-56">
+									<DropdownMenu.Label>Group by</DropdownMenu.Label>
+									<DropdownMenu.Separator />
+									<DropdownMenu.RadioGroup
+										value={collection.groupItemsBy || 'none'}
+										onValueChange={(value) =>
+											updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+									>
+										<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
 
-									{#each properties as property (property.id)}
-										{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-											<DropdownMenu.RadioItem value={property.id}>
-												{property.name}
-											</DropdownMenu.RadioItem>
-										{/if}
-									{/each}
-								</DropdownMenu.RadioGroup>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-					</div>
-				{/if}
-			{/key}
+										{#each properties as property (property.id)}
+											{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
+												<DropdownMenu.RadioItem value={property.id}>
+													{property.name}
+												</DropdownMenu.RadioItem>
+											{/if}
+										{/each}
+									</DropdownMenu.RadioGroup>
+								</DropdownMenu.Content>
+							</DropdownMenu.Root>
+						</div>
+					{/if}
+				{/key}
 
-			<SortDropdown {sortOptions} bind:currentSort={$sort} />
-
-			<ViewButtonsGroup bind:view>
-				<ViewButton value="list">
-					<StretchHorizontal class="icon-md" />
-				</ViewButton>
-				<ViewButton value="table">
-					<Table class="icon-md" />
-				</ViewButton>
-			</ViewButtonsGroup>
-			<Button on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
-		</div>
+				<ViewButtonsGroup bind:view>
+					<ViewButton value="list">
+						<StretchHorizontal class="icon-md" />
+					</ViewButton>
+					<ViewButton value="table">
+						<Table class="icon-md" />
+					</ViewButton>
+				</ViewButtonsGroup>
+			</div>
+		{/if}
 
 		{#if view === 'table' || !collection.groupItemsBy}
 			<Items
@@ -682,7 +733,7 @@
 								<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
 									{#if property.type === 'SELECT'}
 										{@const option = getOption(property.options, key)}
-										{option.value}
+										{option ? option.value : `No ${property.name}`}
 									{:else if property.type === 'CHECKBOX'}
 										{#if key === 'true'}
 											<CheckSquare2 class="icon-xs mr-1.5" />
@@ -725,16 +776,26 @@
 			</Accordion.Root>
 		{/if}
 
-		<div class="relative">
-			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-				<Plus class="text-primary" />
+		{#if $isDesktop}
+			<div class="relative">
+				<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+					<Plus class="text-primary" />
+				</div>
+				<input
+					class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					placeholder="New item"
+					on:keypress={handleKeypressNewItemInput}
+				/>
 			</div>
-			<input
-				class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
-				placeholder="New item"
-				on:keypress={handleKeypressNewItemInput}
-			/>
-		</div>
+		{:else}
+			<Button
+				size="icon"
+				class="fixed bottom-4  right-3 z-10"
+				on:click={() => handleCreateItem('Untitled', true)}
+			>
+				<Plus />
+			</Button>
+		{/if}
 	</PageContent>
 </PageContainer>
 
@@ -750,7 +811,11 @@
 					$activeItem = null;
 				}}
 			>
-				<X />
+				{#if $isDesktop}
+					<X />
+				{:else}
+					<ArrowLeft />
+				{/if}
 			</Button>
 
 			<div class="flex items-center space-x-1.5">

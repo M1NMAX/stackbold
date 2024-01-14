@@ -47,7 +47,7 @@
 				}
 			}}
 			class={cn(
-				'relative flex flex-col items-start py-1 px-2 space-y-2 rounded-sm  bg-secondary/40 hover:bg-secondary/50 group',
+				'relative flex flex-col items-start py-1 px-2 space-y-2 overflow-hidden rounded-sm  bg-secondary/40 hover:bg-secondary/50 group ',
 				item.id === $activeItem?.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			)}
 		>

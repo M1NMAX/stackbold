@@ -6,6 +6,6 @@
 	export { className as class };
 </script>
 
-<aside class={twMerge('w-64 h-screen transition-all', className)} aria-label={ariaLabel}>
+<aside class={twMerge('w-64 h-screen z-20 transition-all', className)} aria-label={ariaLabel}>
 	<slot />
 </aside>

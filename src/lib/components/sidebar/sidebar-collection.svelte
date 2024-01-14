@@ -17,16 +17,21 @@
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { icons } from '$lib/components/icon';
+	import { mediaQuery } from 'svelte-legos';
+	import { getSidebarState } from './index.js';
+	import { goto } from '$app/navigation';
 
 	export let active: boolean;
 	export let asChild: boolean = false;
 	export let collection: Collection;
 	export let groups: { id: string; name: string }[];
-
 	$: ({ id, name, icon } = collection);
 
 	let isRenamePopoverOpen = false;
 	let isGroupComboboxOpen = false;
+
+	const isDesktop = mediaQuery('(min-width: 768px)');
+	const sidebarState = getSidebarState();
 
 	const dispatch = createEventDispatcher<{
 		duplicateCollection: { id: string };
@@ -51,6 +56,14 @@
 		dispatch('renameCollection', { id, name: value });
 		isRenamePopoverOpen = false;
 	}
+
+	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
+		if (e.metaKey || e.ctrlKey || $isDesktop) return;
+
+		const { href } = e.currentTarget;
+		$sidebarState = false;
+		goto(href);
+	}
 </script>
 
 <span
@@ -60,7 +73,11 @@
 		asChild && 'pl-5'
 	)}
 >
-	<a href="/collections/{id}" class="grow flex items-center space-x-1.5">
+	<a
+		href="/collections/{id}"
+		class="grow flex items-center space-x-1.5"
+		on:click={onClickSidebarItem}
+	>
 		<svelte:component this={icons[icon]} class={cn('icon-sm', active && 'text-primary')} />
 		<span class={cn('trucante font-semibold text-base', active && 'text-primary')}>{name}</span>
 	</a>

@@ -42,6 +42,7 @@
 	import type { DeleteDetail } from '$lib/types';
 	import { setModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
+	import { mediaQuery } from 'svelte-legos';
 
 	export let data: LayoutData;
 	$: ({ user, groups, collections, items } = data);
@@ -64,6 +65,8 @@
 		{ label: 'Home', url: '/', icon: Home },
 		{ label: 'Templates', url: '/templates', icon: Dna }
 	];
+
+	const isDesktop = mediaQuery('(min-width: 768px)');
 
 	// Groups services
 	async function createGroup(args: RouterInputs['groups']['create']) {
@@ -219,7 +222,7 @@
 <svelte:window bind:innerWidth />
 
 <div class="h-screen flex bg-secondary">
-	<Sidebar class={cn('transition-all w-0 overflow-hidden', $sidebarState && 'w-full lg:w-64')}>
+	<Sidebar class={cn(' transition-all w-0 overflow-hidden', $sidebarState && 'w-full lg:w-64')}>
 		<div
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>

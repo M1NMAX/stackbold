@@ -14,6 +14,7 @@
 	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { mediaQuery } from 'svelte-legos';
 
 	export let data: PageData;
 
@@ -24,6 +25,7 @@
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
 	const sort = storage('sort-collections', sortOptions[0]);
+	const isDesktop = mediaQuery('(min-width: 768px)');
 
 	function setFilter(newFilter: string) {
 		filter = newFilter as Filters;
@@ -71,36 +73,69 @@
 		</div>
 
 		<div class="space-y-2">
-			<div class="flex justify-between space-x-2">
+			{#if $isDesktop}
+				<div class="flex justify-between space-x-2">
+					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
+								<ListFilter />
+								<span class="sr-only"> {filter} </span>
+							</Button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content class="w-44">
+							<DropdownMenu.Label>Filter</DropdownMenu.Label>
+							<DropdownMenu.Separator />
+
+							<DropdownMenu.Group>
+								{#each ['all', 'favourites', 'archived'] as option}
+									<DropdownMenu.CheckboxItem
+										checked={option === filter}
+										on:click={() => setFilter(option)}
+									>
+										{capitalizeFirstLetter(option)}
+									</DropdownMenu.CheckboxItem>
+								{/each}
+							</DropdownMenu.Group>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+					<Button on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
+				</div>
+			{:else}
 				<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
 
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
-							<ListFilter />
-							<span class="sr-only"> {filter} </span>
-						</Button>
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content class="w-44">
-						<DropdownMenu.Label>Filter</DropdownMenu.Label>
-						<DropdownMenu.Separator />
+				<div class="flex justify-between space-x-2">
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
+								<ListFilter />
+								<span class="sr-only"> {filter} </span>
+							</Button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content class="w-44">
+							<DropdownMenu.Label>Filter</DropdownMenu.Label>
+							<DropdownMenu.Separator />
 
-						<DropdownMenu.Group>
-							{#each ['all', 'favourites', 'archived'] as option}
-								<DropdownMenu.CheckboxItem
-									checked={option === filter}
-									on:click={() => setFilter(option)}
-								>
-									{capitalizeFirstLetter(option)}
-								</DropdownMenu.CheckboxItem>
-							{/each}
-						</DropdownMenu.Group>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
+							<DropdownMenu.Group>
+								{#each ['all', 'favourites', 'archived'] as option}
+									<DropdownMenu.CheckboxItem
+										checked={option === filter}
+										on:click={() => setFilter(option)}
+									>
+										{capitalizeFirstLetter(option)}
+									</DropdownMenu.CheckboxItem>
+								{/each}
+							</DropdownMenu.Group>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
 
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
-				<Button on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
-			</div>
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+					<Button on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
+				</div>
+			{/if}
 
 			{#if $searchStore.filtered.length > 0}
 				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>

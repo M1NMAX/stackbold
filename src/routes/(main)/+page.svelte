@@ -11,8 +11,6 @@
 
 	$: updCollections = getUpdCollections(collections);
 
-	let innerWidth: number;
-
 	type CollectionArray = RouterOutputs['collections']['list'];
 	function getUpdCollections(collections: CollectionArray) {
 		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
@@ -25,8 +23,6 @@
 <svelte:head>
 	<title>Home - Stackbold</title>
 </svelte:head>
-
-<svelte:window bind:innerWidth />
 
 <PageContainer>
 	<PageHeader />
