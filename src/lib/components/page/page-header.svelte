@@ -2,7 +2,7 @@
 	import { cn } from '$lib/utils';
 	import { getSidebarState } from '$lib/components/sidebar';
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowLeft, PanelLeft } from 'lucide-svelte';
+	import { PanelLeft, Menu } from 'lucide-svelte';
 	import { mediaQuery } from 'svelte-legos';
 
 	let className: string | undefined = undefined;
@@ -17,7 +17,7 @@
 				<PanelLeft class="icon-sm" />
 				<span class="sr-only"> Show sidebar</span>
 			{:else}
-				<ArrowLeft class="icon-sm" />
+				<Menu class="icon-sm" />
 				<span class="sr-only"> Go to main menu </span>
 			{/if}
 		</Button>

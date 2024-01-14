@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
-	import { Database, ListFilter, Plus } from 'lucide-svelte';
+	import { Database, FolderPlus, ListFilter, Plus } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
@@ -149,10 +149,10 @@
 		{#if !$isDesktop}
 			<Button
 				size="icon"
-				class="fixed bottom-4 right-3 z-10 rounded-full"
+				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-full"
 				on:click={() => ($crtCollectionModal = true)}
 			>
-				<Plus />
+				<FolderPlus />
 			</Button>
 		{/if}
 	</PageContent>
