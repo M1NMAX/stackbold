@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Button } from '$lib/components/ui/button';
-	import logoSrc from '$lib/assets/trpc-logo.png';
+	import logoSrc from '$lib/assets/logo.png';
 
 	export let data: PageData;
 	const { form, message, errors, enhance } = superForm(data.form);

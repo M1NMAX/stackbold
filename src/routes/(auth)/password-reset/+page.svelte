@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import logoSrc from '$lib/assets/trpc-logo.png';
+	import logoSrc from '$lib/assets/logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Button } from '$lib/components/ui/button';
 

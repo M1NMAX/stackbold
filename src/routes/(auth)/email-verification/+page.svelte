@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
-	import logoSrc from '$lib/assets/trpc-logo.png';
+	import logoSrc from '$lib/assets/logo.png';
 	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button';
 
