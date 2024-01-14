@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
-	import { Database, ListFilter } from 'lucide-svelte';
+	import { Database, ListFilter, Plus } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
@@ -107,7 +107,8 @@
 			{:else}
 				<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
 
-				<div class="flex justify-between space-x-2">
+				<div class="flex justify-between items-center">
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
 							<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
@@ -131,9 +132,6 @@
 							</DropdownMenu.Group>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
-
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-					<Button on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
 				</div>
 			{/if}
 
@@ -147,5 +145,15 @@
 				<p class="py-10 text-center text-lg font-semibold">No collection found</p>
 			{/if}
 		</div>
+
+		{#if !$isDesktop}
+			<Button
+				size="icon"
+				class="fixed bottom-4 right-3 z-10 rounded-full"
+				on:click={() => ($crtCollectionModal = true)}
+			>
+				<Plus />
+			</Button>
+		{/if}
 	</PageContent>
 </PageContainer>

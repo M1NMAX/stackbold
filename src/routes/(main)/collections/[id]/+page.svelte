@@ -790,7 +790,7 @@
 		{:else}
 			<Button
 				size="icon"
-				class="fixed bottom-4  right-3 z-10"
+				class="fixed bottom-4 right-3 z-10 rounded-full"
 				on:click={() => handleCreateItem('Untitled', true)}
 			>
 				<Plus />
