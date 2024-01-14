@@ -1,12 +1,11 @@
 <script lang="ts">
 	import {
-		Bug,
-		Database,
 		Dna,
 		Hash,
 		Home,
 		Lock,
 		LogOut,
+		Megaphone,
 		PackagePlus,
 		PanelLeftInactive,
 		Plus,
@@ -217,6 +216,7 @@
 
 	$: activeUrl = $page.url.pathname;
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
+	//  TODO: maybe add report and support page
 </script>
 
 <svelte:window bind:innerWidth />
@@ -296,11 +296,6 @@
 							<DropdownMenu.Item href="/settings" class="space-x-2">
 								<Settings class="icon-xs" />
 								<span>Settings</span>
-							</DropdownMenu.Item>
-
-							<DropdownMenu.Item href="#" class="space-x-2">
-								<Bug class="icon-xs" />
-								<span>Report Issue</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
 
