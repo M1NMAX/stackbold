@@ -1,18 +1,19 @@
 import type { Item, PropertyRef } from '@prisma/client';
 
-// TODO: Remove properties[0], only 'SELECT' and 'CHECKBOX' property type are allowed as group key
 export function groupItemsByPropertyValue(pid: string) {
 	function getProperty(properties: PropertyRef[], id: string) {
-		return properties.find((property) => property.id === id) || properties[0];
+		return properties.find((property) => property.id === id) || null;
 	}
 
 	type Group = Record<string, { pid: string; items: Item[] }>;
 	return function (groupedItems: Group, item: Item) {
-		const { id, value } = getProperty(item.properties, pid);
+		const property = getProperty(item.properties, pid);
 
-		if (!groupedItems[value]) groupedItems[value] = { pid: id, items: [] };
+		const key = property ? property.value : 'no-group';
 
-		groupedItems[value].items.push(item);
+		if (!groupedItems[key]) groupedItems[key] = { pid, items: [] };
+
+		groupedItems[key].items.push(item);
 
 		return groupedItems;
 	};

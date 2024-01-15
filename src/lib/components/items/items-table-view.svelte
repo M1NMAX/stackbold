@@ -41,7 +41,7 @@
 </script>
 
 <div class="overflow-x-auto">
-	<table class="table-auto">
+	<table class="w-full table-auto">
 		<thead>
 			<tr class="text-muted-foreground text-sm">
 				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
