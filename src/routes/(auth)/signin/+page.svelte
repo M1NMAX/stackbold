@@ -3,6 +3,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Button } from '$lib/components/ui/button';
 	import logoSrc from '$lib/assets/logo.png';
+	import { dev } from '$app/environment';
 
 	export let data: PageData;
 	const { form, message, errors, enhance } = superForm(data.form);
@@ -74,12 +75,14 @@
 		</div>
 	</form>
 
-	<div class="my-8 leading-8 font-medium text-sm">
-		<p class="text-center text-gray-500">
-			Don't have an account?
-			<a href="/signup" class="no-underline text-primary hover:text-primary/70">
-				Create an account
-			</a>
-		</p>
-	</div>
+	{#if dev}
+		<div class="my-8 leading-8 font-medium text-sm">
+			<p class="text-center text-gray-500">
+				Don't have an account?
+				<a href="/signup" class="no-underline text-primary hover:text-primary/70">
+					Create an account
+				</a>
+			</p>
+		</div>
+	{/if}
 </div>

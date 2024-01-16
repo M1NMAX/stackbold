@@ -7,6 +7,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { generateEmailVerificationToken } from '$lib/server/token';
 import { sendEmailVerificationLink } from '$lib/server/email';
+import { dev } from '$app/environment';
 
 const signUpSchema = z.object({
 	name: z.string().min(4).max(31),
@@ -15,6 +16,8 @@ const signUpSchema = z.object({
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
+	if (!dev) redirect(302, '/signin');
+
 	const session = await locals.auth.validate();
 
 	if (session) {
