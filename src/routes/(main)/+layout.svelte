@@ -34,7 +34,6 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import * as Select from '$lib/components/ui/select';
 	import { onSuccess, redirectToast } from '$lib/components/ui/sonner';
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
@@ -523,29 +522,19 @@
 				name="name"
 				placeholder="Tasks"
 				required
-				class="input input-ghost"
+				class="input"
 				bind:value={createCollectionDetail.name}
 			/>
-			<!-- TODO: maybe Use shadcn form -->
-			<label for="location">
-				Group
-				<Select.Root
-					onSelectedChange={(currentItem) => {
-						createCollectionDetail.groupId =
-							typeof currentItem?.value === 'string' ? currentItem.value : undefined;
-					}}
-				>
-					<Select.Trigger class="w-full">
-						<Select.Value placeholder="Select a group" />
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value={undefined}>Without group</Select.Item>
-						{#each groups as group (group.id)}
-							<Select.Item value={group.id}>{group.name}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</label>
+
+			<label class="label" for="group"> Group </label>
+			<select id="group" name="group" class="select" bind:value={createCollectionDetail.groupId}>
+				<option value={undefined} selected> Without group </option>
+				{#each groups as group (group.id)}
+					<option value={group.id}>
+						{group.name}
+					</option>
+				{/each}
+			</select>
 
 			<Button type="submit" class="w-full">Create</Button>
 		</form>
