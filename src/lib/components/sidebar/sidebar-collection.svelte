@@ -110,17 +110,15 @@
 	<Popover.Root bind:open={isRenamePopoverOpen}>
 		<Popover.Trigger class="sr-only">Open</Popover.Trigger>
 		<Popover.Content>
-			<form class="space-y-1">
-				<div class="flex space-x-1.5">
-					<label for="name" class=" sr-only"> Name </label>
-					<input
-						id="name"
-						value={name}
-						name="name"
-						class="grow input input-ghost px-1 font-semibold text-sm bg-base-200"
-						on:keydown={handleKeydown}
-					/>
-				</div>
+			<form class="w-full">
+				<label for="name" class=" sr-only"> Name </label>
+				<input
+					id="name"
+					value={name}
+					name="name"
+					class="input input-ghost"
+					on:keydown={handleKeydown}
+				/>
 			</form>
 		</Popover.Content>
 	</Popover.Root>
