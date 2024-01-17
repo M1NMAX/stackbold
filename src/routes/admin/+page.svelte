@@ -10,7 +10,6 @@
 	import { MoreVertical, Trash2 } from 'lucide-svelte';
 	import { SortArrow, SortDropdown, setSortState } from '$lib/components/sort';
 	import { superForm, type FormResult } from 'sveltekit-superforms/client';
-	import { errorToast, onError, successToast } from '$lib/components/feedback';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidateAll } from '$app/navigation';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
@@ -21,6 +20,8 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { mediaQuery } from 'svelte-legos';
+	import { onError } from '$lib/components/ui/sonner';
+	import { toast } from 'svelte-sonner';
 
 	export let data: PageData;
 
@@ -44,12 +45,13 @@
 			switch (result.type) {
 				case 'success':
 					open = false;
-					successToast('User added successfully');
+					toast.success('User added successfully');
+
 					invalidateAll();
 					break;
 
 				case 'error':
-					errorToast('Unable to add user');
+					toast.error('Unable to add user');
 					break;
 			}
 		}
@@ -61,7 +63,7 @@
 
 			users = users.filter((user) => user.id !== id);
 
-			successToast(`User [${name}] deleted successfully`);
+			toast.success(`User [${name}] deleted successfully`);
 		} catch (error) {
 			onError(error);
 		}

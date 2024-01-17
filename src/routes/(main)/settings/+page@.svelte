@@ -10,9 +10,9 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { trpc } from '$lib/trpc/client';
-	import { errorToast, successToast } from '$lib/components/feedback';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { superForm, type FormResult } from 'sveltekit-superforms/client';
+	import { toast } from 'svelte-sonner';
 
 	export let data: PageData;
 	$: ({ user } = data);
@@ -27,12 +27,12 @@
 
 			switch (result.type) {
 				case 'success':
-					successToast('Accout data updated successfully');
+					toast.success('Accout data updated successfully');
 					invalidateAll();
 					break;
 				case 'failure':
 				case 'error':
-					errorToast('Unable to update account data');
+					toast.error('Unable to update account data');
 					break;
 			}
 		}
@@ -42,10 +42,10 @@
 	async function handleClickDeleteAccount() {
 		try {
 			await trpc().users.delete.mutate(user.userId);
-			successToast('Account deleted successfully');
+			toast.success('Account deleted successfully');
 			goto('/');
 		} catch (error) {
-			errorToast('Unable to delete your account, please try again');
+			toast.error('Unable to delete your account, please try again');
 		}
 	}
 </script>

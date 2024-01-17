@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button';
 	import { invalidateAll } from '$app/navigation';
-	import { onError, redirectToast } from '$lib/components/feedback';
+	import { onError, redirectToast } from '$lib/components/ui/sonner';
 	import { trpc } from '$lib/trpc/client';
 	import { PageContainer, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';

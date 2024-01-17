@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { ArrowRight, Dna, Egg, FolderPlus, Frown, HeartCrack } from 'lucide-svelte';
+	import { ArrowRight, Dna, Egg, FolderPlus } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview } from '$lib/components/collection';
 	import type { RouterOutputs } from '$lib/trpc/router';

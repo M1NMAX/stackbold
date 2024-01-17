@@ -41,7 +41,6 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Sheet } from '$lib/components/sheet';
-	import { errorToast, onError, redirectToast, successToast } from '$lib/components/feedback';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker } from '$lib/components/icon';
 	import { page } from '$app/stores';
@@ -53,6 +52,8 @@
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { browser } from '$app/environment';
+	import { onError } from '$lib/components/ui/sonner';
+	import { toast } from 'svelte-sonner';
 	import { mediaQuery } from 'svelte-legos';
 
 	export let data: PageData;
@@ -85,7 +86,7 @@
 
 		// TODO: fix: strange behaviour if drawer is open
 		await invalidateAll();
-		successToast(`Collection [${collection.name}] updated successfully`);
+		toast.success(`Collection [${collection.name}] updated successfully`);
 	}
 
 	async function duplicateCollection() {
@@ -107,19 +108,19 @@
 		const msg = `Collection [${collection.name}] duplicated successfully`;
 		const url = `/collections/${createdCollection.id}`;
 
-		redirectToast(msg, url);
+		toast(msg, { action: { label: 'Go', onClick: () => goto(url) } });
 	}
 
 	async function deleteCollection(id: string, name: string) {
 		if (collection.ownerId !== data.user.userId) {
-			errorToast('Unauthorized');
+			toast.error('Unauthorized');
 			return;
 		}
 
 		try {
 			await trpc().collections.delete.mutate(id);
 
-			successToast(`Collection [${name}] deleted successfully`);
+			toast.success(`Collection [${name}] deleted successfully`);
 			setTimeout(() => goto('/collections'), 1000);
 		} catch (error) {
 			onError(error);
@@ -176,7 +177,7 @@
 			const itemsCopy = items.filter((item) => item.id !== updatedItem.id);
 			items = [...itemsCopy, updatedItem];
 
-			successToast('Item updated successfully');
+			toast.success('Item updated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -196,7 +197,7 @@
 		items.push(createdItem);
 		items = items;
 
-		successToast(`Item [${createdItem.name}] duplicated successfully `);
+		toast.success(`Item [${createdItem.name}] duplicated successfully `);
 	}
 
 	async function deleteItem(id: string) {
@@ -204,7 +205,7 @@
 
 		items = items.filter((item) => item.id !== id);
 
-		successToast('Item deleted successfully');
+		toast.success('Item deleted successfully');
 		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === id) {
 			isOpen = false;
 			$page.url.searchParams.delete('id');
@@ -280,7 +281,7 @@
 			});
 			items = await trpc().items.list.query(collection.id);
 
-			successToast('Property added successfully');
+			toast.success('Property added successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -310,7 +311,7 @@
 				}
 			});
 			items = await trpc().items.list.query(collection.id);
-			successToast('Property duplicated successfully');
+			toast.success('Property duplicated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -326,7 +327,7 @@
 
 			properties = updateCollection.properties;
 
-			successToast('Property updated successfully');
+			toast.success('Property updated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -343,7 +344,7 @@
 
 			properties = properties.filter((property) => property.id !== pid);
 
-			successToast('Property deleted successfully');
+			toast.success('Property deleted successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -353,6 +354,7 @@
 	const updPropertyValueDebounced = debounce(updPropertyValue, DEBOUNCE_INTERVAL);
 
 	async function updPropertyValue(id: string, property: { id: string; value: string }) {
+		console.log('Fione');
 		try {
 			const updatedItem = await trpc().items.updateProperty.mutate({ id, property });
 
@@ -361,8 +363,9 @@
 			// update items overview
 			const itemsCopy = items.filter((item) => item.id !== id);
 			items = [...itemsCopy, updatedItem];
+			await invalidateAll();
 
-			// successToast('Property value update successfully');
+			// toast.success('Property value update successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -379,7 +382,7 @@
 			//TODO: add: find a better solution, with lower overhead
 			properties = updatedCollection.properties;
 
-			// successToast('New option added successfully');
+			// toast.success('New option added successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -397,7 +400,7 @@
 			//TODO: upd: find a better solution, with lower overhead
 			properties = updatedCollection.properties;
 
-			// successToast('Property option updated successfully');
+			// toast.success('Property option updated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -414,7 +417,7 @@
 			//TODO: del: find a better solution, with lower overhead
 			properties = updatedCollection.properties;
 
-			// successToast('Property option deleted successfully');
+			// toast.success('Property option deleted successfully');
 		} catch (error) {
 			onError(error);
 		}

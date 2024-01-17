@@ -5,7 +5,6 @@
 		Home,
 		Lock,
 		LogOut,
-		Megaphone,
 		PackagePlus,
 		PanelLeftInactive,
 		Plus,
@@ -36,11 +35,12 @@
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import * as Select from '$lib/components/ui/select';
-	import { onError, onSuccess, redirectToast } from '$lib/components/feedback';
+	import { onSuccess, redirectToast } from '$lib/components/ui/sonner';
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
 	import { setModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
+	import { onError } from '$lib/components/ui/sonner';
 	import { mediaQuery } from 'svelte-legos';
 
 	export let data: LayoutData;
@@ -170,8 +170,7 @@
 	async function updCollection(args: RouterInputs['collections']['update']) {
 		try {
 			await trpc().collections.update.mutate(args);
-
-			await onSuccess('Collection updated');
+			onSuccess('Collection updated');
 		} catch (error) {
 			onError(error);
 		}
