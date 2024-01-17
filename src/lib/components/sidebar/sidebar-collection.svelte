@@ -66,6 +66,10 @@
 		$sidebarState = false;
 		goto(href);
 	}
+
+	function closeDrawer() {
+		isDrawerOpen = false;
+	}
 </script>
 
 <span
@@ -184,7 +188,7 @@
 
 	{#if !$isDesktop}
 		<Button size="icon" variant="ghost" on:click={() => (isDrawerOpen = true)}>
-			<MoreHorizontal />
+			<MoreHorizontal class="icon-xs" />
 		</Button>
 	{/if}
 </span>
@@ -193,16 +197,28 @@
 	<Drawer.Root bind:open={isDrawerOpen}>
 		<Drawer.Content>
 			<Drawer.Header>
-				<form class="w-full">
-					<label for="name" class=" sr-only"> Name </label>
-					<input id="name" value={name} name="name" class="input" on:keydown={handleKeydown} />
-				</form>
+				<Drawer.Title class="flex items-center justify-center space-x-2">
+					<svelte:component this={icons[icon]} class="icon-md" />
+					<span class="trucante font-semibold text-lg">{name}</span>
+				</Drawer.Title>
 			</Drawer.Header>
 			<Drawer.Footer>
+				<Button variant="secondary">
+					<!-- TODO -->
+					<Pencil class="icon-xs" />
+					<span> Rename </span>
+				</Button>
+
+				<Button variant="secondary">
+					<!-- TODO -->
+					<CornerUpRight class="icon-xs" />
+					<span>Move to</span>
+				</Button>
 				<Button
 					variant="secondary"
 					on:click={() => {
 						dispatch('toggleFavourite', { id, value: !collection.isFavourite });
+						closeDrawer();
 					}}
 				>
 					{#if collection.isFavourite}
@@ -213,11 +229,23 @@
 						<span> Add to Favourites </span>
 					{/if}
 				</Button>
-				<Button variant="secondary" on:click={() => dispatch('duplicateCollection', { id })}>
+				<Button
+					variant="secondary"
+					on:click={() => {
+						dispatch('duplicateCollection', { id });
+						closeDrawer();
+					}}
+				>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="secondary" on:click={() => dispatch('deleteCollection', { id, name })}>
+				<Button
+					variant="destructive"
+					on:click={() => {
+						closeDrawer();
+						dispatch('deleteCollection', { id, name });
+					}}
+				>
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
