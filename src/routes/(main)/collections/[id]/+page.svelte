@@ -19,7 +19,6 @@
 		X
 	} from 'lucide-svelte';
 	import { PropertyType, type Item } from '@prisma/client';
-	import { Textarea } from '$lib/components';
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
 	import {
 		AddPropertyPopover,
@@ -54,7 +53,7 @@
 	import { browser } from '$app/environment';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
-	import { mediaQuery } from 'svelte-legos';
+	import { mediaQuery, textareaAutosizeAction } from 'svelte-legos';
 
 	export let data: PageData;
 	$: ({ collection, items } = data);
@@ -584,18 +583,20 @@
 			</h1>
 		</div>
 
-		{#if !collection.isDescHidden}
-			<label transition:fade for="description" class="label p-1">
-				<span class="sr-only label-text"> Collection description</span>
-				<Textarea
+		{#key collection.id}
+			{#if !collection.isDescHidden}
+				<label transition:fade for="description" class="sr-only"> Collection description </label>
+
+				<textarea
+					use:textareaAutosizeAction
 					id="description"
 					value={collection.description}
 					on:input={handleOnInputCollectionDesc}
 					spellcheck={false}
-					class="w-full h-8 textarea textarea-ghost text-base"
+					class="textarea textarea-ghost"
 				/>
-			</label>
-		{/if}
+			{/if}
+		{/key}
 
 		{#if $isDesktop}
 			<!-- upper navigation handler -->

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { CheckCheck } from 'lucide-svelte';
 	import type { Property } from '@prisma/client';
-	import Textarea from '../Textarea/Textarea.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { Separator } from '$lib/components/ui/separator';
@@ -11,6 +10,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { cn } from '$lib/utils';
+	import { textareaAutosizeAction } from 'svelte-legos';
 
 	export let property: Property;
 	export let value: string;
@@ -154,13 +154,14 @@
 		</Popover.Content>
 	</Popover.Root>
 {:else if property.type === 'TEXT'}
-	<Textarea
+	<textarea
+		use:textareaAutosizeAction
 		id={property.id}
 		name={property.name}
 		{value}
 		on:input={handleOnInput}
 		placeholder="Empty"
-		class="w-full h-8 textarea textarea-ghost font-medium placeholder:text-slate-500"
+		class="textarea textarea-ghost"
 	/>
 {:else}
 	<input
@@ -168,6 +169,6 @@
 		type={property.type.toLowerCase()}
 		{value}
 		on:input={handleOnInput}
-		class="w-full h-8 input input-ghost font-medium placeholder:text-slate-500"
+		class="input input-ghost"
 	/>
 {/if}
