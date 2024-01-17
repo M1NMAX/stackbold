@@ -61,26 +61,37 @@
 	}
 }
 
-.checkbox {
-	@apply h-4 w-4 cursor-pointer  rounded-md border-2 border-gray-300 bg-gray-100 hover:bg-gray-200 checked:accent-primary;
-}
-
 .textarea {
-	@apply p-1 bg-secondary rounded-md border border-transparent text-secondary-foreground;
-	&-bordered {
-		@apply border-secondary/20;
-	}
-	&:focus {
+	@apply resize-none w-full flex rounded-sm border border-input bg-secondary p-1 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+
+	&:focus,
+	&:focus-within {
+		@apply outline outline-primary outline-offset-0;
 		box-shadow: none;
-		@apply border-secondary/20 outline-secondary/20 outline outline-2 outline-offset-2;
 	}
-	&-ghost {
-		@apply bg-opacity-5;
-		&:focus {
-			@apply text-secondary-foreground bg-opacity-100;
+
+	&-bordered {
+		@apply bg-secondary/50;
+
+		&:focus,
+		&:focus-within {
+			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
 	}
+
+	&-ghost {
+		@apply bg-opacity-10 rounded-sm border-none;
+		&:focus,
+		&:focus-within {
+			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
+			box-shadow: none;
+		}
+	}
+}
+
+.checkbox {
+	@apply h-4 w-4 cursor-pointer  rounded-md border-2 border-gray-300 bg-gray-100 hover:bg-gray-200 checked:accent-primary;
 }
 
 .msg-error {
