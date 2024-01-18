@@ -4,8 +4,10 @@
 	import {
 		Archive,
 		ArrowLeft,
+		Check,
 		CheckSquare2,
 		Copy,
+		CornerUpRight,
 		Eye,
 		EyeOff,
 		Heart,
@@ -48,20 +50,28 @@
 	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Command from '$lib/components/ui/command';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { browser } from '$app/environment';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import { mediaQuery, textareaAutosizeAction } from 'svelte-legos';
+	import { z } from 'zod';
 
 	export let data: PageData;
-	$: ({ collection, items } = data);
+	$: ({ collection, items, groups } = data);
 	$: ({ properties } = collection);
 
-	const activeItem = setActiveItemState(null);
+	console.log(data);
 
 	let view = 'list';
+
+	let isSmallScrenDialogOpen = false;
+	let renameCollectionError: string | null = null;
+
+	let isMoveDialogOpen = false;
 
 	// Delete Modal
 	let isDeleteModalOpen = false;
@@ -70,7 +80,13 @@
 	// Sheet
 	let isOpen = false;
 
+	const nameSchema = z
+		.string()
+		.min(1, { message: 'The name must be at least 1 character long' })
+		.max(20, { message: 'The name must be at most 20 characters long' });
+
 	const isDesktop = mediaQuery('(min-width: 768px)');
+	const activeItem = setActiveItemState(null);
 
 	const DEBOUNCE_INTERVAL = 1000;
 
@@ -130,8 +146,18 @@
 	async function handleOnInputCollectionName(e: {
 		currentTarget: EventTarget & HTMLHeadingElement;
 	}) {
-		const name = e.currentTarget.innerText;
-		updCollectionDebounced({ name });
+		const targetEl = e.currentTarget;
+
+		const parseResult = nameSchema.safeParse(targetEl.innerText);
+
+		if (!parseResult.success) {
+			renameCollectionError = parseResult.error.issues[0].message;
+			return;
+		}
+
+		renameCollectionError = null;
+
+		updCollectionDebounced({ name: parseResult.data });
 	}
 
 	async function handleOnInputCollectionDesc(e: Event) {
@@ -447,6 +473,20 @@
 		if (e.key == 'Enter') e.preventDefault();
 	}
 
+	function openSmallScreenDialog() {
+		isSmallScrenDialogOpen = true;
+	}
+	function closeSmallScreenDialog() {
+		isSmallScrenDialogOpen = false;
+	}
+	function openMoveDialog() {
+		isMoveDialogOpen = true;
+	}
+
+	function closeMoveDialog() {
+		isMoveDialogOpen = false;
+	}
+
 	$: if ($page.url.searchParams.has('id')) {
 		isOpen = true;
 
@@ -526,46 +566,59 @@
 			<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
 		</Button>
 
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" size="icon"><MoreHorizontal /></Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Group>
-					<DropdownMenu.Item
-						on:click={() => updCollection({ isDescHidden: !collection.isDescHidden })}
-						class="space-x-1"
-					>
-						{#if collection.isDescHidden}
-							<Eye class="icon-xs" />
-							<span> Show description </span>
-						{:else}
-							<EyeOff class="icon-xs" />
-							<span> Hide description </span>
-						{/if}
-					</DropdownMenu.Item>
+		{#if $isDesktop}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger asChild let:builder>
+					<Button builders={[builder]} variant="secondary" size="icon"><MoreHorizontal /></Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content class="w-56">
+					<DropdownMenu.Group>
+						<DropdownMenu.Item
+							on:click={() => updCollection({ isDescHidden: !collection.isDescHidden })}
+							class="space-x-1"
+						>
+							{#if collection.isDescHidden}
+								<Eye class="icon-xs" />
+								<span> Show description </span>
+							{:else}
+								<EyeOff class="icon-xs" />
+								<span> Hide description </span>
+							{/if}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item on:click={openMoveDialog} class="space-x-1">
+							<CornerUpRight class="icon-xs" />
+							<span>Move to</span>
+						</DropdownMenu.Item>
 
-					<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</DropdownMenu.Item>
-					<DropdownMenu.Item on:click={() => updCollection({ isArchived: true })} class="space-x-1">
-						<Archive class="icon-xs" />
-						<span>Archive</span>
-					</DropdownMenu.Item>
-					<DropdownMenu.Item
-						class="space-x-1"
-						on:click={() => {
-							deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-							isDeleteModalOpen = true;
-						}}
-					>
-						<Trash class="icon-xs" />
-						<span>Delete</span>
-					</DropdownMenu.Item>
-				</DropdownMenu.Group>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+						<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
+							<Copy class="icon-xs" />
+							<span>Duplicate</span>
+						</DropdownMenu.Item>
+						<DropdownMenu.Item
+							on:click={() => updCollection({ isArchived: true })}
+							class="space-x-1"
+						>
+							<Archive class="icon-xs" />
+							<span>Archive</span>
+						</DropdownMenu.Item>
+						<DropdownMenu.Item
+							class="space-x-1"
+							on:click={() => {
+								deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
+								isDeleteModalOpen = true;
+							}}
+						>
+							<Trash class="icon-xs" />
+							<span>Delete</span>
+						</DropdownMenu.Item>
+					</DropdownMenu.Group>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		{:else}
+			<Button size="icon" variant="secondary" on:click={openSmallScreenDialog}>
+				<MoreHorizontal class="icon-xs" />
+			</Button>
+		{/if}
 	</PageHeader>
 
 	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-8">
@@ -581,6 +634,10 @@
 			>
 				{collection.name}
 			</h1>
+
+			{#if renameCollectionError}
+				<span> {renameCollectionError}</span>
+			{/if}
 		</div>
 
 		{#key collection.id}
@@ -931,6 +988,104 @@
 		</div>
 	</div>
 </Sheet>
+
+{#if !$isDesktop}
+	<Dialog.Root bind:open={isSmallScrenDialogOpen}>
+		<Dialog.Content>
+			<div class="flex items-center space-x-2">
+				<Button size="icon" variant="secondary" on:click={closeSmallScreenDialog}>
+					<ArrowLeft />
+				</Button>
+				<h1 class="font-semibold text-lg">Collection</h1>
+			</div>
+			<form class="w-full">
+				<label for="name" class="sr-only">New name </label>
+				<input
+					id="name"
+					value={collection.name}
+					name="name"
+					class="input input-ghost"
+					on:input={handleOnInputCollectionName}
+				/>
+				{#if renameCollectionError}
+					<span> {renameCollectionError}</span>
+				{/if}
+			</form>
+
+			<div class="w-full flex flex-col space-y-2">
+				<Button
+					variant="secondary"
+					on:click={() => {
+						updCollection({ isFavourite: !collection.isFavourite });
+						closeSmallScreenDialog();
+					}}
+				>
+					<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
+					{#if collection.isFavourite}
+						<span> Remove from Favourites </span>
+					{:else}
+						<span> Add to Favourites </span>
+					{/if}
+				</Button>
+				<Button variant="secondary" on:click={openMoveDialog}>
+					<CornerUpRight class="icon-xs" />
+					<span>Move to</span>
+				</Button>
+				<Button variant="secondary" on:click={() => updCollection({ isArchived: true })}>
+					<Archive class="icon-xs" />
+					<span>Archive</span>
+				</Button>
+				<Button
+					variant="secondary"
+					on:click={() => {
+						duplicateCollection();
+						closeSmallScreenDialog();
+					}}
+				>
+					<Copy class="icon-xs" />
+					<span>Duplicate</span>
+				</Button>
+			</div>
+
+			<div class="flex flex-col">
+				<Button
+					variant="destructive"
+					on:click={() => {
+						deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
+						isDeleteModalOpen = true;
+					}}
+				>
+					<Trash class="icon-xs" />
+					<span>Delete</span>
+				</Button>
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+{/if}
+
+<Command.Dialog bind:open={isMoveDialogOpen}>
+	<Command.Input placeholder="Move collection to..." />
+	<Command.List>
+		<Command.Empty>No group found.</Command.Empty>
+		<Command.Group>
+			{#each groups as group (group.id)}
+				<Command.Item
+					value={group.name}
+					onSelect={() => {
+						updCollection({ groupId: group.id });
+						closeMoveDialog();
+						closeSmallScreenDialog();
+					}}
+					class="space-x-2"
+				>
+					<Check class={cn('icon-xxs', group.id !== collection.groupId && 'text-transparent')} />
+
+					<span> {group.name} </span>
+				</Command.Item>
+			{/each}
+		</Command.Group>
+	</Command.List>
+</Command.Dialog>
 
 <AlertDialog.Root bind:open={isDeleteModalOpen}>
 	<AlertDialog.Content>
