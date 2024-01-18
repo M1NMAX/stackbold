@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
 	import {
+		ArrowLeft,
 		Check,
 		Copy,
 		CornerUpRight,
@@ -21,6 +22,7 @@
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import * as Dialog from '$lib/components/ui/dialog';
 
 	export let active: boolean;
 	export let asChild: boolean = false;
@@ -113,21 +115,41 @@
 		</Popover.Content>
 	</Popover.Root>
 
-	<Popover.Root bind:open={isRenamePopoverOpen}>
-		<Popover.Trigger class="sr-only">Open</Popover.Trigger>
-		<Popover.Content>
-			<form class="w-full">
-				<label for="name" class=" sr-only"> Name </label>
-				<input
-					id="name"
-					value={name}
-					name="name"
-					class="input input-ghost"
-					on:keydown={handleKeydown}
-				/>
-			</form>
-		</Popover.Content>
-	</Popover.Root>
+	{#if $isDesktop}
+		<Popover.Root bind:open={isRenamePopoverOpen}>
+			<Popover.Trigger class="sr-only">Open</Popover.Trigger>
+			<Popover.Content>
+				<form class="w-full">
+					<label for="name" class=" sr-only"> Name </label>
+					<input
+						id="name"
+						value={name}
+						name="name"
+						class="input input-ghost"
+						on:keydown={handleKeydown}
+					/>
+				</form>
+			</Popover.Content>
+		</Popover.Root>
+	{:else}
+		<Dialog.Root bind:open={isRenamePopoverOpen}>
+			<Dialog.Content>
+				<Dialog.Header>
+					<Dialog.Title>Rename collection</Dialog.Title>
+				</Dialog.Header>
+				<form class="w-full">
+					<label for="name" class="label">New name </label>
+					<input
+						id="name"
+						value={name}
+						name="name"
+						class="input input-ghost"
+						on:keydown={handleKeydown}
+					/>
+				</form>
+			</Dialog.Content>
+		</Dialog.Root>
+	{/if}
 
 	{#if $isDesktop}
 		<DropdownMenu.Root>
@@ -194,26 +216,26 @@
 </span>
 
 {#if !$isDesktop}
-	<Drawer.Root bind:open={isDrawerOpen}>
-		<Drawer.Content>
-			<Drawer.Header>
-				<Drawer.Title class="flex items-center justify-center space-x-2">
-					<svelte:component this={icons[icon]} class="icon-md" />
-					<span class="trucante font-semibold text-lg">{name}</span>
-				</Drawer.Title>
-			</Drawer.Header>
-			<Drawer.Footer>
-				<Button variant="secondary">
-					<!-- TODO -->
-					<Pencil class="icon-xs" />
-					<span> Rename </span>
+	<Dialog.Root bind:open={isDrawerOpen}>
+		<Dialog.Content>
+			<div class="flex items-center space-x-2">
+				<Button size="icon" variant="secondary" on:click={() => closeDrawer()}>
+					<ArrowLeft />
 				</Button>
+				<h1>Collection</h1>
+			</div>
+			<form class="w-full">
+				<label for="name" class="sr-only">New name </label>
+				<input
+					id="name"
+					value={name}
+					name="name"
+					class="input input-ghost"
+					on:keydown={handleKeydown}
+				/>
+			</form>
 
-				<Button variant="secondary">
-					<!-- TODO -->
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</Button>
+			<div class="w-full flex flex-col space-y-2">
 				<Button
 					variant="secondary"
 					on:click={() => {
@@ -229,6 +251,11 @@
 						<span> Add to Favourites </span>
 					{/if}
 				</Button>
+				<Button variant="secondary">
+					<!-- TODO -->
+					<CornerUpRight class="icon-xs" />
+					<span>Move to</span>
+				</Button>
 				<Button
 					variant="secondary"
 					on:click={() => {
@@ -239,6 +266,9 @@
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
+			</div>
+
+			<div class="flex flex-col">
 				<Button
 					variant="destructive"
 					on:click={() => {
@@ -249,7 +279,7 @@
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
 {/if}
