@@ -230,7 +230,7 @@
 <svelte:window bind:innerWidth />
 
 <div class="h-screen flex bg-secondary">
-	<Sidebar class={cn(' transition-all w-0 overflow-hidden', $sidebarState && 'w-full lg:w-64')}>
+	<Sidebar class={cn(' transition-all w-0 overflow-hidden', $sidebarState && 'w-full lg:w-72')}>
 		<div
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>

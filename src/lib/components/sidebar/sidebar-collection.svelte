@@ -31,12 +31,12 @@
 	export let groups: { id: string; name: string }[];
 	$: ({ id, name, icon } = collection);
 
-	let isRenamePopoverOpen = false;
 	let isMoveDialogOpen = false;
-
 	let isSmallScrenDialogOpen = false;
 
 	let renameError: string | null = null;
+
+	let isRenameInputVisible = false;
 
 	const sidebarState = getSidebarState();
 	const isDesktop = mediaQuery('(min-width: 768px)');
@@ -70,7 +70,6 @@
 		deboundedUpd(parseResult.data);
 	}
 
-	// TODO: add validation
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key !== 'Enter') return;
 		e.preventDefault();
@@ -87,7 +86,7 @@
 		renameError = null;
 		dispatch('updCollection', { id, field: 'name', value: parseResult.data });
 
-		isRenamePopoverOpen = false;
+		hideRenameInput();
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -112,6 +111,14 @@
 	function closeSmallScreenDialog() {
 		isSmallScrenDialogOpen = false;
 	}
+
+	function showRenameInput() {
+		isRenameInputVisible = true;
+	}
+
+	function hideRenameInput() {
+		isRenameInputVisible = false;
+	}
 </script>
 
 <span
@@ -131,7 +138,7 @@
 	</a>
 
 	{#if $isDesktop}
-		<Popover.Root bind:open={isRenamePopoverOpen}>
+		<Popover.Root bind:open={isRenameInputVisible}>
 			<Popover.Trigger class="sr-only">Open</Popover.Trigger>
 			<Popover.Content>
 				<form class="w-full">
@@ -140,7 +147,7 @@
 						id="name"
 						value={name}
 						name="name"
-						class="input input-ghost"
+						class="input input-bordered"
 						on:keydown={handleKeydown}
 						on:input={handleOnInput}
 					/>
@@ -153,7 +160,7 @@
 	{/if}
 
 	{#if $isDesktop}
-		<DropdownMenu.Root>
+		<DropdownMenu.Root let:ids>
 			<DropdownMenu.Trigger asChild let:builder>
 				<Button
 					builders={[builder]}
@@ -165,7 +172,7 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item class="space-x-2" on:click={() => (isRenamePopoverOpen = true)}>
+				<DropdownMenu.Item class="space-x-2" on:click={showRenameInput}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
