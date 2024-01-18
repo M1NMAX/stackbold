@@ -31,7 +31,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Popover from '$lib/components/ui/popover';
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { onSuccess, redirectToast } from '$lib/components/ui/sonner';
@@ -40,14 +39,16 @@
 	import { setModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { onError } from '$lib/components/ui/sonner';
-	import { mediaQuery } from 'svelte-legos';
+	import { focusAction, mediaQuery } from 'svelte-legos';
+	import { clickOutside, escapeKeydown } from '$lib/actions';
 
 	export let data: LayoutData;
 	$: ({ user, groups, collections, items } = data);
 
 	let innerWidth: number;
 	let isCommandDialogOpen = false;
-	let isNewGroupPopoverOpen = false;
+
+	let isNewGroupInputVisible = false;
 
 	type CreateCollectionDetail = { name: string; groupId: string | undefined };
 	let createCollectionDetail: CreateCollectionDetail = { name: '', groupId: undefined };
@@ -83,13 +84,14 @@
 		const value = (e.target as HTMLInputElement).value;
 
 		if (value.length < 1 || value.length > 256) {
-			isNewGroupPopoverOpen = false;
+			hideNewGroupInput();
 			onError({ msg: '(main)/+layout: Invalid group name' }, 'Invalid group name');
 			return;
 		}
 
 		await createGroup({ name: value });
-		isNewGroupPopoverOpen = false;
+
+		hideNewGroupInput();
 	}
 
 	async function updGroup(args: RouterInputs['groups']['update']) {
@@ -192,6 +194,14 @@
 		else if (deleteDetail.type === 'group') deleteGroup(deleteDetail.id, deleteDetail.name);
 
 		isDeleteModalOpen = false;
+	}
+
+	function hideNewGroupInput() {
+		isNewGroupInputVisible = false;
+	}
+
+	function showNewGroupInput() {
+		isNewGroupInputVisible = true;
 	}
 
 	onMount(() => {
@@ -336,6 +346,21 @@
 					href="/collections"
 					active={activeUrl === '/collections'}
 				/>
+				{#if isNewGroupInputVisible}
+					<div class="px-1">
+						<input
+							id="group-input"
+							placeholder="New group"
+							class="input input-bordered"
+							use:focusAction
+							use:clickOutside
+							use:escapeKeydown
+							on:clickoutside={hideNewGroupInput}
+							on:escapeKey={hideNewGroupInput}
+							on:keydown={handleKeydownNewGroup}
+						/>
+					</div>
+				{/if}
 
 				<div class="space-y-0">
 					{#each collections as collection}
@@ -440,27 +465,10 @@
 					<Plus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-
-				<Popover.Root bind:open={isNewGroupPopoverOpen}>
-					<Popover.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="secondary" size="icon">
-							<PackagePlus class="icon-sm" />
-							<span class="sr-only">New group</span>
-						</Button>
-					</Popover.Trigger>
-					<Popover.Content>
-						<form>
-							<label for="name" class=" sr-only"> Name </label>
-							<input
-								id="name"
-								name="name"
-								placeholder="New group"
-								class="input input-ghost"
-								on:keydown={handleKeydownNewGroup}
-							/>
-						</form>
-					</Popover.Content>
-				</Popover.Root>
+				<Button variant="secondary" size="icon" on:click={showNewGroupInput}>
+					<PackagePlus class="icon-sm" />
+					<span class="sr-only">New group</span>
+				</Button>
 			</div>
 		</div>
 	</Sidebar>
