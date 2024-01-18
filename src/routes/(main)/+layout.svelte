@@ -278,15 +278,15 @@
 								</DropdownMenu.SubTrigger>
 								<DropdownMenu.SubContent class="w-46">
 									<DropdownMenu.RadioGroup value={$mode}>
-										<DropdownMenu.RadioItem value="light" on:click={() => setMode('light')}
-											>Light</DropdownMenu.RadioItem
-										>
-										<DropdownMenu.RadioItem value="dark" on:click={() => setMode('dark')}
-											>Dark</DropdownMenu.RadioItem
-										>
-										<DropdownMenu.RadioItem value="system" on:click={() => setMode('system')}
-											>System</DropdownMenu.RadioItem
-										>
+										<DropdownMenu.RadioItem value="light" on:click={() => setMode('light')}>
+											Light
+										</DropdownMenu.RadioItem>
+										<DropdownMenu.RadioItem value="dark" on:click={() => setMode('dark')}>
+											Dark
+										</DropdownMenu.RadioItem>
+										<DropdownMenu.RadioItem value="system" on:click={() => setMode('system')}>
+											System
+										</DropdownMenu.RadioItem>
 									</DropdownMenu.RadioGroup>
 								</DropdownMenu.SubContent>
 							</DropdownMenu.Sub>
@@ -345,21 +345,8 @@
 								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
 								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-								on:renameCollection={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { name: detail.name }
-									})}
-								on:moveCollection={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { groupId: detail.groupId }
-									})}
-								on:toggleFavourite={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { isFavourite: detail.value }
-									})}
+								on:updCollection={({ detail }) =>
+									updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
 								on:deleteCollection={({ detail }) => {
 									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
 									isDeleteModalOpen = true;
@@ -411,21 +398,8 @@
 									groups={groups.map(({ id, name }) => ({ id, name }))}
 									active={activeCollection(collection.id)}
 									on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-									on:renameCollection={({ detail }) =>
-										updCollection({
-											id: detail.id,
-											data: { name: detail.name }
-										})}
-									on:moveCollection={({ detail }) =>
-										updCollection({
-											id: detail.id,
-											data: { groupId: detail.groupId }
-										})}
-									on:toggleFavourite={({ detail }) =>
-										updCollection({
-											id: detail.id,
-											data: { isFavourite: detail.value }
-										})}
+									on:updCollection={({ detail }) =>
+										updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
 									on:deleteCollection={({ detail }) => {
 										isDeleteModalOpen = true;
 										deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
@@ -449,21 +423,8 @@
 								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
 								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-								on:renameCollection={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { name: detail.name }
-									})}
-								on:moveCollection={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { groupId: detail.groupId }
-									})}
-								on:toggleFavourite={({ detail }) =>
-									updCollection({
-										id: detail.id,
-										data: { isFavourite: detail.value }
-									})}
+								on:updCollection={({ detail }) =>
+									updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
 								on:deleteCollection={({ detail }) => {
 									isDeleteModalOpen = true;
 									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };

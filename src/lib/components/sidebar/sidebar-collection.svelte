@@ -22,6 +22,8 @@
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import debounce from 'debounce';
+	import { z } from 'zod';
 
 	export let active: boolean;
 	export let asChild: boolean = false;
@@ -34,30 +36,57 @@
 
 	let isSmallScrenDialogOpen = false;
 
+	let renameError: string | null = null;
+
 	const sidebarState = getSidebarState();
 	const isDesktop = mediaQuery('(min-width: 768px)');
 
+	const nameSchema = z
+		.string()
+		.min(1, { message: 'The name must be at least 1 character long' })
+		.max(20, { message: 'The name must be at most 20 characters long' });
+
 	const dispatch = createEventDispatcher<{
+		updCollection: { id: string; field: keyof Collection; value: string | boolean };
 		duplicateCollection: { id: string };
-		renameCollection: { id: string; name: string };
-		moveCollection: { id: string; groupId: string };
-		toggleFavourite: { id: string; value: boolean };
 		deleteCollection: { id: string; name: string };
 	}>();
 
+	const deboundedUpd = debounce((name: string) => {
+		dispatch('updCollection', { id, field: 'name', value: name });
+	}, 1000);
+
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		dispatch('renameCollection', { id, name: targetEl.value });
+
+		const parseResult = nameSchema.safeParse(targetEl.value);
+
+		if (!parseResult.success) {
+			renameError = parseResult.error.issues[0].message;
+			return;
+		}
+
+		renameError = null;
+		deboundedUpd(parseResult.data);
 	}
 
-	// TODO: maybe couple this with on input for realibility
 	// TODO: add validation
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key !== 'Enter') return;
 		e.preventDefault();
 
-		const value = (e.target as HTMLInputElement).value;
-		dispatch('renameCollection', { id, name: value });
+		const targetEl = e.target as HTMLInputElement;
+
+		const parseResult = nameSchema.safeParse(targetEl.value);
+
+		if (!parseResult.success) {
+			renameError = parseResult.error.issues[0].message;
+			return;
+		}
+
+		renameError = null;
+		dispatch('updCollection', { id, field: 'name', value: parseResult.data });
+
 		isRenamePopoverOpen = false;
 	}
 
@@ -113,7 +142,11 @@
 						name="name"
 						class="input input-ghost"
 						on:keydown={handleKeydown}
+						on:input={handleOnInput}
 					/>
+					{#if renameError}
+						<span> {renameError}</span>
+					{/if}
 				</form>
 			</Popover.Content>
 		</Popover.Root>
@@ -140,7 +173,7 @@
 				<DropdownMenu.Item
 					class="space-x-2"
 					on:click={() => {
-						dispatch('toggleFavourite', { id, value: !collection.isFavourite });
+						dispatch('updCollection', { id, field: 'isFavourite', value: !collection.isFavourite });
 					}}
 				>
 					{#if collection.isFavourite}
@@ -192,7 +225,7 @@
 				<Command.Item
 					value={group.name}
 					onSelect={() => {
-						dispatch('moveCollection', { id, groupId: group.id });
+						dispatch('updCollection', { id, field: 'groupId', value: group.id });
 						closeMoveDialog();
 						closeSmallScreenDialog();
 					}}
@@ -224,14 +257,18 @@
 					name="name"
 					class="input input-ghost"
 					on:keydown={handleKeydown}
+					on:input={handleOnInput}
 				/>
+				{#if renameError}
+					<span> {renameError}</span>
+				{/if}
 			</form>
 
 			<div class="w-full flex flex-col space-y-2">
 				<Button
 					variant="secondary"
 					on:click={() => {
-						dispatch('toggleFavourite', { id, value: !collection.isFavourite });
+						dispatch('updCollection', { id, field: 'isFavourite', value: !collection.isFavourite });
 						closeSmallScreenDialog();
 					}}
 				>
