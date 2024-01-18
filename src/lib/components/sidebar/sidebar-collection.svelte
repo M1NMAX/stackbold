@@ -21,7 +21,6 @@
 	import { mediaQuery } from 'svelte-legos';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
-	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
 
 	export let active: boolean;
@@ -30,12 +29,13 @@
 	export let groups: { id: string; name: string }[];
 	$: ({ id, name, icon } = collection);
 
-	let isDrawerOpen = false;
 	let isRenamePopoverOpen = false;
-	let isGroupComboboxOpen = false;
+	let isMoveDialogOpen = false;
 
-	const isDesktop = mediaQuery('(min-width: 768px)');
+	let isSmallScrenDialogOpen = false;
+
 	const sidebarState = getSidebarState();
+	const isDesktop = mediaQuery('(min-width: 768px)');
 
 	const dispatch = createEventDispatcher<{
 		duplicateCollection: { id: string };
@@ -69,8 +69,19 @@
 		goto(href);
 	}
 
-	function closeDrawer() {
-		isDrawerOpen = false;
+	function openMoveDialog() {
+		isMoveDialogOpen = true;
+	}
+
+	function closeMoveDialog() {
+		isMoveDialogOpen = false;
+	}
+
+	function openSmallScreenDialog() {
+		isSmallScrenDialogOpen = true;
+	}
+	function closeSmallScreenDialog() {
+		isSmallScrenDialogOpen = false;
 	}
 </script>
 
@@ -90,31 +101,6 @@
 		<span class={cn('trucante font-semibold text-base', active && 'text-primary')}>{name}</span>
 	</a>
 
-	<Popover.Root bind:open={isGroupComboboxOpen}>
-		<Popover.Trigger class="sr-only">Open available group list</Popover.Trigger>
-		<Popover.Content class="w-[200px] p-0">
-			<Command.Root>
-				<Command.Input placeholder="Search groups..." />
-				<Command.Empty>No group found.</Command.Empty>
-				<Command.Group>
-					{#each groups as group (group.id)}
-						<Command.Item
-							value={group.name}
-							onSelect={() => dispatch('moveCollection', { id, groupId: group.id })}
-							class="space-x-2"
-						>
-							<Check
-								class={cn('icon-xxs', group.id !== collection.groupId && 'text-transparent')}
-							/>
-
-							<span> {group.name} </span>
-						</Command.Item>
-					{/each}
-				</Command.Group>
-			</Command.Root>
-		</Popover.Content>
-	</Popover.Root>
-
 	{#if $isDesktop}
 		<Popover.Root bind:open={isRenamePopoverOpen}>
 			<Popover.Trigger class="sr-only">Open</Popover.Trigger>
@@ -131,24 +117,6 @@
 				</form>
 			</Popover.Content>
 		</Popover.Root>
-	{:else}
-		<Dialog.Root bind:open={isRenamePopoverOpen}>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Title>Rename collection</Dialog.Title>
-				</Dialog.Header>
-				<form class="w-full">
-					<label for="name" class="label">New name </label>
-					<input
-						id="name"
-						value={name}
-						name="name"
-						class="input input-ghost"
-						on:keydown={handleKeydown}
-					/>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
 	{/if}
 
 	{#if $isDesktop}
@@ -184,7 +152,7 @@
 					{/if}
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item class="space-x-2" on:click={() => (isGroupComboboxOpen = true)}>
+				<DropdownMenu.Item class="space-x-2" on:click={openMoveDialog}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
@@ -209,20 +177,44 @@
 	{/if}
 
 	{#if !$isDesktop}
-		<Button size="icon" variant="ghost" on:click={() => (isDrawerOpen = true)}>
+		<Button size="icon" variant="ghost" on:click={openSmallScreenDialog}>
 			<MoreHorizontal class="icon-xs" />
 		</Button>
 	{/if}
 </span>
 
+<Command.Dialog bind:open={isMoveDialogOpen}>
+	<Command.Input placeholder="Move collection to..." />
+	<Command.List>
+		<Command.Empty>No group found.</Command.Empty>
+		<Command.Group>
+			{#each groups as group (group.id)}
+				<Command.Item
+					value={group.name}
+					onSelect={() => {
+						dispatch('moveCollection', { id, groupId: group.id });
+						closeMoveDialog();
+						closeSmallScreenDialog();
+					}}
+					class="space-x-2"
+				>
+					<Check class={cn('icon-xxs', group.id !== collection.groupId && 'text-transparent')} />
+
+					<span> {group.name} </span>
+				</Command.Item>
+			{/each}
+		</Command.Group>
+	</Command.List>
+</Command.Dialog>
+
 {#if !$isDesktop}
-	<Dialog.Root bind:open={isDrawerOpen}>
+	<Dialog.Root bind:open={isSmallScrenDialogOpen}>
 		<Dialog.Content>
 			<div class="flex items-center space-x-2">
-				<Button size="icon" variant="secondary" on:click={() => closeDrawer()}>
+				<Button size="icon" variant="secondary" on:click={closeSmallScreenDialog}>
 					<ArrowLeft />
 				</Button>
-				<h1>Collection</h1>
+				<h1 class="font-semibold text-lg">Collection</h1>
 			</div>
 			<form class="w-full">
 				<label for="name" class="sr-only">New name </label>
@@ -240,7 +232,7 @@
 					variant="secondary"
 					on:click={() => {
 						dispatch('toggleFavourite', { id, value: !collection.isFavourite });
-						closeDrawer();
+						closeSmallScreenDialog();
 					}}
 				>
 					{#if collection.isFavourite}
@@ -251,8 +243,7 @@
 						<span> Add to Favourites </span>
 					{/if}
 				</Button>
-				<Button variant="secondary">
-					<!-- TODO -->
+				<Button variant="secondary" on:click={openMoveDialog}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</Button>
@@ -260,7 +251,7 @@
 					variant="secondary"
 					on:click={() => {
 						dispatch('duplicateCollection', { id });
-						closeDrawer();
+						closeSmallScreenDialog();
 					}}
 				>
 					<Copy class="icon-xs" />
@@ -272,7 +263,7 @@
 				<Button
 					variant="destructive"
 					on:click={() => {
-						closeDrawer();
+						closeSmallScreenDialog();
 						dispatch('deleteCollection', { id, name });
 					}}
 				>
