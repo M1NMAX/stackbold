@@ -71,6 +71,8 @@
 	let isSmallScrenDialogOpen = false;
 	let renameCollectionError: string | null = null;
 
+	let itemNameError: string | null = null;
+
 	let isMoveDialogOpen = false;
 
 	// Delete Modal
@@ -84,6 +86,11 @@
 		.string()
 		.min(1, { message: 'The name must be at least 1 character long' })
 		.max(20, { message: 'The name must be at most 20 characters long' });
+
+	const itemNameSchema = z
+		.string()
+		.min(1, { message: 'The name must be at least 1 character long' })
+		.max(100, { message: 'The name must be at most 20 characters long' });
 
 	const isDesktop = mediaQuery('(min-width: 768px)');
 	const activeItem = setActiveItemState(null);
@@ -253,12 +260,17 @@
 		if (e.key !== 'Enter') return;
 
 		const targetEl = e.target as HTMLInputElement;
-		const value = targetEl.value;
-		//TODO: better validation
-		if (value.length >= 1 && value.length < 255) {
-			handleCreateItem(value, false);
-			targetEl.value = '';
+
+		const parseResult = itemNameSchema.safeParse(targetEl.value);
+
+		if (!parseResult.success) {
+			itemNameError = parseResult.error.issues[0].message;
+			return;
 		}
+
+		itemNameError = null;
+		handleCreateItem(parseResult.data, false);
+		targetEl.value = '';
 	}
 
 	// Property Handlers
@@ -838,15 +850,15 @@
 		{/if}
 
 		{#if $isDesktop}
-			<div class="relative">
-				<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-					<Plus class="text-primary" />
-				</div>
+			<div>
 				<input
-					class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					class="h-10 w-full py-1 px-2 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 					placeholder="New item"
 					on:keypress={handleKeypressNewItemInput}
 				/>
+				{#if itemNameError}
+					<span class="text-error"> {itemNameError} </span>
+				{/if}
 			</div>
 		{:else}
 			<Button
