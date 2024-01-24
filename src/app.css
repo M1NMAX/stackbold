@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Scrollbar */
+
+* {
+	scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+	@apply bg-transparent w-2;
+}
+
+*::-webkit-scrollbar-thumb {
+	@apply bg-secondary rounded-full;
+}
+
 .label {
 	@apply font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
 }
