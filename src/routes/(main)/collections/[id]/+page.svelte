@@ -58,13 +58,12 @@
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import { mediaQuery, textareaAutosizeAction } from 'svelte-legos';
+	import { clickOutside } from '$lib/actions';
 	import { z } from 'zod';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
 	$: ({ properties } = collection);
-
-	console.log(data);
 
 	let view = 'list';
 
@@ -391,7 +390,6 @@
 	const updPropertyValueDebounced = debounce(updPropertyValue, DEBOUNCE_INTERVAL);
 
 	async function updPropertyValue(id: string, property: { id: string; value: string }) {
-		console.log('Fione');
 		try {
 			const updatedItem = await trpc().items.updateProperty.mutate({ id, property });
 
@@ -848,19 +846,31 @@
 				{/each}
 			</Accordion.Root>
 		{/if}
-
 		{#if $isDesktop}
-			<div>
-				<input
-					class="h-10 w-full py-1 px-2 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
-					placeholder="New item"
-					on:keypress={handleKeypressNewItemInput}
-				/>
+			<div class="sticky inset-x-0 bottom-0">
 				{#if itemNameError}
-					<span class="text-error"> {itemNameError} </span>
+					<span
+						use:clickOutside
+						on:clickoutside={() => (itemNameError = null)}
+						class="w-full text-error"
+					>
+						{itemNameError}
+					</span>
 				{/if}
+				<div class="relative">
+					<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+						<Plus class="text-primary" />
+					</div>
+					<input
+						class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+						placeholder="New item"
+						on:keypress={handleKeypressNewItemInput}
+					/>
+				</div>
 			</div>
-		{:else}
+		{/if}
+
+		{#if !$isDesktop}
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-full"
