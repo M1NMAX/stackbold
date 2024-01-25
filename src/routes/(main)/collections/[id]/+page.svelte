@@ -43,7 +43,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Sheet } from '$lib/components/sheet';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { IconPicker } from '$lib/components/icon';
+	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
 	import type { DeleteDetail } from '$lib/types';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
@@ -73,6 +73,7 @@
 	let itemNameError: string | null = null;
 
 	let isMoveDialogOpen = false;
+	let isSmallHeadingVisible = false;
 
 	// Delete Modal
 	let isDeleteModalOpen = false;
@@ -497,14 +498,11 @@
 		isMoveDialogOpen = false;
 	}
 
-	$: if ($page.url.searchParams.has('id')) {
-		isOpen = true;
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
 
-		const itemId = $page.url.searchParams.get('id');
-		$activeItem = items.find((item) => item.id === itemId) || null;
-	} else {
-		isOpen = false;
-		$activeItem = null;
+		if (targetEl.scrollTop > 0) isSmallHeadingVisible = true;
+		else isSmallHeadingVisible = false;
 	}
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
@@ -542,6 +540,16 @@
 		unsubscribe();
 	});
 
+	$: if ($page.url.searchParams.has('id')) {
+		isOpen = true;
+
+		const itemId = $page.url.searchParams.get('id');
+		$activeItem = items.find((item) => item.id === itemId) || null;
+	} else {
+		isOpen = false;
+		$activeItem = null;
+	}
+
 	$: collection.id, ($searchStore.data = addSearchTerms());
 	$: collection.id, ($searchStore.search = '');
 	// $: collection.id, ($sort = loadSortFromLocalStorage());
@@ -559,80 +567,97 @@
 
 <PageContainer class={cn('flex flex-col space-y-1 ease-in-out duration-300', isOpen && 'w-2/3')}>
 	<PageHeader>
-		<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
-			Updated
-			{dayjs(collection.updatedAt).fromNow()}
-		</span>
-
-		<Button variant="secondary" size="icon" disabled>
-			<UserPlus />
-		</Button>
-
-		<Button
-			variant="secondary"
-			size="icon"
-			on:click={() => updCollection({ isFavourite: !collection.isFavourite })}
+		<div
+			class={cn(
+				'w-full flex justify-between items-center',
+				!isSmallHeadingVisible && 'justify-end'
+			)}
 		>
-			<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
-		</Button>
+			<div
+				class={cn('flex justify-center items-center space-x-2', !isSmallHeadingVisible && 'hidden')}
+			>
+				<svelte:component this={icons[collection.icon]} class="icon-md" />
+				<h1 class=" grow font-semibold text-2xl">{collection.name}</h1>
+			</div>
+			<div class="flex justify-end items-center space-x-1.5">
+				<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
+					Updated
+					{dayjs(collection.updatedAt).fromNow()}
+				</span>
 
-		{#if $isDesktop}
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="secondary" size="icon"><MoreHorizontal /></Button>
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content class="w-56">
-					<DropdownMenu.Group>
-						<DropdownMenu.Item
-							on:click={() => updCollection({ isDescHidden: !collection.isDescHidden })}
-							class="space-x-1"
-						>
-							{#if collection.isDescHidden}
-								<Eye class="icon-xs" />
-								<span> Show description </span>
-							{:else}
-								<EyeOff class="icon-xs" />
-								<span> Hide description </span>
-							{/if}
-						</DropdownMenu.Item>
-						<DropdownMenu.Item on:click={openMoveDialog} class="space-x-1">
-							<CornerUpRight class="icon-xs" />
-							<span>Move to</span>
-						</DropdownMenu.Item>
+				<Button variant="secondary" size="icon" disabled>
+					<UserPlus />
+				</Button>
 
-						<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
-							<Copy class="icon-xs" />
-							<span>Duplicate</span>
-						</DropdownMenu.Item>
-						<DropdownMenu.Item
-							on:click={() => updCollection({ isArchived: true })}
-							class="space-x-1"
-						>
-							<Archive class="icon-xs" />
-							<span>Archive</span>
-						</DropdownMenu.Item>
-						<DropdownMenu.Item
-							class="space-x-1"
-							on:click={() => {
-								deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-								isDeleteModalOpen = true;
-							}}
-						>
-							<Trash class="icon-xs" />
-							<span>Delete</span>
-						</DropdownMenu.Item>
-					</DropdownMenu.Group>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-		{:else}
-			<Button size="icon" variant="secondary" on:click={openSmallScreenDialog}>
-				<MoreHorizontal class="icon-xs" />
-			</Button>
-		{/if}
+				<Button
+					variant="secondary"
+					size="icon"
+					on:click={() => updCollection({ isFavourite: !collection.isFavourite })}
+				>
+					<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
+				</Button>
+
+				{#if $isDesktop}
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="secondary" size="icon">
+								<MoreHorizontal />
+							</Button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content class="w-56">
+							<DropdownMenu.Group>
+								<DropdownMenu.Item
+									on:click={() => updCollection({ isDescHidden: !collection.isDescHidden })}
+									class="space-x-1"
+								>
+									{#if collection.isDescHidden}
+										<Eye class="icon-xs" />
+										<span> Show description </span>
+									{:else}
+										<EyeOff class="icon-xs" />
+										<span> Hide description </span>
+									{/if}
+								</DropdownMenu.Item>
+								<DropdownMenu.Item on:click={openMoveDialog} class="space-x-1">
+									<CornerUpRight class="icon-xs" />
+									<span>Move to</span>
+								</DropdownMenu.Item>
+
+								<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
+									<Copy class="icon-xs" />
+									<span>Duplicate</span>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item
+									on:click={() => updCollection({ isArchived: true })}
+									class="space-x-1"
+								>
+									<Archive class="icon-xs" />
+									<span>Archive</span>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item
+									class="space-x-1"
+									on:click={() => {
+										deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
+										isDeleteModalOpen = true;
+									}}
+								>
+									<Trash class="icon-xs" />
+									<span>Delete</span>
+								</DropdownMenu.Item>
+							</DropdownMenu.Group>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				{:else}
+					<Button size="icon" variant="secondary" on:click={openSmallScreenDialog}>
+						<MoreHorizontal class="icon-xs" />
+					</Button>
+				{/if}
+			</div>
+		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-8">
-		<div class="flex items-center space-x-2">
+	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-8" on:scroll={handleScroll}>
+		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
 			<h1
@@ -667,7 +692,7 @@
 
 		{#if $isDesktop}
 			<!-- upper navigation handler -->
-			<div class="flex justify-between space-x-2">
+			<div class="sticky -top-1 z-10 flex justify-between space-x-2 bg-card">
 				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
 
 				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->

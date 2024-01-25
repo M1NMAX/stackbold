@@ -15,7 +15,5 @@
 			<span class="sr-only"> Show sidebar </span>
 		</Button>
 	{/if}
-	<div class="flex justify-end items-center space-x-1.5">
-		<slot />
-	</div>
+	<slot />
 </div>
