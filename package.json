@@ -9,7 +9,10 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
-    "format": "prettier --plugin-search-dir . --write ."
+    "format": "prettier --plugin-search-dir . --write .",
+    "pw": "npx playwright test",
+    "pw:ui": "npx playwright test --ui",
+    "pw:report": "npx playwright show-report"
   },
   "devDependencies": {
     "@melt-ui/pp": "^0.1.4",
