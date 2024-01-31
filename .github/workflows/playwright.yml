@@ -11,7 +11,7 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PW_TEST_EMAIL: ${{ secrets.PW_TEST_EMAIL }}
-      PW_TEST_PWD: ${{ vars.PW_TEST_PWD }}
+      PW_TEST_PWD: ${{ secrets.PW_TEST_PWD }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
