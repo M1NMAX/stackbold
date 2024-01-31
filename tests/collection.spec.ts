@@ -4,7 +4,7 @@ const COLLECTION_NAMES = ['collection one', 'collection two', 'collection three'
 
 test.describe('New collection', () => {
 	test('should create a empty collection', async ({ page }) => {
-		await page.goto('/collections');
+		await page.goto('http://127.0.0.1:5173/collections');
 
 		await expect(page.locator('h1')).toContainText('Collections');
 
