@@ -10,8 +10,8 @@ export const PROPERTY_COLORS: Colors = {
 export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Name Ascending', field: 'name', order: 'asc' },
 	{ label: 'Name Descending', field: 'name', order: 'desc' },
-	{ label: 'Lastest Updated', field: 'updatedAt', order: 'asc' },
-	{ label: 'Oldest Updated', field: 'updatedAt', order: 'desc' },
-	{ label: 'Recently Added', field: 'createdAt', order: 'asc' },
-	{ label: 'Oldest Added', field: 'createdAt', order: 'desc' }
+	{ label: 'Oldest Updated', field: 'updatedAt', order: 'asc' },
+	{ label: 'Lastest Updated', field: 'updatedAt', order: 'desc' },
+	{ label: 'Recently Added', field: 'createdAt', order: 'desc' },
+	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];

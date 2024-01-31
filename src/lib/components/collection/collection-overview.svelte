@@ -12,6 +12,7 @@
 
 <a
 	href="/collections/{collection.id}"
+	data-testid="collection-overview"
 	class="flex flex-col items-start p-1.5 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 >
 	<div class="w-full flex items-center justify-between space-x-2">
