@@ -4,6 +4,7 @@ import 'dotenv/config';
 const authFile = 'playwright/.auth/user.json';
 
 setup('authenticate', async ({ page }) => {
+	setup.setTimeout(60000);
 	const email = process.env.PW_TEST_EMAIL as string;
 	const password = process.env.PW_TEST_PWD as string;
 
