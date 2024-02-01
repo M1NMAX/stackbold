@@ -60,6 +60,7 @@
 	import { mediaQuery, textareaAutosizeAction } from 'svelte-legos';
 	import { clickOutside } from '$lib/actions';
 	import { z } from 'zod';
+	import { superForm } from 'sveltekit-superforms/client';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -74,6 +75,7 @@
 
 	let isMoveDialogOpen = false;
 	let isSmallHeadingVisible = false;
+	let isCreateItemDialogOpen = false;
 
 	// Delete Modal
 	let isDeleteModalOpen = false;
@@ -86,11 +88,6 @@
 		.string()
 		.min(1, { message: 'The name must be at least 1 character long' })
 		.max(20, { message: 'The name must be at most 20 characters long' });
-
-	const itemNameSchema = z
-		.string()
-		.min(1, { message: 'The name must be at least 1 character long' })
-		.max(100, { message: 'The name must be at most 20 characters long' });
 
 	const isDesktop = mediaQuery('(min-width: 768px)');
 	const activeItem = setActiveItemState(null);
@@ -175,29 +172,26 @@
 
 	// Item service functions
 
+	// handle create item form
+	const { form, enhance } = superForm(data.form, {
+		dataType: 'json',
+		onSubmit: () => {
+			form.update(
+				($form) => {
+					$form.collectionId = collection.id;
+					$form.properties = collection.properties.map((prop) => ({
+						id: prop.id,
+						value: prop.type === 'CHECKBOX' ? 'false' : ''
+					}));
+					return $form;
+				},
+				{ taint: false }
+			);
+		}
+	});
+
 	async function handleClickOpenItem(id: string) {
 		goto(`/collections/${collection.id}?id=${id}`);
-	}
-
-	async function handleCreateItem(name: string, openDrawer: boolean) {
-		try {
-			//TODO: in the future, property may have default value
-			const createdItem = await trpc().items.create.mutate({
-				collectionId: collection.id,
-				name,
-				properties: collection.properties.map((prop) => ({
-					id: prop.id,
-					value: prop.type === 'CHECKBOX' ? 'false' : ''
-				}))
-			});
-
-			items.push(createdItem);
-			items = items;
-
-			if (openDrawer) goto(`/collections/${collection.id}?id=${createdItem.id}`);
-		} catch (error) {
-			onError(error);
-		}
 	}
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
@@ -254,23 +248,6 @@
 		const name = e.currentTarget.innerText;
 
 		updItemDebounced({ id, data: { name } });
-	}
-
-	async function handleKeypressNewItemInput(e: KeyboardEvent) {
-		if (e.key !== 'Enter') return;
-
-		const targetEl = e.target as HTMLInputElement;
-
-		const parseResult = itemNameSchema.safeParse(targetEl.value);
-
-		if (!parseResult.success) {
-			itemNameError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		itemNameError = null;
-		handleCreateItem(parseResult.data, false);
-		targetEl.value = '';
 	}
 
 	// Property Handlers
@@ -737,7 +714,7 @@
 						<Table class="icon-md" />
 					</ViewButton>
 				</ViewButtonsGroup>
-				<Button on:click={() => handleCreateItem('Untitled', true)}>New item</Button>
+				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 			</div>
 		{:else}
 			<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
@@ -882,16 +859,20 @@
 						{itemNameError}
 					</span>
 				{/if}
-				<div class="relative">
+				<form class="relative" method="post" action="?/createItem" use:enhance>
 					<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
 						<Plus class="text-primary" />
 					</div>
 					<input
-						class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+						name="name"
 						placeholder="New item"
-						on:keypress={handleKeypressNewItemInput}
+						bind:value={$form.name}
+						autocomplete="off"
+						class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 					/>
-				</div>
+
+					<input type="submit" class="hidden" />
+				</form>
 			</div>
 		{/if}
 
@@ -899,7 +880,7 @@
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-full"
-				on:click={() => handleCreateItem('Untitled', true)}
+				on:click={() => (isCreateItemDialogOpen = true)}
 			>
 				<Plus />
 			</Button>
@@ -1036,6 +1017,28 @@
 	</div>
 </Sheet>
 
+<Dialog.Root bind:open={isCreateItemDialogOpen}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title class="text-center">New item</Dialog.Title>
+		</Dialog.Header>
+
+		<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
+			<label for="item-name"> Name</label>
+
+			<input
+				id="item-name"
+				placeholder="New item"
+				name="name"
+				autocomplete="off"
+				class="input"
+				bind:value={$form.name}
+			/>
+
+			<Button type="submit" class="w-full">Create</Button>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 {#if !$isDesktop}
 	<Dialog.Root bind:open={isSmallScrenDialogOpen}>
 		<Dialog.Content>
