@@ -1,12 +1,38 @@
+import type { Actions, PageServerLoad } from './$types';
 import { createContext } from '$lib/trpc/context';
 import { router } from '$lib/trpc/router';
-import type { PageServerLoad } from './$types';
+import { z } from 'zod';
+import { message, superValidate } from 'sveltekit-superforms/server';
+
+const createItemSchema = z.object({
+	name: z
+		.string()
+		.min(1, { message: 'The name must be at least 1 character long' })
+		.max(100, { message: 'The name must be at most 20 characters long' }),
+	collectionId: z.string(),
+	properties: z.array(z.object({ id: z.string(), value: z.string() }))
+});
 
 export const load: PageServerLoad = async (event) => {
 	const id = event.params.id;
 
+	const form = await superValidate(createItemSchema);
+
 	return {
 		collection: await router.createCaller(await createContext(event)).collections.load(id),
-		items: await router.createCaller(await createContext(event)).items.list(id)
+		items: await router.createCaller(await createContext(event)).items.list(id),
+		form
 	};
+};
+
+export const actions: Actions = {
+	createItem: async (event) => {
+		const form = await superValidate(event.request, createItemSchema);
+
+		try {
+			await router.createCaller(await createContext(event)).items.create(form.data);
+		} catch (error) {
+			return message(form, 'Something went error');
+		}
+	}
 };
