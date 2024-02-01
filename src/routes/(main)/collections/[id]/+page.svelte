@@ -52,6 +52,7 @@
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Command from '$lib/components/ui/command';
+	import * as Drawer from '$lib/components/ui/drawer';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { browser } from '$app/environment';
@@ -1017,28 +1018,53 @@
 	</div>
 </Sheet>
 
-<Dialog.Root bind:open={isCreateItemDialogOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title class="text-center">New item</Dialog.Title>
-		</Dialog.Header>
+{#if $isDesktop}
+	<Dialog.Root bind:open={isCreateItemDialogOpen}>
+		<Dialog.Content class="sm:max-w-[425px]">
+			<Dialog.Header>
+				<Dialog.Title class="text-center">New item</Dialog.Title>
+			</Dialog.Header>
 
-		<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
-			<label for="item-name"> Name</label>
+			<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
+				<label for="item-name"> Name</label>
 
-			<input
-				id="item-name"
-				placeholder="New item"
-				name="name"
-				autocomplete="off"
-				class="input"
-				bind:value={$form.name}
-			/>
+				<input
+					id="item-name"
+					placeholder="New item"
+					name="name"
+					autocomplete="off"
+					class="input"
+					bind:value={$form.name}
+				/>
 
-			<Button type="submit" class="w-full">Create</Button>
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
+				<Button type="submit" class="w-full">Create</Button>
+			</form>
+		</Dialog.Content>
+	</Dialog.Root>
+{:else}
+	<Drawer.Root bind:open={isCreateItemDialogOpen}>
+		<Drawer.Content class="p-2">
+			<Drawer.Header>
+				<Drawer.Title>New item</Drawer.Title>
+			</Drawer.Header>
+
+			<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
+				<label for="item-name"> Name</label>
+
+				<input
+					id="item-name"
+					placeholder="New item"
+					name="name"
+					autocomplete="off"
+					class="input"
+					bind:value={$form.name}
+				/>
+
+				<Button type="submit" class="w-full">Create</Button>
+			</form>
+		</Drawer.Content>
+	</Drawer.Root>
+{/if}
 {#if !$isDesktop}
 	<Dialog.Root bind:open={isSmallScrenDialogOpen}>
 		<Dialog.Content>
