@@ -10,11 +10,13 @@
 	import type { Property, Item } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
+	import { getScreenState } from '$lib/components/view';
 
 	export let items: Item[];
 	export let properties: Property[];
 
 	const activeItem = getActiveItemState();
+	const isDesktop = getScreenState();
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
@@ -68,7 +70,7 @@
 				on:clickOpenItem={(e) => dispatch('clickOpenItem', e.detail)}
 				on:clickDuplicateItem
 				on:clickDeleteItem
-				class="absolute right-2 top-0 invisible group-hover:visible"
+				class={cn('absolute right-2 top-0', $isDesktop && 'invisible group-hover:visible')}
 			/>
 
 			<div class="flex flex-wrap gap-2">

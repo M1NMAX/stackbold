@@ -48,7 +48,7 @@
 	import type { DeleteDetail } from '$lib/types';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
-	import { ViewButton, ViewButtonsGroup } from '$lib/components/view';
+	import { ViewButton, ViewButtonsGroup, setScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Command from '$lib/components/ui/command';
@@ -89,7 +89,7 @@
 		.min(1, { message: 'The name must be at least 1 character long' })
 		.max(20, { message: 'The name must be at most 20 characters long' });
 
-	const isDesktop = mediaQuery('(min-width: 768px)');
+	const isDesktop = setScreenState(mediaQuery('(min-width: 768px)'));
 	const activeItem = setActiveItemState(null);
 
 	const DEBOUNCE_INTERVAL = 1000;
