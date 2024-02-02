@@ -52,6 +52,7 @@
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Command from '$lib/components/ui/command';
+	import * as Drawer from '$lib/components/ui/drawer';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { browser } from '$app/environment';
@@ -68,7 +69,7 @@
 
 	let view = 'list';
 
-	let isSmallScrenDialogOpen = false;
+	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 
 	let itemNameError: string | null = null;
@@ -461,11 +462,11 @@
 		if (e.key == 'Enter') e.preventDefault();
 	}
 
-	function openSmallScreenDialog() {
-		isSmallScrenDialogOpen = true;
+	function openSmallScreenDrawer() {
+		isSmallScreenDrawerOpen = true;
 	}
-	function closeSmallScreenDialog() {
-		isSmallScrenDialogOpen = false;
+	function closeSmallScreenDrawer() {
+		isSmallScreenDrawerOpen = false;
 	}
 	function openMoveDialog() {
 		isMoveDialogOpen = true;
@@ -625,7 +626,7 @@
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 				{:else}
-					<Button size="icon" variant="secondary" on:click={openSmallScreenDialog}>
+					<Button size="icon" variant="secondary" on:click={openSmallScreenDrawer}>
 						<MoreHorizontal class="icon-xs" />
 					</Button>
 				{/if}
@@ -1041,34 +1042,14 @@
 </Dialog.Root>
 
 {#if !$isDesktop}
-	<Dialog.Root bind:open={isSmallScrenDialogOpen}>
-		<Dialog.Content>
-			<div class="flex items-center space-x-2">
-				<Button size="icon" variant="secondary" on:click={closeSmallScreenDialog}>
-					<ArrowLeft />
-				</Button>
-				<h1 class="font-semibold text-lg">Collection</h1>
-			</div>
-			<form class="w-full">
-				<label for="name" class="sr-only">New name </label>
-				<input
-					id="name"
-					value={collection.name}
-					name="name"
-					class="input input-ghost"
-					on:input={handleOnInputCollectionName}
-				/>
-				{#if renameCollectionError}
-					<span> {renameCollectionError}</span>
-				{/if}
-			</form>
-
-			<div class="w-full flex flex-col space-y-2">
+	<Drawer.Root bind:open={isSmallScreenDrawerOpen}>
+		<Drawer.Content>
+			<Drawer.Footer>
 				<Button
 					variant="secondary"
 					on:click={() => {
 						updCollection({ isFavourite: !collection.isFavourite });
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 					}}
 				>
 					<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
@@ -1090,15 +1071,12 @@
 					variant="secondary"
 					on:click={() => {
 						duplicateCollection();
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 					}}
 				>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-			</div>
-
-			<div class="flex flex-col">
 				<Button
 					variant="destructive"
 					on:click={() => {
@@ -1109,9 +1087,9 @@
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
-			</div>
-		</Dialog.Content>
-	</Dialog.Root>
+			</Drawer.Footer>
+		</Drawer.Content>
+	</Drawer.Root>
 {/if}
 
 <Command.Dialog bind:open={isMoveDialogOpen}>
@@ -1125,7 +1103,7 @@
 					onSelect={() => {
 						updCollection({ groupId: group.id });
 						closeMoveDialog();
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 					}}
 					class="space-x-2"
 				>

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
 	import {
-		ArrowLeft,
 		Check,
 		Copy,
 		CornerUpRight,
@@ -15,13 +14,13 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Command from '$lib/components/ui/command';
+	import * as Drawer from '$lib/components/ui/drawer';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { icons } from '$lib/components/icon';
 	import { mediaQuery } from 'svelte-legos';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import debounce from 'debounce';
 	import { z } from 'zod';
 
@@ -160,7 +159,7 @@
 	{/if}
 
 	{#if $isDesktop}
-		<DropdownMenu.Root let:ids>
+		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
 				<Button
 					builders={[builder]}
@@ -248,30 +247,24 @@
 </Command.Dialog>
 
 {#if !$isDesktop}
-	<Dialog.Root bind:open={isSmallScrenDialogOpen}>
-		<Dialog.Content>
-			<div class="flex items-center space-x-2">
-				<Button size="icon" variant="secondary" on:click={closeSmallScreenDialog}>
-					<ArrowLeft />
-				</Button>
-				<h1 class="font-semibold text-lg">Collection</h1>
-			</div>
-			<form class="w-full">
-				<label for="name" class="sr-only">New name </label>
-				<input
-					id="name"
-					value={name}
-					name="name"
-					class="input input-ghost"
-					on:keydown={handleKeydown}
-					on:input={handleOnInput}
-				/>
-				{#if renameError}
-					<span> {renameError}</span>
-				{/if}
-			</form>
+	<Drawer.Root bind:open={isSmallScrenDialogOpen}>
+		<Drawer.Content>
+			<Drawer.Header class="py-2">
+				<div class="flex items-center space-x-2">
+					<div class="p-2.5 rounded bg-secondary">
+						<svelte:component this={icons[icon]} class="icon-sm" />
+					</div>
 
-			<div class="w-full flex flex-col space-y-2">
+					<div class="flex flex-col items-start justify-start">
+						<div class=" text-base font-semibold truncate">{name}</div>
+						<div class="text-sm">
+							{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
+						</div>
+					</div>
+				</div>
+			</Drawer.Header>
+
+			<Drawer.Footer class="pt-2">
 				<Button
 					variant="secondary"
 					on:click={() => {
@@ -287,7 +280,13 @@
 						<span> Add to Favourites </span>
 					{/if}
 				</Button>
-				<Button variant="secondary" on:click={openMoveDialog}>
+				<Button
+					variant="secondary"
+					on:click={() => {
+						closeSmallScreenDialog();
+						openMoveDialog();
+					}}
+				>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</Button>
@@ -301,9 +300,6 @@
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-			</div>
-
-			<div class="flex flex-col">
 				<Button
 					variant="destructive"
 					on:click={() => {
@@ -314,7 +310,7 @@
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
-			</div>
-		</Dialog.Content>
-	</Dialog.Root>
+			</Drawer.Footer>
+		</Drawer.Content>
+	</Drawer.Root>
 {/if}
