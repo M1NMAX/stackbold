@@ -55,6 +55,8 @@
 
 	type CreateCollectionDetail = { name: string; groupId: string | undefined };
 	let createCollectionDetail: CreateCollectionDetail = { name: '', groupId: undefined };
+	let newGroupName = '';
+	let isNewGroupDialogOpen = false; //TODO: add method to handle close and open
 
 	const crtCollectionModal = setModalState();
 
@@ -86,6 +88,8 @@
 
 		const value = (e.target as HTMLInputElement).value;
 
+		// TODO: user zod for validation
+
 		if (value.length < 1 || value.length > 256) {
 			hideNewGroupInput();
 			onError({ msg: '(main)/+layout: Invalid group name' }, 'Invalid group name');
@@ -95,6 +99,21 @@
 		await createGroup({ name: value });
 
 		hideNewGroupInput();
+	}
+
+	async function handleSubmitNewGroup() {
+		// TODO: user zod for validation
+		// TODO: ref maybe extract value directly from Form element
+
+		if (newGroupName.length < 1 || newGroupName.length > 256) {
+			hideNewGroupInput();
+			onError({ msg: '(main)/+layout: Invalid group name' }, 'Invalid group name');
+			return;
+		}
+
+		await createGroup({ name: newGroupName });
+
+		isNewGroupDialogOpen = false;
 	}
 
 	async function updGroup(args: RouterInputs['groups']['update']) {
@@ -205,6 +224,11 @@
 
 	function showNewGroupInput() {
 		isNewGroupInputVisible = true;
+	}
+
+	function handleNewGroup() {
+		if ($isDesktop) showNewGroupInput();
+		else isNewGroupDialogOpen = true;
 	}
 
 	onMount(() => {
@@ -519,7 +543,7 @@
 					<Plus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" on:click={showNewGroupInput}>
+				<Button variant="secondary" size="icon" on:click={handleNewGroup}>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>
@@ -533,7 +557,7 @@
 </div>
 
 <Dialog.Root bind:open={$crtCollectionModal}>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
 		</Dialog.Header>
@@ -563,6 +587,30 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
+
+{#if !$isDesktop}
+	<Dialog.Root bind:open={isNewGroupDialogOpen}>
+		<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
+			<Dialog.Header>
+				<Dialog.Title>New group</Dialog.Title>
+			</Dialog.Header>
+			<form on:submit|preventDefault={handleSubmitNewGroup} class="flex flex-col space-y-2">
+				<label for="name"> Name </label>
+				<input
+					id="name"
+					type="text"
+					name="name"
+					placeholder="Personal, Work, ..."
+					required
+					class="input"
+					bind:value={newGroupName}
+				/>
+
+				<Button type="submit" class="w-full">Create</Button>
+			</form>
+		</Dialog.Content>
+	</Dialog.Root>
+{/if}
 
 <AlertDialog.Root bind:open={isDeleteModalOpen}>
 	<AlertDialog.Content>
