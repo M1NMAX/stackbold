@@ -14,11 +14,14 @@
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { getScreenState } from '$lib/components/view';
 
 	export let items: Item[];
 	export let properties: Property[];
 
 	const activeItem = getActiveItemState();
+
+	const isDesktop = getScreenState();
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
@@ -93,7 +96,7 @@
 				{#each items as item (item.id)}
 					<tr
 						class={cn(
-							'font-medium text-base border-y  border-secondary  hover:bg-opacity-20  group',
+							'font-medium text-base whitespace-nowrap w-96 border-y  border-secondary  hover:bg-opacity-20  group  ',
 							item.id === $activeItem?.id && 'bg-card/50 border-r-2 border-y-0  border-primary'
 						)}
 					>
@@ -114,7 +117,10 @@
 								variant="secondary"
 								size="sm"
 								on:click={() => dispatch('clickOpenItem', item.id)}
-								class="items-center space-x-2 py-0.5 px-1 rounded invisible group-hover:visible"
+								class={cn(
+									'items-center space-x-2 py-0.5 px-1 rounded',
+									$isDesktop && ' invisible group-hover:visible'
+								)}
 							>
 								<span> Open </span>
 
@@ -143,7 +149,10 @@
 							{/if}
 						{/each}
 
-						<td class="flex items-center space-x-2 text-left whitespace-nowrap px-2">
+						<td
+							on:click={(e) => e.stopPropagation()}
+							class="flex items-center space-x-2 text-left whitespace-nowrap px-2"
+						>
 							<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
 						</td>
 					</tr>
