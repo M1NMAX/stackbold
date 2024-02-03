@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		Database,
 		Dna,
 		Hash,
 		Home,
@@ -41,22 +42,19 @@
 	import { setModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { onError } from '$lib/components/ui/sonner';
-	import { focusAction, mediaQuery } from 'svelte-legos';
-	import { clickOutside, escapeKeydown } from '$lib/actions';
+	import { mediaQuery } from 'svelte-legos';
 	import { setScreenState } from '$lib/components/view';
+	import { nameSchema } from '$lib/schema';
 
 	export let data: LayoutData;
 	$: ({ user, groups, collections, items } = data);
 
 	let innerWidth: number;
 	let isCommandDialogOpen = false;
+	let isNewGroupDialogOpen = false;
 
-	let isNewGroupInputVisible = false;
-
-	type CreateCollectionDetail = { name: string; groupId: string | undefined };
-	let createCollectionDetail: CreateCollectionDetail = { name: '', groupId: undefined };
-	let newGroupName = '';
-	let isNewGroupDialogOpen = false; //TODO: add method to handle close and open
+	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
+	let error: Error = { type: null };
 
 	const crtCollectionModal = setModalState();
 
@@ -67,7 +65,8 @@
 
 	const SIDEBAR_ITEMS = [
 		{ label: 'Home', url: '/', icon: Home },
-		{ label: 'Templates', url: '/templates', icon: Dna }
+		{ label: 'Templates', url: '/templates', icon: Dna },
+		{ label: 'Collections', url: '/collections', icon: Database }
 	];
 
 	const isDesktop = setScreenState(mediaQuery('(min-width: 768px)'));
@@ -82,38 +81,21 @@
 		}
 	}
 
-	async function handleKeydownNewGroup(e: KeyboardEvent) {
-		if (e.key !== 'Enter') return;
-		e.preventDefault();
+	async function handleSubmitNewGroup(e: { currentTarget: HTMLFormElement }) {
+		const formData = new FormData(e.currentTarget);
 
-		const value = (e.target as HTMLInputElement).value;
+		const name = formData.get('name') as string;
 
-		// TODO: user zod for validation
+		const parseResult = nameSchema.safeParse(name);
 
-		if (value.length < 1 || value.length > 256) {
-			hideNewGroupInput();
-			onError({ msg: '(main)/+layout: Invalid group name' }, 'Invalid group name');
+		if (!parseResult.success) {
+			error = { type: 'new-group-rename', msg: parseResult.error.issues[0].message };
 			return;
 		}
 
-		await createGroup({ name: value });
-
-		hideNewGroupInput();
-	}
-
-	async function handleSubmitNewGroup() {
-		// TODO: user zod for validation
-		// TODO: ref maybe extract value directly from Form element
-
-		if (newGroupName.length < 1 || newGroupName.length > 256) {
-			hideNewGroupInput();
-			onError({ msg: '(main)/+layout: Invalid group name' }, 'Invalid group name');
-			return;
-		}
-
-		await createGroup({ name: newGroupName });
-
-		isNewGroupDialogOpen = false;
+		error = { type: null };
+		await createGroup({ name });
+		closeNewGroupDialog();
 	}
 
 	async function updGroup(args: RouterInputs['groups']['update']) {
@@ -135,7 +117,6 @@
 	}
 
 	// COLLECTION HANDLERS
-
 	async function createCollection(args: RouterInputs['collections']['create']) {
 		try {
 			const createdCollection = await trpc().collections.create.mutate(args);
@@ -147,11 +128,22 @@
 		}
 	}
 
-	async function handleSubmitCollection() {
-		createCollection({
-			...createCollectionDetail,
-			groupId: createCollectionDetail.groupId || null
-		});
+	async function handleSubmitCollection(e: { currentTarget: HTMLFormElement }) {
+		const formData = new FormData(e.currentTarget);
+		const name = formData.get('name') as string;
+		const group = formData.get('group') as string;
+
+		const parseResult = nameSchema.safeParse(name);
+
+		if (!parseResult.success) {
+			error = { type: 'new-collection-name', msg: parseResult.error.issues[0].message };
+			return;
+		}
+
+		error = { type: null };
+
+		createCollection({ name, groupId: group || null });
+
 		$crtCollectionModal = false;
 	}
 
@@ -218,17 +210,12 @@
 		isDeleteModalOpen = false;
 	}
 
-	function hideNewGroupInput() {
-		isNewGroupInputVisible = false;
+	function openNewGroupDialog() {
+		isNewGroupDialogOpen = true;
 	}
 
-	function showNewGroupInput() {
-		isNewGroupInputVisible = true;
-	}
-
-	function handleNewGroup() {
-		if ($isDesktop) showNewGroupInput();
-		else isNewGroupDialogOpen = true;
+	function closeNewGroupDialog() {
+		isNewGroupDialogOpen = false;
 	}
 
 	onMount(() => {
@@ -251,7 +238,6 @@
 
 	$: activeUrl = $page.url.pathname;
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
-	//  TODO: maybe add report and support page
 </script>
 
 <svelte:window bind:innerWidth />
@@ -363,7 +349,7 @@
 						<div>
 							<Button variant="secondary" size="icon" on:click={() => (isCommandDialogOpen = true)}>
 								<Search class="icon-sm" />
-								<span class="sr-only">New group</span>
+								<span class="sr-only">Search</span>
 							</Button>
 							<Button variant="secondary" size="icon" on:click={() => ($sidebarState = false)}>
 								<X class="icon-sm" />
@@ -412,34 +398,11 @@
 				{/each}
 			</div>
 
-			<!-- TODO: handle scroll, when there are too many collections -->
-
 			<Accordion.Root
 				class="grow w-full space-y-1.5 overflow-y-auto"
 				multiple
 				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
-				<SidebarItem
-					label="Collections"
-					href="/collections"
-					active={activeUrl === '/collections'}
-				/>
-				{#if isNewGroupInputVisible}
-					<div class="px-1">
-						<input
-							id="group-input"
-							placeholder="New group"
-							class="input input-bordered"
-							use:focusAction
-							use:clickOutside
-							use:escapeKeydown
-							on:clickoutside={hideNewGroupInput}
-							on:escapeKey={hideNewGroupInput}
-							on:keydown={handleKeydownNewGroup}
-						/>
-					</div>
-				{/if}
-
 				<div class="space-y-0">
 					{#each collections as collection}
 						{#if collection.groupId === null}
@@ -543,7 +506,7 @@
 					<Plus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" on:click={handleNewGroup}>
+				<Button variant="secondary" size="icon" on:click={openNewGroupDialog}>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>
@@ -556,6 +519,7 @@
 	</div>
 </div>
 
+<!-- Create collection dialog -->
 <Dialog.Root bind:open={$crtCollectionModal}>
 	<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
 		<Dialog.Header>
@@ -568,13 +532,15 @@
 				type="text"
 				name="name"
 				placeholder="Tasks"
-				required
 				class="input"
-				bind:value={createCollectionDetail.name}
+				autocomplete="off"
 			/>
+			{#if error.type === 'new-collection-name'}
+				<span class="text-error"> {error.msg}</span>
+			{/if}
 
 			<label class="label" for="group"> Group </label>
-			<select id="group" name="group" class="select" bind:value={createCollectionDetail.groupId}>
+			<select id="group" name="group" class="select">
 				<option value={undefined} selected> Without group </option>
 				{#each groups as group (group.id)}
 					<option value={group.id}>
@@ -588,47 +554,32 @@
 	</Dialog.Content>
 </Dialog.Root>
 
-{#if !$isDesktop}
-	<Dialog.Root bind:open={isNewGroupDialogOpen}>
-		<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
-			<Dialog.Header>
-				<Dialog.Title>New group</Dialog.Title>
-			</Dialog.Header>
-			<form on:submit|preventDefault={handleSubmitNewGroup} class="flex flex-col space-y-2">
-				<label for="name"> Name </label>
-				<input
-					id="name"
-					type="text"
-					name="name"
-					placeholder="Personal, Work, ..."
-					required
-					class="input"
-					bind:value={newGroupName}
-				/>
+<!-- Create group dialog -->
+<Dialog.Root bind:open={isNewGroupDialogOpen}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>New group</Dialog.Title>
+		</Dialog.Header>
+		<form on:submit|preventDefault={handleSubmitNewGroup} class="flex flex-col space-y-2">
+			<label for="group-name"> Name </label>
+			<input
+				id="group-name"
+				type="text"
+				name="name"
+				placeholder="Personal, Work, ..."
+				class="input"
+			/>
 
-				<Button type="submit" class="w-full">Create</Button>
-			</form>
-		</Dialog.Content>
-	</Dialog.Root>
-{/if}
+			{#if error.type === 'new-group-rename'}
+				<span class="text-error"> {error.msg} </span>
+			{/if}
 
-<AlertDialog.Root bind:open={isDeleteModalOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete</AlertDialog.Title>
-			<AlertDialog.Description class="text-lg">
-				Are you sure you want to delete this {deleteDetail.type} ?
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
-			</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
+			<Button type="submit" class="w-full">Create</Button>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 
+<!-- Search dialog -->
 <Command.Dialog bind:open={isCommandDialogOpen}>
 	<Command.Input placeholder="Type a command or search..." />
 	<Command.List>
@@ -668,3 +619,20 @@
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
+
+<AlertDialog.Root bind:open={isDeleteModalOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Title>Delete</AlertDialog.Title>
+			<AlertDialog.Description class="text-lg">
+				Are you sure you want to delete this {deleteDetail.type} ?
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action asChild let:builder>
+				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
