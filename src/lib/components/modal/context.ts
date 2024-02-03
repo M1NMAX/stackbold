@@ -1,12 +1,15 @@
 import { getContext, setContext } from 'svelte';
 import { writable, type Writable } from 'svelte/store';
 
-const MODAL_CTX = 'MODAL_CTX';
-export function setModalState() {
-	const modalState = writable(false);
-	setContext(MODAL_CTX, modalState);
-	return modalState;
+const CRT_DIALOG_CTX = Symbol('CRT_DIALOG_CTX');
+
+type CrtDialogDetail = { open: boolean; defaultGroup?: string };
+export function setCrtCollectionDialogState(initial: CrtDialogDetail) {
+	const dialogState = writable(initial);
+	setContext(CRT_DIALOG_CTX, dialogState);
+	return dialogState;
 }
-export function getModalState() {
-	return getContext<Writable<boolean>>(MODAL_CTX);
+
+export function getCrtCollectionDialogState() {
+	return getContext<Writable<CrtDialogDetail>>(CRT_DIALOG_CTX);
 }

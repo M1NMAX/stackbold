@@ -39,7 +39,7 @@
 	import { onSuccess, redirectToast } from '$lib/components/ui/sonner';
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
-	import { setModalState } from '$lib/components/modal';
+	import { setCrtCollectionDialogState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { onError } from '$lib/components/ui/sonner';
 	import { mediaQuery } from 'svelte-legos';
@@ -56,7 +56,7 @@
 	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
 	let error: Error = { type: null };
 
-	const crtCollectionModal = setModalState();
+	const crtCollectionDialog = setCrtCollectionDialogState({ open: false });
 
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
@@ -144,7 +144,7 @@
 
 		createCollection({ name, groupId: group || null });
 
-		$crtCollectionModal = false;
+		closeCrtCollectionDialog();
 	}
 
 	async function duplicateCollection(id: string) {
@@ -216,6 +216,14 @@
 
 	function closeNewGroupDialog() {
 		isNewGroupDialogOpen = false;
+	}
+
+	function openCrtCollectionDialog() {
+		$crtCollectionDialog = { defaultGroup: undefined, open: true };
+	}
+
+	function closeCrtCollectionDialog() {
+		$crtCollectionDialog = { defaultGroup: undefined, open: false };
 	}
 
 	onMount(() => {
@@ -502,7 +510,7 @@
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
-				<Button variant="secondary" class="grow h-9" on:click={() => ($crtCollectionModal = true)}>
+				<Button variant="secondary" class="grow h-9" on:click={openCrtCollectionDialog}>
 					<FolderPlus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
@@ -520,7 +528,7 @@
 </div>
 
 <!-- Create collection dialog -->
-<Dialog.Root bind:open={$crtCollectionModal}>
+<Dialog.Root bind:open={$crtCollectionDialog.open}>
 	<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
@@ -540,8 +548,8 @@
 			{/if}
 
 			<label class="label" for="group"> Group </label>
-			<select id="group" name="group" class="select">
-				<option value={undefined} selected> Without group </option>
+			<select id="group" name="group" class="select" value={$crtCollectionDialog.defaultGroup}>
+				<option value={undefined}> Without group </option>
 				{#each groups as group (group.id)}
 					<option value={group.id}>
 						{group.name}
@@ -592,7 +600,8 @@
 					value="new collection"
 					onSelect={() => {
 						isCommandDialogOpen = false;
-						$crtCollectionModal = true;
+
+						openCrtCollectionDialog();
 					}}
 				>
 					<FolderPlus class="icon-xs" />

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
-	import { Database, FolderPlus, ListFilter, Plus } from 'lucide-svelte';
+	import { Database, FolderPlus, ListFilter } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
@@ -9,7 +9,7 @@
 	import type { Collection } from '@prisma/client';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
-	import { getModalState } from '$lib/components/modal';
+	import { getCrtCollectionDialogState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';
 	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
@@ -21,11 +21,15 @@
 	type Filters = 'all' | 'favourites' | 'archived';
 	let filter: Filters = 'all';
 
-	const crtCollectionModal = getModalState();
+	const crtCollectionDialog = getCrtCollectionDialogState();
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
 	const sort = storage('sort-collections', sortOptions[0]);
 	const isDesktop = mediaQuery('(min-width: 768px)');
+
+	function openCrtCollectionDialog() {
+		$crtCollectionDialog = { defaultGroup: undefined, open: true };
+	}
 
 	function setFilter(newFilter: string) {
 		filter = newFilter as Filters;
@@ -102,7 +106,7 @@
 					</DropdownMenu.Root>
 
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-					<Button on:click={() => ($crtCollectionModal = true)}>New Collection</Button>
+					<Button on:click={openCrtCollectionDialog}>New Collection</Button>
 				</div>
 			{:else}
 				<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
@@ -150,7 +154,7 @@
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-full"
-				on:click={() => ($crtCollectionModal = true)}
+				on:click={openCrtCollectionDialog}
 			>
 				<FolderPlus />
 			</Button>

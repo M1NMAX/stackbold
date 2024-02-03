@@ -4,25 +4,20 @@
 	import { getScreenState } from '$lib/components/view';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Popover from '$lib/components/ui/popover';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { z } from 'zod';
+	import { getCrtCollectionDialogState } from '$lib/components/modal';
+	import { nameSchema } from '$lib/schema';
 
 	export let id: string;
 	export let name: string;
 
-	let isPopoverOpen = false;
-	let isNewCollection = false;
 	let isSmallScrenDrawerOpen = false;
 	let isRenameGroupDialogOpen = false;
 
 	let renameError: string | null = null;
 
-	const nameSchema = z
-		.string()
-		.min(1, { message: 'The name must be at least 1 character long' })
-		.max(20, { message: 'The name must be at most 20 characters long' });
+	const crtCollectionDialog = getCrtCollectionDialogState();
 
 	const isDesktop = getScreenState();
 
@@ -31,18 +26,6 @@
 		renameGroup: { name: string; groupId: string };
 		clickDeleteGroup: { id: string; name: string };
 	}>();
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key !== 'Enter') return;
-
-		e.preventDefault();
-
-		const targetEl = e.target as HTMLInputElement;
-
-		if (isNewCollection) dispatch('addNewCollection', { name: targetEl.value, groupId: id });
-		else dispatch('renameGroup', { name: targetEl.value, groupId: id });
-		isPopoverOpen = false;
-	}
 
 	function handleSubmitRename(e: { currentTarget: HTMLFormElement }) {
 		const formData = new FormData(e.currentTarget);
@@ -58,6 +41,11 @@
 		renameError = null;
 		dispatch('renameGroup', { groupId: id, name });
 		closeRenameDialog();
+	}
+
+	function clickCreateCollection() {
+		$crtCollectionDialog.defaultGroup = id;
+		$crtCollectionDialog.open = true;
 	}
 
 	function openRenameGroupDialog() {
@@ -76,25 +64,6 @@
 </script>
 
 <div>
-	<Popover.Root bind:open={isPopoverOpen}>
-		<Popover.Trigger class="sr-only">Open</Popover.Trigger>
-		<Popover.Content class="p-1">
-			<form class="space-y-1">
-				<div class="flex space-x-1.5">
-					<label for="name" class=" sr-only"> Name </label>
-
-					<input
-						id="name"
-						name="name"
-						placeholder="Tasks, ToDo ..."
-						class="grow input input-ghost px-1 font-semibold text-sm"
-						on:keydown={handleKeydown}
-					/>
-				</div>
-			</form>
-		</Popover.Content>
-	</Popover.Root>
-
 	{#if $isDesktop}
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
@@ -108,13 +77,7 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item
-					on:click={() => {
-						isPopoverOpen = true;
-						isNewCollection = true;
-					}}
-					class="space-x-2"
-				>
+				<DropdownMenu.Item on:click={clickCreateCollection} class="space-x-2">
 					<Plus class="icon-xs" />
 					<span>New collection</span>
 				</DropdownMenu.Item>

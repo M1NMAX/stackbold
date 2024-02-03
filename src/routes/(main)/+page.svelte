@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview } from '$lib/components/collection';
 	import type { RouterOutputs } from '$lib/trpc/router';
-	import { getModalState } from '$lib/components/modal';
+	import { getCrtCollectionDialogState } from '$lib/components/modal';
 
 	export let data: PageData;
 	$: ({ user, collections } = data);
@@ -13,7 +13,11 @@
 	$: favCollections = getFavCollections(collections);
 	$: updCollections = getUpdCollections(collections);
 
-	const crtCollectionModal = getModalState();
+	const crtCollectionDialog = getCrtCollectionDialogState();
+
+	function openCrtCollectionDialog() {
+		$crtCollectionDialog = { defaultGroup: undefined, open: true };
+	}
 
 	type CollectionArray = RouterOutputs['collections']['list'];
 	function getFavCollections(collections: CollectionArray) {
@@ -71,7 +75,7 @@
 					<p class="text-xl font-medium">Wow, such empty</p>
 				</div>
 
-				<Button on:click={() => ($crtCollectionModal = true)} class="h-12 w-full">
+				<Button on:click={openCrtCollectionDialog} class="h-12 w-full">
 					<FolderPlus />
 					<span> Create Collection</span>
 				</Button>
