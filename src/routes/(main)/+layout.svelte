@@ -584,6 +584,35 @@
 	<Command.Input placeholder="Type a command or search..." />
 	<Command.List>
 		<Command.Empty>No results found.</Command.Empty>
+
+		{#if $isDesktop}
+			<Command.Group heading="Shortcuts">
+				<Command.Item
+					class="space-x-2"
+					value="new collection"
+					onSelect={() => {
+						isCommandDialogOpen = false;
+						$crtCollectionModal = true;
+					}}
+				>
+					<FolderPlus class="icon-xs" />
+					<span> New collection </span>
+				</Command.Item>
+
+				<Command.Item
+					class="space-x-2"
+					value="new group"
+					onSelect={() => {
+						isCommandDialogOpen = false;
+						openNewGroupDialog();
+					}}
+				>
+					<PackagePlus class="icon-xs" />
+					<span> New group </span>
+				</Command.Item>
+			</Command.Group>
+			<Command.Separator />
+		{/if}
 		<Command.Group heading="Collections">
 			{#each collections as collection}
 				<Command.Item
