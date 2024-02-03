@@ -27,8 +27,8 @@
 	function getUpdCollections(collections: CollectionArray) {
 		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
-		// return the first 9 most recent collection
-		return sorted.slice(0, 10);
+		// return the 12 most recently updated collections
+		return sorted.slice(0, 12);
 	}
 </script>
 
