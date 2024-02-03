@@ -2,13 +2,13 @@
 	import {
 		Database,
 		Dna,
+		FolderPlus,
 		Hash,
 		Home,
 		Lock,
 		LogOut,
 		PackagePlus,
 		PanelLeftInactive,
-		Plus,
 		Search,
 		Settings,
 		SunMoon,
@@ -428,7 +428,7 @@
 					)}
 					<Accordion.Item value={`item-${idx + 1}`}>
 						<Accordion.Trigger
-							class="justify-start space-x-2 py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
+							class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold  hover:no-underline hover:bg-muted"
 						>
 							{group.name}
 
@@ -503,7 +503,7 @@
 
 			<div class="flex items-center justify-between space-x-1 px-1">
 				<Button variant="secondary" class="grow h-9" on:click={() => ($crtCollectionModal = true)}>
-					<Plus class="icon-sm" />
+					<FolderPlus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
 				<Button variant="secondary" size="icon" on:click={openNewGroupDialog}>
