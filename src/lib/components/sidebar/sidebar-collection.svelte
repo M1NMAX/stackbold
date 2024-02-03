@@ -12,17 +12,17 @@
 	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Popover from '$lib/components/ui/popover';
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { icons } from '$lib/components/icon';
-	import { mediaQuery } from 'svelte-legos';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
-	import debounce from 'debounce';
-	import { z } from 'zod';
+
+	import { nameSchema } from '$lib/schema.js';
+	import { getScreenState } from '$lib/components/view';
 
 	export let active: boolean;
 	export let asChild: boolean = false;
@@ -31,19 +31,13 @@
 	$: ({ id, name, icon } = collection);
 
 	let isMoveDialogOpen = false;
-	let isSmallScrenDialogOpen = false;
+	let isRenameDialogOpen = false;
+	let isSmallScrenDrawerOpen = false;
 
 	let renameError: string | null = null;
 
-	let isRenameInputVisible = false;
-
 	const sidebarState = getSidebarState();
-	const isDesktop = mediaQuery('(min-width: 768px)');
-
-	const nameSchema = z
-		.string()
-		.min(1, { message: 'The name must be at least 1 character long' })
-		.max(20, { message: 'The name must be at most 20 characters long' });
+	const isDesktop = getScreenState();
 
 	const dispatch = createEventDispatcher<{
 		updCollection: { id: string; field: keyof Collection; value: string | boolean };
@@ -51,41 +45,22 @@
 		deleteCollection: { id: string; name: string };
 	}>();
 
-	const deboundedUpd = debounce((name: string) => {
+	function handleSubmitRename(e: { currentTarget: HTMLFormElement }) {
+		const formData = new FormData(e.currentTarget);
+
+		const name = formData.get('name') as string;
+
+		const parseResult = nameSchema.safeParse(name);
+
+		if (!parseResult.success) {
+			renameError = parseResult.error.issues[0].message;
+			return;
+		}
+
+		renameError = null;
 		dispatch('updCollection', { id, field: 'name', value: name });
-	}, 1000);
 
-	function handleOnInput(e: Event) {
-		const targetEl = e.target as HTMLInputElement;
-
-		const parseResult = nameSchema.safeParse(targetEl.value);
-
-		if (!parseResult.success) {
-			renameError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		renameError = null;
-		deboundedUpd(parseResult.data);
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key !== 'Enter') return;
-		e.preventDefault();
-
-		const targetEl = e.target as HTMLInputElement;
-
-		const parseResult = nameSchema.safeParse(targetEl.value);
-
-		if (!parseResult.success) {
-			renameError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		renameError = null;
-		dispatch('updCollection', { id, field: 'name', value: parseResult.data });
-
-		hideRenameInput();
+		closeRenameDialog();
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -104,19 +79,19 @@
 		isMoveDialogOpen = false;
 	}
 
-	function openSmallScreenDialog() {
-		isSmallScrenDialogOpen = true;
+	function openSmallScreenDrawer() {
+		isSmallScrenDrawerOpen = true;
 	}
-	function closeSmallScreenDialog() {
-		isSmallScrenDialogOpen = false;
-	}
-
-	function showRenameInput() {
-		isRenameInputVisible = true;
+	function closeSmallScreenDrawer() {
+		isSmallScrenDrawerOpen = false;
 	}
 
-	function hideRenameInput() {
-		isRenameInputVisible = false;
+	function openRenameDialog() {
+		isRenameDialogOpen = true;
+	}
+
+	function closeRenameDialog() {
+		isRenameDialogOpen = false;
 	}
 </script>
 
@@ -137,28 +112,6 @@
 	</a>
 
 	{#if $isDesktop}
-		<Popover.Root bind:open={isRenameInputVisible}>
-			<Popover.Trigger class="sr-only">Open</Popover.Trigger>
-			<Popover.Content>
-				<form class="w-full">
-					<label for="name" class=" sr-only"> Name </label>
-					<input
-						id="name"
-						value={name}
-						name="name"
-						class="input input-bordered"
-						on:keydown={handleKeydown}
-						on:input={handleOnInput}
-					/>
-					{#if renameError}
-						<span> {renameError}</span>
-					{/if}
-				</form>
-			</Popover.Content>
-		</Popover.Root>
-	{/if}
-
-	{#if $isDesktop}
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
 				<Button
@@ -171,7 +124,7 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item class="space-x-2" on:click={showRenameInput}>
+				<DropdownMenu.Item class="space-x-2" on:click={openRenameDialog}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
@@ -216,11 +169,36 @@
 	{/if}
 
 	{#if !$isDesktop}
-		<Button size="icon" variant="ghost" on:click={openSmallScreenDialog}>
+		<Button size="icon" variant="ghost" on:click={openSmallScreenDrawer}>
 			<MoreHorizontal class="icon-xs" />
 		</Button>
 	{/if}
 </span>
+
+<Dialog.Root bind:open={isRenameDialogOpen}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Rename collection</Dialog.Title>
+		</Dialog.Header>
+		<form on:submit|preventDefault={handleSubmitRename} class="flex flex-col space-y-2">
+			<label for="collection-name"> Name </label>
+			<input
+				id="collection-name"
+				type="text"
+				name="name"
+				autocomplete="off"
+				value={name}
+				class="input"
+			/>
+
+			{#if renameError}
+				<span class="text-error"> {renameError}</span>
+			{/if}
+
+			<Button type="submit" class="w-full">Save</Button>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 
 <Command.Dialog bind:open={isMoveDialogOpen}>
 	<Command.Input placeholder="Move collection to..." />
@@ -233,7 +211,7 @@
 					onSelect={() => {
 						dispatch('updCollection', { id, field: 'groupId', value: group.id });
 						closeMoveDialog();
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 					}}
 					class="space-x-2"
 				>
@@ -247,7 +225,7 @@
 </Command.Dialog>
 
 {#if !$isDesktop}
-	<Drawer.Root bind:open={isSmallScrenDialogOpen}>
+	<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
 		<Drawer.Content>
 			<Drawer.Header class="py-2">
 				<div class="flex items-center space-x-2">
@@ -269,7 +247,7 @@
 					variant="secondary"
 					on:click={() => {
 						dispatch('updCollection', { id, field: 'isFavourite', value: !collection.isFavourite });
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 					}}
 				>
 					{#if collection.isFavourite}
@@ -283,7 +261,7 @@
 				<Button
 					variant="secondary"
 					on:click={() => {
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 						openMoveDialog();
 					}}
 				>
@@ -294,7 +272,7 @@
 					variant="secondary"
 					on:click={() => {
 						dispatch('duplicateCollection', { id });
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 					}}
 				>
 					<Copy class="icon-xs" />
@@ -303,7 +281,7 @@
 				<Button
 					variant="destructive"
 					on:click={() => {
-						closeSmallScreenDialog();
+						closeSmallScreenDrawer();
 						dispatch('deleteCollection', { id, name });
 					}}
 				>
