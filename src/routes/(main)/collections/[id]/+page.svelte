@@ -11,6 +11,7 @@
 		Eye,
 		EyeOff,
 		Heart,
+		HeartOff,
 		MoreHorizontal,
 		Plus,
 		Square,
@@ -60,8 +61,8 @@
 	import { toast } from 'svelte-sonner';
 	import { textareaAutosizeAction } from 'svelte-legos';
 	import { clickOutside } from '$lib/actions';
-	import { z } from 'zod';
 	import { superForm } from 'sveltekit-superforms/client';
+	import { nameSchema } from '$lib/schema';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -84,11 +85,6 @@
 
 	// Sheet
 	let isOpen = false;
-
-	const nameSchema = z
-		.string()
-		.min(1, { message: 'The name must be at least 1 character long' })
-		.max(20, { message: 'The name must be at most 20 characters long' });
 
 	const isDesktop = getScreenState();
 	const activeItem = setActiveItemState(null);
@@ -1044,7 +1040,21 @@
 {#if !$isDesktop}
 	<Drawer.Root bind:open={isSmallScreenDrawerOpen}>
 		<Drawer.Content>
-			<Drawer.Footer>
+			<Drawer.Header class="py-2">
+				<div class="flex items-center space-x-2">
+					<div class="p-2.5 rounded bg-secondary">
+						<svelte:component this={icons[collection.icon]} class="icon-sm" />
+					</div>
+
+					<div class="flex flex-col items-start justify-start">
+						<div class=" text-base font-semibold truncate">{collection.name}</div>
+						<div class="text-sm">
+							{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
+						</div>
+					</div>
+				</div>
+			</Drawer.Header>
+			<Drawer.Footer class="pt-2">
 				<Button
 					variant="secondary"
 					on:click={() => {
@@ -1052,14 +1062,21 @@
 						closeSmallScreenDrawer();
 					}}
 				>
-					<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
 					{#if collection.isFavourite}
+						<HeartOff class="icon-xs" />
 						<span> Remove from Favourites </span>
 					{:else}
+						<Heart class="icon-xs" />
 						<span> Add to Favourites </span>
 					{/if}
 				</Button>
-				<Button variant="secondary" on:click={openMoveDialog}>
+				<Button
+					variant="secondary"
+					on:click={() => {
+						closeSmallScreenDrawer();
+						openMoveDialog();
+					}}
+				>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</Button>
@@ -1080,6 +1097,7 @@
 				<Button
 					variant="destructive"
 					on:click={() => {
+						closeSmallScreenDrawer();
 						deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
 						isDeleteModalOpen = true;
 					}}
