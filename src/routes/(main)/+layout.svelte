@@ -42,8 +42,7 @@
 	import { setCrtCollectionDialogState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { onError } from '$lib/components/ui/sonner';
-	import { mediaQuery } from 'svelte-legos';
-	import { setScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
 
 	export let data: LayoutData;
@@ -69,7 +68,7 @@
 		{ label: 'Collections', url: '/collections', icon: Database }
 	];
 
-	const isDesktop = setScreenState(mediaQuery('(min-width: 768px)'));
+	const isDesktop = getScreenState();
 
 	// Groups services
 	async function createGroup(args: RouterInputs['groups']['create']) {

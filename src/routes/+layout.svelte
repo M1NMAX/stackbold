@@ -1,12 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-
 	import { onMount } from 'svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import { mediaQuery } from 'svelte-legos';
+	import { setScreenState } from '$lib/components/view';
 
-	const isDesktop = mediaQuery('(min-width: 768px)');
+	const isDesktop = setScreenState(mediaQuery('(min-width: 768px)'));
 
 	async function detectSWUpdate() {
 		const registration = await navigator.serviceWorker.ready;
