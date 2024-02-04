@@ -14,6 +14,7 @@
 	import PropertyValueWrapper from './property-value-wrapper.svelte';
 	import { getScreenState } from '$lib/components/view';
 	import { textareaAutosizeAction } from 'svelte-legos';
+	import { Title } from '../ui/alert-dialog';
 
 	export let itemId: string;
 	export let property: Property;
@@ -129,7 +130,7 @@
 			</Dialog.Trigger>
 			<Dialog.Content class="p-0 pt-2">
 				<Dialog.Header class="pb-0">
-					<Dialog.Description>{property.name}</Dialog.Description>
+					<Dialog.Title class="text-center">{property.name}</Dialog.Title>
 				</Dialog.Header>
 
 				<Command.Root class="bg-inherit">
@@ -267,24 +268,28 @@
 		</Drawer.Root>
 	{/if}
 {:else if property.type === 'TEXT' && (value || isTableView)}
+	{@const MAX_STR_LENGTH = 50}
 	{#if $isDesktop}
 		<Popover.Root bind:open>
 			<Popover.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value}
+					{value?.substring(0, MAX_STR_LENGTH)}
+					{value && value.length > MAX_STR_LENGTH && '...'}
 				</Button>
 			</Popover.Trigger>
-			<Popover.Content>
+			<Popover.Content
+				class={cn('w-full max-w-lg', value && value?.length < MAX_STR_LENGTH && 'max-w-xs')}
+			>
 				<form>
 					<label for={property.id} class="sr-only"> {property.name} </label>
 
-					<input
+					<textarea
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
-						class="w-full input input-ghost px-1 font-semibold text-sm"
-						type={property.type.toLowerCase()}
+						class="textarea textarea-ghost"
 						{value}
+						use:textareaAutosizeAction
 						on:input={handleOnInput}
 					/>
 				</form>
@@ -294,7 +299,8 @@
 		<Dialog.Root bind:open>
 			<Dialog.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value}
+					{value?.substring(0, MAX_STR_LENGTH)}
+					{value && value.length > MAX_STR_LENGTH && '...'}
 				</Button>
 			</Dialog.Trigger>
 			<Dialog.Content>
