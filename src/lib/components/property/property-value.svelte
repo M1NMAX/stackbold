@@ -14,7 +14,6 @@
 	import PropertyValueWrapper from './property-value-wrapper.svelte';
 	import { getScreenState } from '$lib/components/view';
 	import { textareaAutosizeAction } from 'svelte-legos';
-	import { Title } from '../ui/alert-dialog';
 
 	export let itemId: string;
 	export let property: Property;

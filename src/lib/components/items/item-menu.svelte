@@ -86,7 +86,7 @@
 					<span>Duplicate</span>
 				</Button>
 				<Button variant="destructive" on:click={() => clickDrawerBtn('clickDeleteItem')}>
-					<Trash />
+					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
 			</Drawer.Footer>
