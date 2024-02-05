@@ -49,7 +49,10 @@
 		on:keypress|stopPropagation={handleKeypress}
 		id="add-option"
 		placeholder="Enter option value"
-		class={cn('input hidden', show && 'block')}
+		class={cn(
+			'h-8 w-full p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 hidden',
+			show && 'block'
+		)}
 	/>
 
 	<div class="space-y-1">
