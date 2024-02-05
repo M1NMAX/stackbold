@@ -1,6 +1,4 @@
-import Drawer from './sheet.svelte';
-
-export { default as Sheet } from './sheet.svelte';
+export { default as ItemDrawer } from './sheet.svelte';
 
 export interface sheetTransitionParamTypes {
 	amount?: number;

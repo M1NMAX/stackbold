@@ -42,7 +42,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
-	import { Sheet } from '$lib/components/sheet';
+	import { ItemDrawer } from '$lib/components/sheet';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
@@ -885,7 +885,7 @@
 	</PageContent>
 </PageContainer>
 
-<Sheet bind:open={isOpen} id="itemDrawer" class=" w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+<ItemDrawer bind:open={isOpen} id="itemDrawer" class=" w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
 	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
 		<div class="flex justify-between items-center">
 			<Button
@@ -1012,7 +1012,7 @@
 			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
 		</div>
 	</div>
-</Sheet>
+</ItemDrawer>
 
 <Dialog.Root bind:open={isCreateItemDialogOpen}>
 	<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
