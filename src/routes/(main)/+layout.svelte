@@ -250,14 +250,19 @@
 <svelte:window bind:innerWidth />
 
 <div class="h-screen flex bg-secondary">
-	<Sidebar class={cn(' transition-all w-0 overflow-hidden', $sidebarState && 'w-full lg:w-72')}>
+	<Sidebar
+		class={cn(
+			'transition-all w-0 overflow-hidden',
+			$sidebarState && `${$isDesktop ? 'w-72' : 'w-full'}`
+		)}
+	>
 		<div
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
-			<div class="w-full flex justify-between space-x-0.5 px-1">
+			<div class=" flex justify-between space-x-0.5 px-1">
 				{#if $isDesktop}
 					<DropdownMenu.Root>
-						<div class="w-full flex items-center justify-between space-x-1">
+						<div class="flex items-center justify-between space-x-1">
 							<DropdownMenu.Trigger asChild let:builder>
 								<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
 									<img
@@ -346,12 +351,13 @@
 					<Drawer.Root>
 						<div class="w-full flex justify-between items-center">
 							<Drawer.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
+								<Button builders={[builder]} variant="secondary" class=" p-0.5 pr-1">
 									<img
 										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
 										class="icon-lg object-contain rounded-md"
 										alt="avatar"
 									/>
+									<span> {user.name}</span>
 								</Button>
 							</Drawer.Trigger>
 							<div>
@@ -412,7 +418,7 @@
 			</div>
 
 			<Accordion.Root
-				class="grow w-full space-y-1.5 overflow-y-auto"
+				class="grow  space-y-1.5 overflow-y-auto"
 				multiple
 				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
@@ -527,7 +533,12 @@
 		</div>
 	</Sidebar>
 
-	<div class={cn('w-full flex relative bg-secondary', $sidebarState && 'w-0 lg:w-full')}>
+	<div
+		class={cn(
+			'w-full flex relative bg-secondary',
+			$sidebarState && `${$isDesktop ? 'w-full' : 'w-0'} `
+		)}
+	>
 		<slot />
 	</div>
 </div>
