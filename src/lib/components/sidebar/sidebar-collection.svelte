@@ -20,7 +20,6 @@
 	import { icons } from '$lib/components/icon';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
-
 	import { nameSchema } from '$lib/schema.js';
 	import { getScreenState } from '$lib/components/view';
 
@@ -166,12 +165,83 @@
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
-	{/if}
+	{:else}
+		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
+			<Drawer.Trigger asChild let:builder>
+				<Button builders={[builder]} size="icon" variant="ghost">
+					<MoreHorizontal class="icon-xs" />
+				</Button>
+			</Drawer.Trigger>
 
-	{#if !$isDesktop}
-		<Button size="icon" variant="ghost" on:click={openSmallScreenDrawer}>
-			<MoreHorizontal class="icon-xs" />
-		</Button>
+			<Drawer.Content>
+				<Drawer.Header class="py-2">
+					<div class="flex items-center space-x-2">
+						<div class="p-2.5 rounded bg-secondary">
+							<svelte:component this={icons[icon]} class="icon-sm" />
+						</div>
+
+						<div class="flex flex-col items-start justify-start">
+							<div class=" text-base font-semibold truncate">{name}</div>
+							<div class="text-sm">
+								{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
+							</div>
+						</div>
+					</div>
+				</Drawer.Header>
+
+				<Drawer.Footer class="pt-2">
+					<Button
+						variant="secondary"
+						on:click={() => {
+							dispatch('updCollection', {
+								id,
+								field: 'isFavourite',
+								value: !collection.isFavourite
+							});
+							closeSmallScreenDrawer();
+						}}
+					>
+						{#if collection.isFavourite}
+							<HeartOff class="icon-xs" />
+							<span> Remove from Favourites </span>
+						{:else}
+							<Heart class="icon-xs" />
+							<span> Add to Favourites </span>
+						{/if}
+					</Button>
+					<Button
+						variant="secondary"
+						on:click={() => {
+							closeSmallScreenDrawer();
+							openMoveDialog();
+						}}
+					>
+						<CornerUpRight class="icon-xs" />
+						<span>Move to</span>
+					</Button>
+					<Button
+						variant="secondary"
+						on:click={() => {
+							dispatch('duplicateCollection', { id });
+							closeSmallScreenDrawer();
+						}}
+					>
+						<Copy class="icon-xs" />
+						<span>Duplicate</span>
+					</Button>
+					<Button
+						variant="destructive"
+						on:click={() => {
+							closeSmallScreenDrawer();
+							dispatch('deleteCollection', { id, name });
+						}}
+					>
+						<Trash class="icon-xs" />
+						<span>Delete</span>
+					</Button>
+				</Drawer.Footer>
+			</Drawer.Content>
+		</Drawer.Root>
 	{/if}
 </span>
 
@@ -223,72 +293,3 @@
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
-
-{#if !$isDesktop}
-	<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
-		<Drawer.Content>
-			<Drawer.Header class="py-2">
-				<div class="flex items-center space-x-2">
-					<div class="p-2.5 rounded bg-secondary">
-						<svelte:component this={icons[icon]} class="icon-sm" />
-					</div>
-
-					<div class="flex flex-col items-start justify-start">
-						<div class=" text-base font-semibold truncate">{name}</div>
-						<div class="text-sm">
-							{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
-						</div>
-					</div>
-				</div>
-			</Drawer.Header>
-
-			<Drawer.Footer class="pt-2">
-				<Button
-					variant="secondary"
-					on:click={() => {
-						dispatch('updCollection', { id, field: 'isFavourite', value: !collection.isFavourite });
-						closeSmallScreenDrawer();
-					}}
-				>
-					{#if collection.isFavourite}
-						<HeartOff class="icon-xs" />
-						<span> Remove from Favourites </span>
-					{:else}
-						<Heart class="icon-xs" />
-						<span> Add to Favourites </span>
-					{/if}
-				</Button>
-				<Button
-					variant="secondary"
-					on:click={() => {
-						closeSmallScreenDrawer();
-						openMoveDialog();
-					}}
-				>
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</Button>
-				<Button
-					variant="secondary"
-					on:click={() => {
-						dispatch('duplicateCollection', { id });
-						closeSmallScreenDrawer();
-					}}
-				>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</Button>
-				<Button
-					variant="destructive"
-					on:click={() => {
-						closeSmallScreenDrawer();
-						dispatch('deleteCollection', { id, name });
-					}}
-				>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
-				</Button>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
-{/if}

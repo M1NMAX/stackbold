@@ -344,24 +344,30 @@
 					</DropdownMenu.Root>
 				{:else}
 					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
-								<img
-									src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
-									class="icon-lg object-contain rounded-md"
-									alt="avatar"
-								/>
-							</Button>
-						</Drawer.Trigger>
-						<div>
-							<Button variant="secondary" size="icon" on:click={() => (isCommandDialogOpen = true)}>
-								<Search class="icon-sm" />
-								<span class="sr-only">Search</span>
-							</Button>
-							<Button variant="secondary" size="icon" on:click={() => ($sidebarState = false)}>
-								<X class="icon-sm" />
-								<span class="sr-only"> Hide sidebar </span>
-							</Button>
+						<div class="w-full flex justify-between items-center">
+							<Drawer.Trigger asChild let:builder>
+								<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
+									<img
+										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
+										class="icon-lg object-contain rounded-md"
+										alt="avatar"
+									/>
+								</Button>
+							</Drawer.Trigger>
+							<div>
+								<Button
+									variant="secondary"
+									size="icon"
+									on:click={() => (isCommandDialogOpen = true)}
+								>
+									<Search class="icon-sm" />
+									<span class="sr-only">Search</span>
+								</Button>
+								<Button variant="secondary" size="icon" on:click={() => ($sidebarState = false)}>
+									<X class="icon-sm" />
+									<span class="sr-only"> Hide sidebar </span>
+								</Button>
+							</div>
 						</div>
 
 						<Drawer.Content>
