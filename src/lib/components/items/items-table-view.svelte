@@ -149,10 +149,7 @@
 							{/if}
 						{/each}
 
-						<td
-							on:click={(e) => e.stopPropagation()}
-							class="flex items-center space-x-2 text-left whitespace-nowrap px-2"
-						>
+						<td>
 							<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
 						</td>
 					</tr>
