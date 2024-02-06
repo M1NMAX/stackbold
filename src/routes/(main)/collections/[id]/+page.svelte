@@ -227,14 +227,13 @@
 	async function deleteItem(id: string) {
 		await trpc().items.delete.mutate(id);
 
-		items = items.filter((item) => item.id !== id);
-
 		toast.success('Item deleted successfully');
 		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === id) {
 			isOpen = false;
 			$page.url.searchParams.delete('id');
 			goto(`/collections/${collection.id}`);
 		}
+		await invalidateAll();
 	}
 
 	// Item input handlers
@@ -371,12 +370,9 @@
 
 			if ($activeItem && $activeItem.id === updatedItem.id) $activeItem = updatedItem;
 
-			// update items overview
-			const itemsCopy = items.filter((item) => item.id !== id);
-			items = [...itemsCopy, updatedItem];
 			await invalidateAll();
 
-			// toast.success('Property value update successfully');
+			toast.success('Property value update successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -893,6 +889,7 @@
 				variant="secondary"
 				size="icon"
 				on:click={() => {
+					$page.url.searchParams.delete('id');
 					goto(`/collections/${collection.id}`);
 					isOpen = false;
 					$activeItem = null;
