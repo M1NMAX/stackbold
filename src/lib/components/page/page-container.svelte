@@ -6,7 +6,12 @@
 	export { className as class };
 </script>
 
-<main class={cn('h-screen w-full p-0 lg:p-1 bg-secondary text-secondary-foreground', className)}>
+<main
+	class={cn(
+		'h-screen w-full p-0 md:p-1 bg-secondary text-secondary-foreground overflow-hidden',
+		className
+	)}
+>
 	<div
 		class={cn(
 			'h-full w-full p-1 bg-card rounded-md text-secondary-foreground overflow-hidden',

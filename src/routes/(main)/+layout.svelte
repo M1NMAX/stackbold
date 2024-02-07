@@ -262,7 +262,7 @@
 			<div class=" flex justify-between space-x-0.5 px-1">
 				{#if $isDesktop}
 					<DropdownMenu.Root>
-						<div class="flex items-center justify-between space-x-1">
+						<div class="w-full flex items-center justify-between space-x-1">
 							<DropdownMenu.Trigger asChild let:builder>
 								<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
 									<img
