@@ -14,7 +14,7 @@
 	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { mediaQuery } from 'svelte-legos';
+	import { getScreenState } from '$lib/components/view';
 
 	export let data: PageData;
 
@@ -25,7 +25,7 @@
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
 	const sort = storage('sort-collections', sortOptions[0]);
-	const isDesktop = mediaQuery('(min-width: 768px)');
+	const isDesktop = getScreenState();
 
 	function openCrtCollectionDialog() {
 		$crtCollectionDialog = { defaultGroup: undefined, open: true };
@@ -47,10 +47,14 @@
 	}
 
 	// SEARCH
-	const searchCollections = data.collections.map((collection) => ({
-		...collection,
-		searchTerms: collection.name
-	}));
+
+	function addSearchTerms() {
+		return data.collections.map((collection) => ({
+			...collection,
+			searchTerms: collection.name
+		}));
+	}
+	const searchCollections = addSearchTerms();
 
 	const searchStore = createSearchStore(searchCollections);
 
@@ -62,6 +66,7 @@
 
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 	$: filter, ($searchStore.data = filterCollections());
+	$: data, ($searchStore.data = addSearchTerms().sort(sortFun($sort.field, $sort.order)));
 </script>
 
 <svelte:head>
