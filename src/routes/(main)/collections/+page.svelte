@@ -7,7 +7,7 @@
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
-	import { capitalizeFirstLetter, cn } from '$lib/utils';
+	import { capitalizeFirstLetter, cn, pluralize } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { getCrtCollectionDialogState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';
@@ -117,6 +117,7 @@
 				<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
 
 				<div class="flex justify-between items-center">
+					<div>{pluralize('Collection', $searchStore.filtered.length, 's')}</div>
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 				</div>
 			{/if}
