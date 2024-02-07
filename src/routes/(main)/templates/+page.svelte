@@ -31,12 +31,12 @@
 
 		const result = await preloadData(href);
 
-		if (result.load === 'loaded' || result.status === 200) {
-			result.data.isModal = true;
-
-			pushState(href, { template: result.data });
-		} else {
+		if (result.type === 'redirect') {
 			goto(href);
+		} else {
+			result.data.isModal = true;
+			// @ts-ignore
+			pushState(href, { template: result.data });
 		}
 	}
 	function noCheck(x: any) {
@@ -75,8 +75,6 @@
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>
 		</div>
-		<!-- TODO: write the page description -->
-		<p>Page description</p>
 
 		<div class=" space-y-2">
 			<div class="w-full flex justify-between space-x-2">
