@@ -1,11 +1,9 @@
 <script lang="ts">
-	import type { Collection } from '@prisma/client';
+	import type { RouterOutputs } from '$lib/trpc/router';
 	import { icons } from '$lib/components/icon';
 	import { cn } from '$lib/utils';
 	import dayjs from '$lib/utils/dayjs';
 	import { Hash, Heart } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
-	import type { RouterOutputs } from '$lib/trpc/router';
 
 	export let collection: RouterOutputs['collections']['list'][0];
 </script>
@@ -21,9 +19,7 @@
 			{collection.name}
 		</h2>
 
-		<Button variant="ghost" size="xs">
-			<Heart class={cn('icon-xs', collection.isFavourite && 'fill-primary text-primary')} />
-		</Button>
+		<Heart class={cn('icon-xs fill-primary text-primary', !collection.isFavourite && 'hidden')} />
 	</div>
 
 	<div class="flex space-x-4 text-sm text-muted-foreground">
