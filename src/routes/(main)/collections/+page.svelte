@@ -118,29 +118,6 @@
 
 				<div class="flex justify-between items-center">
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
-								<ListFilter />
-								<span class="sr-only"> {filter} </span>
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-44">
-							<DropdownMenu.Label>Filter</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-
-							<DropdownMenu.Group>
-								{#each ['all', 'favourites', 'archived'] as option}
-									<DropdownMenu.CheckboxItem
-										checked={option === filter}
-										on:click={() => setFilter(option)}
-									>
-										{capitalizeFirstLetter(option)}
-									</DropdownMenu.CheckboxItem>
-								{/each}
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
 				</div>
 			{/if}
 
