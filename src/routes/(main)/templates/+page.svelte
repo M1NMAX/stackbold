@@ -13,6 +13,7 @@
 	import { icons } from '$lib/components/icon';
 	import type { Template } from '@prisma/client';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
+	import { getScreenState } from '$lib/components/view';
 
 	export let data: PageData;
 
@@ -21,6 +22,8 @@
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
 
 	const sort = setSortState(sortOptions[0]);
+
+	const isDesktop = getScreenState();
 
 	async function onTemplateLinkClick(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
 		// bail if opening a new tab, or we're on too small a screen
@@ -77,10 +80,18 @@
 		</div>
 
 		<div class=" space-y-2">
-			<div class="w-full flex justify-between space-x-2">
+			{#if $isDesktop}
+				<div class="w-full flex justify-between space-x-2">
+					<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				</div>
+			{:else}
 				<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
-			</div>
+
+				<div class="w-full flex justify-end">
+					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				</div>
+			{/if}
 
 			<div class="space-y-2">
 				{#each $searchStore.filtered as template (template.id)}
