@@ -14,6 +14,7 @@
 	import type { Template } from '@prisma/client';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { getScreenState } from '$lib/components/view';
+	import { pluralize } from '$lib/utils';
 
 	export let data: PageData;
 
@@ -88,7 +89,10 @@
 			{:else}
 				<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
 
-				<div class="w-full flex justify-end">
+				<div class="w-full flex justify-between items-center">
+					<div>
+						{pluralize('Template', $searchStore.filtered.length, 's')}
+					</div>
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 				</div>
 			{/if}
