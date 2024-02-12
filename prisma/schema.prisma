@@ -22,57 +22,13 @@ enum Role {
 }
 
 model User {
-  id                     String                   @id @map("_id")
-  email                  String                   @unique
-  email_verified         Boolean
-  auth_session           Session[]
-  key                    Key[]
-  EmailVerificationToken EmailVerificationToken[]
-  PasswordResetToken     PasswordResetToken[]
-  name                   String
-  role                   Role                     @default(MEMBER)
-  collections            Collection[]
-  updatedItems           Item[]
-  Group                  Group[]
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-}
-
-model Session {
-  id             String @id @map("_id")
-  user_id        String
-  active_expires BigInt
-  idle_expires   BigInt
-  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
-}
-
-model Key {
-  id              String  @id @map("_id")
-  hashed_password String?
-  user_id         String
-  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
-}
-
-model EmailVerificationToken {
-  id      String @id @map("_id")
-  expires BigInt
-  user_id String
-  user    User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
-}
-
-model PasswordResetToken {
-  id      String @id @map("_id")
-  expires BigInt
-  user_id String
-  user    User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
+  id           String       @id @map("_id")
+  role         Role         @default(MEMBER)
+  collections  Collection[]
+  updatedItems Item[]
+  Group        Group[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
 
 enum Color {

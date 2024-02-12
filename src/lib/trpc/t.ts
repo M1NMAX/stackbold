@@ -14,9 +14,9 @@ export const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
 });
 
 export const authMiddleware = t.middleware(async ({ next, ctx }) => {
-	if (!ctx.session?.user.email) throw new TRPCError({ code: 'UNAUTHORIZED' });
+	if (!ctx.session?.user.id) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-	return next({ ctx: { session: ctx.session, userId: ctx.session.user.userId } });
+	return next({ ctx: { session: ctx.session, userId: ctx.session.user.id } });
 });
 
 export const adminMiddleware = t.middleware(async ({ next, ctx }) => {

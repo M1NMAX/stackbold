@@ -5,13 +5,16 @@ import type { LayoutServerLoad } from './$types';
 import type { Collection } from '@prisma/client';
 
 export const load: LayoutServerLoad = async (event) => {
-	const session = await event.locals.auth.validate();
+	const session = await event.locals.getSession();
 
 	if (!session) redirect(302, '/signin');
 
-	if (!session.user.emailVerified) {
-		redirect(302, '/email-verification');
-	}
+	console.log(session);
+	const {
+		data: { user: userData }
+	} = await event.locals.supabase.auth.getUser();
+
+	console.log(userData?.user_metadata);
 
 	async function getItems(collections: Collection[]) {
 		type SearchableItem = { id: string; name: string; collection: { id: string; name: string } };

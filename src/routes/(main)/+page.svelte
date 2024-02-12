@@ -39,7 +39,7 @@
 <PageContainer>
 	<PageHeader />
 	<PageContent class="space-y-5">
-		<h1 class="font-semibold text-2xl">Welcome back, {user.name}!</h1>
+		<h1 class="font-semibold text-2xl">Welcome back!</h1>
 
 		{#if favCollections.length > 0}
 			<section class="space-y-1.5">
