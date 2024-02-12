@@ -4,4 +4,18 @@
 	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
 		<slot />
 	</div>
+
+	<footer>
+		<p>
+			Stackbold created by <a
+				href="https://github.com/M1NMAX"
+				class="text-primary hover:text-primary/70"
+				>José Ferreira
+			</a>
+			|
+			<a href="https://github.com/M1NMAX/stackbold" class="text-primary hover:text-primary/70">
+				source code</a
+			>
+		</p>
+	</footer>
 </div>
