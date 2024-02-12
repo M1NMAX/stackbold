@@ -2,7 +2,8 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { dev } from '$app/environment';
-import { authSchema } from '$lib/schema';
+import { signUpSchema } from '$lib/schema';
+import { prisma } from '$lib/server/prisma';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!dev) redirect(302, '/signin');
@@ -13,13 +14,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		redirect(302, '/');
 	}
 
-	const form = await superValidate(authSchema);
+	const form = await superValidate(signUpSchema);
 	return { form };
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		const form = await superValidate(request, authSchema);
+		const form = await superValidate(request, signUpSchema);
 
 		if (!form.valid) return fail(400, { form });
 

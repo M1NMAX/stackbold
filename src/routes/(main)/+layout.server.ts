@@ -9,13 +9,6 @@ export const load: LayoutServerLoad = async (event) => {
 
 	if (!session) redirect(302, '/signin');
 
-	console.log(session);
-	const {
-		data: { user: userData }
-	} = await event.locals.supabase.auth.getUser();
-
-	console.log(userData?.user_metadata);
-
 	async function getItems(collections: Collection[]) {
 		type SearchableItem = { id: string; name: string; collection: { id: string; name: string } };
 
