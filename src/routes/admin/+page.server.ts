@@ -3,9 +3,7 @@ import { createContext } from '$lib/trpc/context';
 import { router } from '$lib/trpc/router';
 import { z } from 'zod';
 import { message, superValidate } from 'sveltekit-superforms/server';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { fail, redirect } from '@sveltejs/kit';
-import { auth } from '$lib/server/lucia';
 
 const signUpSchema = z.object({
 	name: z.string().min(4).max(31),
@@ -15,7 +13,7 @@ const signUpSchema = z.object({
 });
 
 export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.auth.validate();
+	const session = await event.locals.getSession();
 
 	if (!session) redirect(302, '/signin');
 	if (session.user.role !== 'ADMIN') redirect(302, '/');
@@ -37,26 +35,6 @@ export const actions: Actions = {
 
 		const { name, email, password, role } = form.data;
 
-		try {
-			await auth.createUser({
-				key: {
-					providerId: 'email',
-					providerUserId: email.toLowerCase(),
-					password
-				},
-				attributes: {
-					name,
-					email: email.toLocaleLowerCase(),
-					email_verified: true,
-					role
-				}
-			});
-		} catch (e) {
-			// check for unique constraint error in user table
-			if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
-				return message(form, 'Username already taken');
-			}
-			return message(form, 'An unknown error occurred');
-		}
+		return message(form, 'Feature under revision');
 	}
 };
