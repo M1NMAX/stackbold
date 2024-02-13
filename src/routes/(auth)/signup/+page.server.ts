@@ -3,7 +3,6 @@ import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { dev } from '$app/environment';
 import { signUpSchema } from '$lib/schema';
-import { prisma } from '$lib/server/prisma';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!dev) redirect(302, '/signin');
