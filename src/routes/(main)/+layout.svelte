@@ -266,7 +266,9 @@
 							<DropdownMenu.Trigger asChild let:builder>
 								<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
 									<img
-										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
+										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${
+											user.email?.split('@')[0]
+										}`}
 										class="icon-lg object-contain rounded-md"
 										alt="avatar"
 									/>
@@ -296,7 +298,7 @@
 						</div>
 
 						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Label>{user.name} | {user.email}</DropdownMenu.Label>
+							<DropdownMenu.Label>{user.email}</DropdownMenu.Label>
 
 							{#if user.role === 'ADMIN'}
 								<DropdownMenu.Separator />
@@ -353,11 +355,13 @@
 							<Drawer.Trigger asChild let:builder>
 								<Button builders={[builder]} variant="secondary" class=" p-0.5 pr-1">
 									<img
-										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
+										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${
+											user.email?.split('@')[0]
+										}`}
 										class="icon-lg object-contain rounded-md"
 										alt="avatar"
 									/>
-									<span> {user.name}</span>
+									<span> {user.email}</span>
 								</Button>
 							</Drawer.Trigger>
 							<div>
@@ -378,7 +382,7 @@
 
 						<Drawer.Content>
 							<Drawer.Header class="py-2">
-								<Drawer.Title>{user.name}</Drawer.Title>
+								<Drawer.Title>User</Drawer.Title>
 								<Drawer.Description>{user.email}</Drawer.Description>
 							</Drawer.Header>
 

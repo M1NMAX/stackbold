@@ -13,8 +13,7 @@ setup('authenticate', async ({ page }) => {
 	await page.getByLabel('Password').fill(password);
 	await page.getByRole('button', { name: 'Sign in' }).click();
 	await page.waitForURL('/');
-	await expect(page.locator('h1')).toContainText('Welcome back,');
-	await expect(page.getByRole('main')).toContainText('Recently updated collections');
+	await expect(page.locator('h1')).toContainText('Welcome!');
 
 	await page.context().storageState({ path: authFile });
 });

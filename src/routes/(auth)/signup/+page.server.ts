@@ -1,27 +1,15 @@
-import { auth } from '$lib/server/lucia';
-import { fail, redirect } from '@sveltejs/kit';
-import { z } from 'zod';
-import { message, superValidate } from 'sveltekit-superforms/server';
-
 import type { PageServerLoad, Actions } from './$types';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { generateEmailVerificationToken } from '$lib/server/token';
-import { sendEmailVerificationLink } from '$lib/server/email';
+import { fail, redirect } from '@sveltejs/kit';
+import { message, superValidate } from 'sveltekit-superforms/server';
 import { dev } from '$app/environment';
-
-const signUpSchema = z.object({
-	name: z.string().min(4).max(31),
-	email: z.string().email(),
-	password: z.string().min(6).max(255)
-});
+import { signUpSchema } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!dev) redirect(302, '/signin');
 
-	const session = await locals.auth.validate();
+	const session = await locals.getSession();
 
 	if (session) {
-		if (!session.user.emailVerified) redirect(302, '/email-verification');
 		redirect(302, '/');
 	}
 
@@ -35,39 +23,18 @@ export const actions: Actions = {
 
 		if (!form.valid) return fail(400, { form });
 
-		const { name, email, password } = form.data;
+		const { email, password } = form.data;
 
-		try {
-			const user = await auth.createUser({
-				key: {
-					providerId: 'email', // auth method
-					providerUserId: email.toLowerCase(), // unique id when using "username" auth method
-					password // hashed by Lucia
-				},
-				attributes: {
-					name,
-					email: email.toLocaleLowerCase(),
-					email_verified: false,
-					role: 'MEMBER'
-				}
-			});
-			const session = await auth.createSession({
-				userId: user.userId,
-				attributes: {}
-			});
-			locals.auth.setSession(session); // set session cookie
+		const { error } = await locals.supabase.auth.signUp({
+			email,
+			password,
+			options: { emailRedirectTo: 'http://localhost:5173/' }
+		});
 
-			const token = await generateEmailVerificationToken(user.userId);
-			await sendEmailVerificationLink(token);
-		} catch (e) {
-			// check for unique constraint error in user table
-			if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
-				return message(form, 'Username already taken');
-			}
-			return message(form, 'An unknown error occurred');
+		if (error) {
+			return message(form, error.message);
 		}
-		// redirect to
-		// make sure you don't throw inside a try/catch block!
-		redirect(302, '/');
+
+		return message(form, 'A email verification link was sent to your inbox');
 	}
 };

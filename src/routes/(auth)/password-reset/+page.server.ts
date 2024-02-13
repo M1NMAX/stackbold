@@ -1,12 +1,7 @@
-import { fail } from '@sveltejs/kit';
-import { auth } from '$lib/server/lucia';
-import { generatePasswordResetToken } from '$lib/server/token';
-import { sendPasswordResetLink } from '$lib/server/email';
-import { prisma } from '$lib/server/prisma';
-import { z } from 'zod';
-import { message, superValidate } from 'sveltekit-superforms/server';
-
 import type { PageServerLoad, Actions } from './$types';
+import { fail } from '@sveltejs/kit';
+import { message, superValidate } from 'sveltekit-superforms/server';
+import { z } from 'zod';
 
 const emailSchema = z.object({
 	email: z.string().email()
@@ -18,25 +13,22 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
 		const form = await superValidate(request, emailSchema);
 
 		if (!form.valid) return fail(400, { form });
 
 		const { email } = form.data;
 
-		try {
-			const storedUser = await prisma.user.findUnique({ where: { email } });
+		// TODO: finish password reset workflow
+		const { error } = await locals.supabase.auth.resetPasswordForEmail(email, {
+			redirectTo: 'http://localhost:5173/password-reset/token'
+		});
 
-			if (!storedUser) return message(form, 'User does not exist');
-
-			const user = auth.transformDatabaseUser(storedUser);
-			const token = await generatePasswordResetToken(user.userId);
-			await sendPasswordResetLink(token);
-
-			return message(form, 'Success, Your password reset link was sent to your inbox ');
-		} catch (e) {
-			return message(form, 'An unknown error occured');
+		if (error) {
+			return message(form, error.message);
 		}
+
+		return message(form, 'Success, Your password reset link was sent to your inbox ');
 	}
 };
