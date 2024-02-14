@@ -1,24 +1,30 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import type { Template } from '@prisma/client';
 	import { onDestroy } from 'svelte';
-	import { Dna } from 'lucide-svelte';
-	import { Root as DialogRoot, Content as DialogContent } from '$lib/components/ui/dialog';
-	import { goto, preloadData, pushState } from '$app/navigation';
+	import { ArrowLeft, CheckSquare2, Dna, Square, X } from 'lucide-svelte';
+	import { invalidateAll } from '$app/navigation';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import TemplatePage from './[id]/+page.svelte';
-	import { page } from '$app/stores';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
-	import type { Template } from '@prisma/client';
-	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
+	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { getScreenState } from '$lib/components/view';
-	import { pluralize } from '$lib/utils';
+	import { cn, pluralize } from '$lib/utils';
+	import { getPropertyColor, getPropertyRef, getPropertyValue } from '$lib/components/property';
+	import { Button } from '$lib/components/ui/button';
+	import { ItemDrawer } from '$lib/components/sheet';
+	import { trpc } from '$lib/trpc/client';
+	import { onError, redirectToast } from '$lib/components/ui/sonner';
+	import dayjs from '$lib/utils/dayjs';
+	import { tooltipAction } from 'svelte-legos';
 
 	export let data: PageData;
 
-	let isPreviewDialogOpen = false;
+	let activeTemplate: Template | null = null;
+
+	let isSheetOpen = false;
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
 
@@ -26,25 +32,43 @@
 
 	const isDesktop = getScreenState();
 
-	async function onTemplateLinkClick(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
-		// bail if opening a new tab, or we're on too small a screen
-		if (e.metaKey || e.ctrlKey || innerWidth < 640) return;
-		e.preventDefault();
+	// TODO: ref better try catch and feedback
+	async function createCollectionBasedOnTemplate(id: string) {
+		try {
+			const { icon, name, description, properties, items } = await trpc().templates.load.query(id);
 
-		const { href } = e.currentTarget;
+			const createdCollection = await trpc().collections.create.mutate({
+				icon,
+				name,
+				description,
+				properties
+			});
 
-		const result = await preloadData(href);
+			const itemsCopy = items.map(({ id, ...rest }) => ({
+				...rest,
+				collectionId: createdCollection.id
+			}));
 
-		if (result.type === 'redirect') {
-			goto(href);
-		} else {
-			result.data.isModal = true;
-			// @ts-ignore
-			pushState(href, { template: result.data });
+			await trpc().items.createMany.mutate(itemsCopy);
+
+			redirectToast('New collection created', `/collections/${createdCollection.id}`);
+			await invalidateAll();
+		} catch (error) {
+			onError(error);
 		}
 	}
-	function noCheck(x: any) {
-		return x;
+
+	function onClickTemplate(id: string) {
+		activeTemplate = data.templates.find((template) => template.id === id) || null;
+		openSheet();
+	}
+
+	function closeSheet() {
+		isSheetOpen = false;
+	}
+
+	function openSheet() {
+		isSheetOpen = true;
 	}
 
 	// SEARCH
@@ -62,17 +86,13 @@
 	});
 
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
-
-	$: if ($page.state.template) {
-		isPreviewDialogOpen = true;
-	} else {
-		isPreviewDialogOpen = false;
-	}
 </script>
 
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
-<PageContainer>
+<PageContainer
+	class={cn('flex flex-col space-y-1 ease-in-out duration-300', isSheetOpen && 'w-3/5')}
+>
 	<PageHeader />
 	<PageContent>
 		<div class="flex items-center space-x-2">
@@ -99,29 +119,22 @@
 
 			<div class="space-y-2">
 				{#each $searchStore.filtered as template (template.id)}
-					<a
-						href="/templates/{template.id}"
-						on:click={onTemplateLinkClick}
-						class="flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
+					<button
+						on:click={() => onClickTemplate(template.id)}
+						class={cn(
+							'w-full flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60 truncate',
+							activeTemplate &&
+								activeTemplate.id === template.id &&
+								'rounded-r-none border-r-2 border-primary bg-secondary/80'
+						)}
 					>
-						<div class="w-full flex justify-between items-center space-x-2">
-							<svelte:component this={icons[template.icon]} class="icon icon-sm" />
-							<h2 class="grow text-lg font-semibold">{template.name}</h2>
+						<div class="w-full flex items-center space-x-2">
+							<svelte:component this={icons[template.icon]} class=" icon-sm" />
+							<span class="text-lg font-semibold">{template.name}</span>
 						</div>
 
-						<div class="flex flex-wrap gap-2">
-							{#each template.properties as property (property.id)}
-								<span
-									class="h-6 py-1 px-1.5 flex items-center rounded font-semibold bg-primary text-primary-foreground"
-								>
-									{property.name}
-								</span>
-							{:else}
-								<span> No properties</span>
-							{/each}
-						</div>
-						<p>{template.description}</p>
-					</a>
+						<div class="truncate whitespace-nowrap">{template.description}</div>
+					</button>
 				{:else}
 					<div class="h-[80px] w-full flex items-center justify-center rounded bg-secondary/40">
 						<p class=" font-semibold text-xl">Template not found</p>
@@ -132,15 +145,127 @@
 	</PageContent>
 </PageContainer>
 
-<DialogRoot
-	open={isPreviewDialogOpen}
-	onOpenChange={(open) => {
-		if (!open) {
-			history.back();
-		}
-	}}
+<ItemDrawer
+	bind:open={isSheetOpen}
+	id="activeTemplateDrawer"
+	class="w-full lg:w-2/5 p-0 lg:p-1 lg:pl-0"
 >
-	<DialogContent class="max-w-4xl ">
-		<TemplatePage data={noCheck($page.state.template)} />
-	</DialogContent>
-</DialogRoot>
+	{#if activeTemplate}
+		<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
+			<div class="flex justify-between items-center">
+				<Button variant="secondary" size="icon" on:click={() => closeSheet()}>
+					{#if $isDesktop}
+						<X />
+					{:else}
+						<ArrowLeft />
+					{/if}
+				</Button>
+
+				<span class="font-semibold text-xs text-gray-500 pr-2">
+					Updated
+					{dayjs(activeTemplate.updatedAt).fromNow()}
+				</span>
+			</div>
+
+			<div class="grow flex flex-col space-y-4 overflow-y-auto">
+				<h2 class="pt-1 text-2xl font-semibold">
+					{activeTemplate.name}
+				</h2>
+				<p>
+					{activeTemplate.description}
+				</p>
+				<div class="grow flex flex-col space-y-2">
+					<div>
+						<h3 class="font-semibold">Properties</h3>
+						<table class="w-full border-2 border-gray-300 dark:border-gray-600">
+							<thead>
+								<tr>
+									<th class=" border-gray-300 dark:border-gray-600"> Name </th>
+									<th class="border-2 border-gray-300 dark:border-gray-600"> Type </th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each activeTemplate.properties as property (property.id)}
+									<tr>
+										<td class="border-2 border-gray-300 dark:border-gray-600">
+											{property.name}
+										</td>
+										<td
+											class="border-2 border-gray-300 dark:border-gray-600 first-letter:uppercase"
+										>
+											{property.type.toLowerCase()}
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+
+					<div>
+						<h3 class="font-semibold">Example of item</h3>
+						<div class="flex flex-col space-y-2">
+							{#each activeTemplate.items as item (item.id)}
+								<div
+									class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
+								>
+									<div class="font-semibold text-lg">
+										{item.name}
+									</div>
+
+									<div class="flex flex-wrap gap-2">
+										{#each activeTemplate.properties as property (property.id)}
+											{@const propertyRef = getPropertyRef(item.properties, property.id)}
+											{#if propertyRef && propertyRef.value !== ''}
+												{@const color = getPropertyColor(property, propertyRef.value)}
+
+												{#if property.type === 'CHECKBOX'}
+													<div
+														class={cn(
+															'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold',
+															PROPERTY_COLORS[color]
+														)}
+													>
+														{#if propertyRef.value === 'true'}
+															<CheckSquare2 class="icon-xs" />
+														{:else}
+															<Square class="icon-xs" />
+														{/if}
+
+														<span class="font-semibold">{property.name} </span>
+													</div>
+												{:else}
+													<span
+														use:tooltipAction={property.name}
+														class={cn(
+															'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
+															PROPERTY_COLORS[color]
+														)}
+													>
+														{getPropertyValue(property, propertyRef.value)}
+													</span>
+												{/if}
+											{/if}
+										{/each}
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="grid justify-items-start">
+				<Button
+					class="w-full"
+					on:click={() => {
+						if (!activeTemplate) return;
+
+						createCollectionBasedOnTemplate(activeTemplate.id);
+					}}
+				>
+					Use this template
+				</Button>
+			</div>
+		</div>
+	{/if}
+</ItemDrawer>
