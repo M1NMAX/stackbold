@@ -202,7 +202,7 @@
 					</div>
 
 					<div>
-						<h3 class="font-semibold">Example of item</h3>
+						<h3 class="font-semibold">Examples of items</h3>
 						<div class="flex flex-col space-y-2">
 							{#each activeTemplate.items as item (item.id)}
 								<div
