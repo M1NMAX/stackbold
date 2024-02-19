@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { mediaQuery } from 'svelte-legos';
-	import { getSidebarState } from './index.js';
+	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
+	import { getScreenState } from '$lib/components/view';
 
 	export let href: string | undefined = undefined;
 	export let active = false;
 	export let label: string;
 
 	const sidebarState = getSidebarState();
-
-	const isDesktop = mediaQuery('(min-width: 768px)');
+	const isDesktop = getScreenState();
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
 		if (e.metaKey || e.ctrlKey || $isDesktop) return;

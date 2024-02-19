@@ -130,11 +130,6 @@
 	}
 
 	async function deleteCollection(id: string, name: string) {
-		if (collection.ownerId !== data.user.userId) {
-			toast.error('Unauthorized');
-			return;
-		}
-
 		try {
 			await trpc().collections.delete.mutate(id);
 
