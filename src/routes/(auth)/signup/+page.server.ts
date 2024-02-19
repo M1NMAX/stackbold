@@ -28,7 +28,7 @@ export const actions: Actions = {
 		const { error } = await locals.supabase.auth.signUp({
 			email,
 			password,
-			options: { emailRedirectTo: 'http://localhost:5173/' }
+			options: { emailRedirectTo: dev ? 'http://localhost:5173/' : 'https://stackbold.vercel.app/' }
 		});
 
 		if (error) {
