@@ -1,39 +1,45 @@
-# create-svelte
+<p align="center">
+ <img align="center" src="static/pwa-192x192.png" height="96" />
+ <h1 align="center">
+  Stackbold
+ </h1>
+</p>
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+StackBold is a versatile web application designed to simplify organization by serving as a centralized hub for all collections. Whether users need simple to-do lists or personalized collections like projects manager, movie, or series lists, StackBold offers intuitive features to organize and manage them efficiently. Users have the flexibility to create customized categories; for instance, within movie collections, users can establish categories like "watched," "watching," and "plan to watch," allowing for tailored collections that align with their individual preferences and needs.
 
-## Creating a project
+> [Stackbold](https://github.com/M1NMAX/stackbold) is the latest implementation of [Guardian](https://github.com/M1NMAX/gardian) reimagined and implemented using [Svelte](https://svelte.dev).
 
-If you're seeing this, you've probably already done this step. Congrats!
+<img src="static/demo/sb-demo.gif"  style="display: block; margin-left: auto; margin-right: auto;"/>
+
+## Technologies:
+
+- Supabase: Used for user management and authentication functionalities.
+- MongoDB: Utilized for storing application data, including user-generated content.
+- Prisma: Used for defining the database schema and interacting with the database.
+- TRPC: Used for Back-end API development, ensuring End-to-end typesafe.
+- Svelte and Shadcn-svelte: Utilized to create the UI and deliver enhanced UX.
+
+## Installation and Exectuion
 
 ```bash
-# create a new project in the current directory
-npm create svelte@latest
+# clone the repo
+git clone https://github.com/M1NMAX/stackbold
 
-# create a new project in my-app
-npm create svelte@latest my-app
+# Navigate to clonned folder and Install dependencies
+cd stackbold && npm install
 ```
 
-## Developing
+Set up the environment variables described in `.env.example`
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```
+# Generate prisma client and seed the data base
+npx prisma generate && npx prisma db seed
 
-```bash
+# run the app
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+## Extra pictures
 
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
-# stackbold
+![templates](static/demo/sb-demo-templates.png)
+![home](static/demo/sb-demo-home.png)
