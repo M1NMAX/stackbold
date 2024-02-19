@@ -18,7 +18,12 @@
 		Folder,
 		Medal,
 		Backpack,
-		Banana
+		Banana,
+		CalendarDays,
+		ListTodo,
+		BookOpenCheck,
+		Clapperboard,
+		Film
 	} from 'lucide-svelte';
 
 	export const icons: { [index: string]: any } = {
@@ -36,12 +41,17 @@
 		baby: Baby,
 		banana: Banana,
 
+		calendar: CalendarDays,
+		todo: ListTodo,
 		smile: Smile,
 		folder: Folder,
 		heart: Heart,
 		star: Star,
 		medal: Medal,
-		backpack: Backpack
+		backpack: Backpack,
+		taskBook: BookOpenCheck,
+		clapperboard: Clapperboard,
+		film: Film
 	};
 </script>
 
