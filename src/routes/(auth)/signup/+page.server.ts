@@ -5,7 +5,7 @@ import { dev } from '$app/environment';
 import { signUpSchema } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!dev) redirect(302, '/signin');
+	// if (!dev) redirect(302, '/signin');
 
 	const session = await locals.getSession();
 
