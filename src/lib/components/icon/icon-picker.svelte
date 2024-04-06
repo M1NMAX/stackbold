@@ -23,7 +23,11 @@
 		ListTodo,
 		BookOpenCheck,
 		Clapperboard,
-		Film
+		Film,
+		Banknote,
+		Landmark,
+		Gem,
+		Wallet
 	} from 'lucide-svelte';
 
 	export const icons: { [index: string]: any } = {
@@ -51,7 +55,11 @@
 		backpack: Backpack,
 		taskBook: BookOpenCheck,
 		clapperboard: Clapperboard,
-		film: Film
+		film: Film,
+		backnote: Banknote,
+		landmark: Landmark,
+		gem: Gem,
+		wallet: Wallet
 	};
 </script>
 
