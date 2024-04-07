@@ -1,4 +1,4 @@
-import { Color, PrismaClient, PropertyType } from '@prisma/client';
+import { Color, PrismaClient, PropertyType, type Option } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -214,11 +214,133 @@ const templatesData = [
 				properties: [{ value: 'Comedy' }, { value: 'Watched' }, { value: '8-Very Good' }]
 			}
 		]
+	},
+	{
+		name: 'Finacial Tracker',
+		icon: 'landmark',
+		description:
+			'Track your income, expenses, and savings, and gain insights into your financial health with customizable categories and visualizations.',
+		properties: [
+			{
+				name: 'Type',
+				type: 'SELECT' as PropertyType,
+				options: [{ value: 'Income' }, { value: 'Expense' }]
+			},
+			{
+				name: 'Amount',
+				type: 'NUMBER' as PropertyType,
+				options: []
+			},
+			{
+				name: 'Month',
+				type: 'SELECT' as PropertyType,
+				options: [
+					{ value: 'Jan' },
+					{ value: 'Feb' },
+					{ value: 'Mar' },
+					{ value: 'Apr' },
+					{ value: 'May' },
+					{ value: 'Jun' },
+					{ value: 'Jul' },
+					{ value: 'Aug' },
+					{ value: 'Sep' },
+					{ value: 'Oct' },
+					{ value: 'Nov' },
+					{ value: 'Dec' }
+				]
+			},
+			{
+				name: 'Expense categories',
+				type: 'SELECT' as PropertyType,
+				options: [
+					{ value: 'Bills' },
+					{ value: 'Utilities' },
+					{ value: 'Education' },
+					{ value: 'Entertainments' },
+					{ value: 'Food' },
+					{ value: 'Transport' },
+					{ value: 'Health' },
+					{ value: 'Shopping' }
+				]
+			},
+			{
+				name: 'Income categories',
+				type: 'SELECT' as PropertyType,
+				options: [{ value: 'Investment' }, { value: 'Salary' }]
+			},
+			{
+				name: 'Tags',
+				type: 'SELECT' as PropertyType,
+				options: [{ value: 'Recurring Expense' }, { value: 'Recurring Income' }]
+			}
+		],
+		items: [
+			{
+				name: 'Netflix',
+				properties: [
+					{ value: 'Expense' },
+					{ value: '11.99' },
+					{ value: 'Mar' },
+					{ value: 'Entertainments' },
+					{ value: '' },
+					{ value: 'Recurring Expense' }
+				]
+			},
+			{
+				name: 'Spotify',
+				properties: [
+					{ value: 'Expense' },
+					{ value: '7.99' },
+					{ value: 'Mar' },
+					{ value: 'Entertainments' },
+					{ value: '' },
+					{ value: 'Recurring Expense' }
+				]
+			},
+			{
+				name: 'Brilliant',
+				properties: [
+					{ value: 'Expense' },
+					{ value: '40.99' },
+					{ value: 'Mar' },
+					{ value: 'Education' },
+					{ value: '' },
+					{ value: 'Recurring Expense' }
+				]
+			},
+			{
+				name: 'Navegante',
+				properties: [
+					{ value: 'Expense' },
+					{ value: '40.00' },
+					{ value: 'Mar' },
+					{ value: 'Transport' },
+					{ value: '' },
+					{ value: 'Recurring Expense' }
+				]
+			},
+			{
+				name: 'Paycheck',
+				properties: [
+					{ value: 'Income' },
+					{ value: '1200.00' },
+					{ value: 'Mar' },
+					{ value: '' },
+					{ value: 'Salary' },
+					{ value: 'Recurring Income' }
+				]
+			}
+		]
 	}
 ];
 
-const randomIntFromInterval = (min: number, max: number) =>
-	Math.floor(Math.random() * (max - min + 1) + min);
+function randomIntFromInterval(min: number, max: number) {
+	return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function findOptionByName(name: string, options: Option[]) {
+	return options.find((opt) => opt.value === name);
+}
 
 async function main() {
 	// clean the DB
@@ -257,8 +379,7 @@ async function main() {
 							value:
 								templateProp.type !== 'SELECT'
 									? properties[idx].value
-									: templateProp.options[randomIntFromInterval(0, templateProp.options.length - 1)]
-											.id
+									: findOptionByName(properties[idx].value, templateProp.options)?.id || ''
 						}))
 					}))
 				}
