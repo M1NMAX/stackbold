@@ -7,6 +7,7 @@
 * {
 	scrollbar-width: thin;
 }
+
 *::-webkit-scrollbar {
 	@apply bg-transparent w-2;
 }
@@ -20,7 +21,7 @@
 }
 
 .input {
-	@apply h-9 w-full flex p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background file:border-0  file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 w-full flex p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
@@ -40,15 +41,22 @@
 
 	&-ghost {
 		@apply bg-opacity-10;
+
 		&:focus,
 		&:focus-within {
 			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
 	}
+
+	&-sm {
+		@apply h-7 text-sm;
+	}
 }
+
 .select {
 	@apply h-9 w-full flex items-center justify-between p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+
 	&:focus,
 	&:focus-within {
 		@apply outline outline-primary outline-offset-0;
@@ -57,6 +65,7 @@
 
 	&-bordered {
 		@apply bg-secondary/50;
+
 		&:focus,
 		&:focus-within {
 			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
@@ -66,11 +75,16 @@
 
 	&-ghost {
 		@apply bg-opacity-10;
+
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-90  outline outline-secondary outline-offset-0;
+			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
+	}
+
+	&-sm {
+		@apply h-7 text-sm;
 	}
 }
 
@@ -95,6 +109,7 @@
 
 	&-ghost {
 		@apply bg-opacity-10 rounded-sm border-none;
+
 		&:focus,
 		&:focus-within {
 			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
@@ -104,7 +119,7 @@
 }
 
 .checkbox {
-	@apply h-4 w-4 cursor-pointer  rounded-md border-2 border-gray-300 bg-gray-100 hover:bg-gray-200 checked:accent-primary;
+	@apply h-4 w-4 cursor-pointer rounded-md border-2 border-gray-300 bg-gray-100 hover:bg-gray-200 checked:accent-primary;
 }
 
 .msg-error {
@@ -124,21 +139,27 @@
 .icon-xxs {
 	@apply w-3 h-3 focus:outline-none;
 }
+
 .icon-xs {
 	@apply w-4 h-4 focus:outline-none;
 }
+
 .icon-sm {
 	@apply w-5 h-5 focus:outline-none;
 }
+
 .icon-md {
 	@apply w-6 h-6 focus:outline-none;
 }
+
 .icon-lg {
 	@apply w-9 h-9 focus:outline-none;
 }
+
 .icon-xl {
 	@apply w-10 h-10 focus:outline-none;
 }
+
 .icon-3xl {
 	@apply w-14 h-14 focus:outline-none;
 }
@@ -147,6 +168,7 @@
 .tab-content {
 	@apply w-full p-4 rounded-sm border bg-background;
 }
+
 @layer base {
 	:root {
 		--background: 0 0% 100%;
@@ -170,6 +192,7 @@
 		--ring: 346.8 77.2% 49.8%;
 		--radius: 0.5rem;
 	}
+
 	.dark {
 		--background: 20 14.3% 4.1%;
 		--foreground: 0 0% 95%;
@@ -197,6 +220,7 @@
 	* {
 		@apply border-border;
 	}
+
 	body {
 		@apply bg-background text-foreground;
 	}

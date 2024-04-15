@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Check, MoreHorizontal, Trash } from 'lucide-svelte';
+	import { Check, ChevronRight, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import type { Color, Option } from '@prisma/client';
@@ -50,61 +50,69 @@
 	}
 </script>
 
-<div class="w-full flex justify-between items-center space-x-1">
-	<div class="w-full relative">
-		<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
-			<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`} />
-		</div>
+{#if $isDesktop}
+	<DropdownMenu.Root let:ids>
+		<DropdownMenu.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="ghost" size="sm" class="w-full justify-between px-0.5">
+				<span class="flex gap-2">
+					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`} />
+					<span>{option.value}</span>
+				</span>
+				<ChevronRight class="icon-xs" />
+			</Button>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content align="end" class="w-56 p-1">
+			<input
+				name="option"
+				value={option.value}
+				on:input={handleOnInput}
+				class="input input-bordered input-sm"
+			/>
+			<DropdownMenu.Separator />
+			<DropdownMenu.Group>
+				<DropdownMenu.Label class="text-xs">Colors</DropdownMenu.Label>
 
-		<input
-			name="option"
-			value={option.value}
-			on:input={handleOnInput}
-			class={`h-7 w-full pl-8 px-1.5 text-base font-semibold rounded bg-secondary focus:outline-none `}
-		/>
-	</div>
-
-	{#if $isDesktop}
-		<DropdownMenu.Root let:ids>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" size="xs">
-					<MoreHorizontal class="icon-xs" />
-				</Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Label class="text-center">Option: {option.value}</DropdownMenu.Label>
-				<DropdownMenu.Separator />
-				<DropdownMenu.Group>
-					<DropdownMenu.Label class="text-xs">Colors</DropdownMenu.Label>
-
-					<DropdownMenu.RadioGroup
-						{value}
-						onValueChange={(value) => {
-							if (!value) return;
-							handleSelectColor(value, ids.trigger);
-						}}
-					>
-						{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
-							<DropdownMenu.RadioItem value={colorName}>
-								<span class={`h-6 w-6 mr-2 rounded ${colorClasses}`} />
-
-								{capitalizeFirstLetter(colorName)}
-							</DropdownMenu.RadioItem>
-						{/each}
-					</DropdownMenu.RadioGroup>
-				</DropdownMenu.Group>
-
-				<DropdownMenu.Separator />
-				<DropdownMenu.Item
-					class="space-x-2 "
-					on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}
+				<DropdownMenu.RadioGroup
+					{value}
+					onValueChange={(value) => {
+						if (!value) return;
+						handleSelectColor(value, ids.trigger);
+					}}
 				>
-					<Trash class="icon-xs" />
-					<span>Delete option </span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
+					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
+						<DropdownMenu.RadioItem value={colorName}>
+							<span class={`h-6 w-6 mr-2 rounded ${colorClasses}`} />
+
+							{capitalizeFirstLetter(colorName)}
+						</DropdownMenu.RadioItem>
+					{/each}
+				</DropdownMenu.RadioGroup>
+			</DropdownMenu.Group>
+
+			<DropdownMenu.Separator />
+			<DropdownMenu.Item
+				class="space-x-2 "
+				on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}
+			>
+				<Trash class="icon-xs" />
+				<span>Delete option </span>
+			</DropdownMenu.Item>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
+{:else}
+	<div class="w-full flex justify-between items-center space-x-1">
+		<div class="w-full relative">
+			<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
+				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`} />
+			</div>
+
+			<input
+				name="option"
+				value={option.value}
+				on:input={handleOnInput}
+				class={`h-7 w-full pl-8 px-1.5 text-base font-semibold rounded bg-secondary focus:outline-none `}
+			/>
+		</div>
 		<Drawer.Root bind:open={isSmallScreenDrawerOpen}>
 			<Drawer.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" size="xs">
@@ -158,5 +166,5 @@
 				</Drawer.Footer>
 			</Drawer.Content>
 		</Drawer.Root>
-	{/if}
-</div>
+	</div>
+{/if}
