@@ -16,7 +16,6 @@ export function getViewState<T>() {
 const SCREEN_CTX = Symbol('SCREEN_CTX');
 export function setScreenState(value: Readable<boolean>) {
 	setContext(SCREEN_CTX, value);
-
 	return value;
 }
 

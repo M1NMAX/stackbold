@@ -20,7 +20,6 @@ export function getPropertyColor(property: Property, value: string) {
 	return option ? option.color : ('GRAY' as Color);
 }
 
-// TODO: take another look, tip: remove  the non-null assertion operator !
 export function getOption(options: Option[], id: string) {
 	return options.find((opt) => opt.id === id) || null;
 }
