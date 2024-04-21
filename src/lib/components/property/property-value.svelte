@@ -38,6 +38,7 @@
 
 	const buttonClass = cn(
 		'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
+		property.type === 'NUMBER' && 'justify-end',
 		!isTableView && 'h-6 w-fit rounded outline-none  py-1 px-1.5 font-semibold',
 		!isTableView && PROPERTY_COLORS[color]
 	);
