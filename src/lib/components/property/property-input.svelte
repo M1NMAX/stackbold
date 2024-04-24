@@ -27,9 +27,7 @@
 
 	function handleOnInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-
 		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-
 		dispatch('updPropertyValue', { pid: property.id, value: currValue });
 	}
 

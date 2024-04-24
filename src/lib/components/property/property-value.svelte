@@ -28,13 +28,11 @@
 		updPropertyValue: { itemId: string; property: { id: string; value: string } };
 	}>();
 
-	const handleOnInput = (e: Event) => {
+	function handleOnInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-
 		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-
 		dispatch('updPropertyValue', { itemId, property: { id: property.id, value: currValue } });
-	};
+	}
 
 	const buttonClass = cn(
 		'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
