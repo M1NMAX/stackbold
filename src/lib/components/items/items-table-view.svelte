@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import type { Property, Item } from '@prisma/client';
+	import type { Property, Item, Aggregador } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
 	import {
 		PropertyValue,
-		getPropertyColor,
 		// helpers
+		getPropertyColor,
 		getPropertyRef,
 		getPropertyValue
 	} from '$lib/components/property';
@@ -40,6 +40,33 @@
 
 	function preventEnterKeypress(e: KeyboardEvent) {
 		if (e.key === 'Enter') e.preventDefault();
+	}
+
+	function aggregatePropertyValue(property: Property, type: Aggregador) {
+		if (type === 'COUNT') return items.length;
+		if (type === 'COUNT_EMPTY') {
+			return items.reduce((acc, item) => {
+				const propertyRef = getPropertyRef(item.properties, property.id);
+				if (propertyRef == null || propertyRef.value === '') return acc + 1;
+				return acc;
+			}, 0);
+		}
+		if (type === 'COUNT_NOT_EMPTY') {
+			return items.reduce((acc, item) => {
+				const propertyRef = getPropertyRef(item.properties, property.id);
+				if (propertyRef && propertyRef.value !== '') return acc + 1;
+				return acc;
+			}, 0);
+		}
+		if (type === 'SUM' || type === 'AVG') {
+			const sum = items.reduce((acc, curr) => {
+				const propertyRef = getPropertyRef(curr.properties, property.id);
+				const inc = propertyRef ? getPropertyValue(property, propertyRef.value) : 0;
+				return acc + Number(inc);
+			}, 0);
+			if (type === 'SUM') return sum;
+			return (sum / items.length).toFixed(2);
+		}
 	}
 </script>
 
@@ -92,7 +119,17 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#if items.length}
+			{#if items.length === 0}
+				<tr>
+					<td colspan={properties.length + 3}>
+						<div class="empty" in:fade>
+							<!-- <div class="empty-icon"><IconEmpty size="5em" /></div> -->
+							No items found.
+						</div>
+					</td>
+				</tr>
+			{/if}
+			{#if items.length > 1}
 				{#each items as item (item.id)}
 					<tr
 						class={cn(
@@ -134,7 +171,7 @@
 								{@const color = getPropertyColor(property, propertyRef.value)}
 								{@const value = getPropertyValue(property, propertyRef.value, false)}
 
-								<td class="text-left border">
+								<td class="border">
 									{#if propertyRef}
 										<PropertyValue
 											isTableView
@@ -154,14 +191,22 @@
 						</td>
 					</tr>
 				{/each}
-			{:else}
 				<tr>
-					<td colspan={properties.length + 3}>
-						<div class="empty" in:fade>
-							<!-- <div class="empty-icon"><IconEmpty size="5em" /></div> -->
-							No items found.
-						</div>
-					</td>
+					<td />
+					{#each properties as property (property.id)}
+						{#if property.isVisibleOnTableView}
+							{#if property.aggregador === 'NONE'}
+								<td />
+							{:else}
+								<td class="text-right px-2">
+									<span class="text-[0.65rem] font-medium"> {property.aggregador}</span>
+									<span class="font-semibold">
+										{aggregatePropertyValue(property, property.aggregador)}
+									</span>
+								</td>
+							{/if}
+						{/if}
+					{/each}
 				</tr>
 			{/if}
 		</tbody>

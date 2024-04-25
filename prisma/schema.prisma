@@ -49,6 +49,15 @@ enum PropertyType {
   NUMBER   @map("number")
 }
 
+enum Aggregador {
+  NONE            @map("none")
+  COUNT           @map("count")
+  COUNT_EMPTY     @map("count_empty")
+  COUNT_NOT_EMPTY @map("count_not_empty")
+  SUM             @map("sum")
+  AVG             @map("avg")
+}
+
 type Option {
   id    String @default(uuid()) @map("_id")
   value String
@@ -63,6 +72,7 @@ type Property {
   options              Option[]
   isVisibleOnListView  Boolean      @default(true)
   isVisibleOnTableView Boolean      @default(true)
+  aggregador           Aggregador   @default(NONE)
 }
 
 type PropertyRef {

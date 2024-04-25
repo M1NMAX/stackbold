@@ -70,7 +70,7 @@
 	$: ({ collection, items, groups } = data);
 	$: ({ properties } = collection);
 
-	let view = 'list';
+	let view = 'table';
 
 	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
@@ -737,7 +737,7 @@
 
 				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
 				{#key properties}
-					{#if view === 'list' && includesGroupableProperties()}
+					{#if includesGroupableProperties()}
 						<div>
 							<DropdownMenu.Root>
 								<DropdownMenu.Trigger asChild let:builder>
@@ -826,7 +826,32 @@
 				</ViewButtonsGroup>
 			</div>
 		{/if}
-
+		{#if !collection.groupItemsBy}
+			<Items
+				items={removeSearchTerms($searchStore.filtered)}
+				{view}
+				{properties}
+				on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+				on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
+				on:clickDeleteItem={(e) => {
+					deleteDetail = { type: 'item', id: e.detail };
+					isDeleteModalOpen = true;
+				}}
+				on:updPropertyValue={({ detail }) => {
+					updPropertyValueDebounced(detail.itemId, {
+						id: detail.property.id,
+						value: detail.property.value
+					});
+				}}
+				on:updPropertyVisibility={({ detail }) => {
+					updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+				}}
+				on:renameItem={({ detail }) => {
+					updItemDebounced({ id: detail.id, data: { name: detail.name } });
+				}}
+			/>
+		{/if}
+		{#if collection.groupItemsBy}
 			<Accordion.Root
 				multiple
 				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
@@ -883,6 +908,7 @@
 					{/if}
 				{/each}
 			</Accordion.Root>
+		{/if}
 		{#if $isDesktop}
 			<div class="sticky inset-x-0 bottom-0">
 				{#if itemNameError}

@@ -1,4 +1,4 @@
-import { Color, PrismaClient, PropertyType, type Option } from '@prisma/client';
+import { Aggregador, Color, PrismaClient, PropertyType, type Option } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -229,7 +229,8 @@ const templatesData = [
 			{
 				name: 'Amount',
 				type: 'NUMBER' as PropertyType,
-				options: []
+				options: [],
+				aggregador: 'SUM' as Aggregador
 			},
 			{
 				name: 'Month',
@@ -312,7 +313,7 @@ const templatesData = [
 				name: 'Navegante',
 				properties: [
 					{ value: 'Expense' },
-					{ value: '40.00' },
+					{ value: '40' },
 					{ value: 'Mar' },
 					{ value: 'Transport' },
 					{ value: '' },
@@ -323,7 +324,7 @@ const templatesData = [
 				name: 'Paycheck',
 				properties: [
 					{ value: 'Income' },
-					{ value: '1200.00' },
+					{ value: '1200' },
 					{ value: 'Mar' },
 					{ value: '' },
 					{ value: 'Salary' },
@@ -360,8 +361,8 @@ async function main() {
 					name,
 					type,
 					options: options.map(({ value }) => ({
+						color: colorsNames[randomIntFromInterval(0, 2)] as Color,
 						value,
-						color: colorsNames[randomIntFromInterval(0, 2)] as Color
 					}))
 				}))
 			}
