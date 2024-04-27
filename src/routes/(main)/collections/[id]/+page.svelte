@@ -22,7 +22,7 @@
 		UserPlus,
 		X
 	} from 'lucide-svelte';
-	import { PropertyType, type Item } from '@prisma/client';
+	import { Color, PropertyType, type Item } from '@prisma/client';
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
 	import {
 		AddPropertyPopover,
@@ -70,7 +70,6 @@
 	$: ({ collection, items, groups } = data);
 	$: ({ properties } = collection);
 	let view = 'table';
-
 	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 

@@ -38,6 +38,7 @@ enum Color {
   BLUE   @map("blue")
   GREEN  @map("green")
   YELLOW @map("yellow")
+  ORANGE @map("orange")
 }
 
 enum PropertyType {
