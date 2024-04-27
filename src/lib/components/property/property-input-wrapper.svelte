@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { PropertyOptions } from '.';
-	import { PropertyType, type Property } from '@prisma/client';
+	import { Aggregator, PropertyType, type Property } from '@prisma/client';
 	import { createEventDispatcher, tick } from 'svelte';
 	import {
 		ChevronRight,
@@ -35,12 +35,9 @@
 	}>();
 
 	function handleOnInput(e: Event) {
-		//TODO: correct item value when property change
-
+		//TODO: correct property value when property type changes
 		const targetEl = e.target as HTMLInputElement;
-
 		const { name, value } = targetEl;
-
 		dispatch('updPropertyField', { pid: property.id, name, value });
 	}
 
@@ -109,7 +106,6 @@
 								</DropdownMenu.Trigger>
 								<DropdownMenu.Content align="end">
 									<DropdownMenu.Label>Type</DropdownMenu.Label>
-									<!-- <DropdownMenu.Separator /> -->
 									<DropdownMenu.RadioGroup
 										value={property.type}
 										onValueChange={(value) => {
@@ -125,6 +121,52 @@
 												{capitalizeFirstLetter(propertyType)}
 											</DropdownMenu.RadioItem>
 										{/each}
+									</DropdownMenu.RadioGroup>
+								</DropdownMenu.Content>
+							</DropdownMenu.Root>
+							<DropdownMenu.Root>
+								<DropdownMenu.Trigger asChild let:builder>
+									<Button
+										builders={[builder]}
+										variant="ghost"
+										size="xs"
+										class="w-full justify-between"
+									>
+										<span>Aggregador</span>
+										<span class="flex items-center justify-between space-x-1.5">
+											{capitalizeFirstLetter(property.aggregator)}
+											<ChevronRight class="icon-xs" />
+										</span>
+									</Button>
+								</DropdownMenu.Trigger>
+								<DropdownMenu.Content align="end">
+									<DropdownMenu.Label>Aggregador</DropdownMenu.Label>
+									<DropdownMenu.RadioGroup
+										value={property.aggregator}
+										onValueChange={(value) => {
+											dispatch('updPropertyField', {
+												pid: property.id,
+												name: 'aggregator',
+												value: value ?? Aggregator.NONE
+											});
+										}}
+									>
+										<DropdownMenu.RadioItem value={Aggregator.NONE}>None</DropdownMenu.RadioItem>
+										<DropdownMenu.RadioItem value={Aggregator.COUNT}>
+											Count all
+										</DropdownMenu.RadioItem>
+										<DropdownMenu.RadioItem value={Aggregator.COUNT_EMPTY}>
+											Count empty
+										</DropdownMenu.RadioItem>
+										<DropdownMenu.RadioItem value={Aggregator.COUNT_NOT_EMPTY}>
+											Count not empty
+										</DropdownMenu.RadioItem>
+										{#if property.type === 'NUMBER'}
+											<DropdownMenu.RadioItem value={Aggregator.AVG}>
+												Average
+											</DropdownMenu.RadioItem>
+											<DropdownMenu.RadioItem value={Aggregator.SUM}>Sum</DropdownMenu.RadioItem>
+										{/if}
 									</DropdownMenu.RadioGroup>
 								</DropdownMenu.Content>
 							</DropdownMenu.Root>

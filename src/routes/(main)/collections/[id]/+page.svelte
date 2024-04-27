@@ -69,7 +69,6 @@
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
 	$: ({ properties } = collection);
-
 	let view = 'table';
 
 	let isSmallScreenDrawerOpen = false;

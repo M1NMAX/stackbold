@@ -2,7 +2,7 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { PropertyCreateInputSchema, ColorSchema, PropertyTypeSchema } from '$prisma-zod';
+import { PropertyCreateInputSchema, ColorSchema, PropertyTypeSchema, AggregatorSchema } from '$prisma-zod';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -41,6 +41,7 @@ const collectionUpdatePropertySchema = z.object({
 		id: z.string(),
 		name: z.string().optional(),
 		type: PropertyTypeSchema.optional(),
+		aggregator: AggregatorSchema.optional(),
 		isVisibleOnListView: z.boolean().optional(),
 		isVisibleOnTableView: z.boolean().optional(),
 		options: z
