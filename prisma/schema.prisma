@@ -49,7 +49,7 @@ enum PropertyType {
   NUMBER   @map("number")
 }
 
-enum Aggregador {
+enum Aggregator {
   NONE            @map("none")
   COUNT           @map("count")
   COUNT_EMPTY     @map("count_empty")
@@ -72,7 +72,7 @@ type Property {
   options              Option[]
   isVisibleOnListView  Boolean      @default(true)
   isVisibleOnTableView Boolean      @default(true)
-  aggregador           Aggregador   @default(NONE)
+  aggregator           Aggregator   @default(NONE)
 }
 
 type PropertyRef {

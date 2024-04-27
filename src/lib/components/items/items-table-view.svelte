@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import type { Property, Item, Aggregador } from '@prisma/client';
+	import type { Property, Item, Aggregator } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
 	import {
 		PropertyValue,
@@ -42,7 +42,7 @@
 		if (e.key === 'Enter') e.preventDefault();
 	}
 
-	function aggregatePropertyValue(property: Property, type: Aggregador) {
+	function aggregatePropertyValue(property: Property, type: Aggregator) {
 		if (type === 'COUNT') return items.length;
 		if (type === 'COUNT_EMPTY') {
 			return items.reduce((acc, item) => {
@@ -192,13 +192,13 @@
 					<td />
 					{#each properties as property (property.id)}
 						{#if property.isVisibleOnTableView}
-							{#if property.aggregador === 'NONE'}
+							{#if property.aggregator === 'NONE'}
 								<td />
 							{:else}
 								<td class="text-right px-2">
-									<span class="text-[0.65rem] font-medium"> {property.aggregador}</span>
+									<span class="text-[0.65rem] font-medium"> {property.aggregator}</span>
 									<span class="font-semibold">
-										{aggregatePropertyValue(property, property.aggregador)}
+										{aggregatePropertyValue(property, property.aggregator)}
 									</span>
 								</td>
 							{/if}

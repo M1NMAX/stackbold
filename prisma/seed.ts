@@ -1,4 +1,4 @@
-import { Aggregador, Color, PrismaClient, PropertyType, type Option } from '@prisma/client';
+import { Aggregator, Color, PrismaClient, PropertyType, type Option } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -230,7 +230,7 @@ const templatesData = [
 				name: 'Amount',
 				type: 'NUMBER' as PropertyType,
 				options: [],
-				aggregador: 'SUM' as Aggregador
+				aggregator: 'SUM' as Aggregator
 			},
 			{
 				name: 'Month',
