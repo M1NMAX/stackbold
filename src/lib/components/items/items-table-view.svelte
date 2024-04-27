@@ -122,14 +122,11 @@
 			{#if items.length === 0}
 				<tr>
 					<td colspan={properties.length + 3}>
-						<div class="empty" in:fade>
-							<!-- <div class="empty-icon"><IconEmpty size="5em" /></div> -->
-							No items found.
-						</div>
+						<div class="empty" in:fade>No items found.</div>
 					</td>
 				</tr>
 			{/if}
-			{#if items.length > 1}
+			{#if items.length > 0}
 				{#each items as item (item.id)}
 					<tr
 						class={cn(
