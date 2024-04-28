@@ -874,9 +874,11 @@
 												type="checkbox"
 												checked={property.isVisibleOnListView}
 												class="checkbox"
-												on:click={()=>
-													updPropertyDebounced({id:property.id, isVisibleOnListView: !property.isVisibleOnListView})
-												}
+												on:click={() =>
+													updPropertyDebounced({
+														id: property.id,
+														isVisibleOnListView: !property.isVisibleOnListView
+													})}
 											/>
 										</div>
 									{/each}
@@ -891,9 +893,11 @@
 												type="checkbox"
 												checked={property.isVisibleOnTableView}
 												class="checkbox"
-												on:click={()=>
-													updPropertyDebounced({id:property.id, isVisibleOnTableView: !property.isVisibleOnTableView})
-												}
+												on:click={() =>
+													updPropertyDebounced({
+														id: property.id,
+														isVisibleOnTableView: !property.isVisibleOnTableView
+													})}
 											/>
 										</div>
 									{/each}
@@ -1039,7 +1043,7 @@
 		{#if !$isDesktop}
 			<Button
 				size="icon"
-				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-full"
+				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
 				on:click={() => (isCreateItemDialogOpen = true)}
 			>
 				<Plus />
