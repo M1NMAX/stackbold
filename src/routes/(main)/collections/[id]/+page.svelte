@@ -4,6 +4,7 @@
 	import {
 		Archive,
 		ArrowLeft,
+		ArrowUpDown,
 		Check,
 		CheckSquare2,
 		Copy,
@@ -15,6 +16,7 @@
 		HeartOff,
 		MoreHorizontal,
 		Plus,
+		SlidersHorizontal,
 		Square,
 		StretchHorizontal,
 		Table,
@@ -55,6 +57,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
@@ -65,6 +68,7 @@
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { nameSchema } from '$lib/schema';
+	import { Label } from '$lib/components/ui/label';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -469,9 +473,8 @@
 		if (targetEl.scrollTop > 0) isSmallHeadingVisible = true;
 		else isSmallHeadingVisible = false;
 	}
-
+	// DEFAULT_SORT_OPTIONS
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
-
 	const sort = storage(`sort-collection-${data.collection.id}`, sortOptions[0]);
 
 	function loadSortFromLocalStorage(): SortOption<Item> {
@@ -778,50 +781,148 @@
 				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 			</div>
 		{:else}
-			<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
-			<div class="flex items-center justify-between">
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
-
-				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-				{#key properties}
-					{#if view === 'list' && includesGroupableProperties()}
-						<div>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button variant="secondary" builders={[builder]}>Group by</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content class="w-56">
-									<DropdownMenu.Label>Group by</DropdownMenu.Label>
-									<DropdownMenu.Separator />
-									<DropdownMenu.RadioGroup
-										value={collection.groupItemsBy || 'none'}
-										onValueChange={(value) =>
-											updCollection({ groupItemsBy: value !== 'none' ? value : null })}
-									>
-										<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
-
-										{#each properties as property (property.id)}
-											{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-												<DropdownMenu.RadioItem value={property.id}>
-													{property.name}
-												</DropdownMenu.RadioItem>
-											{/if}
-										{/each}
-									</DropdownMenu.RadioGroup>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</div>
-					{/if}
-				{/key}
-
-				<ViewButtonsGroup bind:view>
-					<ViewButton value="list">
-						<StretchHorizontal class="icon-md" />
-					</ViewButton>
-					<ViewButton value="table">
-						<Table class="icon-md" />
-					</ViewButton>
-				</ViewButtonsGroup>
+			<div class="flex space-x-1">
+				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
+				<Drawer.Root>
+					<Drawer.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="secondary">
+							<ArrowUpDown class="icon-sm" />
+						</Button>
+					</Drawer.Trigger>
+					<Drawer.Content>
+						<Drawer.Header class="py-1">
+							<div class="flex items-center space-x-2">
+								<div class="p-2.5 rounded bg-secondary">
+									<ArrowUpDown class="icon-sm" />
+								</div>
+								<div class="text-base font-semibold">Sort By</div>
+							</div>
+						</Drawer.Header>
+						<Drawer.Footer>
+							<RadioGroup.Root
+								id="sort"
+								value={$sort.field + '-' + $sort.order}
+								class="px-2 py-1 rounded-md bg-secondary"
+							>
+								{#each sortOptions as sortOpt}
+									<Label class="flex items-center justify-between space-x-2">
+										<span class="font-semibold text-lg"> {sortOpt.label} </span>
+										<RadioGroup.Item
+											value={sortOpt.field + '-' + sortOpt.order}
+											id={sortOpt.label}
+											on:click={() => {
+												$sort = { ...sortOpt };
+											}}
+										/>
+									</Label>
+								{/each}
+							</RadioGroup.Root></Drawer.Footer
+						>
+					</Drawer.Content>
+				</Drawer.Root>
+				<Drawer.Root>
+					<Drawer.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="secondary">
+							{#if view === 'list'}
+								<StretchHorizontal class="icon-md" />
+							{:else}
+								<Table class="icon-md" />
+							{/if}
+						</Button>
+					</Drawer.Trigger>
+					<Drawer.Content>
+						<Drawer.Header class="py-1">
+							<div class="flex items-center space-x-2">
+								<div class="p-2.5 rounded bg-secondary">
+									{#if view === 'list'}
+										<StretchHorizontal class="icon-md" />
+									{:else}
+										<Table class="icon-md" />
+									{/if}
+								</div>
+								<div class="text-base font-semibold">Appereance</div>
+							</div>
+						</Drawer.Header>
+						<Drawer.Footer>
+							<label for="view"> View </label>
+							<RadioGroup.Root id="view" value={view} class="px-2 py-1 rounded-md bg-secondary">
+								<Label for="list" class="flex items-center justify-between space-x-2">
+									<div class="flex items-center space-x-2">
+										<StretchHorizontal class="icon-md" />
+										<span class="font-semibold text-lg"> List</span>
+									</div>
+									<RadioGroup.Item value="list" id="list" on:click={() => (view = 'list')} />
+								</Label>
+								<Label for="table" class="flex items-center justify-between space-x-2">
+									<div class="flex items-center space-x-2">
+										<Table class="icon-md" />
+										<span class="font-semibold text-lg">Table</span>
+									</div>
+									<RadioGroup.Item value="table" id="table" on:click={() => (view = 'table')} />
+								</Label>
+							</RadioGroup.Root>
+							<label for="visibility"> Visible in {view} </label>
+							<div class="px-2 py-1 rounded-md bg-secondary">
+								{#if view === 'list'}
+									{#each properties as property}
+										<div class="flex items-center justify-between">
+											<label for={property.id} class="font-semibold text-base">
+												{property.name}
+											</label>
+											<input
+												id={property.id}
+												type="checkbox"
+												checked={property.isVisibleOnListView}
+												class="checkbox"
+												on:click={()=>
+													updPropertyDebounced({id:property.id, isVisibleOnListView: !property.isVisibleOnListView})
+												}
+											/>
+										</div>
+									{/each}
+								{:else}
+									{#each properties as property}
+										<div class="flex items-center justify-between">
+											<label for={property.id} class="font-semibold text-base">
+												{property.name}
+											</label>
+											<input
+												id={property.id}
+												type="checkbox"
+												checked={property.isVisibleOnTableView}
+												class="checkbox"
+												on:click={()=>
+													updPropertyDebounced({id:property.id, isVisibleOnTableView: !property.isVisibleOnTableView})
+												}
+											/>
+										</div>
+									{/each}
+								{/if}
+							</div>
+							<label for="groupBy"> Group by </label>
+							<RadioGroup.Root
+								id="groupBy"
+								value={collection.groupItemsBy || 'none'}
+								onValueChange={(value) =>
+									updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+								class="px-2 py-1 rounded-md bg-secondary"
+							>
+								<Label for="list" class="flex items-center justify-between space-x-2">
+									<span class="font-semibold text-base">None</span>
+									<RadioGroup.Item value="none" />
+								</Label>
+								{#each properties as property (property.id)}
+									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
+										<Label for="list" class="flex items-center justify-between space-x-2">
+											<span class="font-semibold text-base">{property.name}</span>
+											<RadioGroup.Item value={property.id} />
+										</Label>
+									{/if}
+								{/each}
+							</RadioGroup.Root>
+						</Drawer.Footer>
+					</Drawer.Content>
+				</Drawer.Root>
 			</div>
 		{/if}
 		{#if !collection.groupItemsBy}
