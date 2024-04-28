@@ -1,26 +1,28 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
-	import { Database, FolderPlus, ListFilter } from 'lucide-svelte';
+	import { ArrowUpDown, Database, FolderPlus, ListFilter } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
-	import { capitalizeFirstLetter, cn, pluralize } from '$lib/utils';
+	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { getCrtCollectionDialogState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';
 	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Drawer from '$lib/components/ui/drawer';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { getScreenState } from '$lib/components/view';
+	import { Label } from '$lib/components/ui/label';
 
 	export let data: PageData;
 
 	type Filters = 'all' | 'favourites' | 'archived';
 	let filter: Filters = 'all';
-
 	const crtCollectionDialog = getCrtCollectionDialogState();
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
@@ -114,11 +116,45 @@
 					<Button on:click={openCrtCollectionDialog}>New Collection</Button>
 				</div>
 			{:else}
-				<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
-
-				<div class="flex justify-between items-center">
-					<div>{pluralize('Collection', $searchStore.filtered.length, 's')}</div>
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				<div class="flex space-x-1">
+					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+					<Drawer.Root>
+						<Drawer.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="secondary">
+								<ArrowUpDown class="icon-sm" />
+							</Button>
+						</Drawer.Trigger>
+						<Drawer.Content>
+							<Drawer.Header class="py-1">
+								<div class="flex items-center space-x-2">
+									<div class="p-2.5 rounded bg-secondary">
+										<ArrowUpDown class="icon-sm" />
+									</div>
+									<div class="text-base font-semibold">Sort By</div>
+								</div>
+							</Drawer.Header>
+							<Drawer.Footer>
+								<RadioGroup.Root
+									id="sort"
+									value={$sort.field + '-' + $sort.order}
+									class="px-2 py-1 rounded-md bg-secondary"
+								>
+									{#each sortOptions as sortOpt}
+										<Label class="flex items-center justify-between space-x-2">
+											<span class="font-semibold text-lg"> {sortOpt.label} </span>
+											<RadioGroup.Item
+												value={sortOpt.field + '-' + sortOpt.order}
+												id={sortOpt.label}
+												on:click={() => {
+													$sort = { ...sortOpt };
+												}}
+											/>
+										</Label>
+									{/each}
+								</RadioGroup.Root></Drawer.Footer
+							>
+						</Drawer.Content>
+					</Drawer.Root>
 				</div>
 			{/if}
 

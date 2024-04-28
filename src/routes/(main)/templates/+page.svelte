@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import type { Template } from '@prisma/client';
 	import { onDestroy } from 'svelte';
-	import { ArrowLeft, CheckSquare2, Dna, Square, X } from 'lucide-svelte';
+	import { ArrowLeft, ArrowUpDown, CheckSquare2, Dna, Square, X } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
@@ -19,6 +19,9 @@
 	import { onError, redirectToast } from '$lib/components/ui/sonner';
 	import dayjs from '$lib/utils/dayjs';
 	import { tooltipAction } from 'svelte-legos';
+	import * as Drawer from '$lib/components/ui/drawer';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { Label } from '$lib/components/ui/label';
 
 	export let data: PageData;
 
@@ -107,13 +110,45 @@
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 				</div>
 			{:else}
-				<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
-
-				<div class="w-full flex justify-between items-center">
-					<div>
-						{pluralize('Template', $searchStore.filtered.length, 's')}
-					</div>
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				<div class="flex space-x-1">
+					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+					<Drawer.Root>
+						<Drawer.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="secondary">
+								<ArrowUpDown class="icon-sm" />
+							</Button>
+						</Drawer.Trigger>
+						<Drawer.Content>
+							<Drawer.Header class="py-1">
+								<div class="flex items-center space-x-2">
+									<div class="p-2.5 rounded bg-secondary">
+										<ArrowUpDown class="icon-sm" />
+									</div>
+									<div class="text-base font-semibold">Sort By</div>
+								</div>
+							</Drawer.Header>
+							<Drawer.Footer>
+								<RadioGroup.Root
+									id="sort"
+									value={$sort.field + '-' + $sort.order}
+									class="px-2 py-1 rounded-md bg-secondary"
+								>
+									{#each sortOptions as sortOpt}
+										<Label class="flex items-center justify-between space-x-2">
+											<span class="font-semibold text-lg"> {sortOpt.label} </span>
+											<RadioGroup.Item
+												value={sortOpt.field + '-' + sortOpt.order}
+												id={sortOpt.label}
+												on:click={() => {
+													$sort = { ...sortOpt };
+												}}
+											/>
+										</Label>
+									{/each}
+								</RadioGroup.Root></Drawer.Footer
+							>
+						</Drawer.Content>
+					</Drawer.Root>
 				</div>
 			{/if}
 
