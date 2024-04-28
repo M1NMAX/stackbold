@@ -41,7 +41,7 @@
 	// FIXME
 	async function handleClickDeleteAccount() {
 		try {
-			await trpc().users.delete.mutate(user.userId);
+			await trpc().users.delete.mutate(user.id);
 			toast.success('Account deleted successfully');
 			goto('/');
 		} catch (error) {
@@ -89,10 +89,11 @@
 				<div>
 					<label for="name" class="label"> Name </label>
 					<input
+						disabled
 						id="name"
 						type="text"
 						name="name"
-						value={user.name ?? $form.name}
+						value={$form.name}
 						on:input={() => (isSaveDisabled = false)}
 						class="input input-ghost"
 					/>
