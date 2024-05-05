@@ -2,7 +2,7 @@ import { Aggregator, Color, PrismaClient, PropertyType, type Option } from '@pri
 
 const prisma = new PrismaClient();
 
-const colorsNames = ['RED', 'BLUE', 'GREEN'];
+const colorsNames = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'ORANGE'];
 
 const templatesData = [
 	{
@@ -361,8 +361,8 @@ async function main() {
 					name,
 					type,
 					options: options.map(({ value }) => ({
-						color: colorsNames[randomIntFromInterval(0, 2)] as Color,
-						value,
+						color: colorsNames[randomIntFromInterval(0, colorsNames.length - 1)] as Color,
+						value
 					}))
 				}))
 			}

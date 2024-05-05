@@ -11,7 +11,7 @@
 	import { icons } from '$lib/components/icon';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { getScreenState } from '$lib/components/view';
-	import { cn, pluralize } from '$lib/utils';
+	import { cn } from '$lib/utils';
 	import { getPropertyColor, getPropertyRef, getPropertyValue } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { ItemDrawer } from '$lib/components/sheet';
@@ -203,9 +203,12 @@
 			</div>
 
 			<div class="grow flex flex-col space-y-4 overflow-y-auto">
-				<h2 class="pt-1 text-2xl font-semibold">
-					{activeTemplate.name}
-				</h2>
+				<div class="flex items-center space-x-2 pt-1">
+					<svelte:component this={icons[activeTemplate.icon]} class="icon-md" />
+					<h2 class="text-2xl font-semibold">
+						{activeTemplate.name}
+					</h2>
+				</div>
 				<p>
 					{activeTemplate.description}
 				</p>
