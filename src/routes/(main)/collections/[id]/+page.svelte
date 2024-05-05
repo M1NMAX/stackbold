@@ -16,7 +16,6 @@
 		HeartOff,
 		MoreHorizontal,
 		Plus,
-		SlidersHorizontal,
 		Square,
 		StretchHorizontal,
 		Table,
@@ -24,7 +23,7 @@
 		UserPlus,
 		X
 	} from 'lucide-svelte';
-	import { Color, PropertyType, type Item } from '@prisma/client';
+	import {  PropertyType, type Item } from '@prisma/client';
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
 	import {
 		AddPropertyPopover,
@@ -1083,9 +1082,9 @@
 				{#if $isDesktop}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon"
-								><MoreHorizontal /></Button
-							>
+							<Button builders={[builder]} variant="secondary" size="icon">
+                <MoreHorizontal />
+                </Button>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56">
 							<DropdownMenu.Group>
@@ -1124,7 +1123,7 @@
 						</Drawer.Trigger>
 						<Drawer.Content>
 							<Drawer.Header class="py-2">
-								<div class="flex items-center space-x-2">
+								<div class="flex items-center space-x-2 overflow-hidden">
 									<div class="p-2.5 rounded bg-secondary">
 										<File class="icon-sm" />
 									</div>
@@ -1172,7 +1171,7 @@
 				spellcheck={false}
 				on:keypress={preventEnterKeypress}
 				on:input={handleOnInputItemName}
-				class="pt-1 text-2xl font-semibold focus:outline-none"
+				class="pt-1 text-2xl font-semibold break-words focus:outline-none"
 			>
 				{$activeItem?.name}
 			</h2>

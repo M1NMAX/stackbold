@@ -74,21 +74,7 @@
 	<table class="w-full table-auto">
 		<thead>
 			<tr class="text-muted-foreground text-sm">
-				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer">
-					Name
-				</th>
-				{#each properties as property (property.id)}
-					{#if property.isVisibleOnTableView}
-						<th
-							scope="col"
-							class="text-left rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer"
-						>
-							{property.name}
-						</th>
-					{/if}
-				{/each}
-
-				<th scope="col" class="text-left" title="Row actions">
+				<th scope="col" class="text-left w-10" title="Row actions">
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
 							<Button variant="ghost" size="xs" builders={[builder]}>
@@ -116,6 +102,19 @@
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 				</th>
+				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-3 cursor-pointer">
+					Name
+				</th>
+				{#each properties as property (property.id)}
+					{#if property.isVisibleOnTableView}
+						<th
+							scope="col"
+							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-1 cursor-pointer"
+						>
+							{property.name}
+						</th>
+					{/if}
+				{/each}
 			</tr>
 		</thead>
 		<tbody>
@@ -134,7 +133,20 @@
 							item.id === $activeItem?.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
-						<td class="flex items-center justify-between">
+						<td class="min-w-10 px-1 border">
+							<div class="flex justify-between items-center space-x-2">
+								<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
+								<Button
+									variant="secondary"
+									size="sm"
+									on:click={() => dispatch('clickOpenItem', item.id)}
+									class={cn(!$isDesktop ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
+								>
+									Open
+								</Button>
+							</div>
+						</td>
+						<td class="flex items-center justify-between pl-2">
 							<!-- svelte-ignore a11y-no-static-element-interactions -->
 							<div
 								contenteditable
@@ -152,8 +164,9 @@
 								size="sm"
 								on:click={() => dispatch('clickOpenItem', item.id)}
 								class={cn(
-									'items-center space-x-2 py-0.5 px-1 rounded',
-									$isDesktop && ' invisible group-hover:visible'
+									$isDesktop
+										? 'items-center space-x-2 py-0.5 px-1 rounded invisible group-hover:visible'
+										: 'hidden'
 								)}
 							>
 								<span> Open </span>
@@ -168,7 +181,7 @@
 								{@const color = getPropertyColor(property, propertyRef.value)}
 								{@const value = getPropertyValue(property, propertyRef.value, false)}
 
-								<td class="border">
+								<td class="border last:border-r-0">
 									{#if propertyRef}
 										<PropertyValue
 											isTableView
@@ -182,20 +195,17 @@
 								</td>
 							{/if}
 						{/each}
-
-						<td>
-							<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
-						</td>
 					</tr>
 				{/each}
 				<tr>
+					<td />
 					<td />
 					{#each properties as property (property.id)}
 						{#if property.isVisibleOnTableView}
 							{#if property.aggregator === 'NONE'}
 								<td />
 							{:else}
-								<td class="text-right px-2">
+								<td class="text-right text-nowrap px-2">
 									<span class="text-[0.65rem] font-medium"> {property.aggregator}</span>
 									<span class="font-semibold">
 										{aggregatePropertyValue(property, property.aggregator)}
