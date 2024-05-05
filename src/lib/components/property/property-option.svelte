@@ -53,7 +53,12 @@
 {#if $isDesktop}
 	<DropdownMenu.Root let:ids>
 		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="ghost" size="sm" class="w-full justify-between px-0.5">
+			<Button
+				builders={[builder]}
+				variant="ghost"
+				size="sm"
+				class="h-7 w-full justify-between px-0.5"
+			>
 				<span class="flex gap-2">
 					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`} />
 					<span>{option.value}</span>
@@ -80,8 +85,8 @@
 					}}
 				>
 					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
-						<DropdownMenu.RadioItem value={colorName}>
-							<span class={`h-6 w-6 mr-2 rounded ${colorClasses}`} />
+						<DropdownMenu.RadioItem value={colorName} class="py-1">
+							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`} />
 
 							{capitalizeFirstLetter(colorName)}
 						</DropdownMenu.RadioItem>
