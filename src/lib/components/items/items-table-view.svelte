@@ -130,8 +130,8 @@
 				{#each items as item (item.id)}
 					<tr
 						class={cn(
-							'font-medium text-base whitespace-nowrap w-96 border-y  border-secondary  hover:bg-opacity-20  group  ',
-							item.id === $activeItem?.id && 'bg-card/50 border-r-2 border-y-0  border-primary'
+							'font-medium text-base whitespace-nowrap w-96 border-y border-secondary hover:bg-opacity-20 group',
+							item.id === $activeItem?.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
 						<td class="flex items-center justify-between">
