@@ -64,7 +64,7 @@
 				const inc = propertyRef ? getPropertyValue(property, propertyRef.value) : 0;
 				return acc + Number(inc);
 			}, 0);
-			if (type === 'SUM') return sum;
+			if (type === 'SUM') return sum.toFixed(2);
 			return (sum / items.length).toFixed(2);
 		}
 	}
@@ -133,7 +133,7 @@
 							item.id === $activeItem?.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
-						<td class="min-w-10 px-1 border">
+						<td class="min-w-10 px-1 border border-l-0">
 							<div class="flex justify-between items-center space-x-2">
 								<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
 								<Button
