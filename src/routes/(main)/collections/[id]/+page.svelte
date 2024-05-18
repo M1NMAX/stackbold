@@ -66,7 +66,6 @@
 	import { textareaAutosizeAction } from 'svelte-legos';
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { nameSchema } from '$lib/schema';
 	import { Label } from '$lib/components/ui/label';
 
 	export let data: PageData;
@@ -143,20 +142,18 @@
 
 	// collection input handlers
 	async function handleOnInputCollectionName(e: {
-		currentTarget: EventTarget & HTMLHeadingElement;
+		currentTarget: EventTarget & HTMLHeadingElement
 	}) {
 		const targetEl = e.currentTarget;
+    const name = targetEl.innerText
 
-		const parseResult = nameSchema.safeParse(targetEl.innerText);
-
-		if (!parseResult.success) {
-			renameCollectionError = parseResult.error.issues[0].message;
-			return;
+		if (name.length > 50) {
+			renameCollectionError = "Collection name must be at most 50 characters long";
+      return;
 		}
-
 		renameCollectionError = null;
 
-		updCollectionDebounced({ name: parseResult.data });
+		updCollectionDebounced({name});
 	}
 
 	async function handleOnInputCollectionDesc(e: Event) {
@@ -544,7 +541,7 @@
 				class={cn('flex justify-center items-center space-x-2', !isSmallHeadingVisible && 'hidden')}
 			>
 				<svelte:component this={icons[collection.icon]} class="icon-md" />
-				<h1 class=" grow font-semibold text-2xl">{collection.name}</h1>
+				<h1 class="grow font-semibold text-xl text-nowrap">{collection.name.length > 18 && !$isDesktop? collection.name.substring(0, 18) + '...' : collection.name}</h1>
 			</div>
 			<div class="flex justify-end items-center space-x-1.5">
 				<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
@@ -701,7 +698,7 @@
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
 			<h1
-				class="grow font-semibold text-3xl focus:outline-none"
+				class="grow font-semibold text-2xl md:text-3xl focus:outline-none"
 				contenteditable
 				spellcheck={false}
 				on:keypress={preventEnterKeypress}
@@ -710,11 +707,10 @@
 				{collection.name}
 			</h1>
 
-			{#if renameCollectionError}
-				<span> {renameCollectionError}</span>
-			{/if}
 		</div>
-
+    {#if renameCollectionError }
+      <span class="text-primary"> {renameCollectionError}</span>
+    {/if}
 		{#key collection.id}
 			{#if !collection.isDescHidden}
 				<label transition:fade for="description" class="sr-only"> Collection description </label>
