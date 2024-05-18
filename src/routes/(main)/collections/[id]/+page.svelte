@@ -104,7 +104,7 @@
 
 		// TODO: fix: strange behaviour if drawer is open
 		await invalidateAll();
-		toast.success(`Collection [${collection.name}] updated successfully`);
+		// toast.success(`Collection [${collection.name}] updated successfully`);
 	}
 
 	async function duplicateCollection() {
@@ -332,7 +332,7 @@
 
 			properties = updateCollection.properties;
 
-			toast.success('Property updated successfully');
+			// toast.success('Property updated successfully');
 		} catch (error) {
 			onError(error);
 		}

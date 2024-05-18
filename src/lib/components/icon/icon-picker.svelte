@@ -68,6 +68,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '../view';
+	import { cn } from '$lib/utils';
 
 	export let name: string;
 	export let onIconChange: (icon: string) => void;
@@ -94,6 +95,7 @@
 							onIconChange(key);
 							open = false;
 						}}
+						class={cn(key === name && 'bg-primary')}
 					>
 						<svelte:component this={icons[key]} class="icon-md" />
 					</Button>
@@ -121,7 +123,7 @@
 								onIconChange(key);
 								open = false;
 							}}
-							class="h-10 w-10 p-1.5"
+							class={cn('h-10 w-10 p-1.5', key === name && 'bg-primary')}
 						>
 							<svelte:component this={icons[key]} class="icon-lg" />
 						</Button>
