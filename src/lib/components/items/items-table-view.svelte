@@ -129,7 +129,7 @@
 				{#each items as item (item.id)}
 					<tr
 						class={cn(
-							'font-medium text-base whitespace-nowrap w-96 border-y border-secondary hover:bg-opacity-20 group',
+							'font-medium text-base whitespace-nowrap w-96 border-y border-secondary hover:bg-muted/40 group',
 							item.id === $activeItem?.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
