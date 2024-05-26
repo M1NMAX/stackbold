@@ -78,9 +78,6 @@
 		isMoveDialogOpen = false;
 	}
 
-	function openSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = true;
-	}
 	function closeSmallScreenDrawer() {
 		isSmallScrenDrawerOpen = false;
 	}
@@ -107,7 +104,9 @@
 		on:click={onClickSidebarItem}
 	>
 		<svelte:component this={icons[icon]} class={cn('icon-sm', active && 'text-primary')} />
-		<span class={cn('trucante font-semibold text-base', active && 'text-primary')}>{name}</span>
+		<span class={cn('font-semibold text-base text-nowrap', active && 'text-primary')}>
+			{name.length > 25 && $isDesktop ? name.substring(0, 22) + ' ...' : name}
+		</span>
 	</a>
 
 	{#if $isDesktop}
