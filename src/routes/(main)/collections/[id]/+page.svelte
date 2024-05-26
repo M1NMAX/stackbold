@@ -75,7 +75,7 @@
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
   let sort = writable(sortOptions[0]);
   
-	let view = 'table';
+	let view = writable("list");
 	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 
@@ -506,8 +506,11 @@
 
 	$: collection.id, ($searchStore.data = addSearchTerms());
 	$: collection.id, ($searchStore.search = '');
+
   $: { sort = storage(`collection-${data.collection.id}-sort`, sortOptions[0]) }
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
+
+  $: {view = storage(`collection-${data.collection.id}-view`, "list")}
 	$: groupedItems = $searchStore.filtered.reduce(
 		groupItemsByPropertyValue(collection.groupItemsBy || ''),
 		{}
@@ -754,7 +757,8 @@
 
 				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
-				<ViewButtonsGroup bind:view>
+        {#key $view}
+				<ViewButtonsGroup bind:view={$view}>
 					<ViewButton value="list">
 						<StretchHorizontal class="icon-md" />
 					</ViewButton>
@@ -762,6 +766,8 @@
 						<Table class="icon-md" />
 					</ViewButton>
 				</ViewButtonsGroup>
+        {/key}
+
 				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 			</div>
 		{:else}
@@ -807,7 +813,7 @@
 				<Drawer.Root>
 					<Drawer.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="secondary">
-							{#if view === 'list'}
+							{#if $view === 'list'}
 								<StretchHorizontal class="icon-md" />
 							{:else}
 								<Table class="icon-md" />
@@ -818,7 +824,7 @@
 						<Drawer.Header class="py-1">
 							<div class="flex items-center space-x-2">
 								<div class="p-2.5 rounded bg-secondary">
-									{#if view === 'list'}
+									{#if $view === 'list'}
 										<StretchHorizontal class="icon-md" />
 									{:else}
 										<Table class="icon-md" />
@@ -829,25 +835,25 @@
 						</Drawer.Header>
 						<Drawer.Footer>
 							<label for="view"> View </label>
-							<RadioGroup.Root id="view" value={view} class="px-2 py-1 rounded-md bg-secondary">
+							<RadioGroup.Root id="view" value={$view} class="px-2 py-1 rounded-md bg-secondary">
 								<Label for="list" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<StretchHorizontal class="icon-md" />
 										<span class="font-semibold text-lg"> List</span>
 									</div>
-									<RadioGroup.Item value="list" id="list" on:click={() => (view = 'list')} />
+									<RadioGroup.Item value="list" id="list" on:click={() => ($view = 'list')} />
 								</Label>
 								<Label for="table" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<Table class="icon-md" />
 										<span class="font-semibold text-lg">Table</span>
 									</div>
-									<RadioGroup.Item value="table" id="table" on:click={() => (view = 'table')} />
+									<RadioGroup.Item value="table" id="table" on:click={() => ($view = 'table')} />
 								</Label>
 							</RadioGroup.Root>
 							<label for="visibility"> Visible in {view} </label>
 							<div class="px-2 py-1 rounded-md bg-secondary">
-								{#if view === 'list'}
+								{#if $view === 'list'}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
 											<label for={property.id} class="font-semibold text-base">
@@ -916,7 +922,7 @@
 		{#if !collection.groupItemsBy}
 			<Items
 				items={removeSearchTerms($searchStore.filtered)}
-				{view}
+				view={$view}
 				{properties}
 				on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
 				on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
@@ -969,7 +975,7 @@
 							<Accordion.Content>
 								<Items
 									items={groupedItems[key].items}
-									{view}
+									view={$view}
 									{properties}
 									on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
 									on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
