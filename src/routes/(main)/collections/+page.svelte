@@ -26,7 +26,7 @@
 	const crtCollectionDialog = getCrtCollectionDialogState();
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
-	const sort = storage('sort-collections', sortOptions[0]);
+	const sort = storage('collections-sort', sortOptions[0]);
 	const isDesktop = getScreenState();
 
 	function openCrtCollectionDialog() {

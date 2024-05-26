@@ -60,17 +60,21 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
-	import { browser } from '$app/environment';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import { textareaAutosizeAction } from 'svelte-legos';
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
+	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
 	$: ({ properties } = collection);
+
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
+  let sort = writable(sortOptions[0]);
+  
 	let view = 'table';
 	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
@@ -449,9 +453,6 @@
 		if (e.key == 'Enter') e.preventDefault();
 	}
 
-	function openSmallScreenDrawer() {
-		isSmallScreenDrawerOpen = true;
-	}
 	function closeSmallScreenDrawer() {
 		isSmallScreenDrawerOpen = false;
 	}
@@ -469,18 +470,7 @@
 		if (targetEl.scrollTop > 0) isSmallHeadingVisible = true;
 		else isSmallHeadingVisible = false;
 	}
-	// DEFAULT_SORT_OPTIONS
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
-	const sort = storage(`sort-collection-${data.collection.id}`, sortOptions[0]);
 
-	function loadSortFromLocalStorage(): SortOption<Item> {
-		if (!browser) return sortOptions[0];
-
-		const storedValueStr = localStorage.getItem(`sort-collection-${data.collection.id}`);
-		if (!storedValueStr) return sortOptions[0];
-
-		return JSON.parse(storedValueStr);
-	}
 
 	function includesGroupableProperties() {
 		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
@@ -516,8 +506,7 @@
 
 	$: collection.id, ($searchStore.data = addSearchTerms());
 	$: collection.id, ($searchStore.search = '');
-	// $: collection.id, ($sort = loadSortFromLocalStorage());
-
+  $: { sort = storage(`collection-${data.collection.id}-sort`, sortOptions[0]) }
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 	$: groupedItems = $searchStore.filtered.reduce(
 		groupItemsByPropertyValue(collection.groupItemsBy || ''),
