@@ -272,7 +272,7 @@
 			<Popover.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" class={buttonClass}>
 					{value?.substring(0, MAX_STR_LENGTH)}
-					{value && value.length > MAX_STR_LENGTH && '...'}
+					{value && value.length > MAX_STR_LENGTH ? '...' : ''}
 				</Button>
 			</Popover.Trigger>
 			<Popover.Content
@@ -298,7 +298,7 @@
 			<Dialog.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="secondary" class={buttonClass}>
 					{value?.substring(0, MAX_STR_LENGTH)}
-					{value && value.length > MAX_STR_LENGTH && '...'}
+					{value && value.length > MAX_STR_LENGTH ? '...' : ''}
 				</Button>
 			</Dialog.Trigger>
 			<Dialog.Content>
