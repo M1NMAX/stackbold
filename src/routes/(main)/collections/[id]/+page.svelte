@@ -32,7 +32,8 @@
 		PropertyValueWrapper,
 		//helpers
 		getOption,
-		getPropertyColor
+		getPropertyColor,
+		getPropertyDefaultValue,
 	} from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
@@ -177,7 +178,7 @@
 					$form.collectionId = collection.id;
 					$form.properties = collection.properties.map((prop) => ({
 						id: prop.id,
-						value: prop.type === 'CHECKBOX' ? 'false' : ''
+						value: getPropertyDefaultValue(prop.type, prop.defaultValue)
 					}));
 					return $form;
 				},

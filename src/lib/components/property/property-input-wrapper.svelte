@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PropertyOptions } from '.';
+	import { PropertyOptions, getOption } from '.';
 	import { Aggregator, PropertyType, type Property } from '@prisma/client';
 	import { createEventDispatcher, tick } from 'svelte';
 	import {
@@ -9,6 +9,7 @@
 		EyeOff,
 		FileSignature,
 		MoreHorizontal,
+		SquareSlash,
 		Trash
 	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -20,6 +21,7 @@
 	import { clickOutside, escapeKeydown } from '$lib/actions';
 	import { getScreenState } from '$lib/components/view';
 	import { Separator } from '$lib/components/ui/separator';
+	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
 
 	export let property: Property;
 	export let isCheckBox: boolean = false;
@@ -171,6 +173,54 @@
 								</DropdownMenu.Content>
 							</DropdownMenu.Root>
 							{#if property.type === 'SELECT'}
+								{@const selectedOpt = getOption(property.options, property.defaultValue)}
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger asChild let:builder>
+										<Button
+											builders={[builder]}
+											variant="ghost"
+											size="xs"
+											class="w-full justify-between"
+										>
+											<span>Default Value</span>
+											<span class="flex items-center justify-between space-x-1.5">
+												{#if !selectedOpt}
+													{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
+												{:else}
+													<span
+														class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}
+													/>
+													{selectedOpt.value}
+												{/if}
+												<ChevronRight class="icon-xs" />
+											</span>
+										</Button>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content align="end">
+										<DropdownMenu.Label>Default Value</DropdownMenu.Label>
+										<DropdownMenu.RadioGroup
+											value={property.defaultValue}
+											onValueChange={(value) => {
+												dispatch('updPropertyField', {
+													pid: property.id,
+													name: 'defaultValue',
+													value: value ?? ''
+												});
+											}}
+										>
+											<DropdownMenu.RadioItem value="">
+												<SquareSlash class="icon-sm mr-2 text-primary" />
+												{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
+											</DropdownMenu.RadioItem>
+											{#each property.options as opt}
+												<DropdownMenu.RadioItem value={opt.id}>
+													<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
+													{opt.value}</DropdownMenu.RadioItem
+												>
+											{/each}
+										</DropdownMenu.RadioGroup>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
 								<Separator />
 								<PropertyOptions
 									propertyId={property.id}

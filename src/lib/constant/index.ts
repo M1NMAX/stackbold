@@ -17,3 +17,5 @@ export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Recently Added', field: 'createdAt', order: 'desc' },
 	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];
+
+export const PROPERTY_DEFAULT_VALUE_NOT_DEFINED = 'Not Defined';

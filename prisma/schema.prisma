@@ -74,6 +74,7 @@ type Property {
   isVisibleOnListView  Boolean      @default(true)
   isVisibleOnTableView Boolean      @default(true)
   aggregator           Aggregator   @default(NONE)
+  defaultValue         String       @default("")
 }
 
 type PropertyRef {
