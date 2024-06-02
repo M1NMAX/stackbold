@@ -42,6 +42,7 @@
 	);
 
 	$: selectedValue = property.options.find((opt) => opt.id === value)?.value ?? '';
+	// TODO: ref: most of property types are inside same components consider create a wrapper
 </script>
 
 {#if property.type === 'CHECKBOX'}
@@ -318,6 +319,62 @@
 						class="textarea textarea-ghost"
 						{value}
 						use:textareaAutosizeAction
+						on:input={handleOnInput}
+					/>
+				</form>
+			</Dialog.Content>
+		</Dialog.Root>
+	{/if}
+{:else if property.type === 'NUMBER' && (value || isTableView)}
+	{#if $isDesktop}
+		<Popover.Root bind:open>
+			<Popover.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="secondary" class={buttonClass}>
+					{value}
+				</Button>
+			</Popover.Trigger>
+			<Popover.Content>
+				<form>
+					<label for={property.id} class="sr-only"> {property.name} </label>
+
+					<input
+						id={property.id}
+						name={property.name}
+						placeholder="Empty"
+						class="w-full input input-ghost px-1 font-semibold text-sm"
+						type="number"
+						step="any"
+						{value}
+						on:input={handleOnInput}
+					/>
+				</form>
+			</Popover.Content>
+		</Popover.Root>
+	{:else}
+		<Dialog.Root bind:open>
+			<Dialog.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="secondary" class={buttonClass}>
+					{value}
+				</Button>
+			</Dialog.Trigger>
+			<Dialog.Content>
+				<Dialog.Header>
+					<Dialog.Description>
+						{property.name}
+					</Dialog.Description>
+				</Dialog.Header>
+
+				<form>
+					<label for={property.id} class="sr-only"> {property.name} </label>
+
+					<input
+						id={property.id}
+						name={property.name}
+						placeholder="Empty"
+						class="w-full input input-ghost px-1 font-semibold text-sm"
+						type="number"
+						step="any"
+						{value}
 						on:input={handleOnInput}
 					/>
 				</form>
