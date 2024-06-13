@@ -40,8 +40,7 @@ export const items = createTRPCRouter({
 
 	update: protectedProcedure
 		.input(z.object({ id: z.string(), data: ItemUpdateInputSchema }))
-		.mutation(async ({ input: { id, data }, ctx: { userId } }) => {
-			Object.assign(data, { updatedByUserId: userId });
+		.mutation(async ({ input: { id, data } }) => {
 
 			return await prisma.item.update({
 				data,
@@ -60,14 +59,18 @@ export const items = createTRPCRouter({
 	}),
 	addProperty: protectedProcedure
 		.input(z.object({ ids: z.array(z.string()), property: PropertyRefCreateInputSchema }))
-		.mutation(async ({ input: { ids, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { ids, property } }) => {
+			await prisma.item.updateMany({
+				data: { properties: { push: property } },
+				where: { id: { in: ids } }
+			});
 			//TODO: find better alt
-			for (const id of ids) {
-				await prisma.item.update({
-					data: { properties: { push: [property] } },
-					where: { id }
-				});
-			}
+			// for (const id of ids) {
+			// 	await prisma.item.update({
+			// 		data: { properties: { push: [property] } },
+			// 		where: { id }
+			// 	});
+			// }
 		}),
 	updateProperty: protectedProcedure
 		.input(
@@ -76,7 +79,7 @@ export const items = createTRPCRouter({
 				property: z.object({ id: z.string(), value: z.string() })
 			})
 		)
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, property } }) => {
 			const { id: pid, ...rest } = property;
 
 			return await prisma.item.update({
@@ -88,13 +91,28 @@ export const items = createTRPCRouter({
 		}),
 	deleteProperty: protectedProcedure
 		.input(z.object({ ids: z.array(z.string()), propertyId: z.string() }))
-		.mutation(async ({ input: { ids, propertyId }, ctx: { userId } }) => {
+		.mutation(async ({ input: { ids, propertyId } }) => {
+			await prisma.$transaction(
+
+				ids.map(id =>
+					prisma.item.update({
+						data: {
+							properties: {
+								deleteMany: {
+									where: { id: propertyId }
+								}
+							}
+						},
+						where: { id }
+					})
+				)
+			);
 			//TODO: find better alt
-			for (const id of ids) {
-				await prisma.item.update({
-					data: { properties: { deleteMany: { where: { id: propertyId } } } },
-					where: { id }
-				});
-			}
+			// for (const id of ids) {
+			// 	await prisma.item.update({
+			// 		data: { properties: { deleteMany: { where: { id: propertyId } } } },
+			// 		where: { id }
+			// 	});
+			// }
 		})
 });
