@@ -23,7 +23,7 @@
 		UserPlus,
 		X
 	} from 'lucide-svelte';
-	import {  PropertyType, type Item } from '@prisma/client';
+	import { PropertyType, type Item } from '@prisma/client';
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
 	import {
 		AddPropertyPopover,
@@ -33,11 +33,11 @@
 		//helpers
 		getOption,
 		getPropertyColor,
-		getPropertyDefaultValue,
+		getPropertyDefaultValue
 	} from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, invalidate, invalidateAll } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { fade } from 'svelte/transition';
@@ -74,9 +74,9 @@
 	$: ({ properties } = collection);
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
-  let sort = writable(sortOptions[0]);
-  
-	let view = writable("list");
+	let sort = writable(sortOptions[0]);
+
+	let view = writable('list');
 	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 
@@ -107,9 +107,7 @@
 			data: detail
 		});
 
-		// TODO: fix: strange behaviour if drawer is open
 		await invalidateAll();
-		// toast.success(`Collection [${collection.name}] updated successfully`);
 	}
 
 	async function duplicateCollection() {
@@ -121,7 +119,7 @@
 		});
 
 		const itemsCopy = items.map((item) => {
-			const { id, collectionId, updatedByUserId, ...rest } = item;
+			const { id, collectionId, ...rest } = item;
 			return { collectionId: createdCollection.id, ...rest };
 		});
 
@@ -147,18 +145,18 @@
 
 	// collection input handlers
 	async function handleOnInputCollectionName(e: {
-		currentTarget: EventTarget & HTMLHeadingElement
+		currentTarget: EventTarget & HTMLHeadingElement;
 	}) {
 		const targetEl = e.currentTarget;
-    const name = targetEl.innerText
+		const name = targetEl.innerText;
 
 		if (name.length > 50) {
-			renameCollectionError = "Collection name must be at most 50 characters long";
-      return;
+			renameCollectionError = 'Collection name must be at most 50 characters long';
+			return;
 		}
 		renameCollectionError = null;
 
-		updCollectionDebounced({name});
+		updCollectionDebounced({ name });
 	}
 
 	async function handleOnInputCollectionDesc(e: Event) {
@@ -199,8 +197,6 @@
 
 			const itemsCopy = items.filter((item) => item.id !== updatedItem.id);
 			items = [...itemsCopy, updatedItem];
-
-			toast.success('Item updated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -213,14 +209,13 @@
 			return;
 		}
 
-		const { id, updatedByUserId, name, ...rest } = item;
-
+		const { id, name, ...rest } = item;
 		const createdItem = await trpc().items.create.mutate({ ...rest, name: name + ' copy' });
 
 		items.push(createdItem);
 		items = items;
 
-		toast.success(`Item [${createdItem.name}] duplicated successfully `);
+		toast.success(`Item [${item.name}] duplicated successfully `);
 	}
 
 	async function deleteItem(id: string) {
@@ -232,7 +227,8 @@
 			$page.url.searchParams.delete('id');
 			goto(`/collections/${collection.id}`);
 		}
-		await invalidateAll();
+
+		data.items = items.filter((item) => item.id !== id);
 	}
 
 	// Item input handlers
@@ -285,17 +281,22 @@
 
 			properties = [...properties, lastProperty];
 
-			await trpc().items.addProperty.mutate({
-				ids: items.map(({ id }) => id),
-				property: { id: lastProperty.id, value: '' }
-			});
-			items = await trpc().items.list.query(collection.id);
-
-			toast.success('Property added successfully');
+			await Promise.all([
+				trpc().items.addProperty.mutate({
+					ids: items.map(({ id }) => id),
+					property: { id: lastProperty.id, value: '' }
+				}),
+				trpc()
+					.items.list.query(collection.id)
+					.then((updatedItems) => {
+						items = updatedItems;
+					})
+			]);
 		} catch (error) {
 			onError(error);
 		}
 	}
+
 	async function duplicateProperty(pid: string) {
 		const property = getProperty(pid);
 		if (!property) {
@@ -321,7 +322,6 @@
 				}
 			});
 			items = await trpc().items.list.query(collection.id);
-			toast.success('Property duplicated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -336,8 +336,6 @@
 			});
 
 			properties = updateCollection.properties;
-
-			// toast.success('Property updated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -370,8 +368,6 @@
 			if ($activeItem && $activeItem.id === updatedItem.id) $activeItem = updatedItem;
 
 			await invalidateAll();
-
-			toast.success('Property value update successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -387,8 +383,6 @@
 
 			//TODO: add: find a better solution, with lower overhead
 			properties = updatedCollection.properties;
-
-			// toast.success('New option added successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -405,8 +399,6 @@
 
 			//TODO: upd: find a better solution, with lower overhead
 			properties = updatedCollection.properties;
-
-			// toast.success('Property option updated successfully');
 		} catch (error) {
 			onError(error);
 		}
@@ -457,6 +449,7 @@
 	function closeSmallScreenDrawer() {
 		isSmallScreenDrawerOpen = false;
 	}
+
 	function openMoveDialog() {
 		isMoveDialogOpen = true;
 	}
@@ -471,7 +464,6 @@
 		if (targetEl.scrollTop > 0) isSmallHeadingVisible = true;
 		else isSmallHeadingVisible = false;
 	}
-
 
 	function includesGroupableProperties() {
 		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
@@ -508,10 +500,14 @@
 	$: collection.id, ($searchStore.data = addSearchTerms());
 	$: collection.id, ($searchStore.search = '');
 
-  $: { sort = storage(`collection-${data.collection.id}-sort`, sortOptions[0]) }
+	$: {
+		sort = storage(`collection-${data.collection.id}-sort`, sortOptions[0]);
+	}
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 
-  $: {view = storage(`collection-${data.collection.id}-view`, "list")}
+	$: {
+		view = storage(`collection-${data.collection.id}-view`, 'list');
+	}
 	$: groupedItems = $searchStore.filtered.reduce(
 		groupItemsByPropertyValue(collection.groupItemsBy || ''),
 		{}
@@ -534,7 +530,11 @@
 				class={cn('flex justify-center items-center space-x-2', !isSmallHeadingVisible && 'hidden')}
 			>
 				<svelte:component this={icons[collection.icon]} class="icon-md" />
-				<h1 class="grow font-semibold text-xl text-nowrap">{collection.name.length > 18 && !$isDesktop? collection.name.substring(0, 18) + '...' : collection.name}</h1>
+				<h1 class="grow font-semibold text-xl text-nowrap">
+					{collection.name.length > 18 && !$isDesktop
+						? collection.name.substring(0, 18) + '...'
+						: collection.name}
+				</h1>
 			</div>
 			<div class="flex justify-end items-center space-x-1.5">
 				<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
@@ -699,11 +699,10 @@
 			>
 				{collection.name}
 			</h1>
-
 		</div>
-    {#if renameCollectionError }
-      <span class="text-primary"> {renameCollectionError}</span>
-    {/if}
+		{#if renameCollectionError}
+			<span class="text-primary"> {renameCollectionError}</span>
+		{/if}
 		{#key collection.id}
 			{#if !collection.isDescHidden}
 				<label transition:fade for="description" class="sr-only"> Collection description </label>
@@ -758,16 +757,16 @@
 
 				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
-        {#key $view}
-				<ViewButtonsGroup bind:view={$view}>
-					<ViewButton value="list">
-						<StretchHorizontal class="icon-md" />
-					</ViewButton>
-					<ViewButton value="table">
-						<Table class="icon-md" />
-					</ViewButton>
-				</ViewButtonsGroup>
-        {/key}
+				{#key $view}
+					<ViewButtonsGroup bind:view={$view}>
+						<ViewButton value="list">
+							<StretchHorizontal class="icon-md" />
+						</ViewButton>
+						<ViewButton value="table">
+							<Table class="icon-md" />
+						</ViewButton>
+					</ViewButtonsGroup>
+				{/key}
 
 				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 			</div>
@@ -1075,8 +1074,8 @@
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
 							<Button builders={[builder]} variant="secondary" size="icon">
-                <MoreHorizontal />
-                </Button>
+								<MoreHorizontal />
+							</Button>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content class="w-56">
 							<DropdownMenu.Group>
