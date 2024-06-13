@@ -22,14 +22,13 @@ enum Role {
 }
 
 model User {
-  id           String       @id @map("_id")
-  name         String
-  role         Role         @default(MEMBER)
-  collections  Collection[]
-  updatedItems Item[]
-  Group        Group[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id          String       @id @map("_id")
+  name        String
+  role        Role         @default(MEMBER)
+  collections Collection[]
+  Group       Group[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 enum Color {
@@ -109,18 +108,21 @@ model Collection {
   group        Group?     @relation(fields: [groupId], references: [id])
   groupId      String?    @db.ObjectId
   icon         String     @default("folder")
+
+  @@index([properties.id], name: "property_id_index")
+  @@index([properties.options.id], name: "property_option_id_index")
 }
 
 model Item {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  updatedByUserId String?
-  updatedBy       User?         @relation(fields: [updatedByUserId], references: [id])
-  collection      Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId    String        @db.ObjectId
-  properties      PropertyRef[]
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  collection   Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String        @db.ObjectId
+  properties   PropertyRef[]
+
+  @@index([properties.id], name: "propertyref_id_index")
 }
 
 type TemplateItem {
