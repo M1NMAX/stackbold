@@ -25,10 +25,12 @@
 		updPropertyValue: { pid: string; value: string };
 	}>();
 
+	// TODO: Input validation
 	function handleOnInput(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-		dispatch('updPropertyValue', { pid: property.id, value: currValue });
+		const targetEl = e.target as HTMLInputElement;
+		const currValue = targetEl.type === 'checkbox' ? targetEl.checked.toString() : targetEl.value;
+		if (!targetEl.validity.badInput)
+			dispatch('updPropertyValue', { pid: property.id, value: currValue });
 	}
 
 	function handleClickClear() {
@@ -285,6 +287,15 @@
 		on:input={handleOnInput}
 		placeholder="Empty"
 		class="textarea textarea-ghost"
+	/>
+{:else if property.type === 'NUMBER'}
+	<input
+		id={property.id}
+		type="number"
+		{value}
+		step="any"
+		on:input={handleOnInput}
+		class="input input-ghost"
 	/>
 {:else}
 	<input
