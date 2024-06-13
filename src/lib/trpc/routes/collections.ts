@@ -86,9 +86,9 @@ export const collections = createTRPCRouter({
 	),
 	update: protectedProcedure
 		.input(collectionUpdateSchema)
-		.mutation(async ({ input: { id, data }, ctx: userId }) => {
-			await prisma.collection.update({ data, where: { id } });
-		}),
+		.mutation(async ({ input: { id, data } }) =>
+			await prisma.collection.update({ data, where: { id } })
+		),
 
 	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
 		const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
@@ -100,7 +100,7 @@ export const collections = createTRPCRouter({
 
 	addProperty: protectedProcedure
 		.input(z.object({ id: z.string(), property: PropertyCreateInputSchema }))
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, property } }) => {
 			return await prisma.collection.update({
 				data: { properties: { push: [property] } },
 				where: { id }
@@ -109,7 +109,7 @@ export const collections = createTRPCRouter({
 
 	updateProperty: protectedProcedure
 		.input(collectionUpdatePropertySchema)
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, property } }) => {
 			const { id: pid, ...rest } = property;
 
 			return await prisma.collection.update({
@@ -120,7 +120,7 @@ export const collections = createTRPCRouter({
 
 	deleteProperty: protectedProcedure
 		.input(z.object({ id: z.string(), propertyId: z.string() }))
-		.mutation(async ({ input: { id, propertyId }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, propertyId } }) => {
 			await prisma.collection.update({
 				data: { properties: { deleteMany: { where: { id: propertyId } } } },
 				where: { id }
@@ -140,7 +140,7 @@ export const collections = createTRPCRouter({
 				})
 			})
 		)
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, property } }) => {
 			return await prisma.collection.update({
 				data: {
 					properties: {
@@ -168,7 +168,7 @@ export const collections = createTRPCRouter({
 				})
 			})
 		)
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, property } }) => {
 			const { id: oid, ...rest } = property.option;
 
 			return await prisma.collection.update({
@@ -194,7 +194,7 @@ export const collections = createTRPCRouter({
 				})
 			})
 		)
-		.mutation(async ({ input: { id, property }, ctx: { userId } }) => {
+		.mutation(async ({ input: { id, property } }) => {
 			return await prisma.collection.update({
 				data: {
 					properties: {
