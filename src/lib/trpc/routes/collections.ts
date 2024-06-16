@@ -6,7 +6,8 @@ import {
 	PropertyCreateInputSchema,
 	ColorSchema,
 	PropertyTypeSchema,
-	AggregatorSchema
+	AggregatorSchema,
+	ViewSchema
 } from '$prisma-zod';
 
 const collectionCreateSchema = z.object({
@@ -48,6 +49,7 @@ const collectionUpdatePropertySchema = z.object({
 		type: PropertyTypeSchema.optional(),
 		aggregator: AggregatorSchema.optional(),
 		defaultValue: z.string().optional(),
+		visibleInViews: z.array(ViewSchema).optional(),
 		isVisibleOnListView: z.boolean().optional(),
 		isVisibleOnTableView: z.boolean().optional(),
 		options: z

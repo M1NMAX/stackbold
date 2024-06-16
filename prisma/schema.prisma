@@ -1,5 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Solve undefined enum: https://github.com/prisma/prisma/discussions/20575#discussioncomment-9204363
 
 generator client {
   provider      = "prisma-client-js"
@@ -58,6 +59,11 @@ enum Aggregator {
   AVG             @map("avg")
 }
 
+enum View {
+  LIST  @map("list")
+  TABLE @map("table")
+}
+
 type Option {
   id    String @default(uuid()) @map("_id")
   value String
@@ -65,15 +71,14 @@ type Option {
 }
 
 type Property {
-  id                   String       @default(uuid()) @map("_id")
-  name                 String
-  createdAt            DateTime     @default(now())
-  type                 PropertyType @default(TEXT)
-  options              Option[]
-  isVisibleOnListView  Boolean      @default(true)
-  isVisibleOnTableView Boolean      @default(true)
-  aggregator           Aggregator   @default(NONE)
-  defaultValue         String       @default("")
+  id             String       @default(uuid()) @map("_id")
+  name           String
+  createdAt      DateTime     @default(now())
+  type           PropertyType @default(TEXT)
+  options        Option[]
+  visibleInViews View[]       @default([LIST, TABLE])
+  aggregator     Aggregator   @default(NONE)
+  defaultValue   String       @default("")
 }
 
 type PropertyRef {

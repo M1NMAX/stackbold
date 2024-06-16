@@ -1,4 +1,4 @@
-import type { Color, Property, PropertyRef, Option, PropertyType } from '@prisma/client';
+import type { Color, Property, PropertyRef, Option, PropertyType, View } from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
@@ -28,4 +28,13 @@ export function getPropertyDefaultValue(propType: PropertyType, defaultValue: st
 	if (propType === 'SELECT') return defaultValue;
 	if (propType === 'CHECKBOX') return 'false';
 	return '';
+}
+
+export function containsView(propertyViews: View[], view: View) {
+	return propertyViews.some((v) => v === view);
+}
+
+export function toggleView(propertyViews: View[], view: View) {
+	if (containsView(propertyViews, view)) return propertyViews.filter((v) => v !== view);
+	else return [...propertyViews, view];
 }

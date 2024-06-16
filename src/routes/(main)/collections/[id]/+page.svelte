@@ -23,17 +23,19 @@
 		UserPlus,
 		X
 	} from 'lucide-svelte';
-	import { PropertyType, type Item } from '@prisma/client';
+	import { PropertyType, View, type Item } from '@prisma/client';
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
 	import {
 		AddPropertyPopover,
 		PropertyInput,
 		PropertyInputWrapper,
 		PropertyValueWrapper,
+		containsView,
 		//helpers
 		getOption,
 		getPropertyColor,
-		getPropertyDefaultValue
+		getPropertyDefaultValue,
+		toggleView
 	} from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
@@ -76,7 +78,7 @@
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
 	let sort = writable(sortOptions[0]);
 
-	let view = writable('list');
+	let view = writable<View>(View.LIST);
 	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 
@@ -506,7 +508,7 @@
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 
 	$: {
-		view = storage(`collection-${data.collection.id}-view`, 'list');
+		view = storage(`collection-${data.collection.id}-view`, View.LIST);
 	}
 	$: groupedItems = $searchStore.filtered.reduce(
 		groupItemsByPropertyValue(collection.groupItemsBy || ''),
@@ -813,7 +815,7 @@
 				<Drawer.Root>
 					<Drawer.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="secondary">
-							{#if $view === 'list'}
+							{#if $view === View.LIST}
 								<StretchHorizontal class="icon-md" />
 							{:else}
 								<Table class="icon-md" />
@@ -824,7 +826,7 @@
 						<Drawer.Header class="py-1">
 							<div class="flex items-center space-x-2">
 								<div class="p-2.5 rounded bg-secondary">
-									{#if $view === 'list'}
+									{#if $view === View.LIST}
 										<StretchHorizontal class="icon-md" />
 									{:else}
 										<Table class="icon-md" />
@@ -841,19 +843,19 @@
 										<StretchHorizontal class="icon-md" />
 										<span class="font-semibold text-lg"> List</span>
 									</div>
-									<RadioGroup.Item value="list" id="list" on:click={() => ($view = 'list')} />
+									<RadioGroup.Item value="list" id="list" on:click={() => ($view = View.LIST)} />
 								</Label>
 								<Label for="table" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<Table class="icon-md" />
 										<span class="font-semibold text-lg">Table</span>
 									</div>
-									<RadioGroup.Item value="table" id="table" on:click={() => ($view = 'table')} />
+									<RadioGroup.Item value="table" id="table" on:click={() => ($view = View.TABLE)} />
 								</Label>
 							</RadioGroup.Root>
 							<label for="visibility"> Visible in {view} </label>
 							<div class="px-2 py-1 rounded-md bg-secondary">
-								{#if $view === 'list'}
+								{#if $view === View.LIST}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
 											<label for={property.id} class="font-semibold text-base">
@@ -862,12 +864,12 @@
 											<input
 												id={property.id}
 												type="checkbox"
-												checked={property.isVisibleOnListView}
+												checked={containsView(property.visibleInViews, View.LIST)}
 												class="checkbox"
 												on:click={() =>
 													updPropertyDebounced({
 														id: property.id,
-														isVisibleOnListView: !property.isVisibleOnListView
+														visibleInViews: toggleView(property.visibleInViews, View.LIST)
 													})}
 											/>
 										</div>
@@ -881,12 +883,12 @@
 											<input
 												id={property.id}
 												type="checkbox"
-												checked={property.isVisibleOnTableView}
+												checked={containsView(property.visibleInViews, View.TABLE)}
 												class="checkbox"
 												on:click={() =>
 													updPropertyDebounced({
 														id: property.id,
-														isVisibleOnTableView: !property.isVisibleOnTableView
+														visibleInViews: toggleView(property.visibleInViews, View.TABLE)
 													})}
 											/>
 										</div>

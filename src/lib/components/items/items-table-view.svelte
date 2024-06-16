@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import type { Property, Item, Aggregator } from '@prisma/client';
+	import { type Property, type Item, type Aggregator, View } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
 	import {
 		PropertyValue,
+		containsView,
 		// helpers
 		getPropertyColor,
 		getPropertyRef,
-		getPropertyValue
+		getPropertyValue,
+		toggleView
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
@@ -25,7 +27,7 @@
 
 	const dispatch = createEventDispatcher<{
 		clickOpenItem: string;
-		updPropertyVisibility: { pid: string; name: string; value: boolean };
+		updPropertyVisibility: { pid: string; name: string; value: View[] };
 		renameItem: { id: string; name: string };
 	}>();
 
@@ -87,12 +89,12 @@
 
 							{#each properties as property (property.id)}
 								<DropdownMenu.CheckboxItem
-									checked={property.isVisibleOnTableView}
+									checked={containsView(property.visibleInViews, View.TABLE)}
 									on:click={() => {
 										dispatch('updPropertyVisibility', {
 											pid: property.id,
-											name: 'isVisibleOnTableView',
-											value: !property.isVisibleOnTableView
+											name: 'visibleInViews',
+											value: toggleView(property.visibleInViews, View.TABLE)
 										});
 									}}
 								>
@@ -106,7 +108,7 @@
 					Name
 				</th>
 				{#each properties as property (property.id)}
-					{#if property.isVisibleOnTableView}
+					{#if containsView(property.visibleInViews, View.TABLE)}
 						<th
 							scope="col"
 							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-1 cursor-pointer"
@@ -177,7 +179,7 @@
 
 						{#each properties as property (property.id)}
 							{@const propertyRef = getPropertyRef(item.properties, property.id)}
-							{#if property.isVisibleOnTableView && propertyRef}
+							{#if containsView(property.visibleInViews, View.TABLE) && propertyRef}
 								{@const color = getPropertyColor(property, propertyRef.value)}
 								{@const value = getPropertyValue(property, propertyRef.value, false)}
 
@@ -201,7 +203,7 @@
 					<td />
 					<td />
 					{#each properties as property (property.id)}
-						{#if property.isVisibleOnTableView}
+						{#if property.visibleInViews.some((v) => v === View.LIST)}
 							{#if property.aggregator === 'NONE'}
 								<td />
 							{:else}

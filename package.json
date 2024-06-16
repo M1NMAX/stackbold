@@ -12,7 +12,8 @@
 		"format": "prettier --plugin-search-dir . --write .",
 		"pw": "npx playwright test",
 		"pw:ui": "npx playwright test --ui",
-		"pw:report": "npx playwright show-report"
+		"pw:report": "npx playwright show-report",
+		"migrate": "tsx prisma/migration.ts"
 	},
 	"devDependencies": {
 		"@melt-ui/pp": "^0.1.4",

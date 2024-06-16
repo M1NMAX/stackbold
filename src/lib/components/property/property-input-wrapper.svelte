@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { PropertyOptions, getOption } from '.';
-	import { Aggregator, PropertyType, type Property } from '@prisma/client';
+	import { PropertyOptions, containsView, getOption, toggleView } from '.';
+	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
 	import { createEventDispatcher, tick } from 'svelte';
 	import {
 		ChevronRight,
@@ -33,13 +33,19 @@
 	const dispatch = createEventDispatcher<{
 		duplicate: string;
 		delete: string;
-		updPropertyField: { pid: string; name: string; value: boolean | string | PropertyType };
+		updPropertyField: {
+			pid: string;
+			name: keyof Property;
+			value: boolean | string | PropertyType | View[];
+		};
 	}>();
 
 	function handleOnInput(e: Event) {
 		//TODO: correct property value when property type changes
 		const targetEl = e.target as HTMLInputElement;
-		const { name, value } = targetEl;
+		const name = targetEl.name as keyof Property;
+		const value = targetEl.value;
+		// const { name, value }: { name: keyof Property , value:string} = targetEl;
 		dispatch('updPropertyField', { pid: property.id, name, value });
 	}
 
@@ -268,12 +274,12 @@
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content sameWidth>
 								<DropdownMenu.CheckboxItem
-									checked={property.isVisibleOnListView}
+									checked={containsView(property.visibleInViews, View.LIST)}
 									on:click={() => {
 										dispatch('updPropertyField', {
 											pid: property.id,
-											name: 'isVisibleOnListView',
-											value: !property.isVisibleOnListView
+											name: 'visibleInViews',
+											value: toggleView(property.visibleInViews, View.LIST)
 										});
 									}}
 								>
@@ -281,12 +287,12 @@
 								</DropdownMenu.CheckboxItem>
 
 								<DropdownMenu.CheckboxItem
-									checked={property.isVisibleOnTableView}
+									checked={containsView(property.visibleInViews, View.TABLE)}
 									on:click={() => {
 										dispatch('updPropertyField', {
 											pid: property.id,
-											name: 'isVisibleOnTableView',
-											value: !property.isVisibleOnTableView
+											name: 'visibleInViews',
+											value: toggleView(property.visibleInViews, View.TABLE)
 										});
 									}}
 								>

@@ -2,12 +2,13 @@
 	import { ItemMenu, getActiveItemState } from '.';
 	import {
 		PropertyValue,
+		containsView,
 		// helpers
 		getPropertyColor,
 		getPropertyRef,
 		getPropertyValue
 	} from '$lib/components/property';
-	import type { Property, Item } from '@prisma/client';
+	import { type Property, type Item, View } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
@@ -75,7 +76,7 @@
 
 			<div class="flex flex-wrap gap-2">
 				{#each properties as property (property.id)}
-					{#if property.isVisibleOnListView}
+					{#if containsView(property.visibleInViews, View.LIST)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
 							{@const color = getPropertyColor(property, propertyRef.value)}
