@@ -1,4 +1,4 @@
-import { Aggregator, Color, PrismaClient, PropertyType, type Option } from '@prisma/client';
+import { Aggregator, Color, PrismaClient, PropertyType, View, type Option } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -357,6 +357,7 @@ async function main() {
 				icon,
 				name,
 				description,
+				groupByConfigs: [{ view: View.LIST }, { view: View.TABLE }],
 				properties: properties.map(({ name, type, options }) => ({
 					name,
 					type,

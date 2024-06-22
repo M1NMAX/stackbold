@@ -38,13 +38,15 @@
 	// TODO: ref better try catch and feedback
 	async function createCollectionBasedOnTemplate(id: string) {
 		try {
-			const { icon, name, description, properties, items } = await trpc().templates.load.query(id);
+			const { icon, name, description, properties, groupByConfigs, items } =
+				await trpc().templates.load.query(id);
 
 			const createdCollection = await trpc().collections.create.mutate({
 				icon,
 				name,
 				description,
-				properties
+				properties,
+				groupByConfigs
 			});
 
 			const itemsCopy = items.map(({ id, ...rest }) => ({

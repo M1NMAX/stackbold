@@ -64,6 +64,11 @@ enum View {
   TABLE @map("table")
 }
 
+type GroupByConfig {
+  view       View
+  propertyId String @default("")
+}
+
 type Option {
   id    String @default(uuid()) @map("_id")
   value String
@@ -97,22 +102,23 @@ model Group {
 }
 
 model Collection {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  isFavourite  Boolean    @default(false)
-  isArchived   Boolean    @default(false)
-  description  String     @default("")
-  isDescHidden Boolean    @default(true)
-  owner        User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId      String
-  items        Item[]
-  groupItemsBy String?
-  properties   Property[]
-  group        Group?     @relation(fields: [groupId], references: [id])
-  groupId      String?    @db.ObjectId
-  icon         String     @default("folder")
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  isFavourite    Boolean         @default(false)
+  isArchived     Boolean         @default(false)
+  description    String          @default("")
+  isDescHidden   Boolean         @default(true)
+  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId        String
+  items          Item[]
+  groupItemsBy   String?
+  groupByConfigs GroupByConfig[]
+  properties     Property[]
+  group          Group?          @relation(fields: [groupId], references: [id])
+  groupId        String?         @db.ObjectId
+  icon           String          @default("folder")
 
   @@index([properties.id], name: "property_id_index")
   @@index([properties.options.id], name: "property_option_id_index")
@@ -137,12 +143,13 @@ type TemplateItem {
 }
 
 model Template {
-  id          String         @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String         @default("")
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  properties  Property[]
-  items       TemplateItem[]
-  icon        String         @default("folder")
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  description    String          @default("")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  properties     Property[]
+  items          TemplateItem[]
+  groupByConfigs GroupByConfig[]
+  icon           String          @default("folder")
 }

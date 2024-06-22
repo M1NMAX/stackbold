@@ -39,7 +39,7 @@
 	} from '$lib/components/property';
 	import debounce from 'debounce';
 	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidate, invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { fade } from 'svelte/transition';
@@ -94,6 +94,7 @@
 
 	// Sheet
 	let isOpen = false;
+	let reload = false;
 
 	const isDesktop = getScreenState();
 	const activeItem = setActiveItemState(null);
@@ -110,6 +111,7 @@
 		});
 
 		await invalidateAll();
+		reload = !reload;
 	}
 
 	async function duplicateCollection() {
@@ -511,9 +513,37 @@
 		view = storage(`collection-${data.collection.id}-view`, View.LIST);
 	}
 	$: groupedItems = $searchStore.filtered.reduce(
-		groupItemsByPropertyValue(collection.groupItemsBy || ''),
+		groupItemsByPropertyValue(findGroupByConfig($view) || ''),
 		{}
 	);
+
+	function findGroupByConfig(view: View) {
+		const config = collection.groupByConfigs.find((config) => config.view === view);
+		if (!config || config.propertyId === '') return null;
+		return config.propertyId;
+	}
+
+	function updGroupByConfig(view: View, value: string) {
+		// TODO: ref
+		const tmpGroupByConfigs = [
+			{
+				view: View.LIST,
+				propertyId: ''
+			},
+			{
+				view: View.TABLE,
+				propertyId: ''
+			}
+		];
+		if (collection.groupByConfigs.length === 0) collection.groupByConfigs = tmpGroupByConfigs;
+		return collection.groupByConfigs.map((config) => {
+			if (config.view !== view) return config;
+			return {
+				view,
+				propertyId: value
+			};
+		});
+	}
 </script>
 
 <svelte:head>
@@ -737,9 +767,15 @@
 									<DropdownMenu.Label>Group by</DropdownMenu.Label>
 									<DropdownMenu.Separator />
 									<DropdownMenu.RadioGroup
-										value={collection.groupItemsBy || 'none'}
-										onValueChange={(value) =>
-											updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+										value={findGroupByConfig($view) || 'none'}
+										onValueChange={(value) => {
+											updCollection({
+												groupByConfigs: updGroupByConfig(
+													$view,
+													value === 'none' || !value ? '' : value
+												)
+											});
+										}}
 									>
 										<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
 
@@ -761,10 +797,10 @@
 
 				{#key $view}
 					<ViewButtonsGroup bind:view={$view}>
-						<ViewButton value="list">
+						<ViewButton value={View.LIST}>
 							<StretchHorizontal class="icon-md" />
 						</ViewButton>
-						<ViewButton value="table">
+						<ViewButton value={View.TABLE}>
 							<Table class="icon-md" />
 						</ViewButton>
 					</ViewButtonsGroup>
@@ -898,9 +934,11 @@
 							<label for="groupBy"> Group by </label>
 							<RadioGroup.Root
 								id="groupBy"
-								value={collection.groupItemsBy || 'none'}
+								value={findGroupByConfig($view) || 'none'}
 								onValueChange={(value) =>
-									updCollection({ groupItemsBy: value !== 'none' ? value : null })}
+									updCollection({
+										groupByConfigs: updGroupByConfig($view, value === 'none' || !value ? '' : value)
+									})}
 								class="px-2 py-1 rounded-md bg-secondary"
 							>
 								<Label for="list" class="flex items-center justify-between space-x-2">
@@ -921,89 +959,91 @@
 				</Drawer.Root>
 			</div>
 		{/if}
-		{#if !collection.groupItemsBy}
-			<Items
-				items={removeSearchTerms($searchStore.filtered)}
-				view={$view}
-				{properties}
-				on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-				on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
-				on:clickDeleteItem={(e) => {
-					deleteDetail = { type: 'item', id: e.detail };
-					isDeleteModalOpen = true;
-				}}
-				on:updPropertyValue={({ detail }) => {
-					updPropertyValueDebounced(detail.itemId, {
-						id: detail.property.id,
-						value: detail.property.value
-					});
-				}}
-				on:updPropertyVisibility={({ detail }) => {
-					updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
-				}}
-				on:renameItem={({ detail }) => {
-					updItemDebounced({ id: detail.id, data: { name: detail.name } });
-				}}
-			/>
-		{/if}
-		{#if collection.groupItemsBy}
-			<Accordion.Root
-				multiple
-				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
-				class="w-full"
-			>
-				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
-					{@const property = getProperty(groupedItems[key].pid)}
+		{#key reload}
+			{#if !findGroupByConfig($view)}
+				<Items
+					items={removeSearchTerms($searchStore.filtered)}
+					view={$view}
+					{properties}
+					on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+					on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
+					on:clickDeleteItem={(e) => {
+						deleteDetail = { type: 'item', id: e.detail };
+						isDeleteModalOpen = true;
+					}}
+					on:updPropertyValue={({ detail }) => {
+						updPropertyValueDebounced(detail.itemId, {
+							id: detail.property.id,
+							value: detail.property.value
+						});
+					}}
+					on:updPropertyVisibility={({ detail }) => {
+						updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+					}}
+					on:renameItem={({ detail }) => {
+						updItemDebounced({ id: detail.id, data: { name: detail.name } });
+					}}
+				/>
+			{/if}
+			{#if findGroupByConfig($view)}
+				<Accordion.Root
+					multiple
+					value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
+					class="w-full"
+				>
+					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
+						{@const property = getProperty(groupedItems[key].pid)}
 
-					{#if property}
-						{@const color = getPropertyColor(property, key)}
-						<Accordion.Item value={`accordion-item-${key}`}>
-							<Accordion.Trigger class="justify-start p-2 hover:no-underline">
-								<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
-									{#if property.type === 'SELECT'}
-										{@const option = getOption(property.options, key)}
-										{option ? option.value : `No ${property.name}`}
-									{:else if property.type === 'CHECKBOX'}
-										{#if key === 'true'}
-											<CheckSquare2 class="icon-xs mr-1.5" />
-										{:else}
-											<Square class="icon-xs mr-1.5" />
+						{#if property}
+							{@const color = getPropertyColor(property, key)}
+							<Accordion.Item value={`accordion-item-${key}`}>
+								<Accordion.Trigger class="justify-start p-2 hover:no-underline">
+									<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
+										{#if property.type === 'SELECT'}
+											{@const option = getOption(property.options, key)}
+											{option ? option.value : `No ${property.name}`}
+										{:else if property.type === 'CHECKBOX'}
+											{#if key === 'true'}
+												<CheckSquare2 class="icon-xs mr-1.5" />
+											{:else}
+												<Square class="icon-xs mr-1.5" />
+											{/if}
+
+											{property.name}
 										{/if}
-
-										{property.name}
-									{/if}
-								</PropertyValueWrapper>
-							</Accordion.Trigger>
-							<Accordion.Content>
-								<Items
-									items={groupedItems[key].items}
-									view={$view}
-									{properties}
-									on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-									on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
-									on:clickDeleteItem={(e) => {
-										deleteDetail = { type: 'item', id: e.detail };
-										isDeleteModalOpen = true;
-									}}
-									on:updPropertyValue={({ detail }) => {
-										updPropertyValueDebounced(detail.itemId, {
-											id: detail.property.id,
-											value: detail.property.value
-										});
-									}}
-									on:updPropertyVisibility={({ detail }) => {
-										updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
-									}}
-									on:renameItem={({ detail }) => {
-										updItemDebounced({ id: detail.id, data: { name: detail.name } });
-									}}
-								/>
-							</Accordion.Content>
-						</Accordion.Item>
-					{/if}
-				{/each}
-			</Accordion.Root>
-		{/if}
+									</PropertyValueWrapper>
+								</Accordion.Trigger>
+								<Accordion.Content>
+									<Items
+										items={groupedItems[key].items}
+										view={$view}
+										{properties}
+										on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
+										on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
+										on:clickDeleteItem={(e) => {
+											deleteDetail = { type: 'item', id: e.detail };
+											isDeleteModalOpen = true;
+										}}
+										on:updPropertyValue={({ detail }) => {
+											updPropertyValueDebounced(detail.itemId, {
+												id: detail.property.id,
+												value: detail.property.value
+											});
+										}}
+										on:updPropertyVisibility={({ detail }) => {
+											updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+										}}
+										on:renameItem={({ detail }) => {
+											updItemDebounced({ id: detail.id, data: { name: detail.name } });
+										}}
+									/>
+								</Accordion.Content>
+							</Accordion.Item>
+						{/if}
+					{/each}
+				</Accordion.Root>
+			{/if}
+		{/key}
 		{#if $isDesktop}
 			<div class="sticky inset-x-0 bottom-0">
 				{#if itemNameError}

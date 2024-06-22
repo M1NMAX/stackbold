@@ -1,15 +1,15 @@
 <script lang="ts">
-	import type { Property, Item } from '@prisma/client';
+	import { type Property, type Item, View } from '@prisma/client';
 	import { ItemsListView, ItemsTableView } from '.';
 
 	export let items: Item[];
 	export let properties: Property[];
-	export let view: string;
+	export let view: View;
 </script>
 
 {#if items.length > 0}
 	<div class="grow space-y-2">
-		{#if view === 'table'}
+		{#if view === View.TABLE}
 			<ItemsTableView
 				{items}
 				{properties}

@@ -7,9 +7,17 @@ import {
 	ColorSchema,
 	PropertyTypeSchema,
 	AggregatorSchema,
-	ViewSchema
+	ViewSchema,
 } from '$prisma-zod';
+import { View } from '@prisma/client';
 
+
+const groupByConfigSchema = z.object({
+	view: ViewSchema,
+	propertyId: z.string()
+})
+
+const defaultGroupByConfigs = ([{ view: View.LIST, propertyId: '' }, { view: View.TABLE, propertyId: '' }]);
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
 	name: z.string(),
@@ -18,6 +26,7 @@ const collectionCreateSchema = z.object({
 	description: z.string().optional(),
 	isDescHidden: z.boolean().optional(),
 	groupId: z.string().nullable().optional(),
+	groupByConfigs: z.array(groupByConfigSchema).optional().default(defaultGroupByConfigs),
 	groupItemsBy: z.string().nullable().optional(),
 	properties: z
 		.union([
@@ -37,6 +46,7 @@ const collectionUpdateSchema = z.object({
 		description: z.string().optional(),
 		isDescHidden: z.boolean().optional(),
 		groupId: z.string().optional(),
+		groupByConfigs: z.array(groupByConfigSchema).optional(),
 		groupItemsBy: z.string().nullable().optional()
 	})
 });

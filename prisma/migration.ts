@@ -1,25 +1,25 @@
-import { Aggregator, Color, PrismaClient, PropertyType, View, type Option } from '@prisma/client';
+import { GroupByConfig, PrismaClient, View, } from '@prisma/client';
 
 const prisma = new PrismaClient();
 async function migrate() {
     const collections = await prisma.collection.findMany()
 
     for (const collection of collections) {
-        console.log("Collection id", collection.id)
-        for (const property of collection.properties) {
-            const views: View[] = [];
-            // if (property.isVisibleOnListView) views.push(View.LIST);
-            // if (property.isVisibleOnTableView) views.push(View.TABLE);
 
-            await prisma.collection.update({
-                where: { id: collection.id },
-                data: { properties: { updateMany: { where: { id: property.id }, data: { visibleInViews: views } } } }
-            });
+        const groupByConfigs: GroupByConfig[] = []
+        if (collection.groupItemsBy) {
+            groupByConfigs.push({ view: View.LIST, propertyId: collection.groupItemsBy })
+            groupByConfigs.push({ view: View.TABLE, propertyId: collection.groupItemsBy })
         }
 
+        await prisma.collection.update({
+            where: { id: collection.id },
+            data: { groupByConfigs }
+        })
+
+
+        console.log(" Updated Collection  with Id", collection.id)
     }
-
-
 }
 
 migrate()
