@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-// Solve undefined enum: https://github.com/prisma/prisma/discussions/20575#discussioncomment-9204363
+// Solution for undefined enum: https://github.com/prisma/prisma/discussions/20575#discussioncomment-9204363
 
 generator client {
   provider      = "prisma-client-js"
@@ -113,7 +111,6 @@ model Collection {
   owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId        String
   items          Item[]
-  groupItemsBy   String?
   groupByConfigs GroupByConfig[]
   properties     Property[]
   group          Group?          @relation(fields: [groupId], references: [id])
