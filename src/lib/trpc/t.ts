@@ -14,13 +14,13 @@ export const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
 });
 
 export const authMiddleware = t.middleware(async ({ next, ctx }) => {
-	if (!ctx.session?.user.id) throw new TRPCError({ code: 'UNAUTHORIZED' });
+	if (!ctx.session?.userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-	return next({ ctx: { session: ctx.session, userId: ctx.session.user.id } });
+	return next({ ctx: { session: ctx.session, userId: ctx.session.userId } });
 });
 
 export const adminMiddleware = t.middleware(async ({ next, ctx }) => {
-	if (ctx.session?.user.role !== 'ADMIN') throw new TRPCError({ code: 'UNAUTHORIZED' });
+	if (ctx.session?.role !== 'ADMIN') throw new TRPCError({ code: 'UNAUTHORIZED' });
 	return next();
 });
 export const createTRPCRouter = t.router;

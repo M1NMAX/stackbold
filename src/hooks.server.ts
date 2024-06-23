@@ -5,29 +5,39 @@ import { router } from '$lib/trpc/router';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { createTRPCHandle } from 'trpc-sveltekit';
+import { lucia } from '$lib/server/auth';
 
 const authHandle: Handle = async ({ event, resolve }) => {
-	event.locals.supabase = createSupabaseServerClient({
-		supabaseUrl: PUBLIC_SUPABASE_URL,
-		supabaseKey: PUBLIC_SUPABASE_ANON_KEY,
-		event
-	});
+	const sessionId = event.cookies.get(lucia.sessionCookieName)
 
-	/**
-	 * A convenience helper so we can just call await getSession() instead const { data: { session } } = await supabase.auth.getSession()
-	 */
-	event.locals.getSession = async () => {
-		const {
-			data: { session }
-		} = await event.locals.supabase.auth.getSession();
-		return session;
-	};
+	if (!sessionId) {
+		event.locals.user = null;
+		event.locals.session = null;
+		return resolve(event);
+	}
 
-	return resolve(event, {
-		filterSerializedResponseHeaders(name) {
-			return name === 'content-range';
-		}
-	});
+	const { session, user } = await lucia.validateSession(sessionId)
+	if (session && session.fresh) {
+		const sessionCookie = lucia.createSessionCookie(session.id);
+
+		event.cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: ".",
+			...sessionCookie.attributes
+		});
+	}
+
+	if (!session) {
+		const sessionCookie = lucia.createBlankSessionCookie();
+		event.cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: ".",
+			...sessionCookie.attributes
+		})
+	}
+
+	event.locals.user = user;
+	event.locals.session = session;
+
+	return resolve(event);
 };
 
 const trpcHandle: Handle = createTRPCHandle({

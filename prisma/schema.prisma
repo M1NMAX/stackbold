@@ -20,14 +20,26 @@ enum Role {
   MEMBER @map("member")
 }
 
+model Session {
+  id        String   @id @map("_id")
+  userId    String
+  expiresAt DateTime
+
+  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
 model User {
-  id          String       @id @map("_id")
-  name        String
-  role        Role         @default(MEMBER)
-  collections Collection[]
-  Group       Group[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id            String       @id @map("_id")
+  name          String
+  email         String       @unique
+  emailVerified Boolean      @default(false)
+  role          Role         @default(MEMBER)
+  password      String
+  sessions      Session[]
+  collections   Collection[]
+  Group         Group[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 enum Color {

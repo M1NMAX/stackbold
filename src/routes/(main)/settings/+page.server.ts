@@ -1,3 +1,5 @@
+import { lucia } from '$lib/server/auth';
+import { prisma } from '$lib/server/prisma';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
@@ -9,19 +11,25 @@ const updUserSchema = z.object({
 });
 
 export const load: PageServerLoad = async (event) => {
-	const session = await event.locals.getSession();
+	const user = event.locals.user;
 
-	if (!session) redirect(302, '/signin');
-
-	const user = session.user;
+	if (!user) redirect(302, '/signin')
 
 	const form = await superValidate(updUserSchema);
 
 	return { user, form };
 };
 export const actions: Actions = {
-	logout: async ({ locals }) => {
-		await locals.supabase.auth.signOut();
+	logout: async (event) => {
+		if (!event.locals.session) {
+			return fail(401);
+		}
+		await lucia.invalidateSession(event.locals.session.id);
+		const sessionCookie = lucia.createBlankSessionCookie();
+		event.cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: ".",
+			...sessionCookie.attributes
+		});
 
 		redirect(302, '/signin');
 	},
@@ -31,10 +39,7 @@ export const actions: Actions = {
 		if (!form.valid) return fail(400, { form });
 		const { name } = form.data;
 
-		const { error } = await locals.supabase.auth.updateUser({ data: { name } });
-
-		if (error) {
-			return message(form, error.message);
-		}
+		// TODO: finish implementation
+		return message(form, "Under implementation");
 	}
 };

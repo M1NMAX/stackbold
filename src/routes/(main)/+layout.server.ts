@@ -5,9 +5,11 @@ import type { LayoutServerLoad } from './$types';
 import type { Collection } from '@prisma/client';
 
 export const load: LayoutServerLoad = async (event) => {
-	const session = await event.locals.getSession();
+	const user = event.locals.user;
 
-	if (!session) redirect(302, '/signin');
+	if (!user) redirect(302, '/signin')
+
+	//TODO: check email verification
 
 	async function getItems(collections: Collection[]) {
 		type SearchableItem = { id: string; name: string; collection: { id: string; name: string } };
@@ -28,7 +30,6 @@ export const load: LayoutServerLoad = async (event) => {
 		return searchableItems;
 	}
 
-	const user = session.user;
 
 	const groups = await router.createCaller(await createContext(event)).groups.list();
 	const collections = await router.createCaller(await createContext(event)).collections.list();

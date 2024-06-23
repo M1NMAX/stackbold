@@ -2,33 +2,52 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { signInSchema } from '$lib/schema';
+import { prisma } from '$lib/server/prisma';
+import { verify } from "@node-rs/argon2"
+import { lucia } from '$lib/server/auth';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const session = await locals.getSession();
+	const user = locals.user;
 
-	if (session) redirect(302, '/');
+	if (user) redirect(302, '/')
 
 	const form = await superValidate(signInSchema);
 	return { form };
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	default: async ({ request, cookies }) => {
 		const form = await superValidate(request, signInSchema);
 
 		if (!form.valid) return fail(400, { form });
 
 		const { email, password } = form.data;
 
-		const { error } = await locals.supabase.auth.signInWithPassword({
-			email,
-			password
+		//TODO: Think about brute-force attack
+		const storedUser = await prisma.user.findFirst({ where: { email } })
+		if (!storedUser) return message(form, "Invalid Credentials")
+
+
+		const validPassword = await verify(storedUser.password, password, {
+			memoryCost: 19456,
+			timeCost: 2,
+			outputLen: 32,
+			parallelism: 1
 		});
 
-		if (error) {
-			return message(form, error.message);
-		}
+		if (!validPassword) return message(form, "Invalid Credentials")
 
-		redirect(302, '/');
+		const session = await lucia.createSession(storedUser.id, {
+			role: storedUser.role
+		});
+		const sessionCookie = lucia.createSessionCookie(session.id);
+		cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: ".",
+			...sessionCookie.attributes
+		});
+
+		redirect(302, "/");
+
+
 	}
 };

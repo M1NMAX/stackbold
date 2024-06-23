@@ -1,7 +1,6 @@
 // See https://kit.svelte.dev/docs/types#app
 
 import type { Template, Role } from '@prisma/client';
-import { SupabaseClient, Session } from '@supabase/supabase-js';
 
 // for information about these interfaces
 declare global {
@@ -10,12 +9,10 @@ declare global {
 
 		// interface Platform {}
 		interface Locals {
-			supabase: SupabaseClient;
-			getSession(): Promise<Session | null>;
+			user: import("lucia").User | null;
+			session: import("lucia").Session | null;
 		}
-		interface PageData {
-			session: Session | null;
-		}
+		// interface PageData {}
 		interface PageState {
 			template: Template;
 		}
@@ -36,4 +33,4 @@ declare global {
 	}
 }
 
-export {};
+export { };
