@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals, cookies }) => {
+	default: async ({ request, cookies }) => {
 		const form = await superValidate(request, signUpSchema);
 
 		if (!form.valid) return fail(400, { form });
@@ -39,27 +39,14 @@ export const actions: Actions = {
 		});
 
 		//TODO: check if username is already used
-		//TODO: change name
 		const createdUser = await prisma.user.create({
 			data: {
 				id: generateIdFromEntropySize(10),
-				name: "ad",
+				name: email.split("@")[0],
 				email: email,
 				password: passwordHash
 			}
 		})
-
-		const session = await lucia.createSession(createdUser.id, {
-			role: createdUser.role
-		});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
-		});
-
-
-		return message(form, 'A email verification link was sent to your inbox');
+		return message(form, 'A email verification code was sent to your account');
 	}
 };

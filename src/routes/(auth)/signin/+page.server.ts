@@ -5,6 +5,7 @@ import { signInSchema } from '$lib/schema';
 import { prisma } from '$lib/server/prisma';
 import { verify } from "@node-rs/argon2"
 import { lucia } from '$lib/server/auth';
+import { Role } from '@prisma/client';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
@@ -38,15 +39,17 @@ export const actions: Actions = {
 		if (!validPassword) return message(form, "Invalid Credentials")
 
 		const session = await lucia.createSession(storedUser.id, {
-			role: storedUser.role
+			role: Role.MEMBER,
 		});
+
 		const sessionCookie = lucia.createSessionCookie(session.id);
 		cookies.set(sessionCookie.name, sessionCookie.value, {
 			path: ".",
 			...sessionCookie.attributes
 		});
 
-		redirect(302, "/");
+
+		return redirect(302, "/");
 
 
 	}
