@@ -7,15 +7,15 @@ import { z } from 'zod';
 
 const updUserSchema = z.object({
 	name: z.string().min(4).max(31),
-	email: z.string().email().nullable()
+	email: z.string().email()
 });
 
-export const load: PageServerLoad = async (event) => {
-	const user = event.locals.user;
+export const load: PageServerLoad = async ({ locals }) => {
+	const user = locals.user;
 
 	if (!user) redirect(302, '/signin')
 
-	const form = await superValidate(updUserSchema);
+	const form = await superValidate(user, updUserSchema);
 
 	return { user, form };
 };
@@ -34,12 +34,19 @@ export const actions: Actions = {
 		redirect(302, '/signin');
 	},
 	updUserData: async ({ request, locals }) => {
+		const user = locals.user;
+		if (!user) return fail(400)
+
 		const form = await superValidate(request, updUserSchema);
 
 		if (!form.valid) return fail(400, { form });
 		const { name } = form.data;
 
-		// TODO: finish implementation
-		return message(form, "Under implementation");
+		try {
+			await prisma.user.update({ where: { id: user.id }, data: { name } })
+			return message(form, "Accout data updated successfully")
+		} catch {
+			return message(form, "Unable to update account data")
+		}
 	}
 };

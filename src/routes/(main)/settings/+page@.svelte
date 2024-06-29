@@ -21,22 +21,7 @@
 	let confirmed = false;
 	let isSaveDisabled = true;
 
-	const { form, message, errors, enhance } = superForm(data.form, {
-		onResult(event) {
-			const result = event.result as FormResult<ActionData>;
-
-			switch (result.type) {
-				case 'success':
-					toast.success('Accout data updated successfully');
-					invalidateAll();
-					break;
-				case 'failure':
-				case 'error':
-					toast.error('Unable to update account data');
-					break;
-			}
-		}
-	});
+	const { form, message, errors, enhance } = superForm(data.form);
 
 	// FIXME
 	async function handleClickDeleteAccount() {
@@ -72,6 +57,12 @@
 
 			<p>Manage your account settings</p>
 
+			{#if $message}
+				<div class="msg-error">
+					{$message}
+				</div>
+			{/if}
+
 			<form method="post" action="?/updUserData" use:enhance class="space-y-4 my-4">
 				<div>
 					<label for="email" class="label"> Email </label>
@@ -81,7 +72,7 @@
 						id="email"
 						type="email"
 						name="email"
-						value={user.email}
+						value={$form.email}
 						class="input input-ghost"
 					/>
 				</div>
@@ -89,7 +80,6 @@
 				<div>
 					<label for="name" class="label"> Name </label>
 					<input
-						disabled
 						id="name"
 						type="text"
 						name="name"
@@ -109,14 +99,16 @@
 
 			<Separator />
 
-			<div class="flex items-center mt-4">
+			<div class="mt-2 space-y-4">
 				<div>
 					<h3 class="text-base font-semibold">Delete account</h3>
 					<p class="text-sm">
 						Once you delete your account, there is no going back. Please be certain.
 					</p>
 				</div>
-				<Button variant="destructive" on:click={() => (open = true)}>Delete account</Button>
+				<Button variant="destructive" class="w-full" on:click={() => (open = true)}>
+					Delete account
+				</Button>
 			</div>
 		</Tabs.Content>
 		<Tabs.Content value="appearance" class="tab-content">
