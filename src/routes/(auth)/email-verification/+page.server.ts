@@ -10,7 +10,12 @@ const codeSchema = z.object({
     code: z.string().length(8)
 });
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+    const user = locals.user;
+    if (!user) return redirect(302, "/signin")
+
+    if (user.emailVerified) return redirect(302, "/")
+
     const form = await superValidate(codeSchema);
     return { form };
 };

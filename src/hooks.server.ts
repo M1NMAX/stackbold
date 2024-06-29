@@ -1,5 +1,3 @@
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
-import { createSupabaseServerClient } from '@supabase/auth-helpers-sveltekit';
 import { createContext } from '$lib/trpc/context';
 import { router } from '$lib/trpc/router';
 import type { Handle } from '@sveltejs/kit';

@@ -1,6 +1,7 @@
+import type { PageServerLoad, Actions } from './$types';
+import { sendPasswordResetToken } from '$lib/server/email';
 import { prisma } from '$lib/server/prisma';
 import { createPasswordResetToken } from '$lib/server/token';
-import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
@@ -25,19 +26,14 @@ export const actions: Actions = {
 			where: { email }
 		});
 
-
 		//TODO: Consideration  `If you want to avoid disclosing valid emails` 
 		if (!user) return fail(200)
 
 		//TODO: implement ip based rate limit
-		const verificationToken = await createPasswordResetToken(user.id);
-		const verificationLink = "http://localhost:5173/password-reset/" + verificationToken;
+		const token = await createPasswordResetToken(user.id);
 
-		await sendPasswordResetToken(email, verificationLink);
+		await sendPasswordResetToken(email, token);
 
 		return message(form, 'Success, Your password reset link was sent to your inbox ');
 	}
 };
-async function sendPasswordResetToken(email: string, link: string) {
-	console.log(`Password reset token for ${email}: ${link}`);
-}
