@@ -7,7 +7,8 @@ import { generateIdFromEntropySize } from 'lucia';
 import { prisma } from '$lib/server/prisma';
 import { hash } from "@node-rs/argon2"
 import { lucia } from '$lib/server/auth';
-import { Role } from '@prisma/client';
+import { alphabet, generateRandomString } from 'oslo/crypto';
+import { TimeSpan, createDate } from 'oslo';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// if (!dev) redirect(302, '/signin');
@@ -47,6 +48,41 @@ export const actions: Actions = {
 				password: passwordHash
 			}
 		})
-		return message(form, 'A email verification code was sent to your account');
+
+
+		const verficationCode = await generateEmailVerificationCode(createdUser.id, email);
+		await sendEmailVerificationCode(email, verficationCode);
+		const session = await lucia.createSession(createdUser.id, {
+			role: createdUser.role
+		});
+		const sessionCookie = lucia.createSessionCookie(session.id);
+		cookies.set(sessionCookie.name, sessionCookie.value, {
+			path: ".",
+			...sessionCookie.attributes
+		});
+
+		redirect(302, "/email-verification");
 	}
 };
+
+async function generateEmailVerificationCode(userId: string, email: string): Promise<string> {
+	await prisma.emailVerication.deleteMany({ where: { userId } });
+
+	const code = generateRandomString(8, alphabet("0-9"));
+
+	await prisma.emailVerication.create({
+		data: {
+			userId,
+			email,
+			code,
+			expiredAt: createDate(new TimeSpan(15, "m"))
+		}
+
+	})
+	return code;
+}
+
+
+async function sendEmailVerificationCode(email: string, code: string) {
+	console.log(`Verficiation code for ${email}: ${code}`);
+}
