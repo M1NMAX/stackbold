@@ -21,18 +21,19 @@ enum Role {
 }
 
 model User {
-  id              String            @id @map("_id")
-  name            String
-  email           String            @unique
-  emailVerified   Boolean           @default(false)
-  role            Role              @default(MEMBER)
-  password        String
-  sessions        Session[]
-  collections     Collection[]
-  Group           Group[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  EmailVerication EmailVerication[]
+  id                 String               @id @map("_id")
+  name               String
+  email              String               @unique
+  emailVerified      Boolean              @default(false)
+  role               Role                 @default(MEMBER)
+  password           String
+  sessions           Session[]
+  collections        Collection[]
+  Group              Group[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  EmailVerication    EmailVerication[]
+  PasswordResetToken PasswordResetToken[]
 }
 
 model EmailVerication {
@@ -40,7 +41,15 @@ model EmailVerication {
   code      String
   userId    String
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  email     String
+  email     String   @unique
+  expiredAt DateTime
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  userId    String
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   expiredAt DateTime
 }
 
