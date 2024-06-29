@@ -1,17 +1,14 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { message, superValidate } from 'sveltekit-superforms/server';
-import { dev } from '$app/environment';
+import { superValidate } from 'sveltekit-superforms/server';
 import { signUpSchema } from '$lib/schema';
 import { generateIdFromEntropySize } from 'lucia';
 import { prisma } from '$lib/server/prisma';
 import { hash } from "@node-rs/argon2"
 import { lucia } from '$lib/server/auth';
-import { alphabet, generateRandomString } from 'oslo/crypto';
-import { TimeSpan, createDate } from 'oslo';
+import { generateEmailVerificationCode, sendEmailVerificationCode } from "$lib/server/email";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// if (!dev) redirect(302, '/signin');
 
 	const user = locals.user;
 	if (user) {
@@ -65,24 +62,4 @@ export const actions: Actions = {
 	}
 };
 
-async function generateEmailVerificationCode(userId: string, email: string): Promise<string> {
-	await prisma.emailVerication.deleteMany({ where: { userId } });
 
-	const code = generateRandomString(8, alphabet("0-9"));
-
-	await prisma.emailVerication.create({
-		data: {
-			userId,
-			email,
-			code,
-			expiredAt: createDate(new TimeSpan(15, "m"))
-		}
-
-	})
-	return code;
-}
-
-
-async function sendEmailVerificationCode(email: string, code: string) {
-	console.log(`Verficiation code for ${email}: ${code}`);
-}

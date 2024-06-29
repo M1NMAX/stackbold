@@ -3,12 +3,11 @@ import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import { prisma } from '$lib/server/prisma';
-import { isWithinExpirationDate } from 'oslo';
 import { lucia } from '$lib/server/auth';
-import type { User } from 'lucia';
+import { generateEmailVerificationCode, sendEmailVerificationCode, verifyVerificationCode } from '$lib/server/email';
 
 const codeSchema = z.object({
-    code: z.string()
+    code: z.string().length(8)
 });
 
 export const load: PageServerLoad = async () => {
@@ -17,7 +16,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-    default: async ({ request, locals, cookies }) => {
+    validate: async ({ request, locals, cookies }) => {
 
         const user = locals.user;
         if (!user) redirect(302, '/')
@@ -29,8 +28,6 @@ export const actions: Actions = {
 
         const isValid = await verifyVerificationCode(user, code);
         if (!isValid) return message(form, "Invalid code");
-
-
 
         await lucia.invalidateUserSessions(user.id);
         await prisma.user.update({
@@ -49,23 +46,22 @@ export const actions: Actions = {
         });
 
         redirect(302, '/')
+    },
+    resend: async ({ locals }) => {
+        const user = locals.user;
+        if (!user) return fail(400)
+        const form = await superValidate(codeSchema)
+
+        try {
+            const verficationCode = await generateEmailVerificationCode(user.id, user.email);
+            await sendEmailVerificationCode(user.email, verficationCode);
+
+            return message(form, "A verification code was sent to your email address")
+        } catch (error) {
+            console.error(error)
+            return fail(500, {
+                message: "Something went wrong, please try later!"
+            })
+        }
     }
 };
-async function verifyVerificationCode(user: User, code: string): Promise<boolean> {
-    return prisma.$transaction(async (tx) => {
-
-        const storedVericationCode = await tx.emailVerication.findFirst({
-            where: { userId: user.id }
-        });
-
-        if (!storedVericationCode || storedVericationCode.code !== code) return false;
-
-        await tx.emailVerication.delete({ where: { id: storedVericationCode.id } });
-
-        if (!isWithinExpirationDate(storedVericationCode.expiredAt)) return false;
-
-        if (storedVericationCode.email !== user.email) return false;
-
-        return true;
-    });
-}

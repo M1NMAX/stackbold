@@ -48,9 +48,8 @@ export const actions: Actions = {
 			...sessionCookie.attributes
 		});
 
+		if (!storedUser.emailVerified) return redirect(302, "/email-verification")
 
 		return redirect(302, "/");
-
-
-	}
+	},
 };

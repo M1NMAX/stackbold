@@ -22,7 +22,7 @@
 		</div>
 	{/if}
 
-	<form method="post" use:enhance class="space-y-4">
+	<form method="post" use:enhance action="?/validate" class="space-y-4">
 		<div>
 			<label for="code" class="label px-0"> Code </label>
 			<input
@@ -41,6 +41,10 @@
 		<div>
 			<Button type="submit" class="w-full">Validate</Button>
 		</div>
+	</form>
+
+	<form method="post" use:enhance action="?/resend" class="mt-5">
+		<Button type="submit" variant="secondary" class="w-full">Resend</Button>
 	</form>
 </div>
 <div class="my-8 leading-8 font-medium text-sm">
