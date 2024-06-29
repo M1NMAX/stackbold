@@ -42,7 +42,7 @@ export const actions: Actions = {
 		//TODO: check if username is already used
 		const createdUser = await prisma.user.create({
 			data: {
-				id: generateIdFromEntropySize(10),
+				id: generateIdFromEntropySize(10), // 16 characters long
 				name: email.split("@")[0],
 				email: email,
 				password: passwordHash
