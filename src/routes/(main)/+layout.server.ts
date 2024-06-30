@@ -9,7 +9,7 @@ export const load: LayoutServerLoad = async (event) => {
 
 	if (!user) redirect(302, '/signin')
 
-	//TODO: check email verification
+	if (!user.emailVerified) redirect(302, '/email-verification')
 
 	async function getItems(collections: Collection[]) {
 		type SearchableItem = { id: string; name: string; collection: { id: string; name: string } };
