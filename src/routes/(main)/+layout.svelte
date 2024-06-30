@@ -165,7 +165,7 @@
 			const collectionItems = await trpc().items.list.query(id);
 
 			await trpc().items.createMany.mutate(
-				collectionItems.map(({ id, collectionId, updatedByUserId, ...rest }) => ({
+				collectionItems.map(({ id, collectionId, ...rest }) => ({
 					collectionId: createdCollection.id,
 					...rest
 				}))
@@ -355,9 +355,7 @@
 							<Drawer.Trigger asChild let:builder>
 								<Button builders={[builder]} variant="secondary" class=" p-0.5 pr-1">
 									<img
-										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${
-											user.email?.split('@')[0]
-										}`}
+										src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
 										class="icon-lg object-contain rounded-md"
 										alt="avatar"
 									/>
@@ -498,30 +496,32 @@
 						</Accordion.Content>
 					</Accordion.Item>
 				{/each}
-				<Accordion.Item value="item-0">
-					<Accordion.Trigger
-						class="justify-start py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
-					>
-						Favourites</Accordion.Trigger
-					>
-					<Accordion.Content>
-						{#each favourites as collection}
-							<SidebarCollection
-								asChild
-								{collection}
-								groups={groups.map(({ id, name }) => ({ id, name }))}
-								active={activeCollection(collection.id)}
-								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-								on:updCollection={({ detail }) =>
-									updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
-								on:deleteCollection={({ detail }) => {
-									isDeleteModalOpen = true;
-									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
-								}}
-							/>
-						{/each}
-					</Accordion.Content>
-				</Accordion.Item>
+				{#if favourites.length > 0}
+					<Accordion.Item value="item-0">
+						<Accordion.Trigger
+							class="justify-start py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
+						>
+							Favourites</Accordion.Trigger
+						>
+						<Accordion.Content>
+							{#each favourites as collection}
+								<SidebarCollection
+									asChild
+									{collection}
+									groups={groups.map(({ id, name }) => ({ id, name }))}
+									active={activeCollection(collection.id)}
+									on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
+									on:updCollection={({ detail }) =>
+										updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
+									on:deleteCollection={({ detail }) => {
+										isDeleteModalOpen = true;
+										deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
+									}}
+								/>
+							{/each}
+						</Accordion.Content>
+					</Accordion.Item>
+				{/if}
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
