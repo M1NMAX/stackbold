@@ -187,8 +187,8 @@
 					{#each removeSearchTerms($searchStore.filtered) as user (user.id)}
 						<tr
 							class={cn(
-								' text-nowrap font-medium text-base border-y border-secondary hover:bg-opacity-20 ',
-								data.user.email === user.email && 'bg-primary/50'
+								'text-nowrap font-medium text-base border-y border-secondary hover:bg-muted',
+								data.user.email === user.email && 'border-l-2 border-y-0  border-primary'
 							)}
 						>
 							{#each Object.values(user) as value}
@@ -211,10 +211,10 @@
 									}}
 									class={cn(
 										buttonVariants({ variant: 'ghost' }),
-										'w-fit p-1 rounded-sm hover:text-primary '
+										'w-fit p-1 rounded-sm hover:text-primary cursor-pointer'
 									)}
 								>
-									<Trash2 class="icon-md" />
+									<Trash2 class="icon-sm" />
 								</div>
 							</td>
 						</tr>
