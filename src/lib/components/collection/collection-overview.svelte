@@ -18,11 +18,11 @@
 			{collection.name}
 		</h2>
 		<!--TODO: turn into btn  -->
-		{#if collection.isPinned}
+		<!-- {#if collection.isPinned}
 			<PinOff class="icon-xs" />
 		{:else}
 			<Pin class="icon-xs" />
-		{/if}
+		{/if} -->
 	</div>
 
 	<div class="flex space-x-4 text-sm text-muted-foreground">
