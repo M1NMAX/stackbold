@@ -8,9 +8,9 @@
 	import { getCrtCollectionDialogState } from '$lib/components/modal';
 
 	export let data: PageData;
-	$: ({ user, collections } = data);
+	$: ({ collections } = data);
 
-	$: favCollections = getFavCollections(collections);
+	$: pinnedCollections = getPinnedCollections(collections);
 	$: updCollections = getUpdCollections(collections);
 
 	const crtCollectionDialog = getCrtCollectionDialogState();
@@ -20,8 +20,8 @@
 	}
 
 	type CollectionArray = RouterOutputs['collections']['list'];
-	function getFavCollections(collections: CollectionArray) {
-		return collections.filter((collection) => collection.isFavourite);
+	function getPinnedCollections(collections: CollectionArray) {
+		return collections.filter((collection) => collection.isPinned);
 	}
 
 	function getUpdCollections(collections: CollectionArray) {
@@ -41,12 +41,12 @@
 	<PageContent class="space-y-5">
 		<h1 class="font-semibold text-2xl">Welcome!</h1>
 
-		{#if favCollections.length > 0}
+		{#if pinnedCollections.length > 0}
 			<section class="space-y-1.5">
-				<h2 class="text-xl">Favourites Collections</h2>
+				<h2 class="text-xl">Pinned Collections</h2>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-					{#each favCollections as collection (collection.id)}
+					{#each pinnedCollections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}
 				</div>

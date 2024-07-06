@@ -1,19 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
-	import { ArrowUpDown, Database, FolderPlus, ListFilter } from 'lucide-svelte';
+	import { ArrowUpDown, Database, FolderPlus } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
-	import { capitalizeFirstLetter, cn } from '$lib/utils';
+	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { getCrtCollectionDialogState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';
 	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { getScreenState } from '$lib/components/view';
@@ -21,8 +20,6 @@
 
 	export let data: PageData;
 
-	type Filters = 'all' | 'favourites' | 'archived';
-	let filter: Filters = 'all';
 	const crtCollectionDialog = getCrtCollectionDialogState();
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
@@ -33,23 +30,7 @@
 		$crtCollectionDialog = { defaultGroup: undefined, open: true };
 	}
 
-	function setFilter(newFilter: string) {
-		filter = newFilter as Filters;
-	}
-
-	function filterCollections() {
-		switch (filter) {
-			case 'all':
-				return searchCollections;
-			case 'favourites':
-				return searchCollections.filter((collection) => collection.isFavourite);
-			case 'archived':
-				return searchCollections.filter((collection) => collection.isArchived);
-		}
-	}
-
 	// SEARCH
-
 	function addSearchTerms() {
 		return data.collections.map((collection) => ({
 			...collection,
@@ -67,7 +48,6 @@
 	});
 
 	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
-	$: filter, ($searchStore.data = filterCollections());
 	$: data, ($searchStore.data = addSearchTerms().sort(sortFun($sort.field, $sort.order)));
 </script>
 
@@ -87,30 +67,6 @@
 			{#if $isDesktop}
 				<div class="flex justify-between space-x-2">
 					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
-
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="sm" class="h-9">
-								<ListFilter />
-								<span class="sr-only"> {filter} </span>
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-44">
-							<DropdownMenu.Label>Filter</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-
-							<DropdownMenu.Group>
-								{#each ['all', 'favourites', 'archived'] as option}
-									<DropdownMenu.CheckboxItem
-										checked={option === filter}
-										on:click={() => setFilter(option)}
-									>
-										{capitalizeFirstLetter(option)}
-									</DropdownMenu.CheckboxItem>
-								{/each}
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
 
 					<SortDropdown {sortOptions} bind:currentSort={$sort} />
 					<Button on:click={openCrtCollectionDialog}>New Collection</Button>

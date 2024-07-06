@@ -241,8 +241,6 @@
 
 	$: innerWidth < 700 && ($sidebarState = false);
 
-	$: favourites = collections.filter((collection) => collection.isFavourite);
-
 	$: activeUrl = $page.url.pathname;
 	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
 </script>
@@ -426,7 +424,7 @@
 			>
 				<div class="space-y-0">
 					{#each collections as collection}
-						{#if collection.groupId === null}
+						{#if collection.groupId === null && collection.isPinned}
 							<SidebarCollection
 								{collection}
 								groups={groups.map(({ id, name }) => ({ id, name }))}
@@ -445,7 +443,8 @@
 
 				{#each groups as group, idx (group.id)}
 					{@const groupCollections = collections.filter(
-						(collection) => collection.groupId && collection.groupId === group.id
+						(collection) =>
+							collection.groupId && collection.groupId === group.id && collection.isPinned
 					)}
 					<Accordion.Item value={`item-${idx + 1}`}>
 						<Accordion.Trigger
@@ -496,32 +495,6 @@
 						</Accordion.Content>
 					</Accordion.Item>
 				{/each}
-				{#if favourites.length > 0}
-					<Accordion.Item value="item-0">
-						<Accordion.Trigger
-							class="justify-start py-0.5 px-2 text-sm font-semibold  hover:no-underline hover:bg-muted"
-						>
-							Favourites</Accordion.Trigger
-						>
-						<Accordion.Content>
-							{#each favourites as collection}
-								<SidebarCollection
-									asChild
-									{collection}
-									groups={groups.map(({ id, name }) => ({ id, name }))}
-									active={activeCollection(collection.id)}
-									on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-									on:updCollection={({ detail }) =>
-										updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
-									on:deleteCollection={({ detail }) => {
-										isDeleteModalOpen = true;
-										deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
-									}}
-								/>
-							{/each}
-						</Accordion.Content>
-					</Accordion.Item>
-				{/if}
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">

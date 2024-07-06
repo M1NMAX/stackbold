@@ -21,8 +21,7 @@ const defaultGroupByConfigs = ([{ view: View.LIST, propertyId: '' }, { view: Vie
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
 	name: z.string(),
-	isFavourite: z.boolean().optional(),
-	isArchived: z.boolean().optional(),
+	isPinned: z.boolean().optional(),
 	description: z.string().optional(),
 	isDescHidden: z.boolean().optional(),
 	groupId: z.string().nullable().optional(),
@@ -41,8 +40,7 @@ const collectionUpdateSchema = z.object({
 	data: z.object({
 		icon: z.string().optional(),
 		name: z.string().optional(),
-		isFavourite: z.boolean().optional(),
-		isArchived: z.boolean().optional(),
+		isPinned: z.boolean().optional(),
 		description: z.string().optional(),
 		isDescHidden: z.boolean().optional(),
 		groupId: z.string().optional(),

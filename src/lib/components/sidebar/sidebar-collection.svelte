@@ -8,6 +8,7 @@
 		HeartOff,
 		MoreHorizontal,
 		Pencil,
+		PinOff,
 		Trash
 	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -127,20 +128,17 @@
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					class="space-x-2"
-					on:click={() => {
-						dispatch('updCollection', { id, field: 'isFavourite', value: !collection.isFavourite });
-					}}
-				>
-					{#if collection.isFavourite}
-						<HeartOff class="icon-xs" />
-						<span> Remove from Favourites </span>
-					{:else}
-						<Heart class="icon-xs" />
-						<span> Add to Favourites </span>
-					{/if}
-				</DropdownMenu.Item>
+				{#if collection.isPinned}
+					<DropdownMenu.Item
+						class="space-x-2"
+						on:click={() => {
+							dispatch('updCollection', { id, field: 'isPinned', value: false });
+						}}
+					>
+						<PinOff class="icon-xs" />
+						<span> Remove from Sidebar </span>
+					</DropdownMenu.Item>
+				{/if}
 
 				<DropdownMenu.Item class="space-x-2" on:click={openMoveDialog}>
 					<CornerUpRight class="icon-xs" />
@@ -189,25 +187,23 @@
 				</Drawer.Header>
 
 				<Drawer.Footer class="pt-2">
-					<Button
-						variant="secondary"
-						on:click={() => {
-							dispatch('updCollection', {
-								id,
-								field: 'isFavourite',
-								value: !collection.isFavourite
-							});
-							closeSmallScreenDrawer();
-						}}
-					>
-						{#if collection.isFavourite}
+					{#if collection.isPinned}
+						<Button
+							variant="secondary"
+							on:click={() => {
+								dispatch('updCollection', {
+									id,
+									field: 'isPinned',
+									value: false
+								});
+								closeSmallScreenDrawer();
+							}}
+						>
 							<HeartOff class="icon-xs" />
-							<span> Remove from Favourites </span>
-						{:else}
-							<Heart class="icon-xs" />
-							<span> Add to Favourites </span>
-						{/if}
-					</Button>
+							<span> Remove from Sidebar </span>
+						</Button>
+					{/if}
+
 					<Button
 						variant="secondary"
 						on:click={() => {

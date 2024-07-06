@@ -15,6 +15,8 @@
 		Heart,
 		HeartOff,
 		MoreHorizontal,
+		Pin,
+		PinOff,
 		Plus,
 		Square,
 		StretchHorizontal,
@@ -581,9 +583,13 @@
 				<Button
 					variant="secondary"
 					size="icon"
-					on:click={() => updCollection({ isFavourite: !collection.isFavourite })}
+					on:click={() => updCollection({ isPinned: !collection.isPinned })}
 				>
-					<Heart class={cn(collection.isFavourite && 'fill-primary text-primary')} />
+					{#if collection.isPinned}
+						<PinOff />
+					{:else}
+						<Pin />
+					{/if}
 				</Button>
 
 				{#if $isDesktop}
@@ -615,13 +621,6 @@
 								<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
 									<Copy class="icon-xs" />
 									<span>Duplicate</span>
-								</DropdownMenu.Item>
-								<DropdownMenu.Item
-									on:click={() => updCollection({ isArchived: true })}
-									class="space-x-1"
-								>
-									<Archive class="icon-xs" />
-									<span>Archive</span>
 								</DropdownMenu.Item>
 								<DropdownMenu.Item
 									class="space-x-1"
@@ -663,16 +662,16 @@
 								<Button
 									variant="secondary"
 									on:click={() => {
-										updCollection({ isFavourite: !collection.isFavourite });
+										updCollection({ isPinned: !collection.isPinned });
 										closeSmallScreenDrawer();
 									}}
 								>
-									{#if collection.isFavourite}
-										<HeartOff class="icon-xs" />
-										<span> Remove from Favourites </span>
+									{#if collection.isPinned}
+										<PinOff class="icon-xs" />
+										<span> Remove from Sidebar</span>
 									{:else}
-										<Heart class="icon-xs" />
-										<span> Add to Favourites </span>
+										<Pin class="icon-xs" />
+										<span> Add to Sidebar </span>
 									{/if}
 								</Button>
 								<Button
@@ -684,10 +683,6 @@
 								>
 									<CornerUpRight class="icon-xs" />
 									<span>Move to</span>
-								</Button>
-								<Button variant="secondary" on:click={() => updCollection({ isArchived: true })}>
-									<Archive class="icon-xs" />
-									<span>Archive</span>
 								</Button>
 								<Button
 									variant="secondary"

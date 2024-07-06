@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { RouterOutputs } from '$lib/trpc/router';
 	import { icons } from '$lib/components/icon';
-	import { cn } from '$lib/utils';
 	import dayjs from '$lib/utils/dayjs';
-	import { Hash, Heart } from 'lucide-svelte';
+	import { Hash, Pin, PinOff } from 'lucide-svelte';
 
 	export let collection: RouterOutputs['collections']['list'][0];
 </script>
@@ -18,14 +17,17 @@
 		<h2 class="grow text-lg font-semibold">
 			{collection.name}
 		</h2>
-
-		<Heart class={cn('icon-xs fill-primary text-primary', !collection.isFavourite && 'hidden')} />
+		<!--TODO: turn into btn  -->
+		{#if collection.isPinned}
+			<PinOff class="icon-xs" />
+		{:else}
+			<Pin class="icon-xs" />
+		{/if}
 	</div>
 
 	<div class="flex space-x-4 text-sm text-muted-foreground">
 		<div class="flex items-center">
 			<Hash class="icon-xxs mr-1 text-primary" />
-
 			{collection.nItems > 0 ? collection.nItems + ' Items' : 'Empty'}
 		</div>
 		<div>
