@@ -32,9 +32,11 @@
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
 
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<User>[])];
+	type UserWithoutPassword = Omit<User, 'password'>;
 
-	const sort = setSortState<User>(sortOptions[0]);
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<UserWithoutPassword>[])];
+
+	const sort = setSortState<Omit<UserWithoutPassword, 'password'>>(sortOptions[0]);
 
 	const isDesktop = mediaQuery('(min-width: 768px)');
 
@@ -77,7 +79,7 @@
 	}
 
 	function clickHead(head: string) {
-		const field = head as keyof User;
+		const field = head as keyof UserWithoutPassword;
 		const order = $sort.order === 'asc' ? 'desc' : 'asc';
 		$sort = { ...$sort, field, order };
 	}
