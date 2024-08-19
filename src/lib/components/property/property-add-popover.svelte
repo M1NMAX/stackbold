@@ -1,19 +1,6 @@
-<script context="module" lang="ts">
-	import { Calendar, CheckSquare2, ChevronsUpDown, Hash, Link, Plus, Text } from 'lucide-svelte';
-
-	const icons: { [index: string]: any } = {
-		text: Text,
-		select: ChevronsUpDown,
-		checkbox: CheckSquare2,
-		date: Calendar,
-		number: Hash,
-		url: Link
-	};
-</script>
-
 <script lang="ts">
+	import { PropertyIcon } from '.';
 	import { Button } from '$lib/components/ui/button';
-
 	import {
 		Root as SheetRoot,
 		Trigger as SheetTrigger,
@@ -26,8 +13,9 @@
 	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
 	import { clickOutside } from '$lib/actions';
+	import { Plus } from 'lucide-svelte';
 
-	let open = false;
+	let isOpen = false;
 
 	const isDesktop = getScreenState();
 	const dispatch = createEventDispatcher<{
@@ -36,13 +24,13 @@
 
 	function handleClickPropertyType(propertyType: PropertyType) {
 		dispatch('clickPropType', propertyType);
-		open = false;
+		isOpen = false;
 	}
 </script>
 
 {#if $isDesktop}
-	{#if open}
-		<div class="w-full" use:clickOutside on:clickoutside={() => (open = false)}>
+	{#if isOpen}
+		<div class="w-full" use:clickOutside on:clickoutside={() => (isOpen = false)}>
 			<div class="grid grid-cols-3 gap-1 p-1 rounded-sm bg-secondary/40">
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
@@ -50,7 +38,7 @@
 						on:click={() => handleClickPropertyType(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm"
 					>
-						<svelte:component this={icons[propertyType.toLowerCase()]} class="icon-xs" />
+						<PropertyIcon key={propertyType} />
 
 						<span>
 							{capitalizeFirstLetter(propertyType)}
@@ -64,7 +52,7 @@
 		variant="secondary"
 		class="w-full"
 		on:click={() => {
-			open = !open;
+			isOpen = !isOpen;
 		}}
 	>
 		<Plus class="icon-sm" />
@@ -93,7 +81,7 @@
 							on:click={() => handleClickPropertyType(propertyType)}
 							class="h-8 w-full justify-start space-x-1.5 rounded-sm "
 						>
-							<svelte:component this={icons[propertyType.toLowerCase()]} class="icon-xs" />
+							<PropertyIcon key={propertyType} />
 
 							<span>
 								{capitalizeFirstLetter(propertyType)}

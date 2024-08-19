@@ -1,16 +1,4 @@
 <script context="module" lang="ts">
-	import { Calendar, CheckSquare2, Copy, Hash, Link, List, Text, Trash } from 'lucide-svelte';
-
-	// TODO: find better icons
-	const icons: { [idx: string]: any } = {
-		text: Text,
-		select: List,
-		checkbox: CheckSquare2,
-		date: Calendar,
-		number: Hash,
-		url: Link
-	};
-
 	const aggregatorLabel: { [key: string]: string } = {
 		none: 'None',
 		count: 'Count all',
@@ -24,10 +12,18 @@
 <script lang="ts">
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
 	import { Button } from '$lib/components/ui/button';
-	import { Settings, SquareSlash } from 'lucide-svelte';
+	import { Copy, Trash, Settings, SquareSlash } from 'lucide-svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import { containsView, getOption, PropertyOptions, toggleView } from '.';
+	import {
+		// utils
+		containsView,
+		getOption,
+		toggleView,
+		// components
+		PropertyOptions,
+		PropertyIcon
+	} from '.';
 	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Select from '$lib/components/ui/select';
@@ -67,7 +63,7 @@
 	<div class="flex space-x-0.5">
 		<div class="relative w-full">
 			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-				<svelte:component this={icons[property.type.toLowerCase()]} class="icon-sm" />
+				<PropertyIcon key={property.type} />
 			</div>
 
 			<label for={`${property.id}-name`} class="sr-only"> Name</label>
@@ -112,7 +108,7 @@
 						{#each Object.values(PropertyType) as propertyType}
 							<Select.Item value={propertyType} label={capitalizeFirstLetter(propertyType)}>
 								<span class="flex items-center">
-									<svelte:component this={icons[propertyType.toLowerCase()]} class="icon-xs mr-2" />
+									<PropertyIcon key={propertyType} />
 									{capitalizeFirstLetter(propertyType)}
 								</span>
 							</Select.Item>
