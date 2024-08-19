@@ -30,6 +30,7 @@
 	import { PropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
+	import { clickOutside } from '$lib/actions';
 
 	let open = false;
 
@@ -45,35 +46,35 @@
 </script>
 
 {#if $isDesktop}
-	<PopoverRoot bind:open>
-		<PopoverTrigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary">
-				<Plus class="icon-sm" />
-				<span> Add a property </span>
-			</Button>
-		</PopoverTrigger>
-		<PopoverContent align="start" class="w-64  space-y-1">
-			<div>
-				<p class="text-center text-base font-semibold">Property type</p>
+	{#if open}
+		<div class="w-full" use:clickOutside on:clickoutside={() => (open = false)}>
+			<div class="grid grid-cols-3 gap-1 p-1 rounded-sm bg-secondary/40">
+				{#each Object.values(PropertyType) as propertyType}
+					<Button
+						variant="secondary"
+						on:click={() => handleClickPropertyType(propertyType)}
+						class="h-8 w-full justify-start space-x-1.5 rounded-sm"
+					>
+						<svelte:component this={icons[propertyType.toLowerCase()]} class="icon-xs" />
 
-				<div class="space-y-1">
-					{#each Object.values(PropertyType) as propertyType}
-						<Button
-							variant="secondary"
-							on:click={() => handleClickPropertyType(propertyType)}
-							class="h-8 w-full justify-start space-x-1.5 rounded-sm "
-						>
-							<svelte:component this={icons[propertyType.toLowerCase()]} class="icon-xs" />
-
-							<span>
-								{capitalizeFirstLetter(propertyType)}
-							</span>
-						</Button>
-					{/each}
-				</div>
+						<span>
+							{capitalizeFirstLetter(propertyType)}
+						</span>
+					</Button>
+				{/each}
 			</div>
-		</PopoverContent>
-	</PopoverRoot>
+		</div>
+	{/if}
+	<Button
+		variant="secondary"
+		class="w-full"
+		on:click={() => {
+			open = !open;
+		}}
+	>
+		<Plus class="icon-sm" />
+		<span> New property </span>
+	</Button>
 {:else}
 	<SheetRoot>
 		<SheetTrigger asChild let:builder>
