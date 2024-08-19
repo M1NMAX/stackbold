@@ -13,11 +13,6 @@
 
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import {
-		Root as PopoverRoot,
-		Trigger as PopoverTrigger,
-		Content as PopoverContent
-	} from '$lib/components/ui/popover';
 
 	import {
 		Root as SheetRoot,
