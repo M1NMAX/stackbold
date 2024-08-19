@@ -24,7 +24,6 @@
 	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
 
 	export let property: Property;
-	export let isCheckBox: boolean = false;
 
 	let isEditorOpen = false;
 
@@ -63,7 +62,7 @@
 
 <div class="py-0.5 px-1 rounded bg-secondary/40 text-secondary-foreground">
 	<div class="flex justify-between items-center space-x-1">
-		{#if isCheckBox}
+		{#if property.type === 'CHECKBOX'}
 			<slot />
 		{/if}
 		<label
@@ -416,7 +415,7 @@
 		{/if}
 	</div>
 
-	{#if !isCheckBox}
+	{#if property.type !== 'CHECKBOX'}
 		<slot />
 	{/if}
 </div>
