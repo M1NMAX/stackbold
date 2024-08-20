@@ -20,7 +20,6 @@
 		StretchHorizontal,
 		Table,
 		Trash,
-		UserPlus,
 		X
 	} from 'lucide-svelte';
 	import { PropertyType, View, type Item } from '@prisma/client';
@@ -600,10 +599,6 @@
 					Updated
 					{dayjs(collection.updatedAt).fromNow()}
 				</span>
-
-				<Button variant="secondary" size="icon" disabled>
-					<UserPlus />
-				</Button>
 
 				<Button
 					variant="secondary"
