@@ -10,7 +10,6 @@
 		CornerUpRight,
 		Eye,
 		EyeOff,
-		File,
 		MoreHorizontal,
 		Pin,
 		PinOff,
@@ -24,6 +23,7 @@
 	} from 'lucide-svelte';
 	import { PropertyType, View, type Item } from '@prisma/client';
 	import {
+		ItemMenuPanel,
 		ItemNew,
 		Items,
 		groupItemsByPropertyValue,
@@ -61,11 +61,9 @@
 	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup, getScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import * as Sheet from '$lib/components/ui/sheet';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { onError } from '$lib/components/ui/sonner';
@@ -75,7 +73,6 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
 	import { writable } from 'svelte/store';
-	import ItemMenuPanel from '$lib/components/items/item-menu-panel.svelte';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -854,7 +851,7 @@
 							<RadioGroup.Root
 								id="sort"
 								value={$sort.field + '-' + $sort.order}
-								class="px-2 py-1 rounded-md bg-secondary"
+								class="px-2 py-1 rounded-md bg-secondary/40"
 							>
 								{#each sortOptions as sortOpt}
 									<Label class="flex items-center justify-between space-x-2">
@@ -897,24 +894,32 @@
 						</Drawer.Header>
 						<Drawer.Footer>
 							<label for="view"> View </label>
-							<RadioGroup.Root id="view" value={$view} class="px-2 py-1 rounded-md bg-secondary">
+							<RadioGroup.Root id="view" value={$view} class="px-2 py-1 rounded-md bg-secondary/40">
 								<Label for="list" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<StretchHorizontal class="icon-md" />
 										<span class="font-semibold text-lg"> List</span>
 									</div>
-									<RadioGroup.Item value="list" id="list" on:click={() => ($view = View.LIST)} />
+									<RadioGroup.Item
+										id="list"
+										value={View.LIST}
+										on:click={() => ($view = View.LIST)}
+									/>
 								</Label>
 								<Label for="table" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<Table class="icon-md" />
 										<span class="font-semibold text-lg">Table</span>
 									</div>
-									<RadioGroup.Item value="table" id="table" on:click={() => ($view = View.TABLE)} />
+									<RadioGroup.Item
+										id="table"
+										value={View.TABLE}
+										on:click={() => ($view = View.TABLE)}
+									/>
 								</Label>
 							</RadioGroup.Root>
-							<label for="visibility"> Visible in {view} </label>
-							<div class="px-2 py-1 rounded-md bg-secondary">
+							<label for="visibility"> Visible in {capitalizeFirstLetter($view)} view </label>
+							<div class="px-2 py-1 rounded-md bg-secondary/40">
 								{#if $view === View.LIST}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
@@ -963,7 +968,7 @@
 									updCollection({
 										groupByConfigs: updGroupByConfig($view, value === 'none' || !value ? '' : value)
 									})}
-								class="px-2 py-1 rounded-md bg-secondary"
+								class="px-2 py-1 rounded-md bg-secondary/40"
 							>
 								<Label for="list" class="flex items-center justify-between space-x-2">
 									<span class="font-semibold text-base">None</span>
@@ -1008,8 +1013,7 @@
 						updItemDebounced({ id: detail.id, data: { name: detail.name } });
 					}}
 				/>
-			{/if}
-			{#if findGroupByConfig($view)}
+			{:else}
 				<Accordion.Root
 					multiple
 					value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
@@ -1094,9 +1098,7 @@
 					<input type="submit" class="hidden" />
 				</form>
 			</div>
-		{/if}
-
-		{#if !$isDesktop}
+		{:else}
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
@@ -1110,7 +1112,7 @@
 
 <!-- Item sliding-panel -->
 <SlidingPanel bind:open={isItemPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
+	<div class="h-full flex flex-col space-y-1.5 p-2 rounded-md bg-card">
 		<div class="flex justify-between items-center">
 			<Button
 				variant="secondary"
