@@ -75,6 +75,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
 	import { writable } from 'svelte/store';
+	import ItemMenuPanel from '$lib/components/items/item-menu-panel.svelte';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -1128,97 +1129,24 @@
 				{/if}
 			</Button>
 
-			<div class="flex items-center space-x-1.5">
-				{#if $activeItem}
+			{#if $activeItem != null}
+				<div class="flex items-center space-x-1.5">
 					<span class="font-semibold text-xs text-gray-500">
 						Updated
 						{dayjs($activeItem.updatedAt).fromNow()}
 					</span>
-				{/if}
-
-				{#if $isDesktop}
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon">
-								<MoreHorizontal />
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Group>
-								<DropdownMenu.Item
-									class="space-x-2"
-									on:click={() => {
-										if (!$activeItem) return;
-										duplicateItem($activeItem.id);
-									}}
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</DropdownMenu.Item>
-
-								<DropdownMenu.Item
-									class="space-x-2"
-									on:click={() => {
-										if (!$activeItem) return;
-
-										deleteDetail = { type: 'item', id: $activeItem.id };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</DropdownMenu.Item>
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				{:else}
-					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon">
-								<MoreHorizontal />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-2">
-								<div class="flex items-center space-x-2 overflow-hidden">
-									<div class="p-2.5 rounded bg-secondary">
-										<File class="icon-sm" />
-									</div>
-
-									<div class="flex flex-col items-start justify-start">
-										<div class=" text-base font-semibold truncate">{$activeItem?.name}</div>
-										<div class="text-sm">{collection.name}</div>
-									</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer class="pt-2">
-								<Button
-									variant="secondary"
-									on:click={() => {
-										if (!$activeItem) return;
-										duplicateItem($activeItem.id);
-									}}
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</Button>
-								<Button
-									variant="destructive"
-									on:click={() => {
-										if (!$activeItem) return;
-
-										deleteDetail = { type: 'item', id: $activeItem.id };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</Button>
-							</Drawer.Footer>
-						</Drawer.Content>
-					</Drawer.Root>
-				{/if}
-			</div>
+					<ItemMenuPanel
+						itemId={$activeItem.id}
+						itemName={$activeItem.name}
+						collectionName={collection.name}
+						on:clickDuplicateItem={({ detail }) => duplicateItem(detail)}
+						on:clickDeleteItem={({ detail }) => {
+							deleteDetail = { type: 'item', id: detail };
+							isDeleteModalOpen = true;
+						}}
+					/>
+				</div>
+			{/if}
 		</div>
 
 		<div class="grow flex flex-col space-y-4 overflow-y-auto">
