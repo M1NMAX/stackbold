@@ -23,7 +23,12 @@
 		X
 	} from 'lucide-svelte';
 	import { PropertyType, View, type Item } from '@prisma/client';
-	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
+	import {
+		ItemNew,
+		Items,
+		groupItemsByPropertyValue,
+		setActiveItemState
+	} from '$lib/components/items';
 	import {
 		AddPropertyPopover,
 		PropertyEditor,
@@ -1343,53 +1348,22 @@
 	</div>
 </SlidingPanel>
 
-{#if $isDesktop}
-	<Dialog.Root bind:open={isCreateItemDialogOpen}>
-		<Dialog.Content class="sm:max-w-[425px]">
-			<Dialog.Header>
-				<Dialog.Title class="text-center">New item</Dialog.Title>
-			</Dialog.Header>
+<ItemNew bind:isOpen={isCreateItemDialogOpen}>
+	<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
+		<label for="item-name"> Name</label>
 
-			<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
-				<label for="item-name"> Name</label>
+		<input
+			id="item-name"
+			placeholder="New item"
+			name="name"
+			autocomplete="off"
+			class="input"
+			bind:value={$form.name}
+		/>
 
-				<input
-					id="item-name"
-					placeholder="New item"
-					name="name"
-					autocomplete="off"
-					class="input"
-					bind:value={$form.name}
-				/>
-
-				<Button type="submit" class="w-full">Create</Button>
-			</form>
-		</Dialog.Content>
-	</Dialog.Root>
-{:else}
-	<Sheet.Root bind:open={isCreateItemDialogOpen}>
-		<Sheet.Content side="bottom">
-			<Sheet.Header>
-				<Sheet.Title class="text-center">New item</Sheet.Title>
-			</Sheet.Header>
-
-			<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
-				<label for="item-name"> Name</label>
-
-				<input
-					id="item-name"
-					placeholder="New item"
-					name="name"
-					autocomplete="off"
-					class="input"
-					bind:value={$form.name}
-				/>
-
-				<Button type="submit" class="w-full">Create</Button>
-			</form>
-		</Sheet.Content>
-	</Sheet.Root>
-{/if}
+		<Button type="submit" class="w-full">Create</Button>
+	</form>
+</ItemNew>
 
 <Command.Dialog bind:open={isMoveDialogOpen}>
 	<Command.Input placeholder="Move collection to..." />
