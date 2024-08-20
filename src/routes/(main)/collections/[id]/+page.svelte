@@ -2,7 +2,6 @@
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
 	import {
-		Archive,
 		ArrowLeft,
 		ArrowUpDown,
 		Check,
@@ -12,12 +11,11 @@
 		Eye,
 		EyeOff,
 		File,
-		Heart,
-		HeartOff,
 		MoreHorizontal,
 		Pin,
 		PinOff,
 		Plus,
+		Settings2,
 		Square,
 		StretchHorizontal,
 		Table,
@@ -29,6 +27,7 @@
 	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
 	import {
 		AddPropertyPopover,
+		PropertyEditor,
 		PropertyInput,
 		PropertyInputWrapper,
 		PropertyValueWrapper,
@@ -49,7 +48,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
-	import { ItemDrawer } from '$lib/components/sheet';
+	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
@@ -94,8 +93,10 @@
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
 
-	// Sheet
-	let isOpen = false;
+	// item and properties sliding panel
+	let isPropertiesPanelOpen = false;
+	let isItemPanelOpen = false;
+
 	let reload = false;
 
 	const isDesktop = getScreenState();
@@ -229,7 +230,7 @@
 
 		toast.success('Item deleted successfully');
 		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === id) {
-			isOpen = false;
+			isItemPanelOpen = false;
 			$page.url.searchParams.delete('id');
 			goto(`/collections/${collection.id}`);
 		}
@@ -494,12 +495,13 @@
 	});
 
 	$: if ($page.url.searchParams.has('id')) {
-		isOpen = true;
+		isPropertiesPanelOpen = false;
+		isItemPanelOpen = true;
 
 		const itemId = $page.url.searchParams.get('id');
 		$activeItem = items.find((item) => item.id === itemId) || null;
 	} else {
-		isOpen = false;
+		isItemPanelOpen = false;
 		$activeItem = null;
 	}
 
@@ -546,13 +548,36 @@
 			};
 		});
 	}
+
+	// Properties Sliding panel
+	let currentOpenPropEditor: string | null = null;
+	function onClickTogglePropertyEditor(propId: string | null) {
+		currentOpenPropEditor = propId;
+	}
+
+	function openPropertiesPanel() {
+		if (properties.length != 0 && currentOpenPropEditor == null) {
+			currentOpenPropEditor = properties[0].id;
+		}
+		isItemPanelOpen = false;
+		isPropertiesPanelOpen = true;
+	}
+
+	function closePropertiesPanel() {
+		isPropertiesPanelOpen = false;
+	}
 </script>
 
 <svelte:head>
 	<title>{collection.name} - Stackbold</title>
 </svelte:head>
 
-<PageContainer class={cn('flex flex-col space-y-1 ease-in-out duration-300', isOpen && 'w-2/3')}>
+<PageContainer
+	class={cn(
+		'flex flex-col space-y-1 ease-in-out duration-300',
+		(isPropertiesPanelOpen || isItemPanelOpen) && 'w-2/3'
+	)}
+>
 	<PageHeader>
 		<div
 			class={cn(
@@ -592,6 +617,9 @@
 					{/if}
 				</Button>
 
+				<Button variant="secondary" size="icon" on:click={openPropertiesPanel}>
+					<Settings2 />
+				</Button>
 				{#if $isDesktop}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
@@ -1079,7 +1107,8 @@
 	</PageContent>
 </PageContainer>
 
-<ItemDrawer bind:open={isOpen} id="itemDrawer" class=" w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+<!-- Item sliding-panel -->
+<SlidingPanel bind:open={isItemPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
 	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
 		<div class="flex justify-between items-center">
 			<Button
@@ -1088,7 +1117,7 @@
 				on:click={() => {
 					$page.url.searchParams.delete('id');
 					goto(`/collections/${collection.id}`);
-					isOpen = false;
+					isItemPanelOpen = false;
 					$activeItem = null;
 				}}
 			>
@@ -1208,7 +1237,6 @@
 				{#each properties as property}
 					<PropertyInputWrapper
 						{property}
-						isCheckBox={property.type === 'CHECKBOX'}
 						on:updPropertyField={({ detail }) =>
 							updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
 						on:duplicate={(e) => duplicateProperty(e.detail)}
@@ -1256,11 +1284,69 @@
 				{/each}
 			</div>
 		</div>
-		<div class="grid justify-items-start">
+		<div>
 			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
 		</div>
 	</div>
-</ItemDrawer>
+</SlidingPanel>
+
+<!-- Properties Sliding panel -->
+<SlidingPanel open={isPropertiesPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<div class="h-full flex flex-col space-y-1.5 p-2 rounded-md bg-card">
+		<div class="flex items-center space-x-4">
+			<Button variant="secondary" size="icon" on:click={closePropertiesPanel}>
+				{#if $isDesktop}
+					<X />
+				{:else}
+					<ArrowLeft />
+				{/if}
+			</Button>
+
+			<h2 class="text-xl font-semibold">Properties</h2>
+		</div>
+
+		<div class="grow flex flex-col space-y-2 overflow-y-auto">
+			{#each properties as property}
+				<PropertyEditor
+					{property}
+					isOpen={currentOpenPropEditor === property.id}
+					on:openChange={(e) => onClickTogglePropertyEditor(e.detail)}
+					on:updPropertyField={({ detail }) =>
+						updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
+					on:duplicate={(e) => duplicateProperty(e.detail)}
+					on:delete={(e) => {
+						deleteDetail = { id: e.detail, type: 'property' };
+						isDeleteModalOpen = true;
+					}}
+					on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
+					on:updOptColor={({ detail }) => {
+						updPropertyOptionDebounced(detail.propertyId, {
+							id: detail.optionId,
+							color: detail.color
+						});
+					}}
+					on:updOptValue={({ detail }) => {
+						updPropertyOptionDebounced(detail.propertyId, {
+							id: detail.optionId,
+							value: detail.value
+						});
+					}}
+					on:deleteOpt={({ detail }) => {
+						deleteDetail = {
+							type: 'option',
+							id: detail.propertyId,
+							option: detail.optionId
+						};
+						isDeleteModalOpen = true;
+					}}
+				/>
+			{/each}
+		</div>
+		<div>
+			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+		</div>
+	</div>
+</SlidingPanel>
 
 {#if $isDesktop}
 	<Dialog.Root bind:open={isCreateItemDialogOpen}>
