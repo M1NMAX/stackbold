@@ -6,11 +6,6 @@
 		ArrowUpDown,
 		Check,
 		CheckSquare2,
-		Copy,
-		CornerUpRight,
-		Eye,
-		EyeOff,
-		MoreHorizontal,
 		Pin,
 		PinOff,
 		Plus,
@@ -18,7 +13,6 @@
 		Square,
 		StretchHorizontal,
 		Table,
-		Trash,
 		X
 	} from 'lucide-svelte';
 	import { PropertyType, View, type Item } from '@prisma/client';
@@ -73,6 +67,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
 	import { writable } from 'svelte/store';
+	import { CollectionMenu } from '$lib/components/collection';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -82,7 +77,6 @@
 	let sort = writable(sortOptions[0]);
 
 	let view = writable<View>(View.LIST);
-	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 
 	let itemNameError: string | null = null;
@@ -455,10 +449,6 @@
 		if (e.key == 'Enter') e.preventDefault();
 	}
 
-	function closeSmallScreenDrawer() {
-		isSmallScreenDrawerOpen = false;
-	}
-
 	function openMoveDialog() {
 		isMoveDialogOpen = true;
 	}
@@ -618,123 +608,18 @@
 				<Button variant="secondary" size="icon" on:click={openPropertiesPanel}>
 					<Settings2 />
 				</Button>
-				{#if $isDesktop}
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon">
-								<MoreHorizontal />
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Group>
-								<DropdownMenu.Item
-									on:click={() => updCollection({ isDescHidden: !collection.isDescHidden })}
-									class="space-x-1"
-								>
-									{#if collection.isDescHidden}
-										<Eye class="icon-xs" />
-										<span> Show description </span>
-									{:else}
-										<EyeOff class="icon-xs" />
-										<span> Hide description </span>
-									{/if}
-								</DropdownMenu.Item>
-								<DropdownMenu.Item on:click={openMoveDialog} class="space-x-1">
-									<CornerUpRight class="icon-xs" />
-									<span>Move to</span>
-								</DropdownMenu.Item>
 
-								<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</DropdownMenu.Item>
-								<DropdownMenu.Item
-									class="space-x-1"
-									on:click={() => {
-										deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</DropdownMenu.Item>
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				{:else}
-					<Drawer.Root bind:open={isSmallScreenDrawerOpen}>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} size="icon" variant="secondary">
-								<MoreHorizontal class="icon-xs" />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-2">
-								<div class="flex items-center space-x-2">
-									<div class="p-2.5 rounded bg-secondary">
-										<svelte:component this={icons[collection.icon]} class="icon-sm" />
-									</div>
-
-									<div class="flex flex-col items-start justify-start">
-										<div class=" text-base font-semibold truncate">{collection.name}</div>
-										<div class="text-sm">
-											{groups.find((group) => group.id === collection.groupId)?.name ??
-												'Without group'}
-										</div>
-									</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer class="pt-2">
-								<Button
-									variant="secondary"
-									on:click={() => {
-										updCollection({ isPinned: !collection.isPinned });
-										closeSmallScreenDrawer();
-									}}
-								>
-									{#if collection.isPinned}
-										<PinOff class="icon-xs" />
-										<span> Remove from Sidebar</span>
-									{:else}
-										<Pin class="icon-xs" />
-										<span> Add to Sidebar </span>
-									{/if}
-								</Button>
-								<Button
-									variant="secondary"
-									on:click={() => {
-										closeSmallScreenDrawer();
-										openMoveDialog();
-									}}
-								>
-									<CornerUpRight class="icon-xs" />
-									<span>Move to</span>
-								</Button>
-								<Button
-									variant="secondary"
-									on:click={() => {
-										duplicateCollection();
-										closeSmallScreenDrawer();
-									}}
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</Button>
-								<Button
-									variant="destructive"
-									on:click={() => {
-										closeSmallScreenDrawer();
-										deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</Button>
-							</Drawer.Footer>
-						</Drawer.Content>
-					</Drawer.Root>
-				{/if}
+				<CollectionMenu
+					{collection}
+					groupName={groups.find((group) => group.id === collection.groupId)?.name ?? null}
+					on:clickToggleDescStatus={() => updCollection({ isDescHidden: !collection.isDescHidden })}
+					on:clickMove={openMoveDialog}
+					on:clickDuplicate={duplicateCollection}
+					on:clickDelete={() => {
+						deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
+						isDeleteModalOpen = true;
+					}}
+				/>
 			</div>
 		</div>
 	</PageHeader>
@@ -1306,7 +1191,6 @@
 					onSelect={() => {
 						updCollection({ groupId: group.id });
 						closeMoveDialog();
-						closeSmallScreenDrawer();
 					}}
 					class="space-x-2"
 				>
