@@ -1,6 +1,6 @@
-export { default as ItemDrawer } from './sheet.svelte';
+export { default as SlidingPanel } from './sliding-panel.svelte';
 
-export interface sheetTransitionParamTypes {
+export interface slidingPanelTransitionParamTypes {
 	amount?: number;
 	delay?: number;
 	duration?: number;
@@ -10,7 +10,7 @@ export interface sheetTransitionParamTypes {
 	y?: number;
 }
 
-export type sheetTransitionTypes =
+export type slidingPanelTransitionTypes =
 	| 'fade'
 	| 'fly'
 	| 'slide'

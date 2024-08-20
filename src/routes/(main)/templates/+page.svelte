@@ -14,7 +14,7 @@
 	import { cn } from '$lib/utils';
 	import { getPropertyColor, getPropertyRef, getPropertyValue } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
-	import { ItemDrawer } from '$lib/components/sheet';
+	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { trpc } from '$lib/trpc/client';
 	import { onError, redirectToast } from '$lib/components/ui/sonner';
 	import dayjs from '$lib/utils/dayjs';
@@ -182,7 +182,7 @@
 	</PageContent>
 </PageContainer>
 
-<ItemDrawer
+<SlidingPanel
 	bind:open={isSheetOpen}
 	id="activeTemplateDrawer"
 	class="w-full lg:w-2/5 p-0 lg:p-1 lg:pl-0"
@@ -308,4 +308,4 @@
 			</div>
 		</div>
 	{/if}
-</ItemDrawer>
+</SlidingPanel>
