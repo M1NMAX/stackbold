@@ -10,6 +10,7 @@
 	export let itemId: string;
 	let className: string | undefined = undefined;
 	export { className as class };
+
 	let open: boolean;
 
 	const isDesktop = getScreenState();
@@ -38,7 +39,7 @@
 				<MoreHorizontal />
 			</Button>
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Content align="end" class="w-56">
+		<DropdownMenu.Content class="w-56">
 			<DropdownMenu.Group>
 				<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)}>
 					<PanelLeftOpen class="icon-xs" />

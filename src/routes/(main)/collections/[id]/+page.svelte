@@ -706,43 +706,8 @@
 		{:else}
 			<div class="flex space-x-1">
 				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
-				<Drawer.Root>
-					<Drawer.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="secondary">
-							<ArrowUpDown class="icon-sm" />
-						</Button>
-					</Drawer.Trigger>
-					<Drawer.Content>
-						<Drawer.Header class="py-1">
-							<div class="flex items-center space-x-2">
-								<div class="p-2.5 rounded bg-secondary">
-									<ArrowUpDown class="icon-sm" />
-								</div>
-								<div class="text-base font-semibold">Sort By</div>
-							</div>
-						</Drawer.Header>
-						<Drawer.Footer>
-							<RadioGroup.Root
-								id="sort"
-								value={$sort.field + '-' + $sort.order}
-								class="px-2 py-1 rounded-md bg-secondary/40"
-							>
-								{#each sortOptions as sortOpt}
-									<Label class="flex items-center justify-between space-x-2">
-										<span class="font-semibold text-lg"> {sortOpt.label} </span>
-										<RadioGroup.Item
-											value={sortOpt.field + '-' + sortOpt.order}
-											id={sortOpt.label}
-											on:click={() => {
-												$sort = { ...sortOpt };
-											}}
-										/>
-									</Label>
-								{/each}
-							</RadioGroup.Root></Drawer.Footer
-						>
-					</Drawer.Content>
-				</Drawer.Root>
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+
 				<Drawer.Root>
 					<Drawer.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="secondary">
