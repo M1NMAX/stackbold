@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
 	import {
-		Check,
+		Boxes,
 		Copy,
 		CornerUpRight,
-		Heart,
+		Database,
 		HeartOff,
 		MoreHorizontal,
 		Pencil,
@@ -40,7 +40,7 @@
 	const isDesktop = getScreenState();
 
 	const dispatch = createEventDispatcher<{
-		updCollection: { id: string; field: keyof Collection; value: string | boolean };
+		updCollection: { id: string; field: keyof Collection; value: string | boolean | null };
 		duplicateCollection: { id: string };
 		deleteCollection: { id: string; name: string };
 	}>();
@@ -123,14 +123,13 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item class="space-x-2" on:click={openRenameDialog}>
+				<DropdownMenu.Item on:click={openRenameDialog}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
 				{#if collection.isPinned}
 					<DropdownMenu.Item
-						class="space-x-2"
 						on:click={() => {
 							dispatch('updCollection', { id, field: 'isPinned', value: false });
 						}}
@@ -140,25 +139,22 @@
 					</DropdownMenu.Item>
 				{/if}
 
-				<DropdownMenu.Item class="space-x-2" on:click={openMoveDialog}>
+				<DropdownMenu.Item on:click={openMoveDialog}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					class="space-x-2"
-					on:click={() => dispatch('duplicateCollection', { id })}
-				>
+				<DropdownMenu.Item on:click={() => dispatch('duplicateCollection', { id })}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Item
-					class="space-x-2"
 					on:click={() => dispatch('deleteCollection', { id, name })}
+					class="group"
 				>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
+					<Trash class="icon-xs group-hover:text-primary" />
+					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
@@ -270,20 +266,33 @@
 	<Command.List>
 		<Command.Empty>No group found.</Command.Empty>
 		<Command.Group>
-			{#each groups as group (group.id)}
+			{#if collection.groupId}
 				<Command.Item
-					value={group.name}
+					value="collection"
 					onSelect={() => {
-						dispatch('updCollection', { id, field: 'groupId', value: group.id });
+						dispatch('updCollection', { id, field: 'groupId', value: null });
 						closeMoveDialog();
 						closeSmallScreenDrawer();
 					}}
-					class="space-x-2"
 				>
-					<Check class={cn('icon-xxs', group.id !== collection.groupId && 'text-transparent')} />
-
-					<span> {group.name} </span>
+					<Database class="icon-sm" />
+					<span> Collection</span>
 				</Command.Item>
+			{/if}
+			{#each groups as group (group.id)}
+				{#if group.id != collection.groupId}
+					<Command.Item
+						value={group.name}
+						onSelect={() => {
+							dispatch('updCollection', { id, field: 'groupId', value: group.id });
+							closeMoveDialog();
+							closeSmallScreenDrawer();
+						}}
+					>
+						<Boxes class="icon-sm" />
+						<span> {group.name} </span>
+					</Command.Item>
+				{/if}
 			{/each}
 		</Command.Group>
 	</Command.List>
