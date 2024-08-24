@@ -17,4 +17,4 @@
 	export let key: PropertyType;
 </script>
 
-<svelte:component this={icons[key.toLowerCase()]} class="icon-sm" />
+<svelte:component this={icons[key.toLowerCase()]} class="icon-sm mr-2" />

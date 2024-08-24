@@ -545,6 +545,7 @@
 
 	function closePropertiesPanel() {
 		isPropertiesPanelOpen = false;
+		currentOpenPropEditor = null;
 	}
 </script>
 
@@ -985,135 +986,60 @@
 
 <!-- Item sliding-panel -->
 <SlidingPanel bind:open={isItemPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-	<div class="h-full flex flex-col space-y-1.5 p-2 rounded-md bg-card">
-		<div class="flex justify-between items-center">
-			<Button
-				variant="secondary"
-				size="icon"
-				on:click={() => {
-					$page.url.searchParams.delete('id');
-					goto(`/collections/${collection.id}`);
-					isItemPanelOpen = false;
-					$activeItem = null;
-				}}
-			>
-				{#if $isDesktop}
-					<X />
-				{:else}
-					<ArrowLeft />
-				{/if}
-			</Button>
-
-			{#if $activeItem != null}
-				<div class="flex items-center space-x-1.5">
-					<span class="font-semibold text-xs text-gray-500">
-						Updated
-						{dayjs($activeItem.updatedAt).fromNow()}
-					</span>
-					<ItemMenuPanel
-						itemId={$activeItem.id}
-						itemName={$activeItem.name}
-						collectionName={collection.name}
-						on:clickDuplicateItem={({ detail }) => duplicateItem(detail)}
-						on:clickDeleteItem={({ detail }) => {
-							deleteDetail = { type: 'item', id: detail };
-							isDeleteModalOpen = true;
-						}}
-					/>
-				</div>
+	<div class="flex justify-between items-center">
+		<Button
+			variant="secondary"
+			size="icon"
+			on:click={() => {
+				$page.url.searchParams.delete('id');
+				goto(`/collections/${collection.id}`);
+				isItemPanelOpen = false;
+				$activeItem = null;
+			}}
+		>
+			{#if $isDesktop}
+				<X />
+			{:else}
+				<ArrowLeft />
 			{/if}
-		</div>
+		</Button>
 
-		<div class="grow flex flex-col space-y-4 overflow-y-auto">
-			<h2
-				id="item-name"
-				contenteditable
-				spellcheck={false}
-				on:keypress={preventEnterKeypress}
-				on:input={handleOnInputItemName}
-				class="pt-1 text-2xl font-semibold break-words focus:outline-none"
-			>
-				{$activeItem?.name}
-			</h2>
-
-			<div class="space-y-2">
-				{#each properties as property}
-					<PropertyInputWrapper
-						{property}
-						on:updPropertyField={({ detail }) =>
-							updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
-						on:duplicate={(e) => duplicateProperty(e.detail)}
-						on:delete={(e) => {
-							deleteDetail = { id: e.detail, type: 'property' };
-							isDeleteModalOpen = true;
-						}}
-						on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
-						on:updOptColor={({ detail }) => {
-							updPropertyOptionDebounced(detail.propertyId, {
-								id: detail.optionId,
-								color: detail.color
-							});
-						}}
-						on:updOptValue={({ detail }) => {
-							updPropertyOptionDebounced(detail.propertyId, {
-								id: detail.optionId,
-								value: detail.value
-							});
-						}}
-						on:deleteOpt={({ detail }) => {
-							deleteDetail = {
-								type: 'option',
-								id: detail.propertyId,
-								option: detail.optionId
-							};
-							isDeleteModalOpen = true;
-						}}
-					>
-						{#key $activeItem?.id}
-							<PropertyInput
-								{property}
-								value={getPropertyValue(property.id)}
-								on:updPropertyValue={({ detail }) => {
-									if (!$activeItem) return;
-
-									updPropertyValueDebounced($activeItem.id, {
-										id: detail.pid,
-										value: detail.value
-									});
-								}}
-							/>
-						{/key}
-					</PropertyInputWrapper>
-				{/each}
+		{#if $activeItem != null}
+			<div class="flex items-center space-x-1.5">
+				<span class="font-semibold text-xs text-gray-500">
+					Updated
+					{dayjs($activeItem.updatedAt).fromNow()}
+				</span>
+				<ItemMenuPanel
+					itemId={$activeItem.id}
+					itemName={$activeItem.name}
+					collectionName={collection.name}
+					on:clickDuplicateItem={({ detail }) => duplicateItem(detail)}
+					on:clickDeleteItem={({ detail }) => {
+						deleteDetail = { type: 'item', id: detail };
+						isDeleteModalOpen = true;
+					}}
+				/>
 			</div>
-		</div>
-		<div>
-			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
-		</div>
+		{/if}
 	</div>
-</SlidingPanel>
 
-<!-- Properties Sliding panel -->
-<SlidingPanel open={isPropertiesPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-	<div class="h-full flex flex-col space-y-1.5 p-2 rounded-md bg-card">
-		<div class="flex items-center space-x-4">
-			<Button variant="secondary" size="icon" on:click={closePropertiesPanel}>
-				{#if $isDesktop}
-					<X />
-				{:else}
-					<ArrowLeft />
-				{/if}
-			</Button>
+	<div class="grow flex flex-col space-y-4 overflow-y-auto">
+		<h2
+			id="item-name"
+			contenteditable
+			spellcheck={false}
+			on:keypress={preventEnterKeypress}
+			on:input={handleOnInputItemName}
+			class="pt-1 text-2xl font-semibold break-words focus:outline-none"
+		>
+			{$activeItem?.name}
+		</h2>
 
-			<h2 class="text-xl font-semibold">Properties</h2>
-		</div>
-
-		<div class="grow flex flex-col space-y-2 overflow-y-auto">
+		<div class="space-y-2">
 			{#each properties as property}
-				<PropertyEditor
+				<PropertyInputWrapper
 					{property}
-					isOpen={currentOpenPropEditor === property.id}
-					on:openChange={(e) => onClickTogglePropertyEditor(e.detail)}
 					on:updPropertyField={({ detail }) =>
 						updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
 					on:duplicate={(e) => duplicateProperty(e.detail)}
@@ -1142,12 +1068,83 @@
 						};
 						isDeleteModalOpen = true;
 					}}
-				/>
+				>
+					{#key $activeItem?.id}
+						<PropertyInput
+							{property}
+							value={getPropertyValue(property.id)}
+							on:updPropertyValue={({ detail }) => {
+								if (!$activeItem) return;
+
+								updPropertyValueDebounced($activeItem.id, {
+									id: detail.pid,
+									value: detail.value
+								});
+							}}
+						/>
+					{/key}
+				</PropertyInputWrapper>
 			{/each}
 		</div>
-		<div>
-			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
-		</div>
+	</div>
+	<div>
+		<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+	</div>
+</SlidingPanel>
+
+<!-- Properties Sliding panel -->
+<SlidingPanel open={isPropertiesPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<div class="flex items-center space-x-4">
+		<Button variant="secondary" size="icon" on:click={closePropertiesPanel}>
+			{#if $isDesktop}
+				<X />
+			{:else}
+				<ArrowLeft />
+			{/if}
+		</Button>
+
+		<h2 class="text-xl font-semibold">Properties</h2>
+	</div>
+
+	<div class="grow flex flex-col space-y-2 overflow-y-auto">
+		{#each properties as property}
+			<PropertyEditor
+				{property}
+				isOpen={currentOpenPropEditor === property.id}
+				on:openChange={(e) => onClickTogglePropertyEditor(e.detail)}
+				on:updPropertyField={({ detail }) =>
+					updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
+				on:duplicate={(e) => duplicateProperty(e.detail)}
+				on:delete={(e) => {
+					deleteDetail = { id: e.detail, type: 'property' };
+					isDeleteModalOpen = true;
+				}}
+				on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
+				on:updOptColor={({ detail }) => {
+					updPropertyOptionDebounced(detail.propertyId, {
+						id: detail.optionId,
+						color: detail.color
+					});
+				}}
+				on:updOptValue={({ detail }) => {
+					updPropertyOptionDebounced(detail.propertyId, {
+						id: detail.optionId,
+						value: detail.value
+					});
+				}}
+				on:deleteOpt={({ detail }) => {
+					deleteDetail = {
+						type: 'option',
+						id: detail.propertyId,
+						option: detail.optionId
+					};
+					isDeleteModalOpen = true;
+				}}
+			/>
+		{/each}
+	</div>
+	<div>
+		<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
 	</div>
 </SlidingPanel>
 

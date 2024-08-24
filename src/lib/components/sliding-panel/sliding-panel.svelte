@@ -14,12 +14,14 @@
 	<div
 		{id}
 		{...$$restProps}
-		class={cn('absolute inset-y-0 right-0 w-80 p-4 z-20 overflow-y-auto bg-secondary', className)}
+		class={cn('absolute inset-y-0 right-0 z-20 w-80 p-1 overflow-y-auto bg-secondary', className)}
 		transition:fly={{ x: 320, duration: 300, easing: sineIn }}
 		tabindex="-1"
 		aria-controls={id}
 		aria-labelledby={id}
 	>
-		<slot {open} />
+		<div class="h-full flex flex-col space-y-1.5 p-2 rounded-md bg-card">
+			<slot {open} />
+		</div>
 	</div>
 {/if}

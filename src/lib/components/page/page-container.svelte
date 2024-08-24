@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 
-	export let isInsideModal: boolean = false;
 	let className: string | undefined = undefined;
 	export { className as class };
 </script>
@@ -12,12 +11,7 @@
 		className
 	)}
 >
-	<div
-		class={cn(
-			'h-full w-full p-1 bg-card rounded-md text-secondary-foreground overflow-hidden',
-			isInsideModal && 'p-0 bg-inherit'
-		)}
-	>
+	<div class="h-full w-full p-2 bg-card rounded-md text-secondary-foreground overflow-hidden">
 		<slot />
 	</div>
 </main>
