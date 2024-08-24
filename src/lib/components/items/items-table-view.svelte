@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { type Property, type Item, type Aggregator, View } from '@prisma/client';
+	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
 	import { getActiveItemState, ItemMenu } from '.';
 	import {
 		PropertyValue,
+		PropertyIcon,
 		containsView,
 		// helpers
 		getPropertyColor,
@@ -98,22 +99,29 @@
 										});
 									}}
 								>
+									<PropertyIcon key={property.type} />
 									{property.name}
 								</DropdownMenu.CheckboxItem>
 							{/each}
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 				</th>
-				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-3 cursor-pointer">
-					Name
+				<th scope="col" class=" text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
+					<span class="flex items-center">
+						<PropertyIcon key={PropertyType.TEXT} />
+						Name
+					</span>
 				</th>
 				{#each properties as property (property.id)}
 					{#if containsView(property.visibleInViews, View.TABLE)}
 						<th
 							scope="col"
-							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-1 cursor-pointer"
+							class=" text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
 						>
-							{property.name}
+							<span class="flex items-center">
+								<PropertyIcon key={property.type} />
+								{property.name}
+							</span>
 						</th>
 					{/if}
 				{/each}
