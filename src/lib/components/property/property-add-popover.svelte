@@ -1,13 +1,7 @@
 <script lang="ts">
 	import { PropertyIcon } from '.';
 	import { Button } from '$lib/components/ui/button';
-	import {
-		Root as SheetRoot,
-		Trigger as SheetTrigger,
-		Content as SheetContent,
-		Header as SheetHeader,
-		Title as SheetTitle
-	} from '$lib/components/ui/sheet';
+	import * as Drawer from '$lib/components/ui/drawer';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
@@ -59,37 +53,31 @@
 		<span> New property </span>
 	</Button>
 {:else}
-	<SheetRoot>
-		<SheetTrigger asChild let:builder>
+	<Drawer.Root>
+		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" class="w-full">
 				<Plus class="icon-sm" />
 				<span> Add a property </span>
-			</Button></SheetTrigger
-		>
-		<SheetContent side="bottom" class="bg-card px-4">
-			<SheetHeader>
-				<SheetTitle class="text-center">New property</SheetTitle>
-			</SheetHeader>
+			</Button>
+		</Drawer.Trigger>
+		<Drawer.Content>
+			<Drawer.Header class="py-2 font-semibold">Type</Drawer.Header>
 
-			<div class="pt-2">
-				<p class=" text-base font-semibold pb-2">Type</p>
+			<Drawer.Footer class="pt-2">
+				{#each Object.values(PropertyType) as propertyType}
+					<Button
+						variant="secondary"
+						on:click={() => handleClickPropertyType(propertyType)}
+						class="h-8 w-full justify-start space-x-1.5 rounded-sm "
+					>
+						<PropertyIcon key={propertyType} />
 
-				<div class="space-y-1">
-					{#each Object.values(PropertyType) as propertyType}
-						<Button
-							variant="secondary"
-							on:click={() => handleClickPropertyType(propertyType)}
-							class="h-8 w-full justify-start space-x-1.5 rounded-sm "
-						>
-							<PropertyIcon key={propertyType} />
-
-							<span>
-								{capitalizeFirstLetter(propertyType)}
-							</span>
-						</Button>
-					{/each}
-				</div>
-			</div>
-		</SheetContent>
-	</SheetRoot>
+						<span>
+							{capitalizeFirstLetter(propertyType)}
+						</span>
+					</Button>
+				{/each}
+			</Drawer.Footer>
+		</Drawer.Content>
+	</Drawer.Root>
 {/if}
