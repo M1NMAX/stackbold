@@ -32,19 +32,16 @@
 				<MoreHorizontal />
 			</Button>
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Content class="w-56">
+		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item
-					on:click={() => dispatch('clickDuplicateItem', itemId)}
-					class="space-x-2"
-				>
+				<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="space-x-2">
-					<Trash class="icon-xs" />
-					<span>Delete</span>
+				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="group">
+					<Trash class="icon-xs group-hover:text-primary" />
+					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 		</DropdownMenu.Content>

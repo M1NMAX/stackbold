@@ -38,26 +38,21 @@
 				<MoreHorizontal />
 			</Button>
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Content class="w-56">
+		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)} class="space-x-2">
+				<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open in side </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					on:click={() => dispatch('clickDuplicateItem', itemId)}
-					class="space-x-2"
-				>
+				<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Separator />
-
-				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="space-x-2">
-					<Trash class="icon-xs" />
-					<span>Delete</span>
+				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="group">
+					<Trash class="icon-xs group-hover:text-primary" />
+					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 		</DropdownMenu.Content>
@@ -85,8 +80,12 @@
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="destructive" on:click={() => clickDrawerBtn('clickDeleteItem')}>
-					<Trash class="icon-xs" />
+				<Button
+					variant="destructive"
+					on:click={() => clickDrawerBtn('clickDeleteItem')}
+					class="group"
+				>
+					<Trash class="icon-xs group-hover:text-primary" />
 					<span>Delete</span>
 				</Button>
 			</Drawer.Footer>

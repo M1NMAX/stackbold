@@ -44,9 +44,9 @@
 				<MoreHorizontal />
 			</Button>
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Content class="w-56">
+		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item class="space-x-1" on:click={() => dispatch('clickToggleDescStatus')}>
+				<DropdownMenu.Item on:click={() => dispatch('clickToggleDescStatus')}>
 					{#if collection.isDescHidden}
 						<Eye class="icon-xs" />
 						<span> Show description </span>
@@ -55,18 +55,18 @@
 						<span> Hide description </span>
 					{/if}
 				</DropdownMenu.Item>
-				<DropdownMenu.Item class="space-x-1" on:click={() => dispatch('clickMove')}>
+				<DropdownMenu.Item on:click={() => dispatch('clickMove')}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item class="space-x-1" on:click={() => dispatch('clickDuplicate')}>
+				<DropdownMenu.Item on:click={() => dispatch('clickDuplicate')}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item class="space-x-1" on:click={() => dispatch('clickDelete')}>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
+				<DropdownMenu.Item on:click={() => dispatch('clickDelete')} class="group">
+					<Trash class="icon-xs group-hover:text-primary " />
+					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 		</DropdownMenu.Content>
