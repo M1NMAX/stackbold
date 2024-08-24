@@ -520,18 +520,6 @@
 	}
 
 	function updGroupByConfig(view: View, value: string) {
-		// TODO: ref
-		const tmpGroupByConfigs = [
-			{
-				view: View.LIST,
-				propertyId: ''
-			},
-			{
-				view: View.TABLE,
-				propertyId: ''
-			}
-		];
-		if (collection.groupByConfigs.length === 0) collection.groupByConfigs = tmpGroupByConfigs;
 		return collection.groupByConfigs.map((config) => {
 			if (config.view !== view) return config;
 			return {
