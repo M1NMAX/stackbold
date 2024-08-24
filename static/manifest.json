@@ -1,6 +1,6 @@
 {
-    "name": "Stackbold PWA",
-    "short_name": "Stackbold PWA",
+    "name": "Stackbold",
+    "short_name": "Stackbold",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#17191c",
