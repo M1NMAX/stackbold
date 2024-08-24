@@ -613,7 +613,7 @@
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-8" on:scroll={handleScroll}>
+	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-4" on:scroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
