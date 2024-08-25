@@ -108,7 +108,7 @@
 				</th>
 				<th scope="col" class=" text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 					<span class="flex items-center">
-						<PropertyIcon key={PropertyType.TEXT} />
+						<PropertyIcon key={PropertyType.TEXT} class="icon-xs mr-2" />
 						Name
 					</span>
 				</th>
@@ -119,7 +119,7 @@
 							class=" text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
 						>
 							<span class="flex items-center">
-								<PropertyIcon key={property.type} />
+								<PropertyIcon key={property.type} class="icon-xs mr-2" />
 								{property.name}
 							</span>
 						</th>

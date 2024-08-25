@@ -72,10 +72,9 @@
 	<Drawer.Root bind:open={isOpen}>
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary">
-				<!-- <ArrowUpDown class="icon-sm" /> -->
 				<svelte:component
 					this={icons[`${currentSort.field.toString()}-${currentSort.order}`]}
-					class="icon-sm mr-2"
+					class="icon-sm"
 				/>
 			</Button>
 		</Drawer.Trigger>

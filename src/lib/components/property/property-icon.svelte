@@ -15,10 +15,13 @@
 <script lang="ts">
 	import type { PropertyType } from '@prisma/client';
 	export let key: PropertyType;
+
+	let className: string | undefined = undefined;
+	export { className as class };
 </script>
 
 <svelte:component
 	this={icons[key.toLowerCase()]}
-	class="icon-sm mr-2"
+	class={className ?? 'icon-sm mr-2'}
 	aria-level="Property type icon"
 />
