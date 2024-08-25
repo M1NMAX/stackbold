@@ -11,8 +11,6 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PW_TEST_EMAIL: ${{ secrets.PW_TEST_EMAIL }}
       PW_TEST_PWD: ${{ secrets.PW_TEST_PWD }}
-      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
-      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
