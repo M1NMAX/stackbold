@@ -201,28 +201,24 @@
 				</Select.Root>
 			{/if}
 
-			<Separator />
-			<div>
-				<p class="text-sm font-semibold">Visibility</p>
-				<!-- TODO: maybe use a grid instead of flexbox, future prove maybe -->
-				<div class="flex items-center space-x-4 py-2">
-					{#each Object.values(View) as view}
-						<div class="flex items-center space-x-2">
-							<Label for={view}>{capitalizeFirstLetter(view.toString())} view</Label>
-							<Switch
-								id={view}
-								checked={containsView(property.visibleInViews, view)}
-								onCheckedChange={() => {
-									dispatch('updPropertyField', {
-										pid: property.id,
-										name: 'visibleInViews',
-										value: toggleView(property.visibleInViews, view)
-									});
-								}}
-							/>
-						</div>
-					{/each}
-				</div>
+			<!-- TODO: maybe use a grid instead of flexbox, future prove maybe -->
+			<div class="flex items-center space-x-4 p-2">
+				{#each Object.values(View) as view}
+					<div class="flex items-center space-x-2">
+						<Switch
+							id={view}
+							checked={containsView(property.visibleInViews, view)}
+							onCheckedChange={() => {
+								dispatch('updPropertyField', {
+									pid: property.id,
+									name: 'visibleInViews',
+									value: toggleView(property.visibleInViews, view)
+								});
+							}}
+						/>
+						<Label for={view}>Visible in {capitalizeFirstLetter(view.toString())} view</Label>
+					</div>
+				{/each}
 			</div>
 			{#if property.type === 'SELECT'}
 				<Separator />
