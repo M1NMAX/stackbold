@@ -3,7 +3,6 @@
 	import { onDestroy } from 'svelte';
 	import {
 		ArrowLeft,
-		ArrowUpDown,
 		Check,
 		CheckSquare2,
 		Pin,
@@ -11,6 +10,7 @@
 		Plus,
 		Settings2,
 		Square,
+		SquareSlash,
 		StretchHorizontal,
 		Table,
 		X
@@ -26,6 +26,7 @@
 	import {
 		AddPropertyPopover,
 		PropertyEditor,
+		PropertyIcon,
 		PropertyInput,
 		PropertyInputWrapper,
 		PropertyValueWrapper,
@@ -66,6 +67,7 @@
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
+	import { Switch } from '$lib/components/ui/switch';
 	import { writable } from 'svelte/store';
 	import { CollectionMenu } from '$lib/components/collection';
 
@@ -758,18 +760,21 @@
 								</Label>
 							</RadioGroup.Root>
 							<label for="visibility"> Visible in {capitalizeFirstLetter($view)} view </label>
-							<div class="px-2 py-1 rounded-md bg-secondary/40">
+							<div class="px-2 py-1 space-y-2.5 rounded-md bg-secondary/40">
 								{#if $view === View.LIST}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
-											<label for={property.id} class="font-semibold text-base">
+											<Label
+												for={`visibility-list-${property.id}`}
+												class="flex font-semibold text-base"
+											>
+												<PropertyIcon key={property.type} />
 												{property.name}
-											</label>
-											<input
-												id={property.id}
-												type="checkbox"
+											</Label>
+
+											<Switch
+												id={`visibility-list-${property.id}`}
 												checked={containsView(property.visibleInViews, View.LIST)}
-												class="checkbox"
 												on:click={() =>
 													updPropertyDebounced({
 														id: property.id,
@@ -781,14 +786,16 @@
 								{:else}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
-											<label for={property.id} class="font-semibold text-base">
+											<Label
+												for={`visibility-table-${property.id}`}
+												class="flex font-semibold text-base"
+											>
+												<PropertyIcon key={property.type} />
 												{property.name}
-											</label>
-											<input
-												id={property.id}
-												type="checkbox"
+											</Label>
+											<Switch
+												id={`visibility-table-${property.id}`}
 												checked={containsView(property.visibleInViews, View.TABLE)}
-												class="checkbox"
 												on:click={() =>
 													updPropertyDebounced({
 														id: property.id,
@@ -809,16 +816,24 @@
 									})}
 								class="px-2 py-1 rounded-md bg-secondary/40"
 							>
-								<Label for="list" class="flex items-center justify-between space-x-2">
-									<span class="font-semibold text-base">None</span>
-									<RadioGroup.Item value="none" />
-								</Label>
+								<div class="flex items-center justify-between">
+									<Label for="group-by-none" class="w-full flex items-center ">
+										<SquareSlash class="icon-sm mr-2" />
+										<span class="grow font-semibold text-base">None</span>
+									</Label>
+
+									<RadioGroup.Item id="group-by-none" value="none" />
+								</div>
 								{#each properties as property (property.id)}
 									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-										<Label for="list" class="flex items-center justify-between space-x-2">
-											<span class="font-semibold text-base">{property.name}</span>
-											<RadioGroup.Item value={property.id} />
-										</Label>
+										<div class="w-full flex items-center justify-between">
+											<Label for={`group-by-${property.id}`} class="w-full flex items-center">
+												<PropertyIcon key={property.type} />
+												<span class="grow font-semibold text-base">{property.name}</span>
+											</Label>
+
+											<RadioGroup.Item id={`group-by-${property.id}`} value={property.id} />
+										</div>
 									{/if}
 								{/each}
 							</RadioGroup.Root>
