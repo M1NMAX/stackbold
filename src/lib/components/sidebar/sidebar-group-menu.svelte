@@ -99,7 +99,7 @@
 	{:else}
 		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
 			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="xs">
+				<Button builders={[builder]} variant="ghost" size="icon">
 					<MoreHorizontal class="icon-xs" />
 				</Button>
 			</Drawer.Trigger>

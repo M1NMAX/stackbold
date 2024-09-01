@@ -102,19 +102,27 @@
 	</DropdownMenu.Root>
 {:else}
 	<Drawer.Root>
-		<div class="w-full flex justify-between items-center">
+		<div class="w-full flex justify-between items-center space-x-1">
 			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class=" p-0.5 pr-1">
-					<img src={avatarUrl} class="icon-lg object-contain rounded-md" alt="avatar" />
-					<span> {user.email}</span>
+				<Button builders={[builder]} variant="secondary" class="p-0.5 rounded-full">
+					<img src={avatarUrl} class="icon-lg object-contain rounded-full" alt="avatar" />
 				</Button>
 			</Drawer.Trigger>
-			<div>
-				<Button variant="secondary" size="icon" on:click={() => dispatch('search')}>
+			<div class="grow flex space-x-1">
+				<Button
+					variant="secondary"
+					on:click={() => dispatch('search')}
+					class="grow justify-start px-2 rounded-full "
+				>
 					<Search class="icon-sm" />
-					<span class="sr-only">Search</span>
+					<span>Search</span>
 				</Button>
-				<Button variant="secondary" size="icon" on:click={() => ($sidebarState = false)}>
+				<Button
+					variant="secondary"
+					size="icon"
+					on:click={() => ($sidebarState = false)}
+					class="rounded-full"
+				>
 					<X class="icon-sm" />
 					<span class="sr-only"> Hide sidebar </span>
 				</Button>
