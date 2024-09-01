@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
-	import { getActiveItemState, ItemMenu } from '.';
+	import { getActiveItemState, ItemMenu, ItemsTableViewVisibilityMenu } from '.';
 	import {
 		PropertyValue,
 		PropertyIcon,
@@ -14,9 +14,8 @@
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
-	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
+	import { PanelLeftOpen } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { getScreenState } from '$lib/components/view';
 
 	export let items: Item[];
@@ -78,33 +77,7 @@
 		<thead>
 			<tr class="text-muted-foreground text-sm">
 				<th scope="col" class="text-left w-10" title="Row actions">
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button variant="ghost" size="xs" builders={[builder]}>
-								<Settings2 class="icon-xs" />
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Label>Toggle property visibility</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-
-							{#each properties as property (property.id)}
-								<DropdownMenu.CheckboxItem
-									checked={containsView(property.visibleInViews, View.TABLE)}
-									on:click={() => {
-										dispatch('updPropertyVisibility', {
-											pid: property.id,
-											name: 'visibleInViews',
-											value: toggleView(property.visibleInViews, View.TABLE)
-										});
-									}}
-								>
-									<PropertyIcon key={property.type} />
-									{property.name}
-								</DropdownMenu.CheckboxItem>
-							{/each}
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+					<ItemsTableViewVisibilityMenu {properties} on:updPropertyVisibility />
 				</th>
 				<th scope="col" class=" text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 					<span class="flex items-center">

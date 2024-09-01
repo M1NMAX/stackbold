@@ -202,23 +202,28 @@
 			{/if}
 
 			<!-- TODO: maybe use a grid instead of flexbox, future prove maybe -->
-			<div class="flex items-center space-x-4 p-2">
-				{#each Object.values(View) as view}
-					<div class="flex items-center space-x-2">
-						<Switch
-							id={view}
-							checked={containsView(property.visibleInViews, view)}
-							onCheckedChange={() => {
-								dispatch('updPropertyField', {
-									pid: property.id,
-									name: 'visibleInViews',
-									value: toggleView(property.visibleInViews, view)
-								});
-							}}
-						/>
-						<Label for={view}>Visible in {capitalizeFirstLetter(view.toString())} view</Label>
-					</div>
-				{/each}
+			<div class="p-2">
+				<p class="text-sm">Visibility</p>
+				<div class="space-y-1">
+					{#each Object.values(View) as view}
+						<div class="flex justify-between items-center">
+							<Label for={view} class="text-sm font-semibold">
+								Visible in {capitalizeFirstLetter(view.toString())} view
+							</Label>
+							<Switch
+								id={view}
+								checked={containsView(property.visibleInViews, view)}
+								onCheckedChange={() => {
+									dispatch('updPropertyField', {
+										pid: property.id,
+										name: 'visibleInViews',
+										value: toggleView(property.visibleInViews, view)
+									});
+								}}
+							/>
+						</div>
+					{/each}
+				</div>
 			</div>
 			{#if property.type === 'SELECT'}
 				<Separator />
