@@ -87,7 +87,7 @@
 					<div class="text-base font-semibold">Sort By</div>
 				</div>
 			</Drawer.Header>
-			<Drawer.Footer>
+			<Drawer.Footer class="pt-2 space-y-2">
 				<RadioGroup.Root
 					id="sort"
 					value={`${currentSort.field.toString()}-${currentSort.order}`}
