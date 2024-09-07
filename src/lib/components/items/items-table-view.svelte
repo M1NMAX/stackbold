@@ -118,7 +118,12 @@
 					>
 						<td class="min-w-10 px-1 border border-l-0">
 							<div class="flex justify-between items-center space-x-2">
-								<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
+								<ItemMenu
+									itemId={item.id}
+									on:clickOpenItem
+									on:clickDuplicateItem
+									on:clickDeleteItem
+								/>
 								<Button
 									variant="secondary"
 									size="sm"

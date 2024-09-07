@@ -51,7 +51,7 @@
 	/>
 {:else if property.type === 'SELECT'}
 	{#if $isDesktop}
-		<Popover.Root bind:open>
+		<Popover.Root bind:open portal="HTMLElement">
 			<Popover.Trigger asChild let:builder>
 				<Button
 					builders={[builder]}
@@ -76,7 +76,7 @@
 					{/if}
 				</Button>
 			</Popover.Trigger>
-			<Popover.Content class="w-full max-w-lg lg:max-w-sm">
+			<Popover.Content sameWidth={true}>
 				<Command.Root>
 					<Command.Input placeholder="Search for an options..." />
 
@@ -206,7 +206,7 @@
 					{/if}
 				</Button>
 			</Popover.Trigger>
-			<Popover.Content class="w-auto space-y-1" align="center">
+			<Popover.Content class="w-auto space-y-1" align="start">
 				<Calendar
 					value={new CalendarDate(
 						valueAsDate.getFullYear(),
