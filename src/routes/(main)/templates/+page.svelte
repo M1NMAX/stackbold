@@ -1,37 +1,26 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { type Template, View } from '@prisma/client';
+	import { type Template } from '@prisma/client';
 	import { onDestroy } from 'svelte';
-	import {
-		ArrowLeft,
-		ArrowUpDown,
-		CheckSquare2,
-		Dna,
-		Square,
-		StretchHorizontal,
-		Table,
-		X
-	} from 'lucide-svelte';
+	import { ArrowLeft, ArrowUpDown, Dna, X } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
-	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
-	import { getScreenState, ViewButton, ViewButtonsGroup } from '$lib/components/view';
+	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
+	import { getScreenState } from '$lib/components/view';
 	import { cn } from '$lib/utils';
-	import { getPropertyColor, getPropertyRef, getPropertyValue } from '$lib/components/property';
+	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { trpc } from '$lib/trpc/client';
 	import { onError, redirectToast } from '$lib/components/ui/sonner';
 	import dayjs from '$lib/utils/dayjs';
-	import { tooltipAction } from 'svelte-legos';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Label } from '$lib/components/ui/label';
-	import { writable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -39,7 +28,6 @@
 
 	let isPanelOpen = false;
 
-	let panelView = writable<View>(View.LIST);
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
 
 	const sort = setSortState(sortOptions[0]);
@@ -243,32 +231,7 @@
 										{#if propertyRef && propertyRef.value !== ''}
 											{@const color = getPropertyColor(property, propertyRef.value)}
 
-											{#if property.type === 'CHECKBOX'}
-												<div
-													class={cn(
-														'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold',
-														PROPERTY_COLORS[color]
-													)}
-												>
-													{#if propertyRef.value === 'true'}
-														<CheckSquare2 class="icon-xs" />
-													{:else}
-														<Square class="icon-xs" />
-													{/if}
-
-													<span class="font-semibold">{property.name} </span>
-												</div>
-											{:else}
-												<span
-													use:tooltipAction={property.name}
-													class={cn(
-														'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
-														PROPERTY_COLORS[color]
-													)}
-												>
-													{getPropertyValue(property, propertyRef.value)}
-												</span>
-											{/if}
+											<PropertyTemplate {property} {color} value={propertyRef.value} />
 										{/if}
 									{/each}
 								</div>
