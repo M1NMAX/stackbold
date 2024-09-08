@@ -26,6 +26,7 @@
 	export let property: Property;
 
 	let isEditorOpen = false;
+	let isDrawerOpen = false;
 
 	const isDesktop = getScreenState();
 
@@ -57,6 +58,12 @@
 
 	function closeEditor() {
 		isEditorOpen = false;
+	}
+
+	type EventType = 'duplicate' | 'delete';
+	function eventForward(e: EventType) {
+		dispatch(e, property.id);
+		isDrawerOpen = false;
 	}
 </script>
 
@@ -252,10 +259,10 @@
 									on:click={() => dispatch('delete', property.id)}
 									variant="ghost"
 									size="xs"
-									class="w-full justify-start"
+									class="w-full justify-start group"
 								>
-									<Trash class="icon-xs" />
-									<span>Delete property</span>
+									<Trash class="icon-xs group-hover:text-primary" />
+									<span class="group-hover:text-primary">Delete property</span>
 								</Button>
 							</div>
 						</div>
@@ -306,7 +313,7 @@
 							class="w-full justify-start"
 						>
 							<Copy class="icon-xs" />
-							<span>Duplicate property</span>
+							<span>Duplicate property </span>
 						</Button>
 
 						<Separator />
@@ -314,16 +321,16 @@
 							on:click={() => dispatch('delete', property.id)}
 							variant="ghost"
 							size="xs"
-							class="w-full justify-start"
+							class="w-full justify-start group"
 						>
-							<Trash class="icon-xs" />
-							<span>Delete property</span>
+							<Trash class="icon-xs group-hover:text-primary" />
+							<span class="group-hover:text-primary">Delete property</span>
 						</Button>
 					{/if}
 				</Popover.Content>
 			</Popover.Root>
 		{:else}
-			<Drawer.Root>
+			<Drawer.Root bind:open={isDrawerOpen}>
 				<Drawer.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="ghost" size="xs">
 						<MoreHorizontal class="icon-xs" />
@@ -401,11 +408,11 @@
 							</Dialog.Content>
 						</Dialog.Root>
 
-						<Button variant="secondary" on:click={() => dispatch('duplicate', property.id)}>
+						<Button variant="secondary" on:click={() => eventForward('duplicate')}>
 							<Copy class="icon-xs" />
 							<span>Duplicate property</span>
 						</Button>
-						<Button variant="destructive" on:click={() => dispatch('delete', property.id)}>
+						<Button variant="destructive" on:click={() => eventForward('delete')}>
 							<Trash class="icon-xs" />
 							<span>Delete property</span>
 						</Button>

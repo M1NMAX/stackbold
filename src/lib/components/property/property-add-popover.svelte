@@ -2,11 +2,11 @@
 	import { PropertyIcon } from '.';
 	import { Button } from '$lib/components/ui/button';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import * as Popover from '$lib/components/ui/popover';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
 	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
-	import { clickOutside } from '$lib/actions';
 	import { Plus } from 'lucide-svelte';
 
 	let isOpen = false;
@@ -23,9 +23,15 @@
 </script>
 
 {#if $isDesktop}
-	{#if isOpen}
-		<div class="w-full" use:clickOutside on:clickoutside={() => (isOpen = false)}>
-			<div class="grid grid-cols-3 gap-1 p-1 rounded-sm bg-secondary/40">
+	<Popover.Root portal="HTMLElement">
+		<Popover.Trigger asChild let:builder>
+			<Button variant="secondary" class="w-full" builders={[builder]}>
+				<Plus class="icon-sm" />
+				<span> New property </span>
+			</Button>
+		</Popover.Trigger>
+		<Popover.Content sameWidth={true} class="p-1 bg-secondary/40">
+			<div class="grid grid-cols-3 gap-1">
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
@@ -40,20 +46,10 @@
 					</Button>
 				{/each}
 			</div>
-		</div>
-	{/if}
-	<Button
-		variant="secondary"
-		class="w-full"
-		on:click={() => {
-			isOpen = !isOpen;
-		}}
-	>
-		<Plus class="icon-sm" />
-		<span> New property </span>
-	</Button>
+		</Popover.Content>
+	</Popover.Root>
 {:else}
-	<Drawer.Root>
+	<Drawer.Root bind:open={isOpen}>
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" class="w-full">
 				<Plus class="icon-sm" />
