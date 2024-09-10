@@ -121,7 +121,7 @@
 				portal={null}
 				selected={{
 					value: property.aggregator,
-					label: aggregatorLabel[property.aggregator.toLowerCase()]
+					label: capitalizeFirstLetter(aggregatorLabel[property.aggregator.toLowerCase()])
 				}}
 				onSelectedChange={(opt) => {
 					dispatch('updPropertyField', {
@@ -189,7 +189,7 @@
 							</Select.Item>
 
 							{#each property.options as opt}
-								<Select.Item value={opt.value}>
+								<Select.Item value={opt.id}>
 									<span class="flex items-center">
 										<span class={` icon-sm mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
 										{opt.value}
