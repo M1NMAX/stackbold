@@ -9,9 +9,9 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import { Calendar } from '../ui/calendar';
+	import { Calendar } from '$lib/components/ui/calendar';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
-	import PropertyValueWrapper from './property-value-wrapper.svelte';
+	import { PropertyValueWrapper } from '.';
 	import { getScreenState } from '$lib/components/view';
 	import { textareaAutosizeAction } from 'svelte-legos';
 
