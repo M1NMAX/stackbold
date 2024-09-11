@@ -2,39 +2,34 @@ import { createContext } from '$lib/trpc/context';
 import { router } from '$lib/trpc/router';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import type { Collection } from '@prisma/client';
+import { prisma } from '$lib/server/prisma';
 
 export const load: LayoutServerLoad = async (event) => {
 	const user = event.locals.user;
 
-	if (!user) redirect(302, '/signin')
+	if (!user) redirect(302, '/signin');
 
-	if (!user.emailVerified) redirect(302, '/email-verification')
+	if (!user.emailVerified) redirect(302, '/email-verification');
 
-	async function getItems(collections: Collection[]) {
-		type SearchableItem = { id: string; name: string; collection: { id: string; name: string } };
-
-		let searchableItems: SearchableItem[] = [];
-		for (const collection of collections) {
-			const items = await router.createCaller(await createContext(event)).items.list(collection.id);
-
-			const tp = items.map<SearchableItem>((item) => ({
-				id: item.id,
-				name: item.name,
-				collection: { name: collection.name, id: collection.id }
-			}));
-
-			searchableItems.push(...tp);
+	async function getItems(userId: string) {
+		try {
+			const start = Date.now();
+			const result = await prisma.item.findMany({
+				where: { collection: { ownerId: userId } },
+				include: { collection: { select: { id: true, name: true } } }
+			});
+			const ms = Date.now() - start;
+			console.log(`OK query searchable items - ${ms}ms`);
+			return result;
+		} catch (err) {
+			console.log(err);
 		}
-
-		return searchableItems;
 	}
-
 
 	const groups = await router.createCaller(await createContext(event)).groups.list();
 	const collections = await router.createCaller(await createContext(event)).collections.list();
 
-	const items = await getItems(collections);
+	const items = await getItems(user.id);
 
 	return { user, collections, groups, items };
 };
