@@ -216,16 +216,20 @@ const templatesData = [
 		]
 	},
 	{
-		name: 'Finacial Tracker',
-		icon: 'landmark',
+		name: 'Expense Tracker',
+		icon: 'wallet',
 		description:
-			'Track your income, expenses, and savings, and gain insights into your financial health with customizable categories and visualizations.',
+			'Track your expenses, and gain insights into your financial health with customizable categories and visualizations.',
 		properties: [
 			{
-				name: 'Type',
+				name: 'Financial Year',
 				type: 'SELECT' as PropertyType,
-				options: [{ value: 'Income' }, { value: 'Expense' }]
+				options: [
+					{ value: '01.01.2024-31.12.2024' },
+					{ value: '01.01.2025-31.12.2025' }
+				],
 			},
+
 			{
 				name: 'Amount',
 				type: 'NUMBER' as PropertyType,
@@ -251,7 +255,7 @@ const templatesData = [
 				]
 			},
 			{
-				name: 'Expense categories',
+				name: 'Category',
 				type: 'SELECT' as PropertyType,
 				options: [
 					{ value: 'Bills' },
@@ -265,72 +269,53 @@ const templatesData = [
 				]
 			},
 			{
-				name: 'Income categories',
-				type: 'SELECT' as PropertyType,
-				options: [{ value: 'Investment' }, { value: 'Salary' }]
-			},
-			{
 				name: 'Tags',
 				type: 'SELECT' as PropertyType,
-				options: [{ value: 'Recurring Expense' }, { value: 'Recurring Income' }]
-			}
+				options: [{ value: 'Recurring Expense' }, { value: 'One Time Expense' }]
+			},
+			
 		],
 		items: [
 			{
 				name: 'Netflix',
 				properties: [
-					{ value: 'Expense' },
+					{ value: '01.01.2024-31.12.2024' },
 					{ value: '11.99' },
 					{ value: 'Mar' },
 					{ value: 'Entertainments' },
-					{ value: '' },
 					{ value: 'Recurring Expense' }
 				]
 			},
 			{
 				name: 'Spotify',
 				properties: [
-					{ value: 'Expense' },
+					{ value: '01.01.2024-31.12.2024' },
 					{ value: '7.99' },
 					{ value: 'Mar' },
 					{ value: 'Entertainments' },
-					{ value: '' },
 					{ value: 'Recurring Expense' }
 				]
 			},
 			{
 				name: 'Brilliant',
 				properties: [
-					{ value: 'Expense' },
+					{ value: '01.01.2024-31.12.2024' },
 					{ value: '40.99' },
 					{ value: 'Mar' },
 					{ value: 'Education' },
-					{ value: '' },
 					{ value: 'Recurring Expense' }
 				]
 			},
 			{
 				name: 'Navegante',
 				properties: [
-					{ value: 'Expense' },
+					{ value: '01.01.2024-31.12.2024' },
 					{ value: '40' },
 					{ value: 'Mar' },
 					{ value: 'Transport' },
-					{ value: '' },
 					{ value: 'Recurring Expense' }
 				]
 			},
-			{
-				name: 'Paycheck',
-				properties: [
-					{ value: 'Income' },
-					{ value: '1200' },
-					{ value: 'Mar' },
-					{ value: '' },
-					{ value: 'Salary' },
-					{ value: 'Recurring Income' }
-				]
-			}
 		]
 	}
 ];
@@ -345,9 +330,9 @@ function findOptionByName(name: string, options: Option[]) {
 
 async function main() {
 	// clean the DB
-	await prisma.group.deleteMany();
-	await prisma.collection.deleteMany();
-	await prisma.item.deleteMany();
+	// await prisma.group.deleteMany();
+	// await prisma.collection.deleteMany();
+	// await prisma.item.deleteMany();
 	await prisma.template.deleteMany();
 
 	for (const template of templatesData) {

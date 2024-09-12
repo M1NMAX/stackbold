@@ -2,33 +2,31 @@
 	import type { PageData } from './$types';
 	import { onDestroy } from 'svelte';
 	import {
-		Archive,
 		ArrowLeft,
-		ArrowUpDown,
 		Check,
 		CheckSquare2,
-		Copy,
-		CornerUpRight,
-		Eye,
-		EyeOff,
-		File,
-		Heart,
-		HeartOff,
-		MoreHorizontal,
 		Pin,
 		PinOff,
 		Plus,
+		Settings2,
 		Square,
+		SquareSlash,
 		StretchHorizontal,
 		Table,
-		Trash,
-		UserPlus,
 		X
 	} from 'lucide-svelte';
 	import { PropertyType, View, type Item } from '@prisma/client';
-	import { Items, groupItemsByPropertyValue, setActiveItemState } from '$lib/components/items';
+	import {
+		ItemMenuPanel,
+		ItemNew,
+		Items,
+		groupItemsByPropertyValue,
+		setActiveItemState
+	} from '$lib/components/items';
 	import {
 		AddPropertyPopover,
+		PropertyEditor,
+		PropertyIcon,
 		PropertyInput,
 		PropertyInputWrapper,
 		PropertyValueWrapper,
@@ -49,7 +47,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
-	import { ItemDrawer } from '$lib/components/sheet';
+	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
@@ -58,11 +56,9 @@
 	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButton, ViewButtonsGroup, getScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import * as Sheet from '$lib/components/ui/sheet';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
 	import { storage } from '$lib/storage';
 	import { onError } from '$lib/components/ui/sonner';
@@ -71,7 +67,9 @@
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
+	import { Switch } from '$lib/components/ui/switch';
 	import { writable } from 'svelte/store';
+	import { CollectionMenu } from '$lib/components/collection';
 
 	export let data: PageData;
 	$: ({ collection, items, groups } = data);
@@ -81,7 +79,6 @@
 	let sort = writable(sortOptions[0]);
 
 	let view = writable<View>(View.LIST);
-	let isSmallScreenDrawerOpen = false;
 	let renameCollectionError: string | null = null;
 
 	let itemNameError: string | null = null;
@@ -94,8 +91,10 @@
 	let isDeleteModalOpen = false;
 	let deleteDetail: DeleteDetail = { type: null };
 
-	// Sheet
-	let isOpen = false;
+	// item and properties sliding panel
+	let isPropertiesPanelOpen = false;
+	let isItemPanelOpen = false;
+
 	let reload = false;
 
 	const isDesktop = getScreenState();
@@ -229,7 +228,7 @@
 
 		toast.success('Item deleted successfully');
 		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === id) {
-			isOpen = false;
+			isItemPanelOpen = false;
 			$page.url.searchParams.delete('id');
 			goto(`/collections/${collection.id}`);
 		}
@@ -452,10 +451,6 @@
 		if (e.key == 'Enter') e.preventDefault();
 	}
 
-	function closeSmallScreenDrawer() {
-		isSmallScreenDrawerOpen = false;
-	}
-
 	function openMoveDialog() {
 		isMoveDialogOpen = true;
 	}
@@ -494,12 +489,13 @@
 	});
 
 	$: if ($page.url.searchParams.has('id')) {
-		isOpen = true;
+		isPropertiesPanelOpen = false;
+		isItemPanelOpen = true;
 
 		const itemId = $page.url.searchParams.get('id');
 		$activeItem = items.find((item) => item.id === itemId) || null;
 	} else {
-		isOpen = false;
+		isItemPanelOpen = false;
 		$activeItem = null;
 	}
 
@@ -519,6 +515,20 @@
 		{}
 	);
 
+	function sortGroupedItems(a: string, b: string) {
+		const propId = findGroupByConfig($view);
+		const actualProp = properties.find((prop) => prop.id === propId);
+		if (actualProp == null || actualProp.type !== 'SELECT') return 0;
+
+		const left = actualProp.options.findIndex((opt) => opt.id == a);
+		const right = actualProp.options.findIndex((opt) => opt.id == b);
+
+		if (left < right) return -1;
+		if (left > right) return 1;
+
+		return 0;
+	}
+
 	function findGroupByConfig(view: View) {
 		const config = collection.groupByConfigs.find((config) => config.view === view);
 		if (!config || config.propertyId === '') return null;
@@ -526,18 +536,6 @@
 	}
 
 	function updGroupByConfig(view: View, value: string) {
-		// TODO: ref
-		const tmpGroupByConfigs = [
-			{
-				view: View.LIST,
-				propertyId: ''
-			},
-			{
-				view: View.TABLE,
-				propertyId: ''
-			}
-		];
-		if (collection.groupByConfigs.length === 0) collection.groupByConfigs = tmpGroupByConfigs;
 		return collection.groupByConfigs.map((config) => {
 			if (config.view !== view) return config;
 			return {
@@ -546,13 +544,37 @@
 			};
 		});
 	}
+
+	// Properties Sliding panel
+	let currentOpenPropEditor: string | null = null;
+	function onClickTogglePropertyEditor(propId: string | null) {
+		currentOpenPropEditor = propId;
+	}
+
+	function openPropertiesPanel() {
+		if (properties.length != 0 && currentOpenPropEditor == null) {
+			currentOpenPropEditor = properties[0].id;
+		}
+		isItemPanelOpen = false;
+		isPropertiesPanelOpen = true;
+	}
+
+	function closePropertiesPanel() {
+		isPropertiesPanelOpen = false;
+		currentOpenPropEditor = null;
+	}
 </script>
 
 <svelte:head>
 	<title>{collection.name} - Stackbold</title>
 </svelte:head>
 
-<PageContainer class={cn('flex flex-col space-y-1 ease-in-out duration-300', isOpen && 'w-2/3')}>
+<PageContainer
+	class={cn(
+		'flex flex-col space-y-1 ease-in-out duration-300',
+		(isPropertiesPanelOpen || isItemPanelOpen) && 'w-2/3'
+	)}
+>
 	<PageHeader>
 		<div
 			class={cn(
@@ -576,10 +598,6 @@
 					{dayjs(collection.updatedAt).fromNow()}
 				</span>
 
-				<Button variant="secondary" size="icon" disabled>
-					<UserPlus />
-				</Button>
-
 				<Button
 					variant="secondary"
 					size="icon"
@@ -592,128 +610,26 @@
 					{/if}
 				</Button>
 
-				{#if $isDesktop}
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon">
-								<MoreHorizontal />
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Group>
-								<DropdownMenu.Item
-									on:click={() => updCollection({ isDescHidden: !collection.isDescHidden })}
-									class="space-x-1"
-								>
-									{#if collection.isDescHidden}
-										<Eye class="icon-xs" />
-										<span> Show description </span>
-									{:else}
-										<EyeOff class="icon-xs" />
-										<span> Hide description </span>
-									{/if}
-								</DropdownMenu.Item>
-								<DropdownMenu.Item on:click={openMoveDialog} class="space-x-1">
-									<CornerUpRight class="icon-xs" />
-									<span>Move to</span>
-								</DropdownMenu.Item>
+				<Button variant="secondary" size="icon" on:click={openPropertiesPanel}>
+					<Settings2 />
+				</Button>
 
-								<DropdownMenu.Item on:click={duplicateCollection} class="space-x-1">
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</DropdownMenu.Item>
-								<DropdownMenu.Item
-									class="space-x-1"
-									on:click={() => {
-										deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</DropdownMenu.Item>
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				{:else}
-					<Drawer.Root bind:open={isSmallScreenDrawerOpen}>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} size="icon" variant="secondary">
-								<MoreHorizontal class="icon-xs" />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-2">
-								<div class="flex items-center space-x-2">
-									<div class="p-2.5 rounded bg-secondary">
-										<svelte:component this={icons[collection.icon]} class="icon-sm" />
-									</div>
-
-									<div class="flex flex-col items-start justify-start">
-										<div class=" text-base font-semibold truncate">{collection.name}</div>
-										<div class="text-sm">
-											{groups.find((group) => group.id === collection.groupId)?.name ??
-												'Without group'}
-										</div>
-									</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer class="pt-2">
-								<Button
-									variant="secondary"
-									on:click={() => {
-										updCollection({ isPinned: !collection.isPinned });
-										closeSmallScreenDrawer();
-									}}
-								>
-									{#if collection.isPinned}
-										<PinOff class="icon-xs" />
-										<span> Remove from Sidebar</span>
-									{:else}
-										<Pin class="icon-xs" />
-										<span> Add to Sidebar </span>
-									{/if}
-								</Button>
-								<Button
-									variant="secondary"
-									on:click={() => {
-										closeSmallScreenDrawer();
-										openMoveDialog();
-									}}
-								>
-									<CornerUpRight class="icon-xs" />
-									<span>Move to</span>
-								</Button>
-								<Button
-									variant="secondary"
-									on:click={() => {
-										duplicateCollection();
-										closeSmallScreenDrawer();
-									}}
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</Button>
-								<Button
-									variant="destructive"
-									on:click={() => {
-										closeSmallScreenDrawer();
-										deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</Button>
-							</Drawer.Footer>
-						</Drawer.Content>
-					</Drawer.Root>
-				{/if}
+				<CollectionMenu
+					{collection}
+					groupName={groups.find((group) => group.id === collection.groupId)?.name ?? null}
+					on:clickToggleDescStatus={() => updCollection({ isDescHidden: !collection.isDescHidden })}
+					on:clickMove={openMoveDialog}
+					on:clickDuplicate={duplicateCollection}
+					on:clickDelete={() => {
+						deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
+						isDeleteModalOpen = true;
+					}}
+				/>
 			</div>
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-8" on:scroll={handleScroll}>
+	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-4" on:scroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -806,43 +722,8 @@
 		{:else}
 			<div class="flex space-x-1">
 				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
-				<Drawer.Root>
-					<Drawer.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="secondary">
-							<ArrowUpDown class="icon-sm" />
-						</Button>
-					</Drawer.Trigger>
-					<Drawer.Content>
-						<Drawer.Header class="py-1">
-							<div class="flex items-center space-x-2">
-								<div class="p-2.5 rounded bg-secondary">
-									<ArrowUpDown class="icon-sm" />
-								</div>
-								<div class="text-base font-semibold">Sort By</div>
-							</div>
-						</Drawer.Header>
-						<Drawer.Footer>
-							<RadioGroup.Root
-								id="sort"
-								value={$sort.field + '-' + $sort.order}
-								class="px-2 py-1 rounded-md bg-secondary"
-							>
-								{#each sortOptions as sortOpt}
-									<Label class="flex items-center justify-between space-x-2">
-										<span class="font-semibold text-lg"> {sortOpt.label} </span>
-										<RadioGroup.Item
-											value={sortOpt.field + '-' + sortOpt.order}
-											id={sortOpt.label}
-											on:click={() => {
-												$sort = { ...sortOpt };
-											}}
-										/>
-									</Label>
-								{/each}
-							</RadioGroup.Root></Drawer.Footer
-						>
-					</Drawer.Content>
-				</Drawer.Root>
+				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+
 				<Drawer.Root>
 					<Drawer.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="secondary">
@@ -868,35 +749,46 @@
 						</Drawer.Header>
 						<Drawer.Footer>
 							<label for="view"> View </label>
-							<RadioGroup.Root id="view" value={$view} class="px-2 py-1 rounded-md bg-secondary">
+							<RadioGroup.Root id="view" value={$view} class="px-2 py-1 rounded-md bg-secondary/40">
 								<Label for="list" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<StretchHorizontal class="icon-md" />
 										<span class="font-semibold text-lg"> List</span>
 									</div>
-									<RadioGroup.Item value="list" id="list" on:click={() => ($view = View.LIST)} />
+									<RadioGroup.Item
+										id="list"
+										value={View.LIST}
+										on:click={() => ($view = View.LIST)}
+									/>
 								</Label>
 								<Label for="table" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<Table class="icon-md" />
 										<span class="font-semibold text-lg">Table</span>
 									</div>
-									<RadioGroup.Item value="table" id="table" on:click={() => ($view = View.TABLE)} />
+									<RadioGroup.Item
+										id="table"
+										value={View.TABLE}
+										on:click={() => ($view = View.TABLE)}
+									/>
 								</Label>
 							</RadioGroup.Root>
-							<label for="visibility"> Visible in {view} </label>
-							<div class="px-2 py-1 rounded-md bg-secondary">
+							<label for="visibility"> Visible in {capitalizeFirstLetter($view)} view </label>
+							<div class="px-2 py-1 space-y-2.5 rounded-md bg-secondary/40">
 								{#if $view === View.LIST}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
-											<label for={property.id} class="font-semibold text-base">
+											<Label
+												for={`visibility-list-${property.id}`}
+												class="flex font-semibold text-base"
+											>
+												<PropertyIcon key={property.type} />
 												{property.name}
-											</label>
-											<input
-												id={property.id}
-												type="checkbox"
+											</Label>
+
+											<Switch
+												id={`visibility-list-${property.id}`}
 												checked={containsView(property.visibleInViews, View.LIST)}
-												class="checkbox"
 												on:click={() =>
 													updPropertyDebounced({
 														id: property.id,
@@ -908,14 +800,16 @@
 								{:else}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
-											<label for={property.id} class="font-semibold text-base">
+											<Label
+												for={`visibility-table-${property.id}`}
+												class="flex font-semibold text-base"
+											>
+												<PropertyIcon key={property.type} />
 												{property.name}
-											</label>
-											<input
-												id={property.id}
-												type="checkbox"
+											</Label>
+											<Switch
+												id={`visibility-table-${property.id}`}
 												checked={containsView(property.visibleInViews, View.TABLE)}
-												class="checkbox"
 												on:click={() =>
 													updPropertyDebounced({
 														id: property.id,
@@ -934,18 +828,26 @@
 									updCollection({
 										groupByConfigs: updGroupByConfig($view, value === 'none' || !value ? '' : value)
 									})}
-								class="px-2 py-1 rounded-md bg-secondary"
+								class="px-2 py-1 rounded-md bg-secondary/40"
 							>
-								<Label for="list" class="flex items-center justify-between space-x-2">
-									<span class="font-semibold text-base">None</span>
-									<RadioGroup.Item value="none" />
-								</Label>
+								<div class="flex items-center justify-between">
+									<Label for="group-by-none" class="w-full flex items-center ">
+										<SquareSlash class="icon-sm mr-2" />
+										<span class="grow font-semibold text-base">None</span>
+									</Label>
+
+									<RadioGroup.Item id="group-by-none" value="none" />
+								</div>
 								{#each properties as property (property.id)}
 									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-										<Label for="list" class="flex items-center justify-between space-x-2">
-											<span class="font-semibold text-base">{property.name}</span>
-											<RadioGroup.Item value={property.id} />
-										</Label>
+										<div class="w-full flex items-center justify-between">
+											<Label for={`group-by-${property.id}`} class="w-full flex items-center">
+												<PropertyIcon key={property.type} />
+												<span class="grow font-semibold text-base">{property.name}</span>
+											</Label>
+
+											<RadioGroup.Item id={`group-by-${property.id}`} value={property.id} />
+										</div>
 									{/if}
 								{/each}
 							</RadioGroup.Root>
@@ -979,14 +881,13 @@
 						updItemDebounced({ id: detail.id, data: { name: detail.name } });
 					}}
 				/>
-			{/if}
-			{#if findGroupByConfig($view)}
+			{:else}
 				<Accordion.Root
 					multiple
 					value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
 					class="w-full"
 				>
-					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
+					{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
 						{@const property = getProperty(groupedItems[key].pid)}
 
 						{#if property}
@@ -1065,9 +966,7 @@
 					<input type="submit" class="hidden" />
 				</form>
 			</div>
-		{/if}
-
-		{#if !$isDesktop}
+		{:else}
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
@@ -1079,236 +978,186 @@
 	</PageContent>
 </PageContainer>
 
-<ItemDrawer bind:open={isOpen} id="itemDrawer" class=" w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-	<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
-		<div class="flex justify-between items-center">
-			<Button
-				variant="secondary"
-				size="icon"
-				on:click={() => {
-					$page.url.searchParams.delete('id');
-					goto(`/collections/${collection.id}`);
-					isOpen = false;
-					$activeItem = null;
-				}}
-			>
-				{#if $isDesktop}
-					<X />
-				{:else}
-					<ArrowLeft />
-				{/if}
-			</Button>
+<!-- Item sliding-panel -->
+<SlidingPanel bind:open={isItemPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<div class="flex justify-between items-center">
+		<Button
+			variant="secondary"
+			size="icon"
+			on:click={() => {
+				$page.url.searchParams.delete('id');
+				goto(`/collections/${collection.id}`);
+				isItemPanelOpen = false;
+				$activeItem = null;
+			}}
+		>
+			{#if $isDesktop}
+				<X />
+			{:else}
+				<ArrowLeft />
+			{/if}
+		</Button>
 
+		{#if $activeItem != null}
 			<div class="flex items-center space-x-1.5">
-				{#if $activeItem}
-					<span class="font-semibold text-xs text-gray-500">
-						Updated
-						{dayjs($activeItem.updatedAt).fromNow()}
-					</span>
-				{/if}
-
-				{#if $isDesktop}
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon">
-								<MoreHorizontal />
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Group>
-								<DropdownMenu.Item
-									class="space-x-2"
-									on:click={() => {
-										if (!$activeItem) return;
-										duplicateItem($activeItem.id);
-									}}
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</DropdownMenu.Item>
-
-								<DropdownMenu.Item
-									class="space-x-2"
-									on:click={() => {
-										if (!$activeItem) return;
-
-										deleteDetail = { type: 'item', id: $activeItem.id };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</DropdownMenu.Item>
-							</DropdownMenu.Group>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				{:else}
-					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary" size="icon">
-								<MoreHorizontal />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-2">
-								<div class="flex items-center space-x-2 overflow-hidden">
-									<div class="p-2.5 rounded bg-secondary">
-										<File class="icon-sm" />
-									</div>
-
-									<div class="flex flex-col items-start justify-start">
-										<div class=" text-base font-semibold truncate">{$activeItem?.name}</div>
-										<div class="text-sm">{collection.name}</div>
-									</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer class="pt-2">
-								<Button
-									variant="secondary"
-									on:click={() => {
-										if (!$activeItem) return;
-										duplicateItem($activeItem.id);
-									}}
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate</span>
-								</Button>
-								<Button
-									variant="destructive"
-									on:click={() => {
-										if (!$activeItem) return;
-
-										deleteDetail = { type: 'item', id: $activeItem.id };
-										isDeleteModalOpen = true;
-									}}
-								>
-									<Trash class="icon-xs" />
-									<span>Delete</span>
-								</Button>
-							</Drawer.Footer>
-						</Drawer.Content>
-					</Drawer.Root>
-				{/if}
+				<span class="font-semibold text-xs text-gray-500">
+					Updated
+					{dayjs($activeItem.updatedAt).fromNow()}
+				</span>
+				<ItemMenuPanel
+					itemId={$activeItem.id}
+					itemName={$activeItem.name}
+					collectionName={collection.name}
+					on:clickDuplicateItem={({ detail }) => duplicateItem(detail)}
+					on:clickDeleteItem={({ detail }) => {
+						deleteDetail = { type: 'item', id: detail };
+						isDeleteModalOpen = true;
+					}}
+				/>
 			</div>
-		</div>
+		{/if}
+	</div>
 
-		<div class="grow flex flex-col space-y-4 overflow-y-auto">
-			<h2
-				id="item-name"
-				contenteditable
-				spellcheck={false}
-				on:keypress={preventEnterKeypress}
-				on:input={handleOnInputItemName}
-				class="pt-1 text-2xl font-semibold break-words focus:outline-none"
-			>
-				{$activeItem?.name}
-			</h2>
+	<div class="grow flex flex-col space-y-4 overflow-y-auto">
+		<h2
+			id="item-name"
+			contenteditable
+			spellcheck={false}
+			on:keypress={preventEnterKeypress}
+			on:input={handleOnInputItemName}
+			class="pt-1 text-2xl font-semibold break-words focus:outline-none"
+		>
+			{$activeItem?.name}
+		</h2>
 
-			<div class="space-y-2">
-				{#each properties as property}
-					<PropertyInputWrapper
-						{property}
-						isCheckBox={property.type === 'CHECKBOX'}
-						on:updPropertyField={({ detail }) =>
-							updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
-						on:duplicate={(e) => duplicateProperty(e.detail)}
-						on:delete={(e) => {
-							deleteDetail = { id: e.detail, type: 'property' };
-							isDeleteModalOpen = true;
-						}}
-						on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
-						on:updOptColor={({ detail }) => {
-							updPropertyOptionDebounced(detail.propertyId, {
-								id: detail.optionId,
-								color: detail.color
-							});
-						}}
-						on:updOptValue={({ detail }) => {
-							updPropertyOptionDebounced(detail.propertyId, {
-								id: detail.optionId,
-								value: detail.value
-							});
-						}}
-						on:deleteOpt={({ detail }) => {
-							deleteDetail = {
-								type: 'option',
-								id: detail.propertyId,
-								option: detail.optionId
-							};
-							isDeleteModalOpen = true;
-						}}
-					>
-						{#key $activeItem?.id}
-							<PropertyInput
-								{property}
-								value={getPropertyValue(property.id)}
-								on:updPropertyValue={({ detail }) => {
-									if (!$activeItem) return;
+		<div class="space-y-2">
+			{#each properties as property}
+				<PropertyInputWrapper
+					{property}
+					on:updPropertyField={({ detail }) =>
+						updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
+					on:duplicate={(e) => duplicateProperty(e.detail)}
+					on:delete={(e) => {
+						deleteDetail = { id: e.detail, type: 'property' };
+						isDeleteModalOpen = true;
+					}}
+					on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
+					on:updOptColor={({ detail }) => {
+						updPropertyOptionDebounced(detail.propertyId, {
+							id: detail.optionId,
+							color: detail.color
+						});
+					}}
+					on:updOptValue={({ detail }) => {
+						updPropertyOptionDebounced(detail.propertyId, {
+							id: detail.optionId,
+							value: detail.value
+						});
+					}}
+					on:deleteOpt={({ detail }) => {
+						deleteDetail = {
+							type: 'option',
+							id: detail.propertyId,
+							option: detail.optionId
+						};
+						isDeleteModalOpen = true;
+					}}
+				>
+					{#key $activeItem?.id}
+						<PropertyInput
+							{property}
+							value={getPropertyValue(property.id)}
+							on:updPropertyValue={({ detail }) => {
+								if (!$activeItem) return;
 
-									updPropertyValueDebounced($activeItem.id, {
-										id: detail.pid,
-										value: detail.value
-									});
-								}}
-							/>
-						{/key}
-					</PropertyInputWrapper>
-				{/each}
-			</div>
-		</div>
-		<div class="grid justify-items-start">
-			<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+								updPropertyValueDebounced($activeItem.id, {
+									id: detail.pid,
+									value: detail.value
+								});
+							}}
+						/>
+					{/key}
+				</PropertyInputWrapper>
+			{/each}
 		</div>
 	</div>
-</ItemDrawer>
+	<div>
+		<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+	</div>
+</SlidingPanel>
 
-{#if $isDesktop}
-	<Dialog.Root bind:open={isCreateItemDialogOpen}>
-		<Dialog.Content class="sm:max-w-[425px]">
-			<Dialog.Header>
-				<Dialog.Title class="text-center">New item</Dialog.Title>
-			</Dialog.Header>
+<!-- Properties Sliding panel -->
+<SlidingPanel open={isPropertiesPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<div class="flex items-center space-x-4">
+		<Button variant="secondary" size="icon" on:click={closePropertiesPanel}>
+			{#if $isDesktop}
+				<X />
+			{:else}
+				<ArrowLeft />
+			{/if}
+		</Button>
 
-			<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
-				<label for="item-name"> Name</label>
+		<h2 class="text-xl font-semibold">Properties</h2>
+	</div>
 
-				<input
-					id="item-name"
-					placeholder="New item"
-					name="name"
-					autocomplete="off"
-					class="input"
-					bind:value={$form.name}
-				/>
+	<div class="grow flex flex-col space-y-2 overflow-y-auto">
+		{#each properties as property}
+			<PropertyEditor
+				{property}
+				isOpen={currentOpenPropEditor === property.id}
+				on:openChange={(e) => onClickTogglePropertyEditor(e.detail)}
+				on:updPropertyField={({ detail }) =>
+					updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
+				on:duplicate={(e) => duplicateProperty(e.detail)}
+				on:delete={(e) => {
+					deleteDetail = { id: e.detail, type: 'property' };
+					isDeleteModalOpen = true;
+				}}
+				on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
+				on:updOptColor={({ detail }) => {
+					updPropertyOptionDebounced(detail.propertyId, {
+						id: detail.optionId,
+						color: detail.color
+					});
+				}}
+				on:updOptValue={({ detail }) => {
+					updPropertyOptionDebounced(detail.propertyId, {
+						id: detail.optionId,
+						value: detail.value
+					});
+				}}
+				on:deleteOpt={({ detail }) => {
+					deleteDetail = {
+						type: 'option',
+						id: detail.propertyId,
+						option: detail.optionId
+					};
+					isDeleteModalOpen = true;
+				}}
+			/>
+		{/each}
+	</div>
+	<div>
+		<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+	</div>
+</SlidingPanel>
 
-				<Button type="submit" class="w-full">Create</Button>
-			</form>
-		</Dialog.Content>
-	</Dialog.Root>
-{:else}
-	<Sheet.Root bind:open={isCreateItemDialogOpen}>
-		<Sheet.Content side="bottom">
-			<Sheet.Header>
-				<Sheet.Title class="text-center">New item</Sheet.Title>
-			</Sheet.Header>
+<ItemNew bind:isOpen={isCreateItemDialogOpen}>
+	<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
+		<label for="item-name"> Name</label>
 
-			<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
-				<label for="item-name"> Name</label>
+		<input
+			id="item-name"
+			placeholder="New item"
+			name="name"
+			autocomplete="off"
+			class="input"
+			bind:value={$form.name}
+		/>
 
-				<input
-					id="item-name"
-					placeholder="New item"
-					name="name"
-					autocomplete="off"
-					class="input"
-					bind:value={$form.name}
-				/>
-
-				<Button type="submit" class="w-full">Create</Button>
-			</form>
-		</Sheet.Content>
-	</Sheet.Root>
-{/if}
+		<Button type="submit" class="w-full">Create</Button>
+	</form>
+</ItemNew>
 
 <Command.Dialog bind:open={isMoveDialogOpen}>
 	<Command.Input placeholder="Move collection to..." />
@@ -1321,7 +1170,6 @@
 					onSelect={() => {
 						updCollection({ groupId: group.id });
 						closeMoveDialog();
-						closeSmallScreenDrawer();
 					}}
 					class="space-x-2"
 				>

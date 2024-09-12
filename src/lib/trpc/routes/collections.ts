@@ -43,7 +43,7 @@ const collectionUpdateSchema = z.object({
 		isPinned: z.boolean().optional(),
 		description: z.string().optional(),
 		isDescHidden: z.boolean().optional(),
-		groupId: z.string().optional(),
+		groupId: z.string().nullable().optional(),
 		groupByConfigs: z.array(groupByConfigSchema).optional(),
 		groupItemsBy: z.string().nullable().optional()
 	})

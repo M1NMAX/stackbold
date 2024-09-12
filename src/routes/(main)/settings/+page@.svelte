@@ -1,18 +1,20 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
+	import type { PageData } from './$types';
 	import { mode, setMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Separator } from '$lib/components/ui/separator';
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft, Moon, Palette, Sun, SunMoon } from 'lucide-svelte';
 	import { PageContainer } from '$lib/components/page';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { superForm, type FormResult } from 'sveltekit-superforms/client';
+	import { goto } from '$app/navigation';
+	import { superForm } from 'sveltekit-superforms/client';
 	import { toast } from 'svelte-sonner';
+	import * as Drawer from '$lib/components/ui/drawer';
+	import { capitalizeFirstLetter } from '$lib/utils';
 
 	export let data: PageData;
 	$: ({ user } = data);
@@ -200,14 +202,58 @@
 				</RadioGroup.Root>
 			</div>
 
-			<div class="flex md:hidden items-center space-x-1.5 mt-4">
-				<label for="theme" class="label"> Theme </label>
+			<div class="visible md:hidden mt-4">
+				<Drawer.Root>
+					<Drawer.Trigger asChild let:builder class="bg-primary">
+						<Button builders={[builder]} variant="secondary" class="w-full justify-start">
+							<Palette class="icon-sm" />
+							<span class="grow text-start"> Theme </span>
+							<span class="font-light"> {capitalizeFirstLetter($mode ?? 'system')}</span>
+						</Button>
+					</Drawer.Trigger>
+					<Drawer.Content>
+						<Drawer.Header class="py-1">
+							<div class="flex items-center space-x-2">
+								<div class="p-2.5 rounded bg-secondary">
+									<Palette class="icon-sm" />
+								</div>
+								<div class="text-base font-semibold">Theme</div>
+							</div>
+						</Drawer.Header>
+						<Drawer.Footer class="pt-2 space-y-2">
+							<RadioGroup.Root
+								id="theme"
+								value={$mode}
+								class="px-2 py-1 rounded-md bg-secondary/40"
+							>
+								<div class="flex items-center justify-between">
+									<Label for="light" class="grow flex items-center font-semibold text-base">
+										<Sun class="icon-sm mr-2" />
+										Light
+									</Label>
+									<RadioGroup.Item id="light" value="light" on:click={() => setMode('light')} />
+								</div>
+								<div class="flex items-center justify-between">
+									<Label for="dark" class="grow flex items-center font-semibold text-base">
+										<Moon class="icon-sm mr-2" />
+										Dark
+									</Label>
 
-				<select id="theme" name="theme" value={$mode} class="select select-ghost">
-					<option value="light" on:click={() => setMode('light')}> Light </option>
-					<option value="dark" on:click={() => setMode('dark')}> Dark </option>
-					<option value="system" on:click={() => setMode('system')}> System </option>
-				</select>
+									<RadioGroup.Item id="dark" value="dark" on:click={() => setMode('dark')} />
+								</div>
+
+								<div class="flex items-center justify-between">
+									<Label for="system" class="grow flex items-center font-semibold text-base">
+										<SunMoon class="icon-sm mr-2" />
+										System
+									</Label>
+
+									<RadioGroup.Item id="system" value="system" on:click={() => setMode('system')} />
+								</div>
+							</RadioGroup.Root>
+						</Drawer.Footer>
+					</Drawer.Content>
+				</Drawer.Root>
 			</div>
 		</Tabs.Content>
 	</Tabs.Root>

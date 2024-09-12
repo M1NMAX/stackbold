@@ -41,7 +41,6 @@ export const items = createTRPCRouter({
 	update: protectedProcedure
 		.input(z.object({ id: z.string(), data: ItemUpdateInputSchema }))
 		.mutation(async ({ input: { id, data } }) => {
-
 			return await prisma.item.update({
 				data,
 				where: { id }
@@ -64,13 +63,6 @@ export const items = createTRPCRouter({
 				data: { properties: { push: property } },
 				where: { id: { in: ids } }
 			});
-			//TODO: find better alt
-			// for (const id of ids) {
-			// 	await prisma.item.update({
-			// 		data: { properties: { push: [property] } },
-			// 		where: { id }
-			// 	});
-			// }
 		}),
 	updateProperty: protectedProcedure
 		.input(
@@ -93,8 +85,7 @@ export const items = createTRPCRouter({
 		.input(z.object({ ids: z.array(z.string()), propertyId: z.string() }))
 		.mutation(async ({ input: { ids, propertyId } }) => {
 			await prisma.$transaction(
-
-				ids.map(id =>
+				ids.map((id) =>
 					prisma.item.update({
 						data: {
 							properties: {
@@ -107,12 +98,5 @@ export const items = createTRPCRouter({
 					})
 				)
 			);
-			//TODO: find better alt
-			// for (const id of ids) {
-			// 	await prisma.item.update({
-			// 		data: { properties: { deleteMany: { where: { id: propertyId } } } },
-			// 		where: { id }
-			// 	});
-			// }
 		})
 });

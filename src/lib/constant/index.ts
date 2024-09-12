@@ -13,7 +13,7 @@ export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Name Ascending', field: 'name', order: 'asc' },
 	{ label: 'Name Descending', field: 'name', order: 'desc' },
 	{ label: 'Oldest Updated', field: 'updatedAt', order: 'asc' },
-	{ label: 'Lastest Updated', field: 'updatedAt', order: 'desc' },
+	{ label: 'Latest Updated', field: 'updatedAt', order: 'desc' },
 	{ label: 'Recently Added', field: 'createdAt', order: 'desc' },
 	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];

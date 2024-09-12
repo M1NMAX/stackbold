@@ -85,7 +85,7 @@
 			</Button>
 		</Popover.Trigger>
 		<Popover.Content align="start">
-			<div class="pb-2 text-center font-semibold">Collection Icon</div>
+			<p class="pb-2 font-semibold">Icons</p>
 			<div class="grid grid-cols-7 gap-2">
 				{#each Object.keys(icons) as key}
 					<Button
@@ -96,6 +96,7 @@
 							open = false;
 						}}
 						class={cn(key === name && 'bg-primary')}
+						aria-label={key}
 					>
 						<svelte:component this={icons[key]} class="icon-md" />
 					</Button>

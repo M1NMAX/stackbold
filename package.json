@@ -66,7 +66,7 @@
 		"dayjs": "^1.11.10",
 		"debounce": "^1.2.1",
 		"dotenv": "^16.4.1",
-		"lucide-svelte": "^0.292.0",
+		"lucide-svelte": "^0.435.0",
 		"mode-watcher": "^0.1.2",
 		"oslo": "^1.2.0",
 		"superjson": "^2.2.0",

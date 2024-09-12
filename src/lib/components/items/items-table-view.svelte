@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { type Property, type Item, type Aggregator, View } from '@prisma/client';
-	import { getActiveItemState, ItemMenu } from '.';
+	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
+	import { getActiveItemState, ItemMenu, ItemsTableViewVisibilityMenu } from '.';
 	import {
 		PropertyValue,
+		PropertyIcon,
 		containsView,
 		// helpers
 		getPropertyColor,
@@ -13,9 +14,8 @@
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
-	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
+	import { PanelLeftOpen } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { getScreenState } from '$lib/components/view';
 
 	export let items: Item[];
@@ -77,43 +77,24 @@
 		<thead>
 			<tr class="text-muted-foreground text-sm">
 				<th scope="col" class="text-left w-10" title="Row actions">
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button variant="ghost" size="xs" builders={[builder]}>
-								<Settings2 class="icon-xs" />
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content class="w-56">
-							<DropdownMenu.Label>Toggle property visibility</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-
-							{#each properties as property (property.id)}
-								<DropdownMenu.CheckboxItem
-									checked={containsView(property.visibleInViews, View.TABLE)}
-									on:click={() => {
-										dispatch('updPropertyVisibility', {
-											pid: property.id,
-											name: 'visibleInViews',
-											value: toggleView(property.visibleInViews, View.TABLE)
-										});
-									}}
-								>
-									{property.name}
-								</DropdownMenu.CheckboxItem>
-							{/each}
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
+					<ItemsTableViewVisibilityMenu {properties} on:updPropertyVisibility />
 				</th>
-				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-3 cursor-pointer">
-					Name
+				<th scope="col" class=" text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
+					<span class="flex items-center">
+						<PropertyIcon key={PropertyType.TEXT} class="icon-xs mr-2" />
+						Name
+					</span>
 				</th>
 				{#each properties as property (property.id)}
 					{#if containsView(property.visibleInViews, View.TABLE)}
 						<th
 							scope="col"
-							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-1 cursor-pointer"
+							class=" text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
 						>
-							{property.name}
+							<span class="flex items-center">
+								<PropertyIcon key={property.type} class="icon-xs mr-2" />
+								{property.name}
+							</span>
 						</th>
 					{/if}
 				{/each}
@@ -137,7 +118,12 @@
 					>
 						<td class="min-w-10 px-1 border border-l-0">
 							<div class="flex justify-between items-center space-x-2">
-								<ItemMenu itemId={item.id} on:clickDuplicateItem on:clickDeleteItem />
+								<ItemMenu
+									itemId={item.id}
+									on:clickOpenItem
+									on:clickDuplicateItem
+									on:clickDeleteItem
+								/>
 								<Button
 									variant="secondary"
 									size="sm"

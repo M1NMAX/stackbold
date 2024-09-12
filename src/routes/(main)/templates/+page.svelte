@@ -1,24 +1,23 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Template } from '@prisma/client';
+	import { type Template } from '@prisma/client';
 	import { onDestroy } from 'svelte';
-	import { ArrowLeft, ArrowUpDown, CheckSquare2, Dna, Square, X } from 'lucide-svelte';
+	import { ArrowLeft, ArrowUpDown, Dna, X } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
 	import { SortDropdown, setSortState } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
-	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
+	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { getScreenState } from '$lib/components/view';
 	import { cn } from '$lib/utils';
-	import { getPropertyColor, getPropertyRef, getPropertyValue } from '$lib/components/property';
+	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
-	import { ItemDrawer } from '$lib/components/sheet';
+	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { trpc } from '$lib/trpc/client';
 	import { onError, redirectToast } from '$lib/components/ui/sonner';
 	import dayjs from '$lib/utils/dayjs';
-	import { tooltipAction } from 'svelte-legos';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Label } from '$lib/components/ui/label';
@@ -27,7 +26,7 @@
 
 	let activeTemplate: Template | null = null;
 
-	let isSheetOpen = false;
+	let isPanelOpen = false;
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
 
@@ -69,11 +68,11 @@
 	}
 
 	function closeSheet() {
-		isSheetOpen = false;
+		isPanelOpen = false;
 	}
 
 	function openSheet() {
-		isSheetOpen = true;
+		isPanelOpen = true;
 	}
 
 	// SEARCH
@@ -96,7 +95,7 @@
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <PageContainer
-	class={cn('flex flex-col space-y-1 ease-in-out duration-300', isSheetOpen && 'w-3/5')}
+	class={cn('flex flex-col space-y-1 ease-in-out duration-300', isPanelOpen && 'w-3/5')}
 >
 	<PageHeader />
 	<PageContent>
@@ -182,130 +181,78 @@
 	</PageContent>
 </PageContainer>
 
-<ItemDrawer
-	bind:open={isSheetOpen}
+<SlidingPanel
+	bind:open={isPanelOpen}
 	id="activeTemplateDrawer"
 	class="w-full lg:w-2/5 p-0 lg:p-1 lg:pl-0"
 >
 	{#if activeTemplate}
-		<div class="h-full flex flex-col space-y-1.5 p-1 rounded-md bg-card">
-			<div class="flex justify-between items-center">
-				<Button variant="secondary" size="icon" on:click={() => closeSheet()}>
-					{#if $isDesktop}
-						<X />
-					{:else}
-						<ArrowLeft />
-					{/if}
-				</Button>
+		<div class="flex justify-between items-center">
+			<Button variant="secondary" size="icon" on:click={() => closeSheet()}>
+				{#if $isDesktop}
+					<X />
+				{:else}
+					<ArrowLeft />
+				{/if}
+			</Button>
 
-				<span class="font-semibold text-xs text-gray-500 pr-2">
-					Updated
-					{dayjs(activeTemplate.updatedAt).fromNow()}
-				</span>
+			<span class="font-semibold text-xs text-gray-500 pr-2">
+				Updated
+				{dayjs(activeTemplate.updatedAt).fromNow()}
+			</span>
+		</div>
+
+		<div class="grow flex flex-col space-y-4 overflow-y-auto">
+			<div class="flex items-center space-x-2 pt-1">
+				<svelte:component this={icons[activeTemplate.icon]} class="icon-md" />
+				<h2 class="text-2xl font-semibold">
+					{activeTemplate.name}
+				</h2>
 			</div>
+			<p>
+				{activeTemplate.description}
+			</p>
+			<div class="grow flex flex-col space-y-2">
+				<div>
+					<h3 class="text-xl font-semibold">Items</h3>
 
-			<div class="grow flex flex-col space-y-4 overflow-y-auto">
-				<div class="flex items-center space-x-2 pt-1">
-					<svelte:component this={icons[activeTemplate.icon]} class="icon-md" />
-					<h2 class="text-2xl font-semibold">
-						{activeTemplate.name}
-					</h2>
-				</div>
-				<p>
-					{activeTemplate.description}
-				</p>
-				<div class="grow flex flex-col space-y-2">
-					<div>
-						<h3 class="font-semibold">Properties</h3>
-						<table class="w-full border-2 border-gray-300 dark:border-gray-600">
-							<thead>
-								<tr>
-									<th class=" border-gray-300 dark:border-gray-600"> Name </th>
-									<th class="border-2 border-gray-300 dark:border-gray-600"> Type </th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each activeTemplate.properties as property (property.id)}
-									<tr>
-										<td class="border-2 border-gray-300 dark:border-gray-600">
-											{property.name}
-										</td>
-										<td
-											class="border-2 border-gray-300 dark:border-gray-600 first-letter:uppercase"
-										>
-											{property.type.toLowerCase()}
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-
-					<div>
-						<h3 class="font-semibold">Examples of items</h3>
-						<div class="flex flex-col space-y-2">
-							{#each activeTemplate.items as item (item.id)}
-								<div
-									class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
-								>
-									<div class="font-semibold text-lg">
-										{item.name}
-									</div>
-
-									<div class="flex flex-wrap gap-2">
-										{#each activeTemplate.properties as property (property.id)}
-											{@const propertyRef = getPropertyRef(item.properties, property.id)}
-											{#if propertyRef && propertyRef.value !== ''}
-												{@const color = getPropertyColor(property, propertyRef.value)}
-
-												{#if property.type === 'CHECKBOX'}
-													<div
-														class={cn(
-															'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold',
-															PROPERTY_COLORS[color]
-														)}
-													>
-														{#if propertyRef.value === 'true'}
-															<CheckSquare2 class="icon-xs" />
-														{:else}
-															<Square class="icon-xs" />
-														{/if}
-
-														<span class="font-semibold">{property.name} </span>
-													</div>
-												{:else}
-													<span
-														use:tooltipAction={property.name}
-														class={cn(
-															'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
-															PROPERTY_COLORS[color]
-														)}
-													>
-														{getPropertyValue(property, propertyRef.value)}
-													</span>
-												{/if}
-											{/if}
-										{/each}
-									</div>
+					<div class="flex flex-col space-y-2">
+						{#each activeTemplate.items as item (item.id)}
+							<div
+								class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
+							>
+								<div class="font-semibold text-lg">
+									{item.name}
 								</div>
-							{/each}
-						</div>
+
+								<div class="flex flex-wrap gap-2">
+									{#each activeTemplate.properties as property (property.id)}
+										{@const propertyRef = getPropertyRef(item.properties, property.id)}
+										{#if propertyRef && propertyRef.value !== ''}
+											{@const color = getPropertyColor(property, propertyRef.value)}
+
+											<PropertyTemplate {property} {color} value={propertyRef.value} />
+										{/if}
+									{/each}
+								</div>
+							</div>
+						{/each}
 					</div>
 				</div>
-			</div>
-
-			<div class="grid justify-items-start">
-				<Button
-					class="w-full"
-					on:click={() => {
-						if (!activeTemplate) return;
-
-						createCollectionBasedOnTemplate(activeTemplate.id);
-					}}
-				>
-					Use this template
-				</Button>
 			</div>
 		</div>
+
+		<div class="grid justify-items-start">
+			<Button
+				class="w-full"
+				on:click={() => {
+					if (!activeTemplate) return;
+
+					createCollectionBasedOnTemplate(activeTemplate.id);
+				}}
+			>
+				Use this template
+			</Button>
+		</div>
 	{/if}
-</ItemDrawer>
+</SlidingPanel>

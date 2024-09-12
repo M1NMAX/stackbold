@@ -77,30 +77,29 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={clickCreateCollection} class="space-x-2">
+				<DropdownMenu.Item on:click={clickCreateCollection}>
 					<Plus class="icon-xs" />
 					<span>New collection</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={openRenameGroupDialog} class="space-x-2">
+				<DropdownMenu.Item on:click={openRenameGroupDialog}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Separator />
 				<DropdownMenu.Item
 					on:click={() => dispatch('clickDeleteGroup', { id, name })}
-					class="space-x-2"
+					class="group"
 				>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
+					<Trash class="icon-xs group-hover:text-primary" />
+					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	{:else}
 		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
 			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="xs">
+				<Button builders={[builder]} variant="ghost" size="icon">
 					<MoreHorizontal class="icon-xs" />
 				</Button>
 			</Drawer.Trigger>
