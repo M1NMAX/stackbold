@@ -515,6 +515,20 @@
 		{}
 	);
 
+	function sortGroupedItems(a: string, b: string) {
+		const propId = findGroupByConfig($view);
+		const actualProp = properties.find((prop) => prop.id === propId);
+		if (actualProp == null || actualProp.type !== 'SELECT') return 0;
+
+		const left = actualProp.options.findIndex((opt) => opt.id == a);
+		const right = actualProp.options.findIndex((opt) => opt.id == b);
+
+		if (left < right) return -1;
+		if (left > right) return 1;
+
+		return 0;
+	}
+
 	function findGroupByConfig(view: View) {
 		const config = collection.groupByConfigs.find((config) => config.view === view);
 		if (!config || config.propertyId === '') return null;
@@ -873,7 +887,7 @@
 					value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
 					class="w-full"
 				>
-					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
+					{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
 						{@const property = getProperty(groupedItems[key].pid)}
 
 						{#if property}
