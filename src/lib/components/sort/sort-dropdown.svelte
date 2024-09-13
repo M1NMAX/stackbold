@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module>
 	import {
 		ArrowDownAZ,
 		ArrowDownZA,
@@ -29,23 +29,25 @@
 	import type { SortOption } from '$lib/utils/sort';
 
 	type T = $$Generic;
+	type Props = {
+		options: SortOption<T>[];
+		value: SortOption<T>;
+	};
 
-	export let sortOptions: SortOption<T>[];
-	export let currentSort: SortOption<T>;
+	let { value = $bindable(), options }: Props = $props();
 
-	let isOpen = false;
+	let isOpen = $state(false);
 	const isDesktop = getScreenState();
+
+	const CurrentIcon = $derived(icons[`${value.field.toString()}-${value.order}`]);
 </script>
 
 {#if $isDesktop}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" size="sm" class="h-9 w-44">
-				<svelte:component
-					this={icons[`${currentSort.field.toString()}-${currentSort.order}`]}
-					class="icon-xs mr-2"
-				/>
-				{currentSort.label}
+				<CurrentIcon class="icon-xs mr-2" />
+				{value.label}
 			</Button>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">
@@ -53,15 +55,13 @@
 			<DropdownMenu.Separator />
 
 			<DropdownMenu.Group>
-				{#each sortOptions as option}
+				{#each options as option}
+					{@const Icon = icons[`${option.field.toString()}-${option.order}`]}
 					<DropdownMenu.CheckboxItem
-						checked={currentSort.field === option.field && currentSort.order === option.order}
-						on:click={() => (currentSort = { ...option })}
+						checked={value.field === option.field && value.order === option.order}
+						on:click={() => (value = { ...option })}
 					>
-						<svelte:component
-							this={icons[`${option.field.toString()}-${option.order}`]}
-							class="icon-xs mr-2"
-						/>
+						<Icon class="icon-xs mr-2" />
 						{option.label}
 					</DropdownMenu.CheckboxItem>
 				{/each}
@@ -72,10 +72,7 @@
 	<Drawer.Root bind:open={isOpen}>
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary">
-				<svelte:component
-					this={icons[`${currentSort.field.toString()}-${currentSort.order}`]}
-					class="icon-sm"
-				/>
+				<CurrentIcon class="icon-xs mr-2" />
 			</Button>
 		</Drawer.Trigger>
 		<Drawer.Content>
@@ -90,16 +87,14 @@
 			<Drawer.Footer class="pt-2 space-y-2">
 				<RadioGroup.Root
 					id="sort"
-					value={`${currentSort.field.toString()}-${currentSort.order}`}
+					value={`${value.field.toString()}-${value.order}`}
 					class="px-2 py-1 rounded-md bg-secondary/40"
 				>
-					{#each sortOptions as option}
+					{#each options as option}
+						{@const Icon = icons[`${option.field.toString()}-${option.order}`]}
 						<Label class="flex items-center justify-between space-x-2">
 							<span class="flex items-center font-semibold text-lg">
-								<svelte:component
-									this={icons[`${option.field.toString()}-${option.order}`]}
-									class="icon-sm mr-2"
-								/>
+								<Icon class="icon-xs mr-2" />
 
 								{option.label}
 							</span>
@@ -108,13 +103,13 @@
 								id={option.label}
 								on:click={() => {
 									isOpen = false;
-									currentSort = { ...option };
+									value = { ...option };
 								}}
 							/>
 						</Label>
 					{/each}
-				</RadioGroup.Root></Drawer.Footer
-			>
+				</RadioGroup.Root>
+			</Drawer.Footer>
 		</Drawer.Content>
 	</Drawer.Root>
 {/if}

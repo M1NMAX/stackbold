@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { Search } from 'lucide-svelte';
 
-	export let value: string | undefined = undefined;
-	export let placeholder: string | undefined = undefined;
+	type Props = {
+		value?: string;
+		placeholder?: string;
+	};
+	let { value = $bindable(), placeholder, ...rest }: Props = $props();
 </script>
 
 <!-- TODO: turn responsive -->
@@ -13,10 +16,7 @@
 	<input
 		class="w-full h-9 pl-10 text-base font-semibold rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 		{placeholder}
+		{...rest}
 		bind:value
-		on:input
-		on:change
-		on:keydown
-		on:keypress
 	/>
 </div>
