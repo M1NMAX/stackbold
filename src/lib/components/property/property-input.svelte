@@ -12,7 +12,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { cn } from '$lib/utils';
-	import { textareaAutosizeAction } from 'svelte-legos';
 	import { getScreenState } from '$lib/components/view';
 
 	export let property: Property;
@@ -279,8 +278,8 @@
 		</Drawer.Root>
 	{/if}
 {:else if property.type === 'TEXT'}
+	<!-- TODO: CHANGE URG -->
 	<textarea
-		use:textareaAutosizeAction
 		id={property.id}
 		name={property.name}
 		{value}

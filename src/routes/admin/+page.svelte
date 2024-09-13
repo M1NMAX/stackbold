@@ -19,9 +19,9 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import { mediaQuery } from 'svelte-legos';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
+	import { readable } from 'svelte/store';
 
 	export let data: PageData;
 
@@ -38,7 +38,8 @@
 
 	const sort = setSortState<Omit<UserWithoutPassword, 'password'>>(sortOptions[0]);
 
-	const isDesktop = mediaQuery('(min-width: 768px)');
+	// TODO: CHANGE URG
+	const isDesktop = readable(true);
 
 	const { form, message, errors, enhance } = superForm(data.form, {
 		onResult(event) {

@@ -63,7 +63,6 @@
 	import { storage } from '$lib/storage';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
-	import { textareaAutosizeAction } from 'svelte-legos';
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
@@ -649,9 +648,8 @@
 		{#key collection.id}
 			{#if !collection.isDescHidden}
 				<label transition:fade for="description" class="sr-only"> Collection description </label>
-
+				<!-- TODO: CHANGE URG -->
 				<textarea
-					use:textareaAutosizeAction
 					id="description"
 					value={collection.description}
 					on:input={handleOnInputCollectionDesc}
@@ -706,7 +704,8 @@
 
 				<SortDropdown {sortOptions} bind:currentSort={$sort} />
 
-				{#key $view}
+				<!-- TODO: CHANGE URG -->
+				<!-- {#key $view}
 					<ViewButtonsGroup bind:view={$view}>
 						<ViewButton value={View.LIST}>
 							<StretchHorizontal class="icon-md" />
@@ -715,7 +714,7 @@
 							<Table class="icon-md" />
 						</ViewButton>
 					</ViewButtonsGroup>
-				{/key}
+				{/key} -->
 
 				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 			</div>

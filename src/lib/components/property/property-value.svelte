@@ -13,7 +13,6 @@
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { PropertyValueWrapper } from '.';
 	import { getScreenState } from '$lib/components/view';
-	import { textareaAutosizeAction } from 'svelte-legos';
 
 	export let itemId: string;
 	export let property: Property;
@@ -281,14 +280,13 @@
 			>
 				<form>
 					<label for={property.id} class="sr-only"> {property.name} </label>
-
+					<!-- TODO:CHANGE URG -->
 					<textarea
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
 						class="textarea textarea-ghost"
 						{value}
-						use:textareaAutosizeAction
 						on:input={handleOnInput}
 					/>
 				</form>
@@ -312,13 +310,13 @@
 				<form>
 					<label for={property.id} class="sr-only"> {property.name} </label>
 
+					<!-- TODO: GHANGE URG -->
 					<textarea
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
 						class="textarea textarea-ghost"
 						{value}
-						use:textareaAutosizeAction
 						on:input={handleOnInput}
 					/>
 				</form>
