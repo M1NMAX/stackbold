@@ -1,11 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { type Template } from '@prisma/client';
-	import { onDestroy } from 'svelte';
 	import { ArrowLeft, ArrowUpDown, Dna, X } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
-	import { SortDropdown, setSortState } from '$lib/components/sort';
+	import { SearchInput } from '$lib/components/search';
+	import { SortDropdown } from '$lib/components/sort';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
@@ -22,15 +20,27 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Label } from '$lib/components/ui/label';
 
-	export let data: PageData;
+	let { data } = $props();
 
-	let activeTemplate: Template | null = null;
+	let activeTemplate = $state<Template | null>(null);
+	const ActiveTemplateIcon = $derived(icons[activeTemplate?.icon ?? 'folder']);
 
-	let isPanelOpen = false;
+	let isPanelOpen = $state(false);
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
+	let sort = $state(sortOptions[0]);
 
-	const sort = setSortState(sortOptions[0]);
+	let search = $state('');
+	let templates = $derived.by(() => {
+		const searchTerm = search.toLowerCase() || '';
+
+		return data.templates
+			.filter((template) => {
+				const searchableTerms = `${template.name} ${template.description}`;
+				return searchableTerms.toLowerCase().includes(searchTerm);
+			})
+			.sort(sortFun(sort.field, sort.order));
+	});
 
 	const isDesktop = getScreenState();
 
@@ -64,32 +74,16 @@
 
 	function onClickTemplate(id: string) {
 		activeTemplate = data.templates.find((template) => template.id === id) || null;
-		openSheet();
+		openPanel();
 	}
 
-	function closeSheet() {
+	function closePanel() {
 		isPanelOpen = false;
 	}
 
-	function openSheet() {
+	function openPanel() {
 		isPanelOpen = true;
 	}
-
-	// SEARCH
-	const searchTemplates = data.templates.map((template) => ({
-		...template,
-		searchTerms: `${template.name} ${template.description}`
-	}));
-
-	const searchStore = createSearchStore(searchTemplates);
-
-	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
-
-	onDestroy(() => {
-		unsubscribe();
-	});
-
-	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 </script>
 
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
@@ -107,12 +101,12 @@
 		<div class=" space-y-2">
 			{#if $isDesktop}
 				<div class="w-full flex justify-between space-x-2">
-					<SearchInput placeholder="Find Template" bind:value={$searchStore.search} />
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
+					<SearchInput placeholder="Find Template" bind:value={search} />
+					<SortDropdown options={sortOptions} bind:value={sort} />
 				</div>
 			{:else}
 				<div class="flex space-x-1">
-					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+					<SearchInput placeholder="Find Collection" bind:value={search} />
 					<Drawer.Root>
 						<Drawer.Trigger asChild let:builder>
 							<Button builders={[builder]} variant="secondary">
@@ -131,7 +125,7 @@
 							<Drawer.Footer>
 								<RadioGroup.Root
 									id="sort"
-									value={$sort.field + '-' + $sort.order}
+									value={sort.field + '-' + sort.order}
 									class="px-2 py-1 rounded-md bg-secondary"
 								>
 									{#each sortOptions as sortOpt}
@@ -140,23 +134,24 @@
 											<RadioGroup.Item
 												value={sortOpt.field + '-' + sortOpt.order}
 												id={sortOpt.label}
-												on:click={() => {
-													$sort = { ...sortOpt };
+												onclick={() => {
+													sort = { ...sortOpt };
 												}}
 											/>
 										</Label>
 									{/each}
-								</RadioGroup.Root></Drawer.Footer
-							>
+								</RadioGroup.Root>
+							</Drawer.Footer>
 						</Drawer.Content>
 					</Drawer.Root>
 				</div>
 			{/if}
 
 			<div class="space-y-2">
-				{#each $searchStore.filtered as template (template.id)}
+				{#each templates as template (template.id)}
+					{@const Icon = icons[template.icon]}
 					<button
-						on:click={() => onClickTemplate(template.id)}
+						onclick={() => onClickTemplate(template.id)}
 						class={cn(
 							'w-full flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60 truncate',
 							activeTemplate &&
@@ -165,7 +160,7 @@
 						)}
 					>
 						<div class="w-full flex items-center space-x-2">
-							<svelte:component this={icons[template.icon]} class=" icon-sm" />
+							<Icon class=" icon-sm" />
 							<span class="text-lg font-semibold">{template.name}</span>
 						</div>
 
@@ -188,7 +183,7 @@
 >
 	{#if activeTemplate}
 		<div class="flex justify-between items-center">
-			<Button variant="secondary" size="icon" on:click={() => closeSheet()}>
+			<Button variant="secondary" size="icon" on:click={() => closePanel()}>
 				{#if $isDesktop}
 					<X />
 				{:else}
@@ -204,7 +199,7 @@
 
 		<div class="grow flex flex-col space-y-4 overflow-y-auto">
 			<div class="flex items-center space-x-2 pt-1">
-				<svelte:component this={icons[activeTemplate.icon]} class="icon-md" />
+				<ActiveTemplateIcon class="icon-md" />
 				<h2 class="text-2xl font-semibold">
 					{activeTemplate.name}
 				</h2>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { mode, setMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
@@ -16,12 +15,12 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { capitalizeFirstLetter } from '$lib/utils';
 
-	export let data: PageData;
-	$: ({ user } = data);
+	let { data } = $props();
+	let user = $state(data.user);
 
-	let open = false;
-	let confirmed = false;
-	let isSaveDisabled = true;
+	let open = $state(false);
+	let confirmed = $state(false);
+	let isSaveDisabled = $state(true);
 
 	const { form, message, errors, enhance } = superForm(data.form);
 
@@ -86,7 +85,7 @@
 						type="text"
 						name="name"
 						value={$form.name}
-						on:input={() => (isSaveDisabled = false)}
+						oninput={() => (isSaveDisabled = false)}
 						class="input input-ghost"
 					/>
 					{#if $errors.name}
@@ -133,12 +132,17 @@
 							<div class="items-center rounded-md border-2 border-muted p-1 hover:border-accent">
 								<div class="space-y-2 rounded-sm bg-gray-200 p-2">
 									<div class="space-y-2 rounded-md bg-white p-2 shadow-sm">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[80px] rounded-lg bg-gray-200" />
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[100px] rounded-lg bg-gray-200" />
 									</div>
 
 									<div class="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-4 w-4 rounded-full bg-gray-200" />
+
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[100px] rounded-lg bg-gray-200" />
 									</div>
 								</div>
@@ -159,12 +163,18 @@
 							>
 								<div class="space-y-2 rounded-sm bg-slate-950 p-2">
 									<div class="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[80px] rounded-lg bg-slate-400" />
+
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[100px] rounded-lg bg-slate-400" />
 									</div>
 
 									<div class="flex items-center space-x-2 rounded-md bg-slate-800 p-2 shadow-sm">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-4 w-4 rounded-full bg-slate-400" />
+
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[100px] rounded-lg bg-slate-400" />
 									</div>
 								</div>
@@ -186,12 +196,18 @@
 							>
 								<div class="space-y-2 rounded-sm bg-gray-200 p-2">
 									<div class="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[80px] rounded-lg bg-slate-400" />
+
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[100px] rounded-lg bg-slate-400" />
 									</div>
 
 									<div class="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-4 w-4 rounded-full bg-gray-200" />
+
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<div class="h-2 w-[100px] rounded-lg bg-gray-200" />
 									</div>
 								</div>
