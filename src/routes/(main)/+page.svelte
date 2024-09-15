@@ -6,13 +6,12 @@
 	import { getCrtCollectionModalState } from '$lib/components/modal';
 
 	let { data } = $props();
-	let collections = $state(data.collections);
 	let pinnedCollections = $derived.by(() => {
-		return collections.filter((collection) => collection.isPinned);
+		return data.collections.filter((collection) => collection.isPinned);
 	});
 
 	let updCollections = $derived.by(() => {
-		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+		const sorted = data.collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
 		// return the 12 most recently updated collections
 		return sorted.slice(0, 12);
