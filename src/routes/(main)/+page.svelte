@@ -1,35 +1,24 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { ArrowRight, Dna, Egg, FolderPlus } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview } from '$lib/components/collection';
-	import type { RouterOutputs } from '$lib/trpc/router';
-	import { getCrtCollectionDialogState } from '$lib/components/modal';
+	import { getCrtCollectionModalState } from '$lib/components/modal';
 
-	export let data: PageData;
-	$: ({ collections } = data);
-
-	$: pinnedCollections = getPinnedCollections(collections);
-	$: updCollections = getUpdCollections(collections);
-
-	const crtCollectionDialog = getCrtCollectionDialogState();
-
-	function openCrtCollectionDialog() {
-		$crtCollectionDialog = { defaultGroup: undefined, open: true };
-	}
-
-	type CollectionArray = RouterOutputs['collections']['list'];
-	function getPinnedCollections(collections: CollectionArray) {
+	let { data } = $props();
+	let collections = $state(data.collections);
+	let pinnedCollections = $derived.by(() => {
 		return collections.filter((collection) => collection.isPinned);
-	}
+	});
 
-	function getUpdCollections(collections: CollectionArray) {
+	let updCollections = $derived.by(() => {
 		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
 		// return the 12 most recently updated collections
 		return sorted.slice(0, 12);
-	}
+	});
+
+	const crtCollectionModal = getCrtCollectionModalState();
 </script>
 
 <svelte:head>
@@ -75,7 +64,7 @@
 					<p class="text-xl font-medium">Wow, such empty</p>
 				</div>
 
-				<Button on:click={openCrtCollectionDialog} class="h-12 w-full">
+				<Button on:click={() => crtCollectionModal.openModal()} class="h-12 w-full">
 					<FolderPlus />
 					<span> Create Collection</span>
 				</Button>
