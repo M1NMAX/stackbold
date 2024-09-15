@@ -2,7 +2,11 @@
 	import type { OrderType } from '$lib/utils/sort';
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
 
-	export let order: OrderType = 'asc';
+	type Props = {
+		order: OrderType;
+	};
+
+	let { order = $bindable() }: Props = $props();
 </script>
 
 {#if order === 'asc'}

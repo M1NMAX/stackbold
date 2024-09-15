@@ -3,8 +3,15 @@
 	import { getSidebarState } from '$lib/components/sidebar';
 	import { Button } from '$lib/components/ui/button';
 	import { Menu } from 'lucide-svelte';
+	import type { Snippet } from 'svelte';
 
-	let className: string | undefined = undefined;
+	type Props = {
+		children?: Snippet;
+		class?: string;
+	};
+
+	let {children, class: className }: Props = $props();
+
 	const sidebarState = getSidebarState();
 </script>
 
@@ -15,5 +22,8 @@
 			<span class="sr-only"> Show sidebar </span>
 		</Button>
 	{/if}
-	<slot />
+
+	{#if children}
+		{@render children()}
+	{/if}
 </div>
