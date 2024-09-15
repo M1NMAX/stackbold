@@ -7,15 +7,17 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { getCrtCollectionModalState, ModalState } from '$lib/components/modal';
 	import { nameSchema } from '$lib/schema';
+	import { getGroupsState } from '$lib/components/group';
 
 	type Props = {
 		id: string;
 		name: string;
-		renameGroup: (name: string, groupdId: string) => void;
 		deleteGroup: (id: string, name: string) => void;
 	};
 
-	let { id, name, renameGroup, deleteGroup }: Props = $props();
+	let { id, name, deleteGroup }: Props = $props();
+
+	const groupState = getGroupsState();
 
 	let renameError = $state<string | null>(null);
 	const renameGroupModal = new ModalState();
@@ -38,7 +40,7 @@
 		}
 
 		renameError = null;
-		renameGroup(id, name);
+		groupState.updGroup({ id, data: { name } });
 		renameGroupModal.closeModal();
 	}
 </script>

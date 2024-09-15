@@ -65,17 +65,15 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { CollectionMenu } from '$lib/components/collection';
-	import { ModalState } from '$lib/components/modal/modalState.svelte.js';
+	import { getGroupsState } from '$lib/components/group';
 
 	let { data } = $props();
 	let collection = $state(data.collection);
 	let items = $state(data.items);
-	let groups = $state(data.groups);
 	let properties = $state(data.collection.properties);
 
 	$effect(() => {
 		items = data.items;
-		groups = data.groups;
 		collection = data.collection;
 		properties = data.collection.properties;
 	});
@@ -117,6 +115,7 @@
 
 	let reload = $state(false);
 
+	const groupState = getGroupsState();
 	const isDesktop = getScreenState();
 	const activeItem = setActiveItemState(null);
 
@@ -624,7 +623,8 @@
 
 				<CollectionMenu
 					{collection}
-					groupName={groups.find((group) => group.id === collection.groupId)?.name ?? null}
+					groupName={groupState.groups.find((group) => group.id === collection.groupId)?.name ??
+						null}
 					onClickToggleDescState={() => updCollection({ isDescHidden: !collection.isDescHidden })}
 					onClickMove={openMoveDialog}
 					onClickDuplicate={duplicateCollection}
@@ -666,7 +666,7 @@
 					oninput={handleOnInputCollectionDesc}
 					spellcheck={false}
 					class="textarea textarea-ghost"
-				/>
+				></textarea>
 			{/if}
 		{/key}
 
@@ -1159,7 +1159,7 @@
 	<Command.List>
 		<Command.Empty>No group found.</Command.Empty>
 		<Command.Group>
-			{#each groups as group (group.id)}
+			{#each groupState.groups as group (group.id)}
 				<Command.Item
 					value={group.name}
 					onSelect={() => {

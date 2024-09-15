@@ -3,6 +3,7 @@ import { type Group } from '@prisma/client';
 import { onError } from '$lib/components/ui/sonner';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
+import { getContext, setContext } from 'svelte';
 
 export class GroupState {
 	groups = $state<Group[]>([]);
@@ -26,6 +27,7 @@ export class GroupState {
 	async createGroup(args: RouterInputs['groups']['create']) {
 		const tmpId = crypto.randomUUID();
 		try {
+			// TODO: ref to support other props beside name
 			this.groups.push({
 				id: tmpId.toString(),
 				ownerId: tmpId.toString(),
@@ -83,6 +85,7 @@ export class GroupState {
 		try {
 			this.groups = this.groups.filter((group) => group.id != id);
 			await trpc().groups.delete.mutate(id);
+			toast.success(`Group [${target.name}] deleted successfully`);
 		} catch (err) {
 			onError(err);
 			this.groups.push({ ...target });
@@ -97,4 +100,13 @@ export class GroupState {
 			onError(err);
 		}
 	}
+}
+
+const GROUP_STATE_CTX_KEY = Symbol('GROUP_STATE_CTX_KEY');
+export function setGroupsState(groups: Group[]) {
+	return setContext(GROUP_STATE_CTX_KEY, new GroupState(groups));
+}
+
+export function getGroupsState() {
+	return getContext<ReturnType<typeof setGroupsState>>(GROUP_STATE_CTX_KEY);
 }

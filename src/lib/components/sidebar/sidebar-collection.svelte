@@ -23,12 +23,12 @@
 	import { nameSchema } from '$lib/schema.js';
 	import { getScreenState } from '$lib/components/view';
 	import { ModalState } from '$lib/components/modal';
+	import { getGroupsState } from '$lib/components/group';
 
 	type Props = {
 		active: boolean;
 		asChild?: boolean;
 		collection: Collection;
-		groups: { id: string; name: string }[];
 
 		updCollection: (id: string, field: keyof Collection, value: string | boolean | null) => void;
 		duplicateCollection: (id: string) => void;
@@ -39,7 +39,6 @@
 		active,
 		asChild = false,
 		collection,
-		groups,
 		updCollection,
 		duplicateCollection,
 		deleteCollection
@@ -47,6 +46,10 @@
 
 	let renameError = $state<string | null>(null);
 
+	const groupState = getGroupsState();
+	const currentGroup = $derived.by(() => {
+		return groupState.groups.find((group) => group.id === collection.groupId) ?? 'Without group';
+	});
 	const Icon = $derived(icons[collection.icon]);
 
 	const moveCollectionModal = new ModalState();
@@ -166,7 +169,7 @@
 						<div class="flex flex-col items-start justify-start">
 							<div class=" text-base font-semibold truncate">{collection.name}</div>
 							<div class="text-sm">
-								{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
+								{currentGroup}
 							</div>
 						</div>
 					</div>
@@ -265,7 +268,7 @@
 					<span> Collection</span>
 				</Command.Item>
 			{/if}
-			{#each groups as group (group.id)}
+			{#each groupState.groups as group (group.id)}
 				{#if group.id != collection.groupId}
 					<Command.Item
 						value={group.name}

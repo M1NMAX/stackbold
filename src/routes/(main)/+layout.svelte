@@ -25,15 +25,17 @@
 	import { onError } from '$lib/components/ui/sonner';
 	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
+	import { setGroupsState } from '$lib/components/group';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
-	let groups = $state(data.groups);
 	let collections = $state(data.collections);
 	let items = $state(data.items);
 
 	let innerWidth = $state<number>(0);
 	let activeUrl = $state<string>('');
+
+	const groupState = setGroupsState(data.groups);
 
 	const deleteModal = new ModalState();
 	const globalSearchModal = new ModalState();
@@ -56,15 +58,6 @@
 	const isDesktop = getScreenState();
 
 	// Groups services
-	async function createGroup(args: RouterInputs['groups']['create']) {
-		try {
-			await trpc().groups.create.mutate({ ...args });
-			await onSuccess('New group created successfully');
-		} catch (error) {
-			onError(error);
-		}
-	}
-
 	async function handleSubmitNewGroup(e: Event & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
@@ -79,26 +72,8 @@
 		}
 
 		error = { type: null };
-		await createGroup({ name });
+		await groupState.createGroup({ name });
 		createGroupModal.closeModal();
-	}
-
-	async function updGroup(args: RouterInputs['groups']['update']) {
-		try {
-			await trpc().groups.update.mutate({ ...args });
-			await onSuccess('Group updated');
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	async function deleteGroup(id: string, name: string) {
-		try {
-			await trpc().groups.delete.mutate(id);
-			await onSuccess(`Group [${name}] deleted successfully`);
-		} catch (error) {
-			onError(error);
-		}
 	}
 
 	// COLLECTION HANDLERS
@@ -190,7 +165,7 @@
 
 	async function handleDelete() {
 		if (deleteDetail.type === 'collection') deleteCollection(deleteDetail.id, deleteDetail.name);
-		else if (deleteDetail.type === 'group') deleteGroup(deleteDetail.id, deleteDetail.name);
+		else if (deleteDetail.type === 'group') groupState.deleteGroup(deleteDetail.id);
 		deleteModal.closeModal();
 	}
 
@@ -198,8 +173,7 @@
 		return `/collections/${id}` === activeUrl;
 	}
 
-
-	$effect(()=> {
+	$effect(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
@@ -211,8 +185,7 @@
 		return () => {
 			document.removeEventListener('keydown', handleKeydown);
 		};
-
-	})
+	});
 
 	$effect(() => {
 		if (innerWidth < 700) $sidebarState = false;
@@ -250,20 +223,19 @@
 			<Accordion.Root
 				class="grow  space-y-1.5 overflow-y-auto"
 				multiple
-				value={['item-0'].concat(data.groups.map((_group, idx) => `item-${idx + 1}`))}
+				value={['item-0'].concat(groupState.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
 				<div class="space-y-0">
 					{#each collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
 							<SidebarCollection
 								{collection}
-								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
 								duplicateCollection={(id) => duplicateCollection(id)}
 								updCollection={(id, field, value) =>
-									updCollection({ id , data: { [field]: value } })}
+									updCollection({ id, data: { [field]: value } })}
 								deleteCollection={(id, name) => {
-									deleteDetail = { type: 'collection', id, name  };
+									deleteDetail = { type: 'collection', id, name };
 									deleteModal.openModal();
 								}}
 							/>
@@ -271,7 +243,7 @@
 					{/each}
 				</div>
 
-				{#each groups as group, idx (group.id)}
+				{#each groupState.groups as group, idx (group.id)}
 					{@const groupCollections = collections.filter(
 						(collection) =>
 							collection.groupId && collection.groupId === group.id && collection.isPinned
@@ -286,12 +258,11 @@
 								<SidebarGroupMenu
 									id={group.id}
 									name={group.name}
-									renameGroup={(id, name) => updGroup({ id, data: { name  } })}
 									deleteGroup={(id, name) => {
 										deleteDetail = {
 											type: 'group',
-											id ,
-											name ,
+											id,
+											name,
 											includeCollections: false
 										};
 										deleteModal.openModal();
@@ -305,13 +276,12 @@
 								<SidebarCollection
 									asChild
 									{collection}
-									groups={groups.map(({ id, name }) => ({ id, name }))}
 									active={activeCollection(collection.id)}
 									duplicateCollection={(id) => duplicateCollection(id)}
 									updCollection={(id, field, value) =>
-										updCollection({ id , data: { [field]: value } })}
+										updCollection({ id, data: { [field]: value } })}
 									deleteCollection={(id, name) => {
-										deleteDetail = { type: 'collection', id, name  };
+										deleteDetail = { type: 'collection', id, name };
 										deleteModal.openModal();
 									}}
 								/>
@@ -344,7 +314,7 @@
 			$sidebarState && `${$isDesktop ? 'w-full' : 'w-0'} `
 		)}
 	>
-	{@render children()}
+		{@render children()}
 	</div>
 </div>
 
@@ -371,7 +341,7 @@
 			<label class="label" for="group"> Group </label>
 			<select id="group" name="group" class="select" value={crtCollectionModal.group}>
 				<option value={undefined}> Without group </option>
-				{#each groups as group (group.id)}
+				{#each groupState.groups as group (group.id)}
 					<option value={group.id}>
 						{group.name}
 					</option>
