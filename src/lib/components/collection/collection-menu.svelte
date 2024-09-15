@@ -17,9 +17,27 @@
 	import { icons } from '$lib/components/icon';
 	import { createEventDispatcher } from 'svelte';
 
-	export let collection: Collection;
-	export let groupName: string | null;
-	let isOpen = false;
+	type Props = {
+		collection: Collection;
+		groupName: string | null;
+		onClickToggleDescState: () => void;
+		onClickMove: () => void;
+		onClickDuplicate: () => void;
+		onClickDelete: () => void;
+	};
+
+	let {
+		collection,
+		groupName,
+		onClickToggleDescState,
+		onClickMove,
+		onClickDuplicate,
+		onClickDelete
+	}: Props = $props();
+
+	const Icon = $derived(icons[collection.icon]);
+
+	let isOpen = $state(false);
 	const isDesktop = getScreenState();
 
 	const dispatch = createEventDispatcher<{
@@ -29,11 +47,9 @@
 		clickDelete: null;
 	}>();
 
-	type Ev = 'clickToggleDescStatus' | 'clickMove' | 'clickDuplicate' | 'clickDelete';
-
-	function onClickDrawerBtn(ev: Ev) {
+	function onClickDrawerBtn(fn: () => void) {
 		isOpen = false;
-		dispatch(ev);
+		fn();
 	}
 </script>
 
@@ -82,7 +98,7 @@
 			<Drawer.Header class="py-2">
 				<div class="flex items-center space-x-2">
 					<div class="p-2.5 rounded bg-secondary">
-						<svelte:component this={icons[collection.icon]} class="icon-sm" />
+						<Icon class="icon-sm" />
 					</div>
 
 					<div class="flex flex-col items-start justify-start">
@@ -94,7 +110,7 @@
 				</div>
 			</Drawer.Header>
 			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" on:click={() => onClickDrawerBtn('clickToggleDescStatus')}>
+				<Button variant="secondary" on:click={() => onClickDrawerBtn(onClickToggleDescState)}>
 					{#if collection.isPinned}
 						<PinOff class="icon-xs" />
 						<span> Remove from Sidebar</span>
@@ -103,15 +119,15 @@
 						<span> Add to Sidebar </span>
 					{/if}
 				</Button>
-				<Button variant="secondary" on:click={() => onClickDrawerBtn('clickMove')}>
+				<Button variant="secondary" on:click={() => onClickDrawerBtn(onClickMove)}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</Button>
-				<Button variant="secondary" on:click={() => onClickDrawerBtn('clickDuplicate')}>
+				<Button variant="secondary" on:click={() => onClickDrawerBtn(onClickDuplicate)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="destructive" on:click={() => onClickDrawerBtn('clickDelete')}>
+				<Button variant="destructive" on:click={() => onClickDrawerBtn(onClickDelete)}>
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>

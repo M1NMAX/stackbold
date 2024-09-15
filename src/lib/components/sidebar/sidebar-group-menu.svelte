@@ -1,33 +1,32 @@
 <script lang="ts">
 	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { getCrtCollectionDialogState } from '$lib/components/modal';
+	import { getCrtCollectionModalState, ModalState } from '$lib/components/modal';
 	import { nameSchema } from '$lib/schema';
 
-	export let id: string;
-	export let name: string;
+	type Props = {
+		id: string;
+		name: string;
+		renameGroup: (name: string, groupdId: string) => void;
+		deleteGroup: (id: string, name: string) => void;
+	};
 
-	let isSmallScrenDrawerOpen = false;
-	let isRenameGroupDialogOpen = false;
+	let { id, name, renameGroup, deleteGroup }: Props = $props();
 
-	let renameError: string | null = null;
+	let renameError = $state<string | null>(null);
+	const renameGroupModal = new ModalState();
+	const smallScreenDrawer = new ModalState();
 
-	const crtCollectionDialog = getCrtCollectionDialogState();
+	const crtCollectionModal = getCrtCollectionModalState();
 
 	const isDesktop = getScreenState();
 
-	const dispatch = createEventDispatcher<{
-		addNewCollection: { name: string; groupId: string };
-		renameGroup: { name: string; groupId: string };
-		clickDeleteGroup: { id: string; name: string };
-	}>();
-
-	function handleSubmitRename(e: { currentTarget: HTMLFormElement }) {
+	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const name = formData.get('name') as string;
 
@@ -39,27 +38,8 @@
 		}
 
 		renameError = null;
-		dispatch('renameGroup', { groupId: id, name });
-		closeRenameDialog();
-	}
-
-	function clickCreateCollection() {
-		$crtCollectionDialog.defaultGroup = id;
-		$crtCollectionDialog.open = true;
-	}
-
-	function openRenameGroupDialog() {
-		isRenameGroupDialogOpen = true;
-	}
-	function closeRenameDialog() {
-		isRenameGroupDialogOpen = false;
-	}
-
-	function openSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = true;
-	}
-	function closeSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = false;
+		renameGroup(id, name);
+		renameGroupModal.closeModal();
 	}
 </script>
 
@@ -77,27 +57,24 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={clickCreateCollection}>
+				<DropdownMenu.Item on:click={() => crtCollectionModal.openModal(id)}>
 					<Plus class="icon-xs" />
 					<span>New collection</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={openRenameGroupDialog}>
+				<DropdownMenu.Item on:click={() => renameGroupModal.openModal()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					on:click={() => dispatch('clickDeleteGroup', { id, name })}
-					class="group"
-				>
+				<DropdownMenu.Item on:click={() => deleteGroup(id, name)} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	{:else}
-		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
+		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
 			<Drawer.Trigger asChild let:builder>
 				<Button builders={[builder]} variant="ghost" size="icon">
 					<MoreHorizontal class="icon-xs" />
@@ -117,15 +94,15 @@
 					<Button
 						variant="secondary"
 						on:click={() => {
-							openRenameGroupDialog();
-							closeSmallScreenDrawer();
+							renameGroupModal.openModal();
+							smallScreenDrawer.closeModal();
 						}}
 					>
 						<Pencil class="icon-xs" />
 						<span> Rename </span>
 					</Button>
 
-					<Button variant="destructive" on:click={() => dispatch('clickDeleteGroup', { id, name })}>
+					<Button variant="destructive" on:click={() => deleteGroup(id, name)}>
 						<Trash class="icon-xs" />
 						<span>Delete</span>
 					</Button>
@@ -135,12 +112,12 @@
 	{/if}
 </div>
 
-<Dialog.Root bind:open={isRenameGroupDialogOpen}>
+<Dialog.Root bind:open={renameGroupModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>Rename group</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmitRename} class="flex flex-col space-y-2">
+		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
 			<label for="group-name"> Name </label>
 			<input
 				id="group-name"

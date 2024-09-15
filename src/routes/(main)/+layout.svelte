@@ -236,7 +236,7 @@
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
 			<div class=" flex justify-between space-x-0.5 px-1">
-				<SidebarUserMenu {user} on:search={() => globalSearchModal.openModal()} />
+				<SidebarUserMenu {user} search={() => globalSearchModal.openModal()} />
 			</div>
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
@@ -259,13 +259,12 @@
 								{collection}
 								groups={groups.map(({ id, name }) => ({ id, name }))}
 								active={activeCollection(collection.id)}
-								on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-								on:updCollection={({ detail }) =>
-									updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
-								on:deleteCollection={({ detail }) => {
-									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
+								duplicateCollection={(id) => duplicateCollection(id)}
+								updCollection={(id, field, value) =>
+									updCollection({ id , data: { [field]: value } })}
+								deleteCollection={(id, name) => {
+									deleteDetail = { type: 'collection', id, name  };
 									deleteModal.openModal();
-									// isDeleteModalOpen = true;
 								}}
 							/>
 						{/if}
@@ -287,18 +286,12 @@
 								<SidebarGroupMenu
 									id={group.id}
 									name={group.name}
-									on:addNewCollection={({ detail }) =>
-										createCollection({
-											name: detail.name,
-											groupId: detail.groupId
-										})}
-									on:renameGroup={({ detail }) =>
-										updGroup({ id: detail.groupId, data: { name: detail.name } })}
-									on:clickDeleteGroup={({ detail }) => {
+									renameGroup={(id, name) => updGroup({ id, data: { name  } })}
+									deleteGroup={(id, name) => {
 										deleteDetail = {
 											type: 'group',
-											id: detail.id,
-											name: detail.name,
+											id ,
+											name ,
 											includeCollections: false
 										};
 										deleteModal.openModal();
@@ -314,11 +307,11 @@
 									{collection}
 									groups={groups.map(({ id, name }) => ({ id, name }))}
 									active={activeCollection(collection.id)}
-									on:duplicateCollection={({ detail }) => duplicateCollection(detail.id)}
-									on:updCollection={({ detail }) =>
-										updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
-									on:deleteCollection={({ detail }) => {
-										deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
+									duplicateCollection={(id) => duplicateCollection(id)}
+									updCollection={(id, field, value) =>
+										updCollection({ id , data: { [field]: value } })}
+									deleteCollection={(id, name) => {
+										deleteDetail = { type: 'collection', id, name  };
 										deleteModal.openModal();
 									}}
 								/>

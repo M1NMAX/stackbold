@@ -7,12 +7,17 @@
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
 	import { getSidebarState } from './context';
-	import { createEventDispatcher } from 'svelte';
+	import { type User } from 'lucia';
+	type Props = {
+		user: User;
+		search: () => void;
+	};
 
-	export let user: import('lucia').User;
+	let { user, search }: Props = $props();
+	let avatarUrl = $derived(
+		`https://api.dicebear.com/7.x/shapes/svg?seed=${user.email?.split('@')[0]}`
+	);
 
-	$: avatarUrl = `https://api.dicebear.com/7.x/shapes/svg?seed=${user.email?.split('@')[0]}`;
-	const dispatch = createEventDispatcher<{ search: null }>();
 	const isDesktop = getScreenState();
 	const sidebarState = getSidebarState();
 </script>
@@ -28,7 +33,7 @@
 			<Button
 				variant="secondary"
 				class="grow h-9 justify-between items-center space-x-1"
-				on:click={() => dispatch('search')}
+				on:click={() => search()}
 			>
 				<span class="flex items-center space-x-0.5">
 					<Search class="icon-sm" />
@@ -111,7 +116,7 @@
 			<div class="grow flex space-x-1">
 				<Button
 					variant="secondary"
-					on:click={() => dispatch('search')}
+					on:click={() => search()}
 					class="grow justify-start px-2 rounded-full "
 				>
 					<Search class="icon-sm" />

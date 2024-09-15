@@ -16,36 +16,48 @@
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { icons } from '$lib/components/icon';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
 	import { getScreenState } from '$lib/components/view';
+	import { ModalState } from '$lib/components/modal';
 
-	export let active: boolean;
-	export let asChild: boolean = false;
-	export let collection: Collection;
-	export let groups: { id: string; name: string }[];
-	$: ({ id, name, icon } = collection);
+	type Props = {
+		active: boolean;
+		asChild?: boolean;
+		collection: Collection;
+		groups: { id: string; name: string }[];
 
-	let isMoveDialogOpen = false;
-	let isRenameDialogOpen = false;
-	let isSmallScrenDrawerOpen = false;
+		updCollection: (id: string, field: keyof Collection, value: string | boolean | null) => void;
+		duplicateCollection: (id: string) => void;
+		deleteCollection: (id: string, name: string) => void;
+	};
 
-	let renameError: string | null = null;
+	let {
+		active,
+		asChild = false,
+		collection,
+		groups,
+		updCollection,
+		duplicateCollection,
+		deleteCollection
+	}: Props = $props();
+
+	let renameError = $state<string | null>(null);
+
+	const Icon = $derived(icons[collection.icon]);
+
+	const moveCollectionModal = new ModalState();
+	const renameCollectionModal = new ModalState();
+	const smallScreenDrawer = new ModalState();
 
 	const sidebarState = getSidebarState();
 	const isDesktop = getScreenState();
 
-	const dispatch = createEventDispatcher<{
-		updCollection: { id: string; field: keyof Collection; value: string | boolean | null };
-		duplicateCollection: { id: string };
-		deleteCollection: { id: string; name: string };
-	}>();
-
-	function handleSubmitRename(e: { currentTarget: HTMLFormElement }) {
+	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 
 		const name = formData.get('name') as string;
@@ -58,9 +70,9 @@
 		}
 
 		renameError = null;
-		dispatch('updCollection', { id, field: 'name', value: name });
 
-		closeRenameDialog();
+		updCollection(collection.id, 'name', name);
+		renameCollectionModal.closeModal();
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -69,26 +81,6 @@
 		const { href } = e.currentTarget;
 		$sidebarState = false;
 		goto(href);
-	}
-
-	function openMoveDialog() {
-		isMoveDialogOpen = true;
-	}
-
-	function closeMoveDialog() {
-		isMoveDialogOpen = false;
-	}
-
-	function closeSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = false;
-	}
-
-	function openRenameDialog() {
-		isRenameDialogOpen = true;
-	}
-
-	function closeRenameDialog() {
-		isRenameDialogOpen = false;
 	}
 </script>
 
@@ -100,13 +92,15 @@
 	)}
 >
 	<a
-		href="/collections/{id}"
+		href="/collections/{collection.id}"
 		class="grow flex items-center space-x-1.5"
-		on:click={onClickSidebarItem}
+		onclick={onClickSidebarItem}
 	>
-		<svelte:component this={icons[icon]} class={cn('icon-sm', active && 'text-primary')} />
+		<Icon class={cn('icon-sm', active && 'text-primary')} />
 		<span class={cn('font-semibold text-base text-nowrap', active && 'text-primary')}>
-			{name.length > 25 && $isDesktop ? name.substring(0, 22) + ' ...' : name}
+			{collection.name.length > 25 && $isDesktop
+				? collection.name.substring(0, 22) + ' ...'
+				: collection.name}
 		</span>
 	</a>
 
@@ -123,34 +117,30 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={openRenameDialog}>
+				<DropdownMenu.Item on:click={() => renameCollectionModal.openModal()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
 				{#if collection.isPinned}
-					<DropdownMenu.Item
-						on:click={() => {
-							dispatch('updCollection', { id, field: 'isPinned', value: false });
-						}}
-					>
+					<DropdownMenu.Item on:click={() => updCollection(collection.id, 'isPinned', false)}>
 						<PinOff class="icon-xs" />
 						<span> Remove from Sidebar </span>
 					</DropdownMenu.Item>
 				{/if}
 
-				<DropdownMenu.Item on:click={openMoveDialog}>
+				<DropdownMenu.Item on:click={() => moveCollectionModal.openModal()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('duplicateCollection', { id })}>
+				<DropdownMenu.Item on:click={() => duplicateCollection(collection.id)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
 				<DropdownMenu.Item
-					on:click={() => dispatch('deleteCollection', { id, name })}
+					on:click={() => deleteCollection(collection.id, collection.name)}
 					class="group"
 				>
 					<Trash class="icon-xs group-hover:text-primary" />
@@ -159,7 +149,7 @@
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	{:else}
-		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
+		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
 			<Drawer.Trigger asChild let:builder>
 				<Button builders={[builder]} size="icon" variant="ghost">
 					<MoreHorizontal class="icon-xs" />
@@ -170,11 +160,11 @@
 				<Drawer.Header class="py-2">
 					<div class="flex items-center space-x-2">
 						<div class="p-2.5 rounded bg-secondary">
-							<svelte:component this={icons[icon]} class="icon-sm" />
+							<Icon class="icon-sm" />
 						</div>
 
 						<div class="flex flex-col items-start justify-start">
-							<div class=" text-base font-semibold truncate">{name}</div>
+							<div class=" text-base font-semibold truncate">{collection.name}</div>
 							<div class="text-sm">
 								{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
 							</div>
@@ -187,12 +177,8 @@
 						<Button
 							variant="secondary"
 							on:click={() => {
-								dispatch('updCollection', {
-									id,
-									field: 'isPinned',
-									value: false
-								});
-								closeSmallScreenDrawer();
+								updCollection(collection.id, 'isPinned', false);
+								smallScreenDrawer.closeModal();
 							}}
 						>
 							<HeartOff class="icon-xs" />
@@ -203,8 +189,8 @@
 					<Button
 						variant="secondary"
 						on:click={() => {
-							closeSmallScreenDrawer();
-							openMoveDialog();
+							smallScreenDrawer.closeModal();
+							moveCollectionModal.openModal();
 						}}
 					>
 						<CornerUpRight class="icon-xs" />
@@ -213,8 +199,8 @@
 					<Button
 						variant="secondary"
 						on:click={() => {
-							dispatch('duplicateCollection', { id });
-							closeSmallScreenDrawer();
+							duplicateCollection(collection.id);
+							smallScreenDrawer.closeModal();
 						}}
 					>
 						<Copy class="icon-xs" />
@@ -223,8 +209,8 @@
 					<Button
 						variant="destructive"
 						on:click={() => {
-							closeSmallScreenDrawer();
-							dispatch('deleteCollection', { id, name });
+							smallScreenDrawer.closeModal();
+							deleteCollection(collection.id, collection.name);
 						}}
 					>
 						<Trash class="icon-xs" />
@@ -236,19 +222,19 @@
 	{/if}
 </span>
 
-<Dialog.Root bind:open={isRenameDialogOpen}>
+<Dialog.Root bind:open={renameCollectionModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>Rename collection</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmitRename} class="flex flex-col space-y-2">
+		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
 			<label for="collection-name"> Name </label>
 			<input
 				id="collection-name"
 				type="text"
 				name="name"
 				autocomplete="off"
-				value={name}
+				value={collection.name}
 				class="input"
 			/>
 
@@ -261,7 +247,7 @@
 	</Dialog.Content>
 </Dialog.Root>
 
-<Command.Dialog bind:open={isMoveDialogOpen}>
+<Command.Dialog bind:open={moveCollectionModal.isOpen}>
 	<Command.Input placeholder="Move collection to..." />
 	<Command.List>
 		<Command.Empty>No group found.</Command.Empty>
@@ -270,9 +256,9 @@
 				<Command.Item
 					value="collection"
 					onSelect={() => {
-						dispatch('updCollection', { id, field: 'groupId', value: null });
-						closeMoveDialog();
-						closeSmallScreenDrawer();
+						updCollection(collection.id, 'groupId', null);
+						moveCollectionModal.closeModal();
+						smallScreenDrawer.closeModal();
 					}}
 				>
 					<Database class="icon-sm" />
@@ -284,9 +270,9 @@
 					<Command.Item
 						value={group.name}
 						onSelect={() => {
-							dispatch('updCollection', { id, field: 'groupId', value: group.id });
-							closeMoveDialog();
-							closeSmallScreenDrawer();
+							updCollection(collection.id, 'groupId', group.id);
+							moveCollectionModal.closeModal();
+							smallScreenDrawer.closeModal();
 						}}
 					>
 						<Boxes class="icon-sm" />
