@@ -1,6 +1,4 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { onDestroy } from 'svelte';
 	import {
 		ArrowLeft,
 		Check,
@@ -52,49 +50,72 @@
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
 	import type { DeleteDetail } from '$lib/types';
-	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
+	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
-	import { ViewButton, ViewButtonsGroup, getScreenState } from '$lib/components/view';
+	import { ViewButtonsGroup, getScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
-	import { storage } from '$lib/storage';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import { clickOutside } from '$lib/actions';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
-	import { writable } from 'svelte/store';
 	import { CollectionMenu } from '$lib/components/collection';
+	import { ModalState } from '$lib/components/modal/modalState.svelte.js';
 
-	export let data: PageData;
-	$: ({ collection, items, groups } = data);
-	$: ({ properties } = collection);
+	let { data } = $props();
+	let collection = $state(data.collection);
+	let items = $state(data.items);
+	let groups = $state(data.groups);
+	let properties = $state(data.collection.properties);
 
+	$effect(() => {
+		items = data.items;
+		groups = data.groups;
+		collection = data.collection;
+		properties = data.collection.properties;
+	});
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
-	let sort = writable(sortOptions[0]);
 
-	let view = writable<View>(View.LIST);
-	let renameCollectionError: string | null = null;
+	let sort = $state(sortOptions[0]);
+
+	let search = $state('');
+	let filteredItems = $derived.by(() => {
+		const searchTerm = search.toLowerCase() || '';
+
+		return items
+			.filter((item) => item.name.toLowerCase().includes(searchTerm))
+			.sort(sortFun(sort.field, sort.order));
+	});
+
+	const Icon = $derived(icons[collection.icon]);
+
+	let view = $state<View>(View.LIST);
+	let groupedItems = $derived.by(() => {
+		return filteredItems.reduce(groupItemsByPropertyValue(findGroupByConfig(view) || ''), {});
+	});
+
+	let renameCollectionError = $state<string | null>(null);
 
 	let itemNameError: string | null = null;
 
-	let isMoveDialogOpen = false;
-	let isSmallHeadingVisible = false;
-	let isCreateItemDialogOpen = false;
+	let isMoveDialogOpen = $state(false);
+	let isSmallHeadingVisible = $state(false);
+	let isCreateItemDialogOpen = $state(false);
 
 	// Delete Modal
-	let isDeleteModalOpen = false;
-	let deleteDetail: DeleteDetail = { type: null };
+	let deleteDetail = $state<DeleteDetail>({ type: null });
+	let isDeleteModalOpen = $state(false);
 
 	// item and properties sliding panel
-	let isPropertiesPanelOpen = false;
-	let isItemPanelOpen = false;
+	let isPropertiesPanelOpen = $state(false);
+	let isItemPanelOpen = $state(false);
 
-	let reload = false;
+	let reload = $state(false);
 
 	const isDesktop = getScreenState();
 	const activeItem = setActiveItemState(null);
@@ -469,53 +490,41 @@
 		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
 	}
 
-	function addSearchTerms() {
-		return data.items.map((item) => ({ ...item, searchTerms: item.name }));
-	}
-
-	function removeSearchTerms(data: typeof searchItems) {
-		return data.map(({ searchTerms, ...rest }) => ({ ...rest }));
-	}
-
-	const searchItems = addSearchTerms();
-
-	const searchStore = createSearchStore(searchItems);
-
-	const unsubscribe = searchStore.subscribe((modal) => searchHandler(modal));
-
-	onDestroy(() => {
-		unsubscribe();
+	$effect(() => {
+		if ($page.url.searchParams.has('id')) {
+			isPropertiesPanelOpen = false;
+			isItemPanelOpen = true;
+			const itemId = $page.url.searchParams.get('id');
+			$activeItem = items.find((item) => item.id === itemId) || null;
+		} else {
+			isItemPanelOpen = false;
+			$activeItem = null;
+		}
 	});
 
-	$: if ($page.url.searchParams.has('id')) {
-		isPropertiesPanelOpen = false;
-		isItemPanelOpen = true;
+	const VIEW_STORAGE_KEY = $derived(`collection-${collection.id}-view`);
 
-		const itemId = $page.url.searchParams.get('id');
-		$activeItem = items.find((item) => item.id === itemId) || null;
-	} else {
-		isItemPanelOpen = false;
-		$activeItem = null;
-	}
+	$effect(() => {
+		const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
+		if (savedView) sort = JSON.parse(savedView);
+	});
 
-	$: collection.id, ($searchStore.data = addSearchTerms());
-	$: collection.id, ($searchStore.search = '');
+	$effect(() => {
+		localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(view));
+	});
 
-	$: {
-		sort = storage(`collection-${data.collection.id}-sort`, sortOptions[0]);
-	}
-	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
+	const SORT_STORAGE_KEY = $derived(`collection-${collection.id}-sort`);
+	$effect(() => {
+		const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
+		if (savedSort) sort = JSON.parse(savedSort);
+	});
 
-	$: {
-		view = storage(`collection-${data.collection.id}-view`, View.LIST);
-	}
-	$: groupedItems = $searchStore.filtered.reduce(
-		groupItemsByPropertyValue(findGroupByConfig($view) || ''),
-		{}
-	);
+	$effect(() => {
+		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
+	});
 
 	function sortGroupedItems(a: string, b: string) {
-		const propId = findGroupByConfig($view);
+		const propId = findGroupByConfig(view);
 		const actualProp = properties.find((prop) => prop.id === propId);
 		if (actualProp == null || actualProp.type !== 'SELECT') return 0;
 
@@ -545,7 +554,7 @@
 	}
 
 	// Properties Sliding panel
-	let currentOpenPropEditor: string | null = null;
+	let currentOpenPropEditor = $state<string | null>(null);
 	function onClickTogglePropertyEditor(propId: string | null) {
 		currentOpenPropEditor = propId;
 	}
@@ -584,7 +593,7 @@
 			<div
 				class={cn('flex justify-center items-center space-x-2', !isSmallHeadingVisible && 'hidden')}
 			>
-				<svelte:component this={icons[collection.icon]} class="icon-md" />
+				<Icon class="icon-md" />
 				<h1 class="grow font-semibold text-xl text-nowrap">
 					{collection.name.length > 18 && !$isDesktop
 						? collection.name.substring(0, 18) + '...'
@@ -616,10 +625,10 @@
 				<CollectionMenu
 					{collection}
 					groupName={groups.find((group) => group.id === collection.groupId)?.name ?? null}
-					on:clickToggleDescStatus={() => updCollection({ isDescHidden: !collection.isDescHidden })}
-					on:clickMove={openMoveDialog}
-					on:clickDuplicate={duplicateCollection}
-					on:clickDelete={() => {
+					onClickToggleDescState={() => updCollection({ isDescHidden: !collection.isDescHidden })}
+					onClickMove={openMoveDialog}
+					onClickDuplicate={duplicateCollection}
+					onClickDelete={() => {
 						deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
 						isDeleteModalOpen = true;
 					}}
@@ -628,7 +637,7 @@
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-4" on:scroll={handleScroll}>
+	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-4" onScroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -636,8 +645,8 @@
 				class="grow font-semibold text-2xl md:text-3xl focus:outline-none"
 				contenteditable
 				spellcheck={false}
-				on:keypress={preventEnterKeypress}
-				on:input={handleOnInputCollectionName}
+				onkeypress={preventEnterKeypress}
+				oninput={handleOnInputCollectionName}
 			>
 				{collection.name}
 			</h1>
@@ -649,10 +658,12 @@
 			{#if !collection.isDescHidden}
 				<label transition:fade for="description" class="sr-only"> Collection description </label>
 				<!-- TODO: CHANGE URG -->
+
+				<!-- svelte-ignore element_invalid_self_closing_tag -->
 				<textarea
 					id="description"
 					value={collection.description}
-					on:input={handleOnInputCollectionDesc}
+					oninput={handleOnInputCollectionDesc}
 					spellcheck={false}
 					class="textarea textarea-ghost"
 				/>
@@ -662,7 +673,7 @@
 		{#if $isDesktop}
 			<!-- upper navigation handler -->
 			<div class="sticky -top-1 z-10 flex justify-between space-x-2 bg-card">
-				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
+				<SearchInput placeholder="Find Item" bind:value={search} />
 
 				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
 				{#key properties}
@@ -676,11 +687,11 @@
 									<DropdownMenu.Label>Group by</DropdownMenu.Label>
 									<DropdownMenu.Separator />
 									<DropdownMenu.RadioGroup
-										value={findGroupByConfig($view) || 'none'}
+										value={findGroupByConfig(view) || 'none'}
 										onValueChange={(value) => {
 											updCollection({
 												groupByConfigs: updGroupByConfig(
-													$view,
+													view,
 													value === 'none' || !value ? '' : value
 												)
 											});
@@ -702,31 +713,21 @@
 					{/if}
 				{/key}
 
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				<SortDropdown options={sortOptions} bind:value={sort} />
 
-				<!-- TODO: CHANGE URG -->
-				<!-- {#key $view}
-					<ViewButtonsGroup bind:view={$view}>
-						<ViewButton value={View.LIST}>
-							<StretchHorizontal class="icon-md" />
-						</ViewButton>
-						<ViewButton value={View.TABLE}>
-							<Table class="icon-md" />
-						</ViewButton>
-					</ViewButtonsGroup>
-				{/key} -->
+				<ViewButtonsGroup options={[View.LIST, View.TABLE]} bind:value={view} />
 
 				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 			</div>
 		{:else}
 			<div class="flex space-x-1">
-				<SearchInput placeholder="Find Item" bind:value={$searchStore.search} />
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
+				<SearchInput placeholder="Find Item" bind:value={search} />
+				<SortDropdown options={sortOptions} bind:value={sort} />
 
 				<Drawer.Root>
 					<Drawer.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="secondary">
-							{#if $view === View.LIST}
+							{#if view === View.LIST}
 								<StretchHorizontal class="icon-md" />
 							{:else}
 								<Table class="icon-md" />
@@ -737,7 +738,7 @@
 						<Drawer.Header class="py-1">
 							<div class="flex items-center space-x-2">
 								<div class="p-2.5 rounded bg-secondary">
-									{#if $view === View.LIST}
+									{#if view === View.LIST}
 										<StretchHorizontal class="icon-md" />
 									{:else}
 										<Table class="icon-md" />
@@ -748,7 +749,7 @@
 						</Drawer.Header>
 						<Drawer.Footer>
 							<label for="view"> View </label>
-							<RadioGroup.Root id="view" value={$view} class="px-2 py-1 rounded-md bg-secondary/40">
+							<RadioGroup.Root id="view" value={view} class="px-2 py-1 rounded-md bg-secondary/40">
 								<Label for="list" class="flex items-center justify-between space-x-2">
 									<div class="flex items-center space-x-2">
 										<StretchHorizontal class="icon-md" />
@@ -757,7 +758,7 @@
 									<RadioGroup.Item
 										id="list"
 										value={View.LIST}
-										on:click={() => ($view = View.LIST)}
+										on:click={() => (view = View.LIST)}
 									/>
 								</Label>
 								<Label for="table" class="flex items-center justify-between space-x-2">
@@ -768,13 +769,13 @@
 									<RadioGroup.Item
 										id="table"
 										value={View.TABLE}
-										on:click={() => ($view = View.TABLE)}
+										on:click={() => (view = View.TABLE)}
 									/>
 								</Label>
 							</RadioGroup.Root>
-							<label for="visibility"> Visible in {capitalizeFirstLetter($view)} view </label>
+							<label for="visibility"> Visible in {capitalizeFirstLetter(view)} view </label>
 							<div class="px-2 py-1 space-y-2.5 rounded-md bg-secondary/40">
-								{#if $view === View.LIST}
+								{#if view === View.LIST}
 									{#each properties as property}
 										<div class="flex items-center justify-between">
 											<Label
@@ -822,10 +823,10 @@
 							<label for="groupBy"> Group by </label>
 							<RadioGroup.Root
 								id="groupBy"
-								value={findGroupByConfig($view) || 'none'}
+								value={findGroupByConfig(view) || 'none'}
 								onValueChange={(value) =>
 									updCollection({
-										groupByConfigs: updGroupByConfig($view, value === 'none' || !value ? '' : value)
+										groupByConfigs: updGroupByConfig(view, value === 'none' || !value ? '' : value)
 									})}
 								class="px-2 py-1 rounded-md bg-secondary/40"
 							>
@@ -856,29 +857,27 @@
 			</div>
 		{/if}
 		{#key reload}
-			{#if !findGroupByConfig($view)}
+			{#if !findGroupByConfig(view)}
 				<Items
-					items={removeSearchTerms($searchStore.filtered)}
-					view={$view}
+					items={filteredItems}
+					{view}
 					{properties}
-					on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-					on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
-					on:clickDeleteItem={(e) => {
-						deleteDetail = { type: 'item', id: e.detail };
+					clickOpenItem={(id) => handleClickOpenItem(id)}
+					clickDuplicateItem={(id) => duplicateItem(id)}
+					clickDeleteItem={(id) => {
+						deleteDetail = { type: 'item', id: id };
 						isDeleteModalOpen = true;
 					}}
-					on:updPropertyValue={({ detail }) => {
-						updPropertyValueDebounced(detail.itemId, {
-							id: detail.property.id,
-							value: detail.property.value
+					updPropertyValue={(itemId, property) => {
+						updPropertyValueDebounced(itemId, {
+							id: property.id,
+							value: property.value
 						});
 					}}
-					on:updPropertyVisibility={({ detail }) => {
-						updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+					updPropertyVisibility={(id, name, value) => {
+						updPropertyDebounced({ id, [name]: value });
 					}}
-					on:renameItem={({ detail }) => {
-						updItemDebounced({ id: detail.id, data: { name: detail.name } });
-					}}
+					renameItem={(id, name) => updItemDebounced({ id, data: { name } })}
 				/>
 			{:else}
 				<Accordion.Root
@@ -911,26 +910,24 @@
 								<Accordion.Content>
 									<Items
 										items={groupedItems[key].items}
-										view={$view}
+										{view}
 										{properties}
-										on:clickOpenItem={(e) => handleClickOpenItem(e.detail)}
-										on:clickDuplicateItem={(e) => duplicateItem(e.detail)}
-										on:clickDeleteItem={(e) => {
-											deleteDetail = { type: 'item', id: e.detail };
+										clickOpenItem={(id) => handleClickOpenItem(id)}
+										clickDuplicateItem={(id) => duplicateItem(id)}
+										clickDeleteItem={(id) => {
+											deleteDetail = { type: 'item', id: id };
 											isDeleteModalOpen = true;
 										}}
-										on:updPropertyValue={({ detail }) => {
-											updPropertyValueDebounced(detail.itemId, {
-												id: detail.property.id,
-												value: detail.property.value
+										updPropertyValue={(itemId, property) => {
+											updPropertyValueDebounced(itemId, {
+												id: property.id,
+												value: property.value
 											});
 										}}
-										on:updPropertyVisibility={({ detail }) => {
-											updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value });
+										updPropertyVisibility={(id, name, value) => {
+											updPropertyDebounced({ id, [name]: value });
 										}}
-										on:renameItem={({ detail }) => {
-											updItemDebounced({ id: detail.id, data: { name: detail.name } });
-										}}
+										renameItem={(id, name) => updItemDebounced({ id, data: { name } })}
 									/>
 								</Accordion.Content>
 							</Accordion.Item>
@@ -941,7 +938,8 @@
 		{/key}
 		{#if $isDesktop}
 			<div class="sticky inset-x-0 bottom-0">
-				{#if itemNameError}
+				<!-- TODO: CHANGE URG -->
+				<!-- {#if itemNameError}
 					<span
 						use:clickOutside
 						on:clickoutside={() => (itemNameError = null)}
@@ -949,7 +947,7 @@
 					>
 						{itemNameError}
 					</span>
-				{/if}
+				{/if} -->
 				<form class="relative" method="post" action="?/createItem" use:enhance>
 					<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
 						<Plus class="text-primary" />
@@ -1007,9 +1005,9 @@
 					itemId={$activeItem.id}
 					itemName={$activeItem.name}
 					collectionName={collection.name}
-					on:clickDuplicateItem={({ detail }) => duplicateItem(detail)}
-					on:clickDeleteItem={({ detail }) => {
-						deleteDetail = { type: 'item', id: detail };
+					onClickDuplicate={(id) => duplicateItem(id)}
+					onClickDelete={(id) => {
+						deleteDetail = { type: 'item', id: id };
 						isDeleteModalOpen = true;
 					}}
 				/>
@@ -1022,8 +1020,8 @@
 			id="item-name"
 			contenteditable
 			spellcheck={false}
-			on:keypress={preventEnterKeypress}
-			on:input={handleOnInputItemName}
+			onkeypress={preventEnterKeypress}
+			oninput={handleOnInputItemName}
 			class="pt-1 text-2xl font-semibold break-words focus:outline-none"
 		>
 			{$activeItem?.name}
@@ -1033,31 +1031,30 @@
 			{#each properties as property}
 				<PropertyInputWrapper
 					{property}
-					on:updPropertyField={({ detail }) =>
-						updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
-					on:duplicate={(e) => duplicateProperty(e.detail)}
-					on:delete={(e) => {
-						deleteDetail = { id: e.detail, type: 'property' };
+					updPropertyField={(pid, name, value) => updPropertyDebounced({ id: pid, [name]: value })}
+					duplicate={(id) => duplicateProperty(id)}
+					deleteProperty={(id) => {
+						deleteDetail = { id: id, type: 'property' };
 						isDeleteModalOpen = true;
 					}}
-					on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
-					on:updOptColor={({ detail }) => {
-						updPropertyOptionDebounced(detail.propertyId, {
-							id: detail.optionId,
-							color: detail.color
+					addOption={(propertyId, value) => addOptionToProperty(propertyId, value)}
+					updOptColor={(propertyId, optionId, color) => {
+						updPropertyOptionDebounced(propertyId, {
+							id: optionId,
+							color: color
 						});
 					}}
-					on:updOptValue={({ detail }) => {
-						updPropertyOptionDebounced(detail.propertyId, {
-							id: detail.optionId,
-							value: detail.value
+					updOptValue={(propertyId, optionId, value) => {
+						updPropertyOptionDebounced(propertyId, {
+							id: optionId,
+							value: value
 						});
 					}}
-					on:deleteOpt={({ detail }) => {
+					deleteOpt={(propertyId, optionId) => {
 						deleteDetail = {
 							type: 'option',
-							id: detail.propertyId,
-							option: detail.optionId
+							id: propertyId,
+							option: optionId
 						};
 						isDeleteModalOpen = true;
 					}}
@@ -1066,12 +1063,12 @@
 						<PropertyInput
 							{property}
 							value={getPropertyValue(property.id)}
-							on:updPropertyValue={({ detail }) => {
+							updPropertyValue={(pid, value) => {
 								if (!$activeItem) return;
 
 								updPropertyValueDebounced($activeItem.id, {
-									id: detail.pid,
-									value: detail.value
+									id: pid,
+									value: value
 								});
 							}}
 						/>
@@ -1081,7 +1078,7 @@
 		</div>
 	</div>
 	<div>
-		<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+		<AddPropertyPopover onClickPropertyType={(type) => addProperty(type)} />
 	</div>
 </SlidingPanel>
 
@@ -1104,32 +1101,31 @@
 			<PropertyEditor
 				{property}
 				isOpen={currentOpenPropEditor === property.id}
-				on:openChange={(e) => onClickTogglePropertyEditor(e.detail)}
-				on:updPropertyField={({ detail }) =>
-					updPropertyDebounced({ id: detail.pid, [detail.name]: detail.value })}
-				on:duplicate={(e) => duplicateProperty(e.detail)}
-				on:delete={(e) => {
-					deleteDetail = { id: e.detail, type: 'property' };
+				openChange={(value) => onClickTogglePropertyEditor(value)}
+				updPropertyField={(pid, name, value) => updPropertyDebounced({ id: pid, [name]: value })}
+				duplicate={(id) => duplicateProperty(id)}
+				deleteProperty={(id) => {
+					deleteDetail = { id: id, type: 'property' };
 					isDeleteModalOpen = true;
 				}}
-				on:addOpt={({ detail }) => addOptionToProperty(detail.propertyId, detail.value)}
-				on:updOptColor={({ detail }) => {
-					updPropertyOptionDebounced(detail.propertyId, {
-						id: detail.optionId,
-						color: detail.color
+				addOption={(propertyId, value) => addOptionToProperty(propertyId, value)}
+				updOptColor={(propertyId, optionId, color) => {
+					updPropertyOptionDebounced(propertyId, {
+						id: optionId,
+						color: color
 					});
 				}}
-				on:updOptValue={({ detail }) => {
-					updPropertyOptionDebounced(detail.propertyId, {
-						id: detail.optionId,
-						value: detail.value
+				updOptValue={(propertyId, optionId, value) => {
+					updPropertyOptionDebounced(propertyId, {
+						id: optionId,
+						value: value
 					});
 				}}
-				on:deleteOpt={({ detail }) => {
+				deleteOpt={(propertyId, optionId) => {
 					deleteDetail = {
 						type: 'option',
-						id: detail.propertyId,
-						option: detail.optionId
+						id: propertyId,
+						option: optionId
 					};
 					isDeleteModalOpen = true;
 				}}
@@ -1137,7 +1133,7 @@
 		{/each}
 	</div>
 	<div>
-		<AddPropertyPopover on:clickPropType={({ detail }) => addProperty(detail)} />
+		<AddPropertyPopover onClickPropertyType={(type) => addProperty(type)} />
 	</div>
 </SlidingPanel>
 

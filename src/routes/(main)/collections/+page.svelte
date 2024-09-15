@@ -1,54 +1,46 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { onDestroy } from 'svelte';
 	import { ArrowUpDown, Database, FolderPlus } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
+	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import type { Collection } from '@prisma/client';
 	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
-	import { getCrtCollectionDialogState } from '$lib/components/modal';
+	import { getCrtCollectionModalState } from '$lib/components/modal';
 	import { CollectionOverview } from '$lib/components/collection';
-	import { storage } from '$lib/storage';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { getScreenState } from '$lib/components/view';
 	import { Label } from '$lib/components/ui/label';
 
-	export let data: PageData;
-
-	const crtCollectionDialog = getCrtCollectionDialogState();
+	let { data } = $props();
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
-	const sort = storage('collections-sort', sortOptions[0]);
-	const isDesktop = getScreenState();
+	let sort = $state(sortOptions[0]);
 
-	function openCrtCollectionDialog() {
-		$crtCollectionDialog = { defaultGroup: undefined, open: true };
-	}
+	let search = $state('');
+	let collections = $derived.by(() => {
+		const searchTerm = search.toLowerCase() || '';
 
-	// SEARCH
-	function addSearchTerms() {
-		return data.collections.map((collection) => ({
-			...collection,
-			searchTerms: collection.name
-		}));
-	}
-	const searchCollections = addSearchTerms();
-
-	const searchStore = createSearchStore(searchCollections);
-
-	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
-
-	onDestroy(() => {
-		unsubscribe();
+		return data.collections
+			.filter((collection) => collection.name.toLowerCase().includes(searchTerm))
+			.sort(sortFun(sort.field, sort.order));
 	});
 
-	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
-	$: data, ($searchStore.data = addSearchTerms().sort(sortFun($sort.field, $sort.order)));
+	const isDesktop = getScreenState();
+	const crtCollectionModal = getCrtCollectionModalState();
+
+	const SORT_STORAGE_KEY = 'collection-sort';
+	$effect(() => {
+		const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
+		if (savedSort) sort = JSON.parse(savedSort);
+	});
+
+	$effect(() => {
+		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
+	});
 </script>
 
 <svelte:head>
@@ -66,14 +58,14 @@
 		<div class="space-y-2">
 			{#if $isDesktop}
 				<div class="flex justify-between space-x-2">
-					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+					<SearchInput placeholder="Find Collection" bind:value={search} />
 
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-					<Button on:click={openCrtCollectionDialog}>New Collection</Button>
+					<SortDropdown options={sortOptions} bind:value={sort} />
+					<Button onclick={() => crtCollectionModal.openModal()}>New Collection</Button>
 				</div>
 			{:else}
 				<div class="flex space-x-1">
-					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+					<SearchInput placeholder="Find Collection" bind:value={search} />
 					<Drawer.Root>
 						<Drawer.Trigger asChild let:builder>
 							<Button builders={[builder]} variant="secondary">
@@ -92,7 +84,7 @@
 							<Drawer.Footer>
 								<RadioGroup.Root
 									id="sort"
-									value={$sort.field + '-' + $sort.order}
+									value={sort.field + '-' + sort.order}
 									class="px-2 py-1 rounded-md bg-secondary"
 								>
 									{#each sortOptions as sortOpt}
@@ -102,21 +94,21 @@
 												value={sortOpt.field + '-' + sortOpt.order}
 												id={sortOpt.label}
 												on:click={() => {
-													$sort = { ...sortOpt };
+													sort = { ...sortOpt };
 												}}
 											/>
 										</Label>
 									{/each}
-								</RadioGroup.Root></Drawer.Footer
-							>
+								</RadioGroup.Root>
+							</Drawer.Footer>
 						</Drawer.Content>
 					</Drawer.Root>
 				</div>
 			{/if}
 
-			{#if $searchStore.filtered.length > 0}
+			{#if collections.length > 0}
 				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
-					{#each $searchStore.filtered as collection (collection.id)}
+					{#each collections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}
 				</div>
@@ -129,7 +121,7 @@
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
-				on:click={openCrtCollectionDialog}
+				onclick={() => crtCollectionModal.openModal()}
 			>
 				<FolderPlus />
 			</Button>
