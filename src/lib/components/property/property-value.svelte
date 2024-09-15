@@ -14,12 +14,28 @@
 	import { PropertyValueWrapper } from '.';
 	import { getScreenState } from '$lib/components/view';
 
-	export let itemId: string;
-	export let property: Property;
-	export let color: Color = 'GRAY';
-	export let value: string | null;
-	export let isTableView: boolean = false;
-	let open = false;
+	type Props = {
+		itemId: string;
+		property: Property;
+		color: Color;
+		value: string | null;
+		isTableView?: boolean;
+		updPropertyValue: (itemId: string, property: { id: string; value: string }) => void;
+	};
+
+	let {
+		itemId,
+		property,
+		color = 'GRAY',
+		value,
+		isTableView = false,
+		updPropertyValue
+	}: Props = $props();
+
+	let open = $state(false);
+	let selectedValue = $derived.by(() => {
+		return property.options.find((opt) => opt.id === value)?.value ?? '';
+	});
 
 	const isDesktop = getScreenState();
 
@@ -30,7 +46,7 @@
 	function handleOnInput(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-		dispatch('updPropertyValue', { itemId, property: { id: property.id, value: currValue } });
+		updPropertyValue(itemId, { id: property.id, value: currValue });
 	}
 
 	const buttonClass = cn(
@@ -40,7 +56,6 @@
 		!isTableView && PROPERTY_COLORS[color]
 	);
 
-	$: selectedValue = property.options.find((opt) => opt.id === value)?.value ?? '';
 	// TODO: ref: most of property types are inside same components consider create a wrapper
 </script>
 
@@ -53,7 +68,7 @@
 			!isTableView && PROPERTY_COLORS[color]
 		)}
 	>
-		<input type="checkbox" checked={value === 'true'} on:input={handleOnInput} class="checkbox" />
+		<input type="checkbox" checked={value === 'true'} oninput={handleOnInput} class="checkbox" />
 
 		<span class={cn('font-semibold', isTableView && 'sr-only')}>{property.name} </span>
 	</label>
@@ -85,10 +100,7 @@
 								value={option.value}
 								onSelect={() => {
 									// value = option.id;
-									dispatch('updPropertyValue', {
-										itemId,
-										property: { id: property.id, value: option.id }
-									});
+									updPropertyValue(itemId, { id: property.id, value: option.id });
 									open = false;
 								}}
 								class="justify-between"
@@ -142,10 +154,7 @@
 								value={option.value}
 								onSelect={() => {
 									// value = option.id;
-									dispatch('updPropertyValue', {
-										itemId,
-										property: { id: property.id, value: option.id }
-									});
+									updPropertyValue(itemId, { id: property.id, value: option.id });
 									open = false;
 								}}
 								class="justify-between"
@@ -205,12 +214,7 @@
 					)}
 					onValueChange={(dt) => {
 						if (!dt) return;
-						value = dt.toString();
-
-						dispatch('updPropertyValue', {
-							itemId,
-							property: { id: property.id, value }
-						});
+						updPropertyValue(itemId, { id: property.id, value: dt.toString() });
 						open = false;
 					}}
 				/>
@@ -251,12 +255,7 @@
 							)}
 							onValueChange={(dt) => {
 								if (!dt) return;
-								value = dt.toString();
-
-								dispatch('updPropertyValue', {
-									itemId,
-									property: { id: property.id, value }
-								});
+								updPropertyValue(itemId, { id: property.id, value: dt.toString() });
 								open = false;
 							}}
 						/>
@@ -281,13 +280,15 @@
 				<form>
 					<label for={property.id} class="sr-only"> {property.name} </label>
 					<!-- TODO:CHANGE URG -->
+
+					<!-- svelte-ignore element_invalid_self_closing_tag -->
 					<textarea
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
 						class="textarea textarea-ghost"
 						{value}
-						on:input={handleOnInput}
+						oninput={handleOnInput}
 					/>
 				</form>
 			</Popover.Content>
@@ -311,13 +312,15 @@
 					<label for={property.id} class="sr-only"> {property.name} </label>
 
 					<!-- TODO: GHANGE URG -->
+
+					<!-- svelte-ignore element_invalid_self_closing_tag -->
 					<textarea
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
 						class="textarea textarea-ghost"
 						{value}
-						on:input={handleOnInput}
+						oninput={handleOnInput}
 					/>
 				</form>
 			</Dialog.Content>
@@ -343,7 +346,7 @@
 						type="number"
 						step="any"
 						{value}
-						on:input={handleOnInput}
+						oninput={handleOnInput}
 					/>
 				</form>
 			</Popover.Content>
@@ -373,7 +376,7 @@
 						type="number"
 						step="any"
 						{value}
-						on:input={handleOnInput}
+						oninput={handleOnInput}
 					/>
 				</form>
 			</Dialog.Content>
@@ -398,7 +401,7 @@
 						class="w-full input input-ghost px-1 font-semibold text-sm"
 						type={property.type.toLowerCase()}
 						{value}
-						on:input={handleOnInput}
+						oninput={handleOnInput}
 					/>
 				</form>
 			</Popover.Content>
@@ -427,7 +430,7 @@
 						class="w-full input input-ghost px-1 font-semibold text-sm"
 						type={property.type.toLowerCase()}
 						{value}
-						on:input={handleOnInput}
+						oninput={handleOnInput}
 					/>
 				</form>
 			</Dialog.Content>

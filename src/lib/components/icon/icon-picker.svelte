@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script module lang="ts">
 	import {
 		Activity,
 		AlarmClock,
@@ -70,24 +70,31 @@
 	import { getScreenState } from '../view';
 	import { cn } from '$lib/utils';
 
-	export let name: string;
-	export let onIconChange: (icon: string) => void;
-	const isDesktop = getScreenState();
+	type Props = {
+		name: string;
+		onIconChange: (icon: string) => void;
+	};
 
-	let open = false;
+	let { name, onIconChange }: Props = $props();
+
+	let open = $state(false);
+
+	const isDesktop = getScreenState();
+	const SelectedIcon = $derived(icons[name]);
 </script>
 
 {#if $isDesktop}
 	<Popover.Root bind:open>
 		<Popover.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="ghost" size="icon">
-				<svelte:component this={icons[name]} class="icon icon-lg" />
+				<SelectedIcon class="icon icon-lg" />
 			</Button>
 		</Popover.Trigger>
 		<Popover.Content align="start">
 			<p class="pb-2 font-semibold">Icons</p>
 			<div class="grid grid-cols-7 gap-2">
 				{#each Object.keys(icons) as key}
+					{@const Icon = icons[key]}
 					<Button
 						variant="ghost"
 						size="icon"
@@ -98,7 +105,7 @@
 						class={cn(key === name && 'bg-primary')}
 						aria-label={key}
 					>
-						<svelte:component this={icons[key]} class="icon-md" />
+						<Icon class="icon-md" />
 					</Button>
 				{/each}
 			</div>
@@ -108,7 +115,7 @@
 	<Drawer.Root>
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="ghost" size="icon">
-				<svelte:component this={icons[name]} class="icon icon-lg" />
+				<SelectedIcon class="icon icon-lg" />
 			</Button>
 		</Drawer.Trigger>
 		<Drawer.Content>
@@ -118,6 +125,7 @@
 			<Drawer.Footer>
 				<div class="grid grid-cols-7 gap-4 mx-auto">
 					{#each Object.keys(icons) as key}
+						{@const Icon = icons[key]}
 						<Button
 							variant="ghost"
 							on:click={() => {
@@ -126,7 +134,7 @@
 							}}
 							class={cn('h-10 w-10 p-1.5', key === name && 'bg-primary')}
 						>
-							<svelte:component this={icons[key]} class="icon-lg" />
+							<Icon class="icon-lg" />
 						</Button>
 					{/each}
 				</div>

@@ -1,39 +1,40 @@
 <script lang="ts">
 	import { Check, ChevronRight, MoreHorizontal, Trash } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import type { Color, Option } from '@prisma/client';
 	import { tick } from 'svelte';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/view';
+	import type { PropertyOptionCallbacks } from './types';
 
-	export let propertyId: string;
-	export let option: Option;
-	let isSmallScreenDrawerOpen = false;
+	type Props = PropertyOptionCallbacks & {
+		propertyId: string;
+		option: Option;
+	};
 
-	let value = option.color as string;
-	$: selectedKey = (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
+	let { propertyId, option, updOptColor, updOptValue, deleteOpt }: Props = $props();
+
+	let isSmallScreenDrawerOpen = $state(false);
+
+	let value = $state(option.color as string);
+
+	let selectedKey = $derived.by(() => {
+		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
+	});
 
 	const isDesktop = getScreenState();
 
-	const dispatch = createEventDispatcher<{
-		updOptColor: { propertyId: string; optionId: string; color: Color };
-		updOptValue: { propertyId: string; optionId: string; value: string };
-		deleteOpt: { propertyId: string; optionId: string };
-	}>();
-
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		dispatch('updOptValue', { propertyId, optionId: option.id, value: targetEl.value });
+		updOptValue(propertyId, option.id, targetEl.value);
 	}
 
 	function handleSelectColor(selectedKey: string, triggerId?: string) {
 		value = selectedKey;
-		dispatch('updOptColor', { propertyId, optionId: option.id, color: value as Color });
+		updOptColor(propertyId, option.id, value as Color);
 
 		// Refocus the trigger btn when user selects and item from the list,
 		// so users can navigating using the keyboard
@@ -60,6 +61,7 @@
 				class="h-7 w-full justify-between px-0.5"
 			>
 				<span class="flex gap-2">
+					<!-- svelte-ignore element_invalid_self_closing_tag -->
 					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`} />
 					<span>{option.value}</span>
 				</span>
@@ -70,7 +72,7 @@
 			<input
 				name="option"
 				value={option.value}
-				on:input={handleOnInput}
+				oninput={handleOnInput}
 				class="input input-bordered input-sm"
 			/>
 			<DropdownMenu.Separator />
@@ -86,6 +88,7 @@
 				>
 					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
 						<DropdownMenu.RadioItem value={colorName} class="py-1">
+							<!-- svelte-ignore element_invalid_self_closing_tag -->
 							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`} />
 
 							{capitalizeFirstLetter(colorName)}
@@ -95,10 +98,7 @@
 			</DropdownMenu.Group>
 
 			<DropdownMenu.Separator />
-			<DropdownMenu.Item
-				class="space-x-2 "
-				on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}
-			>
+			<DropdownMenu.Item class="space-x-2 " on:click={() => deleteOpt(propertyId, option.id)}>
 				<Trash class="icon-xs" />
 				<span>Delete option </span>
 			</DropdownMenu.Item>
@@ -108,13 +108,14 @@
 	<div class="w-full flex justify-between items-center space-x-1">
 		<div class="w-full relative">
 			<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
+				<!-- svelte-ignore element_invalid_self_closing_tag -->
 				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`} />
 			</div>
 
 			<input
 				name="option"
 				value={option.value}
-				on:input={handleOnInput}
+				oninput={handleOnInput}
 				class={`h-7 w-full pl-8 px-1.5 text-base font-semibold rounded bg-secondary focus:outline-none `}
 			/>
 		</div>
@@ -162,7 +163,7 @@
 						variant="destructive"
 						on:click={() => {
 							closeSmallScreenDrawer();
-							dispatch('deleteOpt', { propertyId, optionId: option.id });
+							deleteOpt(propertyId, option.id);
 						}}
 					>
 						<Trash class="icon-xs" />

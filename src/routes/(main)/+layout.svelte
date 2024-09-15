@@ -11,8 +11,6 @@
 	} from '$lib/components/sidebar';
 	import { trpc } from '$lib/trpc/client';
 	import { goto, invalidateAll } from '$app/navigation';
-	import type { LayoutData } from './$types';
-	import { onMount } from 'svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -22,26 +20,30 @@
 	import { onSuccess, redirectToast } from '$lib/components/ui/sonner';
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
-	import { setCrtCollectionDialogState } from '$lib/components/modal';
+	import { ModalState, setCtrCollectionModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { onError } from '$lib/components/ui/sonner';
 	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
 
-	export let data: LayoutData;
-	$: ({ user, groups, collections, items } = data);
+	let { data, children } = $props();
+	let user = $state(data.user);
+	let groups = $state(data.groups);
+	let collections = $state(data.collections);
+	let items = $state(data.items);
 
-	let innerWidth: number;
-	let isSearchDialogOpen = false;
-	let isNewGroupDialogOpen = false;
+	let innerWidth = $state<number>(0);
+	let activeUrl = $state<string>('');
+
+	const deleteModal = new ModalState();
+	const globalSearchModal = new ModalState();
+	const createGroupModal = new ModalState();
+	const crtCollectionModal = setCtrCollectionModalState();
 
 	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
-	let error: Error = { type: null };
+	let error = $state<Error>({ type: null });
 
-	const crtCollectionDialog = setCrtCollectionDialogState({ open: false });
-
-	let isDeleteModalOpen = false;
-	let deleteDetail: DeleteDetail = { type: null };
+	let deleteDetail = $state<DeleteDetail>({ type: null });
 
 	const sidebarState = setSidebarState();
 
@@ -63,7 +65,8 @@
 		}
 	}
 
-	async function handleSubmitNewGroup(e: { currentTarget: HTMLFormElement }) {
+	async function handleSubmitNewGroup(e: Event & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 
 		const name = formData.get('name') as string;
@@ -77,7 +80,7 @@
 
 		error = { type: null };
 		await createGroup({ name });
-		closeNewGroupDialog();
+		createGroupModal.closeModal();
 	}
 
 	async function updGroup(args: RouterInputs['groups']['update']) {
@@ -110,7 +113,8 @@
 		}
 	}
 
-	async function handleSubmitCollection(e: { currentTarget: HTMLFormElement }) {
+	async function handleSubmitCollection(e: Event & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const name = formData.get('name') as string;
 		const group = formData.get('group') as string;
@@ -125,8 +129,7 @@
 		error = { type: null };
 
 		createCollection({ name, groupId: group || null });
-
-		closeCrtCollectionDialog();
+		crtCollectionModal.closeModal();
 	}
 
 	async function duplicateCollection(id: string) {
@@ -188,31 +191,19 @@
 	async function handleDelete() {
 		if (deleteDetail.type === 'collection') deleteCollection(deleteDetail.id, deleteDetail.name);
 		else if (deleteDetail.type === 'group') deleteGroup(deleteDetail.id, deleteDetail.name);
-
-		isDeleteModalOpen = false;
+		deleteModal.closeModal();
 	}
 
-	function openNewGroupDialog() {
-		isNewGroupDialogOpen = true;
+	function activeCollection(id: string) {
+		return `/collections/${id}` === activeUrl;
 	}
 
-	function closeNewGroupDialog() {
-		isNewGroupDialogOpen = false;
-	}
 
-	function openCrtCollectionDialog() {
-		$crtCollectionDialog = { defaultGroup: undefined, open: true };
-	}
-
-	function closeCrtCollectionDialog() {
-		$crtCollectionDialog = { defaultGroup: undefined, open: false };
-	}
-
-	onMount(() => {
+	$effect(()=> {
 		function handleKeydown(e: KeyboardEvent) {
 			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
-				isSearchDialogOpen = !isSearchDialogOpen;
+				globalSearchModal.isOpen = !globalSearchModal.isOpen;
 			}
 		}
 
@@ -220,12 +211,16 @@
 		return () => {
 			document.removeEventListener('keydown', handleKeydown);
 		};
+
+	})
+
+	$effect(() => {
+		if (innerWidth < 700) $sidebarState = false;
 	});
 
-	$: innerWidth < 700 && ($sidebarState = false);
-
-	$: activeUrl = $page.url.pathname;
-	$: activeCollection = (id: string) => $page.url.pathname === `/collections/${id}`;
+	$effect(() => {
+		activeUrl = $page.url.pathname;
+	});
 </script>
 
 <svelte:window bind:innerWidth />
@@ -241,16 +236,13 @@
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
 			<div class=" flex justify-between space-x-0.5 px-1">
-				<SidebarUserMenu {user} on:search={() => (isSearchDialogOpen = true)} />
+				<SidebarUserMenu {user} on:search={() => globalSearchModal.openModal()} />
 			</div>
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
+					{@const Icon = item.icon}
 					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<svelte:component
-							this={item.icon}
-							slot="icon"
-							class={cn('icon-sm', activeUrl === item.url && 'text-primary')}
-						/>
+						<Icon class={cn('icon-sm', activeUrl === item.url && 'text-primary')} />
 					</SidebarItem>
 				{/each}
 			</div>
@@ -272,7 +264,8 @@
 									updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
 								on:deleteCollection={({ detail }) => {
 									deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
-									isDeleteModalOpen = true;
+									deleteModal.openModal();
+									// isDeleteModalOpen = true;
 								}}
 							/>
 						{/if}
@@ -302,13 +295,13 @@
 									on:renameGroup={({ detail }) =>
 										updGroup({ id: detail.groupId, data: { name: detail.name } })}
 									on:clickDeleteGroup={({ detail }) => {
-										isDeleteModalOpen = true;
 										deleteDetail = {
 											type: 'group',
 											id: detail.id,
 											name: detail.name,
 											includeCollections: false
 										};
+										deleteModal.openModal();
 									}}
 								/>
 							</svelte:fragment>
@@ -325,8 +318,8 @@
 									on:updCollection={({ detail }) =>
 										updCollection({ id: detail.id, data: { [detail.field]: detail.value } })}
 									on:deleteCollection={({ detail }) => {
-										isDeleteModalOpen = true;
 										deleteDetail = { type: 'collection', id: detail.id, name: detail.name };
+										deleteModal.openModal();
 									}}
 								/>
 							{/each}
@@ -336,11 +329,15 @@
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
-				<Button variant="secondary" class="grow h-9" on:click={openCrtCollectionDialog}>
+				<Button
+					variant="secondary"
+					class="grow h-9"
+					on:click={() => crtCollectionModal.openModal()}
+				>
 					<FolderPlus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" on:click={openNewGroupDialog}>
+				<Button variant="secondary" size="icon" on:click={() => createGroupModal.openModal()}>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>
@@ -354,17 +351,17 @@
 			$sidebarState && `${$isDesktop ? 'w-full' : 'w-0'} `
 		)}
 	>
-		<slot />
+	{@render children()}
 	</div>
 </div>
 
 <!-- Create collection dialog -->
-<Dialog.Root bind:open={$crtCollectionDialog.open}>
+<Dialog.Root bind:open={crtCollectionModal.isOpen}>
 	<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmitCollection} class="flex flex-col space-y-2">
+		<form onsubmit={handleSubmitCollection} class="flex flex-col space-y-2">
 			<label for="name"> Name </label>
 			<input
 				id="name"
@@ -379,7 +376,7 @@
 			{/if}
 
 			<label class="label" for="group"> Group </label>
-			<select id="group" name="group" class="select" value={$crtCollectionDialog.defaultGroup}>
+			<select id="group" name="group" class="select" value={crtCollectionModal.group}>
 				<option value={undefined}> Without group </option>
 				{#each groups as group (group.id)}
 					<option value={group.id}>
@@ -394,12 +391,12 @@
 </Dialog.Root>
 
 <!-- Create group dialog -->
-<Dialog.Root bind:open={isNewGroupDialogOpen}>
+<Dialog.Root bind:open={createGroupModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>New group</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmitNewGroup} class="flex flex-col space-y-2">
+		<form onsubmit={handleSubmitNewGroup} class="flex flex-col space-y-2">
 			<label for="group-name"> Name </label>
 			<input
 				id="group-name"
@@ -419,7 +416,7 @@
 </Dialog.Root>
 
 <!-- Search dialog -->
-<Command.Dialog bind:open={isSearchDialogOpen}>
+<Command.Dialog bind:open={globalSearchModal.isOpen}>
 	<Command.Input placeholder="Type a command or search..." />
 	<Command.List>
 		<Command.Empty>No results found.</Command.Empty>
@@ -430,9 +427,8 @@
 					class="space-x-2"
 					value="new collection"
 					onSelect={() => {
-						isSearchDialogOpen = false;
-
-						openCrtCollectionDialog();
+						globalSearchModal.closeModal();
+						crtCollectionModal.openModal();
 					}}
 				>
 					<FolderPlus class="icon-xs" />
@@ -443,8 +439,8 @@
 					class="space-x-2"
 					value="new group"
 					onSelect={() => {
-						isSearchDialogOpen = false;
-						openNewGroupDialog();
+						globalSearchModal.closeModal();
+						createGroupModal.openModal();
 					}}
 				>
 					<PackagePlus class="icon-xs" />
@@ -455,15 +451,16 @@
 		{/if}
 		<Command.Group heading="Collections">
 			{#each collections as collection}
+				{@const Icon = icons[collection.icon]}
 				<Command.Item
 					class="space-x-2"
 					value={collection.name}
 					onSelect={() => {
 						goto(`/collections/${collection.id}`);
-						isSearchDialogOpen = false;
+						globalSearchModal.closeModal();
 					}}
 				>
-					<svelte:component this={icons[collection.icon]} class="icon-xs" />
+					<Icon class="icon-xs" />
 					<span>{collection.name}</span>
 				</Command.Item>
 			{/each}
@@ -476,12 +473,13 @@
 					value={`${item.collection.name} ${item.name}`}
 					onSelect={() => {
 						goto(`/collections/${item.collection.id}?id=${item.id}`);
-						isSearchDialogOpen = false;
+						globalSearchModal.closeModal();
 					}}
 				>
 					<Hash class="icon-xs" />
-					<span
-						>{item.name} <span class="text-xs font-light"> - {item.collection.name}</span>
+					<span>
+						{item.name}
+						<span class="text-xs font-light"> - {item.collection.name}</span>
 					</span>
 				</Command.Item>
 			{/each}
@@ -489,7 +487,7 @@
 	</Command.List>
 </Command.Dialog>
 
-<AlertDialog.Root bind:open={isDeleteModalOpen}>
+<AlertDialog.Root bind:open={deleteModal.isOpen}>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
 			<AlertDialog.Title>Delete</AlertDialog.Title>

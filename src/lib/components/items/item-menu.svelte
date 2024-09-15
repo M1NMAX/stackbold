@@ -3,27 +3,32 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
 
-	export let itemId: string;
-	let className: string | undefined = undefined;
-	export { className as class };
+	type Props = {
+		itemId: string;
+		class?: string;
+		clickOpenItem: (id: string) => void;
+		clickDuplicateItem: (id: string) => void;
+		clickDeleteItem: (id: string) => void;
+	};
 
-	let open: boolean;
+	let {
+		itemId,
+		class: className,
+		clickOpenItem,
+		clickDuplicateItem,
+		clickDeleteItem
+	}: Props = $props();
+
+	let open = $state(false);
 
 	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		clickOpenItem: string;
-		clickDuplicateItem: string;
-		clickDeleteItem: string;
-	}>();
 
-	type Ev = 'clickOpenItem' | 'clickDuplicateItem' | 'clickDeleteItem';
-	function clickDrawerBtn(ev: Ev) {
+	function clickDrawerBtn(fun: (id: string) => void) {
 		open = false;
-		dispatch(ev, itemId);
+		fun(itemId);
 	}
 </script>
 
@@ -41,17 +46,17 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)}>
+				<DropdownMenu.Item on:click={() => clickOpenItem(itemId)}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open in side </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
+				<DropdownMenu.Item on:click={() => clickDuplicateItem(itemId)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="group">
+				<DropdownMenu.Item on:click={() => clickDeleteItem(itemId)} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -72,18 +77,18 @@
 		</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Footer>
-				<Button variant="secondary" on:click={() => clickDrawerBtn('clickOpenItem')}>
+				<Button variant="secondary" on:click={() => clickDrawerBtn(clickOpenItem)}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open </span>
 				</Button>
 
-				<Button variant="secondary" on:click={() => clickDrawerBtn('clickDuplicateItem')}>
+				<Button variant="secondary" on:click={() => clickDrawerBtn(clickDuplicateItem)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
 				<Button
 					variant="destructive"
-					on:click={() => clickDrawerBtn('clickDeleteItem')}
+					on:click={() => clickDrawerBtn(clickDeleteItem)}
 					class="group"
 				>
 					<Trash class="icon-xs group-hover:text-primary" />

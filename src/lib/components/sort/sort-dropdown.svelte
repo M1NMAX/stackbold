@@ -19,7 +19,7 @@
 	};
 </script>
 
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { getScreenState } from '$lib/components/view';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -28,7 +28,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import type { SortOption } from '$lib/utils/sort';
 
-	type T = $$Generic;
 	type Props = {
 		options: SortOption<T>[];
 		value: SortOption<T>;

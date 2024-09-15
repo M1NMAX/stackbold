@@ -2,40 +2,42 @@
 	import type { Option as OptionType } from '@prisma/client';
 	import { fade } from 'svelte/transition';
 	import PropertyOption from './property-option.svelte';
-	import { createEventDispatcher, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import { Plus, X } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
+	import type { PropertyOptionsCallbacks } from './types';
 
-	export let propertyId: string;
-	export let options: OptionType[];
+	type Props = PropertyOptionsCallbacks & {
+		propertyId: string;
+		options: OptionType[];
+	};
 
-	let show = false;
+	let { propertyId, options, addOption, ...rest }: Props = $props();
 
-	const dispatch = createEventDispatcher<{ addOpt: { propertyId: string; value: string } }>();
+	let show = $state(false);
 
 	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
 		if (e.key !== 'Enter') return;
 		const value = e.currentTarget.value;
-		dispatch('addOpt', { propertyId, value });
+		addOption(propertyId, value);
 		e.currentTarget.value = '';
 	}
 
-	function toggleShow() {
-		show = !show;
-
+	$effect.pre(() => {
 		if (show) {
 			tick().then(() => {
 				document.getElementById('add-option')?.focus();
 			});
 		}
-	}
+	});
 </script>
 
 <div class=" flex flex-col space-y-1.5 pt-1">
 	<div class="flex justify-between space-x-1">
 		<span class="text-sm font-semibold">Options</span>
-		<Button variant="secondary" size="xs" on:click={toggleShow}>
+		<Button variant="secondary" size="xs" on:click={() => (show = !show)}>
 			{#if show}
 				<X class="icon-xs" />
 			{:else}
@@ -46,7 +48,7 @@
 
 	<input
 		transition:fade
-		on:keypress|stopPropagation={handleKeypress}
+		onkeypress={handleKeypress}
 		id="add-option"
 		placeholder="Enter option value"
 		class={cn(
@@ -57,7 +59,7 @@
 
 	<div class="space-y-1">
 		{#each options as option}
-			<PropertyOption {propertyId} {option} on:updOptColor on:updOptValue on:deleteOpt />
+			<PropertyOption {propertyId} {option} {...rest} />
 		{/each}
 	</div>
 </div>

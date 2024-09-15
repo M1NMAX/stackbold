@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PropertyOptions, containsView, getOption, toggleView } from '.';
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
-	import { createEventDispatcher, tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import {
 		ChevronRight,
 		ChevronRightSquare,
@@ -18,59 +18,54 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import { clickOutside, escapeKeydown } from '$lib/actions';
 	import { getScreenState } from '$lib/components/view';
 	import { Separator } from '$lib/components/ui/separator';
 	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
+	import type { PropertyInputWrapperCallbacks } from './types';
+	type Props = PropertyInputWrapperCallbacks & {
+		children: Snippet;
+		property: Property;
+	};
 
-	export let property: Property;
+	let { children, property, duplicate, deleteProperty, updPropertyField, ...rest }: Props =
+		$props();
 
-	let isEditorOpen = false;
-	let isDrawerOpen = false;
+	let isEditorOpen = $state(false);
+	let isDrawerOpen = $state(false);
 
 	const isDesktop = getScreenState();
-
-	const dispatch = createEventDispatcher<{
-		duplicate: string;
-		delete: string;
-		updPropertyField: {
-			pid: string;
-			name: keyof Property;
-			value: boolean | string | PropertyType | View[];
-		};
-	}>();
 
 	function handleOnInput(e: Event) {
 		//TODO: correct property value when property type changes
 		const targetEl = e.target as HTMLInputElement;
 		const name = targetEl.name as keyof Property;
 		const value = targetEl.value;
-		// const { name, value }: { name: keyof Property , value:string} = targetEl;
-		dispatch('updPropertyField', { pid: property.id, name, value });
+
+		updPropertyField(property.id, name, value);
+	}
+
+	function eventForward(fun: (id: string) => void) {
+		fun(property.id);
+		isDrawerOpen = false;
 	}
 
 	function openEditor() {
 		isEditorOpen = true;
-		tick().then(() => {
-			document.getElementById(`${property.id}-name`)?.focus();
-		});
 	}
 
-	function closeEditor() {
-		isEditorOpen = false;
-	}
-
-	type EventType = 'duplicate' | 'delete';
-	function eventForward(e: EventType) {
-		dispatch(e, property.id);
-		isDrawerOpen = false;
-	}
+	$effect.pre(() => {
+		if (isEditorOpen) {
+			tick().then(() => {
+				document.getElementById(`${property.id}-name`)?.focus();
+			});
+		}
+	});
 </script>
 
 <div class="py-0.5 px-1 rounded bg-secondary/40 text-secondary-foreground">
 	<div class="flex justify-between items-center space-x-1">
 		{#if property.type === 'CHECKBOX'}
-			<slot />
+			{@render children()}
 		{/if}
 		<label
 			for={property.id}
@@ -88,20 +83,15 @@
 				</Popover.Trigger>
 				<Popover.Content>
 					{#if isEditorOpen}
-						<div
-							use:escapeKeydown
-							use:clickOutside
-							on:escapeKey={closeEditor}
-							on:clickoutside={closeEditor}
-							class="px-1 space-y-2"
-						>
+						<!-- TODO: ADD on escape and click outside action CHANGE URG -->
+						<div class="px-1 space-y-2">
 							<label for={`${property.id}-name`} class="sr-only"> Name</label>
 							<input
 								id={`${property.id}-name`}
 								value={property.name}
 								name="name"
 								class="input input-bordered input-sm col-span-5"
-								on:input={handleOnInput}
+								oninput={handleOnInput}
 							/>
 							<DropdownMenu.Root>
 								<DropdownMenu.Trigger asChild let:builder>
@@ -123,11 +113,7 @@
 									<DropdownMenu.RadioGroup
 										value={property.type}
 										onValueChange={(value) => {
-											dispatch('updPropertyField', {
-												pid: property.id,
-												name: 'type',
-												value: value ?? PropertyType.TEXT
-											});
+											updPropertyField(property.id, 'aggregator', value ?? PropertyType.TEXT);
 										}}
 									>
 										{#each Object.values(PropertyType) as propertyType}
@@ -158,11 +144,7 @@
 									<DropdownMenu.RadioGroup
 										value={property.aggregator}
 										onValueChange={(value) => {
-											dispatch('updPropertyField', {
-												pid: property.id,
-												name: 'aggregator',
-												value: value ?? Aggregator.NONE
-											});
+											updPropertyField(property.id, 'aggregator', value ?? Aggregator.NONE);
 										}}
 									>
 										<DropdownMenu.RadioItem value={Aggregator.NONE}>None</DropdownMenu.RadioItem>
@@ -199,6 +181,7 @@
 												{#if !selectedOpt}
 													{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
 												{:else}
+													<!-- svelte-ignore element_invalid_self_closing_tag -->
 													<span
 														class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}
 													/>
@@ -213,11 +196,7 @@
 										<DropdownMenu.RadioGroup
 											value={property.defaultValue}
 											onValueChange={(value) => {
-												dispatch('updPropertyField', {
-													pid: property.id,
-													name: 'defaultValue',
-													value: value ?? ''
-												});
+												updPropertyField(property.id, 'defaultValue', value ?? '');
 											}}
 										>
 											<DropdownMenu.RadioItem value="">
@@ -226,28 +205,22 @@
 											</DropdownMenu.RadioItem>
 											{#each property.options as opt}
 												<DropdownMenu.RadioItem value={opt.id}>
+													<!-- svelte-ignore element_invalid_self_closing_tag -->
 													<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
-													{opt.value}</DropdownMenu.RadioItem
-												>
+													{opt.value}
+												</DropdownMenu.RadioItem>
 											{/each}
 										</DropdownMenu.RadioGroup>
 									</DropdownMenu.Content>
 								</DropdownMenu.Root>
 								<Separator />
-								<PropertyOptions
-									propertyId={property.id}
-									options={property.options}
-									on:addOpt
-									on:deleteOpt
-									on:updOptColor
-									on:updOptValue
-								/>
+								<PropertyOptions propertyId={property.id} options={property.options} {...rest} />
 							{/if}
 							<Separator />
 
 							<div>
 								<Button
-									on:click={() => dispatch('duplicate', property.id)}
+									on:click={() => duplicate(property.id)}
 									variant="ghost"
 									size="xs"
 									class="w-full justify-start"
@@ -256,7 +229,7 @@
 									<span>Duplicate property</span>
 								</Button>
 								<Button
-									on:click={() => dispatch('delete', property.id)}
+									on:click={() => deleteProperty(property.id)}
 									variant="ghost"
 									size="xs"
 									class="w-full justify-start group"
@@ -282,11 +255,11 @@
 								<DropdownMenu.CheckboxItem
 									checked={containsView(property.visibleInViews, View.LIST)}
 									on:click={() => {
-										dispatch('updPropertyField', {
-											pid: property.id,
-											name: 'visibleInViews',
-											value: toggleView(property.visibleInViews, View.LIST)
-										});
+										updPropertyField(
+											property.id,
+											'visibleInViews',
+											toggleView(property.visibleInViews, View.LIST)
+										);
 									}}
 								>
 									List view
@@ -295,11 +268,11 @@
 								<DropdownMenu.CheckboxItem
 									checked={containsView(property.visibleInViews, View.TABLE)}
 									on:click={() => {
-										dispatch('updPropertyField', {
-											pid: property.id,
-											name: 'visibleInViews',
-											value: toggleView(property.visibleInViews, View.TABLE)
-										});
+										updPropertyField(
+											property.id,
+											'visibleInViews',
+											toggleView(property.visibleInViews, View.TABLE)
+										);
 									}}
 								>
 									Table view
@@ -307,7 +280,7 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 						<Button
-							on:click={() => dispatch('duplicate', property.id)}
+							on:click={() => duplicate(property.id)}
 							variant="ghost"
 							size="xs"
 							class="w-full justify-start"
@@ -318,7 +291,7 @@
 
 						<Separator />
 						<Button
-							on:click={() => dispatch('delete', property.id)}
+							on:click={() => deleteProperty(property.id)}
 							variant="ghost"
 							size="xs"
 							class="w-full justify-start group"
@@ -371,7 +344,7 @@
 										value={property.name}
 										name="name"
 										class="input input-sm"
-										on:input={handleOnInput}
+										oninput={handleOnInput}
 									/>
 
 									<div class="flex space-x-1.5">
@@ -383,7 +356,7 @@
 											name="type"
 											value={property.type}
 											class="select select-sm"
-											on:input={handleOnInput}
+											oninput={handleOnInput}
 										>
 											{#each Object.values(PropertyType) as propertyType}
 												<option value={propertyType}>
@@ -398,21 +371,18 @@
 										<PropertyOptions
 											propertyId={property.id}
 											options={property.options}
-											on:addOpt
-											on:deleteOpt
-											on:updOptColor
-											on:updOptValue
+											{...rest}
 										/>
 									{/if}
 								</div>
 							</Dialog.Content>
 						</Dialog.Root>
 
-						<Button variant="secondary" on:click={() => eventForward('duplicate')}>
+						<Button variant="secondary" on:click={() => eventForward(duplicate)}>
 							<Copy class="icon-xs" />
 							<span>Duplicate property</span>
 						</Button>
-						<Button variant="destructive" on:click={() => eventForward('delete')}>
+						<Button variant="destructive" on:click={() => eventForward(deleteProperty)}>
 							<Trash class="icon-xs" />
 							<span>Delete property</span>
 						</Button>
@@ -423,6 +393,6 @@
 	</div>
 
 	{#if property.type !== 'CHECKBOX'}
-		<slot />
+		{@render children()}
 	{/if}
 </div>

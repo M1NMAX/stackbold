@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
 	import { Calendar, CheckSquare2, Hash, Link, List, Text } from 'lucide-svelte';
 
 	// TODO: find better icons
@@ -14,14 +14,14 @@
 
 <script lang="ts">
 	import type { PropertyType } from '@prisma/client';
-	export let key: PropertyType;
 
-	let className: string | undefined = undefined;
-	export { className as class };
+	type Props = {
+		key: PropertyType;
+		class?: string;
+	};
+
+	let { key, class: className }: Props = $props();
+	const Icon = $derived(icons[key.toLowerCase()]);
 </script>
 
-<svelte:component
-	this={icons[key.toLowerCase()]}
-	class={className ?? 'icon-sm mr-2'}
-	aria-level="Property type icon"
-/>
+<Icon class={className ?? 'icon-sm mr-2'} aria-level="Property type icon" />

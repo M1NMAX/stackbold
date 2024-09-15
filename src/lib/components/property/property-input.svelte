@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Check } from 'lucide-svelte';
 	import type { Property } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Calendar } from '$lib/components/ui/calendar';
@@ -14,30 +13,34 @@
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
 
-	export let property: Property;
-	export let value: string;
+	type Props = {
+		property: Property;
+		value: string;
+		updPropertyValue: (pid: string, value: string) => void;
+	};
 
-	let open = false;
+	let { property, value, updPropertyValue }: Props = $props();
+
+	let open = $state(false);
+	let selectedValue = $derived.by(() => {
+		return property.options.find((opt) => opt.id === value) ?? 'Empty';
+	});
 
 	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		updPropertyValue: { pid: string; value: string };
-	}>();
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 		const currValue = targetEl.type === 'checkbox' ? targetEl.checked.toString() : targetEl.value;
-		if (!targetEl.validity.badInput)
-			dispatch('updPropertyValue', { pid: property.id, value: currValue });
+		if (!targetEl.validity.badInput) {
+			updPropertyValue(property.id, currValue);
+		}
 	}
 
-	function handleClickClear() {
-		dispatch('updPropertyValue', { pid: property.id, value: '' });
+	function onClickClear() {
+		updPropertyValue(property.id, '');
 		open = false;
 	}
-
-	$: selectedValue = property.options.find((opt) => opt.id === value) ?? 'Empty';
 </script>
 
 {#if property.type === 'CHECKBOX'}
@@ -45,7 +48,7 @@
 		id={property.id}
 		type="checkbox"
 		checked={value === 'true'}
-		on:input={handleOnInput}
+		oninput={handleOnInput}
 		class="checkbox"
 	/>
 {:else if property.type === 'SELECT'}
@@ -84,11 +87,7 @@
 							<Command.Item
 								value={option.value}
 								onSelect={() => {
-									value = option.id;
-									dispatch('updPropertyValue', {
-										pid: property.id,
-										value
-									});
+									updPropertyValue(property.id, option.id);
 									open = false;
 								}}
 								class="justify-between space-x-2 p-1 rounded"
@@ -152,11 +151,7 @@
 							<Command.Item
 								value={option.value}
 								onSelect={() => {
-									value = option.id;
-									dispatch('updPropertyValue', {
-										pid: property.id,
-										value
-									});
+									updPropertyValue(property.id, option.id);
 									open = false;
 								}}
 								class="justify-between space-x-2 p-1 rounded"
@@ -214,15 +209,13 @@
 					)}
 					onValueChange={(dt) => {
 						if (!dt) return;
-						value = dt.toString();
-
-						dispatch('updPropertyValue', { pid: property.id, value });
+						updPropertyValue(property.id, dt.toString());
 						open = false;
 					}}
 				/>
 
 				<Separator />
-				<Button variant="ghost" on:click={handleClickClear} class="h-7 w-full font-semibold">
+				<Button variant="ghost" on:click={onClickClear} class="h-7 w-full font-semibold">
 					Clear
 				</Button>
 			</Popover.Content>
@@ -260,9 +253,8 @@
 							)}
 							onValueChange={(dt) => {
 								if (!dt) return;
-								value = dt.toString();
+								updPropertyValue(property.id, dt.toString());
 
-								dispatch('updPropertyValue', { pid: property.id, value });
 								open = false;
 							}}
 						/>
@@ -270,7 +262,7 @@
 				</div>
 				<Separator />
 				<Drawer.Footer>
-					<Button variant="secondary" on:click={handleClickClear} class="h-7 w-full font-semibold">
+					<Button variant="secondary" on:click={onClickClear} class="h-7 w-full font-semibold">
 						Clear
 					</Button>
 				</Drawer.Footer>
@@ -279,11 +271,12 @@
 	{/if}
 {:else if property.type === 'TEXT'}
 	<!-- TODO: CHANGE URG -->
+	<!-- svelte-ignore element_invalid_self_closing_tag -->
 	<textarea
 		id={property.id}
 		name={property.name}
 		{value}
-		on:input={handleOnInput}
+		oninput={handleOnInput}
 		placeholder="Empty"
 		class="textarea textarea-ghost"
 	/>
@@ -293,7 +286,7 @@
 		type="number"
 		{value}
 		step="any"
-		on:input={handleOnInput}
+		oninput={handleOnInput}
 		class="input input-ghost"
 	/>
 {:else}
@@ -301,7 +294,7 @@
 		id={property.id}
 		type={property.type.toLowerCase()}
 		{value}
-		on:input={handleOnInput}
+		oninput={handleOnInput}
 		class="input input-ghost"
 	/>
 {/if}

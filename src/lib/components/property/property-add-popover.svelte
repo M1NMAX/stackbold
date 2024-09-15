@@ -5,19 +5,21 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
 	import { Plus } from 'lucide-svelte';
 
-	let isOpen = false;
+	type Props = {
+		onClickPropertyType: (type: PropertyType) => void;
+	};
+
+	let { onClickPropertyType }: Props = $props();
+
+	let isOpen = $state(false);
 
 	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		clickPropType: PropertyType;
-	}>();
 
 	function handleClickPropertyType(propertyType: PropertyType) {
-		dispatch('clickPropType', propertyType);
+		onClickPropertyType(propertyType);
 		isOpen = false;
 	}
 </script>

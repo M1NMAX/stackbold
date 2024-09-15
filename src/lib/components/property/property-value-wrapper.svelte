@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
+	import type { Snippet } from 'svelte';
 
-	export let isWrappered: boolean = false;
-
-	let className: string | undefined = undefined;
-	export { className as class };
+	type Props = {
+		children: Snippet;
+		isWrappered: boolean;
+		class?: string;
+	};
+	let { children, isWrappered = false, class: className }: Props = $props();
 </script>
 
 {#if !isWrappered}
-	<slot />
+	{@render children()}
 {:else}
 	<span class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', className)}>
-		<slot />
+		{@render children()}
 	</span>
 {/if}

@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
 	const aggregatorLabel: { [key: string]: string } = {
 		none: 'None',
 		count: 'Count all',
@@ -13,7 +13,6 @@
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
 	import { Button } from '$lib/components/ui/button';
 	import { Copy, Trash, Settings, SquareSlash } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import {
 		// utils
@@ -29,20 +28,23 @@
 	import * as Select from '$lib/components/ui/select';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
+	import type { PropertyInputWrapperCallbacks } from './types';
 
-	export let property: Property;
-	export let isOpen: boolean = false;
+	type Props = PropertyInputWrapperCallbacks & {
+		property: Property;
+		isOpen: boolean;
+		openChange: (value: string | null) => void;
+	};
 
-	const dispatch = createEventDispatcher<{
-		openChange: string | null;
-		duplicate: string;
-		delete: string;
-		updPropertyField: {
-			pid: string;
-			name: keyof Property;
-			value: boolean | string | PropertyType | View[];
-		};
-	}>();
+	let {
+		property,
+		isOpen = false,
+		openChange,
+		duplicate,
+		deleteProperty,
+		updPropertyField,
+		...rest
+	}: Props = $props();
 
 	function handleOnInput(e: Event) {
 		// TODO: clean property value, when property type changes
@@ -50,12 +52,7 @@
 		const targetEl = e.target as HTMLInputElement;
 		const name = targetEl.name as keyof Property;
 		const value = targetEl.value;
-
-		dispatch('updPropertyField', { pid: property.id, name, value });
-	}
-
-	function onClick() {
-		dispatch('openChange', isOpen ? null : property.id);
+		updPropertyField(property.id, name, value);
 	}
 </script>
 
@@ -73,10 +70,10 @@
 				name="name"
 				type="text"
 				class="w-full h-9 pl-9 text-sm rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
-				on:input={handleOnInput}
+				oninput={handleOnInput}
 			/>
 		</div>
-		<Button variant="secondary" on:click={onClick}>
+		<Button variant="secondary" on:click={() => openChange(isOpen ? null : property.id)}>
 			<Settings class="icon-xs" />
 		</Button>
 	</div>
@@ -86,11 +83,7 @@
 				portal={null}
 				selected={{ value: property.type, label: property.type.toLowerCase() }}
 				onSelectedChange={(opt) => {
-					dispatch('updPropertyField', {
-						pid: property.id,
-						name: 'type',
-						value: opt ? opt.value : PropertyType.TEXT
-					});
+					updPropertyField(property.id, 'type', opt ? opt.value : PropertyType.TEXT);
 				}}
 			>
 				<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
@@ -124,11 +117,7 @@
 					label: capitalizeFirstLetter(aggregatorLabel[property.aggregator.toLowerCase()])
 				}}
 				onSelectedChange={(opt) => {
-					dispatch('updPropertyField', {
-						pid: property.id,
-						name: 'aggregator',
-						value: opt ? opt.value : Aggregator.NONE
-					});
+					updPropertyField(property.id, 'aggregator', opt ? opt.value : Aggregator.NONE);
 				}}
 			>
 				<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
@@ -163,11 +152,7 @@
 						label: selectedOpt ? selectedOpt.value : PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 					}}
 					onSelectedChange={(opt) => {
-						dispatch('updPropertyField', {
-							pid: property.id,
-							name: 'defaultValue',
-							value: opt ? opt.value : ''
-						});
+						updPropertyField(property.id, 'defaultValue', opt ? opt.value : '');
 					}}
 				>
 					<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
@@ -191,6 +176,7 @@
 							{#each property.options as opt}
 								<Select.Item value={opt.id}>
 									<span class="flex items-center">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<span class={` icon-sm mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
 										{opt.value}
 									</span>
@@ -214,11 +200,11 @@
 								id={view}
 								checked={containsView(property.visibleInViews, view)}
 								onCheckedChange={() => {
-									dispatch('updPropertyField', {
-										pid: property.id,
-										name: 'visibleInViews',
-										value: toggleView(property.visibleInViews, view)
-									});
+									updPropertyField(
+										property.id,
+										'visibleInViews',
+										toggleView(property.visibleInViews, view)
+									);
 								}}
 							/>
 						</div>
@@ -227,19 +213,12 @@
 			</div>
 			{#if property.type === 'SELECT'}
 				<Separator />
-				<PropertyOptions
-					propertyId={property.id}
-					options={property.options}
-					on:addOpt
-					on:deleteOpt
-					on:updOptColor
-					on:updOptValue
-				/>
+				<PropertyOptions propertyId={property.id} options={property.options} {...rest} />
 			{/if}
 
 			<Separator />
 			<div class="flex justify-end items-center space-x-1.5 pt-1">
-				<Button variant="ghost" on:click={() => dispatch('duplicate', property.id)}>
+				<Button variant="ghost" on:click={() => duplicate(property.id)}>
 					<Copy class="icon-xs" />
 					<span> Duplicate</span>
 				</Button>
@@ -247,7 +226,7 @@
 				<Button
 					variant="ghost"
 					class="hover:text-primary"
-					on:click={() => dispatch('delete', property.id)}
+					on:click={() => deleteProperty(property.id)}
 				>
 					<Trash class="icon-xs" />
 					<span> Delete</span>

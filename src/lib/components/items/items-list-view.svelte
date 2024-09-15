@@ -13,8 +13,20 @@
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
 
-	export let items: Item[];
-	export let properties: Property[];
+	type Props = {
+		items: Item[];
+		properties: Property[];
+		clickOpenItem: (id: string) => void;
+		renameItem: (id: string, name: string) => void;
+
+		//forward
+		updPropertyValue: (itemId: string, property: { id: string; value: string }) => void;
+
+		clickDuplicateItem: (id: string) => void;
+		clickDeleteItem: (id: string) => void;
+	};
+
+	let { items, properties, clickOpenItem, renameItem, updPropertyValue, ...rest }: Props = $props();
 
 	const activeItem = getActiveItemState();
 	const isDesktop = getScreenState();
@@ -30,11 +42,22 @@
 
 		const id = targetEl.dataset.id!;
 		const name = targetEl.innerText;
-		dispatch('renameItem', { id, name });
+		renameItem(id, name);
 	}
 
 	function preventEnterKeypress(e: KeyboardEvent) {
 		if (e.key === 'Enter') e.preventDefault();
+	}
+
+	function onClickItemBody(
+		e: MouseEvent & {
+			currentTarget: EventTarget & HTMLDivElement;
+		},
+		itemId: string
+	) {
+		if (e.target === e.currentTarget) {
+			clickOpenItem(itemId);
+		}
 	}
 </script>
 
@@ -43,10 +66,10 @@
 		<div
 			tabindex="0"
 			role="button"
-			on:click|self={() => dispatch('clickOpenItem', item.id)}
-			on:keydown={(e) => {
+			onclick={(e) => onClickItemBody(e, item.id)}
+			onkeydown={(e) => {
 				if (e.key === 'Enter') {
-					dispatch('clickOpenItem', item.id);
+					clickOpenItem(item.id);
 				}
 			}}
 			class={cn(
@@ -54,12 +77,12 @@
 				item.id === $activeItem?.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			)}
 		>
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				contenteditable
 				spellcheck={false}
-				on:keypress={preventEnterKeypress}
-				on:input={handleOnInput}
+				onkeypress={preventEnterKeypress}
+				oninput={handleOnInput}
 				data-id={item.id}
 				class="text-lg font-semibold focus:outline-none"
 			>
@@ -68,9 +91,8 @@
 
 			<ItemMenu
 				itemId={item.id}
-				on:clickOpenItem={(e) => dispatch('clickOpenItem', e.detail)}
-				on:clickDuplicateItem
-				on:clickDeleteItem
+				{clickOpenItem}
+				{...rest}
 				class={cn('absolute right-2 top-0', $isDesktop && 'invisible group-hover:visible')}
 			/>
 
@@ -81,7 +103,7 @@
 						{#if propertyRef}
 							{@const color = getPropertyColor(property, propertyRef.value)}
 							{@const value = getPropertyValue(property, propertyRef.value, false)}
-							<PropertyValue itemId={item.id} {property} {color} {value} on:updPropertyValue />
+							<PropertyValue itemId={item.id} {property} {color} {value} {updPropertyValue} />
 						{/if}
 					{/if}
 				{/each}

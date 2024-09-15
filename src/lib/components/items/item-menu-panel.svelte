@@ -3,25 +3,26 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
 
-	export let itemId: string;
-	export let collectionName: string;
-	export let itemName: string;
+	type Props = {
+		itemId: string;
+		itemName: string;
+		collectionName: string;
 
-	let open: boolean;
+		onClickDuplicate: (id: string) => void;
+		onClickDelete: (id: string) => void;
+	};
+
+	let { itemId, itemName, collectionName, onClickDuplicate, onClickDelete }: Props = $props();
+
+	let open = $state(false);
 
 	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		clickDuplicateItem: string;
-		clickDeleteItem: string;
-	}>();
 
-	type Ev = 'clickDuplicateItem' | 'clickDeleteItem';
-	function clickDrawerBtn(ev: Ev) {
+	function clickDrawerBtn(fun: (id: string) => void) {
 		open = false;
-		dispatch(ev, itemId);
+		fun(itemId);
 	}
 </script>
 
@@ -34,12 +35,12 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
+				<DropdownMenu.Item on:click={() => onClickDuplicate(itemId)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="group">
+				<DropdownMenu.Item on:click={() => onClickDelete(itemId)} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -67,11 +68,11 @@
 				</div>
 			</Drawer.Header>
 			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" on:click={() => clickDrawerBtn('clickDuplicateItem')}>
+				<Button variant="secondary" on:click={() => clickDrawerBtn(onClickDuplicate)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="destructive" on:click={() => clickDrawerBtn('clickDeleteItem')}>
+				<Button variant="destructive" on:click={() => clickDrawerBtn(onClickDelete)}>
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>

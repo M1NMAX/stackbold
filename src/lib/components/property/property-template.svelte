@@ -7,9 +7,13 @@
 	import { cn } from '$lib/utils';
 	import { getPropertyValue, PropertyIcon } from '.';
 
-	export let property: Property;
-	export let color: Color;
-	export let value: string;
+	type Props = {
+		property: Property;
+		color: Color;
+		value: string;
+	};
+
+	let { property, color, value }: Props = $props();
 
 	const {
 		elements: { trigger, content, arrow },
@@ -54,6 +58,7 @@
 			transition:fade={{ duration: 100 }}
 			class="z-10 rounded-lg bg-secondary shadow"
 		>
+			<!-- svelte-ignore element_invalid_self_closing_tag -->
 			<div use:melt={$arrow} />
 			<div class="flex items-center p-1">
 				<PropertyIcon key={property.type} class="icon-xs mr-1" />
