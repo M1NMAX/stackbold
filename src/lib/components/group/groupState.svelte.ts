@@ -1,5 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import { type Group } from '@prisma/client';
+import type { Group } from '@prisma/client';
 import { onError } from '$lib/components/ui/sonner';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
@@ -12,22 +12,21 @@ export class GroupState {
 		this.groups = groups;
 	}
 
-	updGroupLocal(id: string, group: Group) {
+	#updGroup(id: string, group: Group) {
 		this.groups = this.groups.map((g) => (g.id !== id ? g : group));
 	}
 
-	removeGroupLocal(id: string) {
+	#removeGroup(id: string) {
 		this.groups = this.groups.filter((group) => group.id !== id);
 	}
 
-	getGroupLocal(id: string) {
+	#getGroup(id: string) {
 		return this.groups.find((group) => group.id === id) || null;
 	}
 
 	async createGroup(args: RouterInputs['groups']['create']) {
 		const tmpId = crypto.randomUUID();
 		try {
-			// TODO: ref to support other props beside name
 			this.groups.push({
 				id: tmpId.toString(),
 				ownerId: tmpId.toString(),
@@ -37,53 +36,34 @@ export class GroupState {
 			});
 
 			const result = await trpc().groups.create.mutate({ ...args });
-			this.updGroupLocal(tmpId, result);
+			this.#updGroup(tmpId, result);
 			toast.success('New group created successfully');
 		} catch (err) {
 			onError(err);
-			this.removeGroupLocal(tmpId);
+			this.#removeGroup(tmpId);
 		}
 	}
 
 	async updGroup(args: RouterInputs['groups']['update']) {
 		const { id, data } = args;
 
-		let target = this.getGroupLocal(id);
+		let target = this.#getGroup(id);
 		if (target == null) return;
 		try {
-			type ArgsKeys = keyof RouterInputs['groups']['update']['data'];
-			type Groupkeys = keyof Omit<Group, 'createdAt' | 'updatedAt'>;
-			for (const key in data) {
-				const targetKey = key as Groupkeys;
-				const inputValue = data[key as ArgsKeys];
-
-				if (
-					target.hasOwnProperty(key) &&
-					inputValue != undefined &&
-					target[key as Groupkeys] !== inputValue
-				) {
-					if (inputValue !== undefined) {
-						if (typeof target[targetKey] === 'string' && typeof inputValue === 'string') {
-							target[targetKey] = inputValue;
-						}
-					}
-				}
-			}
-
-			this.updGroupLocal(id, target);
+			this.#updGroup(id, { ...target, ...data });
 			await trpc().groups.update.mutate({ ...args });
 		} catch (err) {
 			onError(err);
-			this.updGroupLocal(id, target);
+			this.#updGroup(id, target);
 		}
 	}
 
 	async deleteGroup(id: string) {
-		let target = this.getGroupLocal(id);
+		let target = this.#getGroup(id);
 		if (target == null) return;
 
 		try {
-			this.groups = this.groups.filter((group) => group.id != id);
+			this.#removeGroup(id);
 			await trpc().groups.delete.mutate(id);
 			toast.success(`Group [${target.name}] deleted successfully`);
 		} catch (err) {
@@ -103,10 +83,10 @@ export class GroupState {
 }
 
 const GROUP_STATE_CTX_KEY = Symbol('GROUP_STATE_CTX_KEY');
-export function setGroupsState(groups: Group[]) {
+export function setGroupState(groups: Group[]) {
 	return setContext(GROUP_STATE_CTX_KEY, new GroupState(groups));
 }
 
-export function getGroupsState() {
-	return getContext<ReturnType<typeof setGroupsState>>(GROUP_STATE_CTX_KEY);
+export function getGroupState() {
+	return getContext<ReturnType<typeof setGroupState>>(GROUP_STATE_CTX_KEY);
 }

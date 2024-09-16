@@ -7,7 +7,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { getCrtCollectionModalState, ModalState } from '$lib/components/modal';
 	import { nameSchema } from '$lib/schema';
-	import { getGroupsState } from '$lib/components/group';
+	import { getGroupState } from '$lib/components/group';
 
 	type Props = {
 		id: string;
@@ -17,7 +17,7 @@
 
 	let { id, name, deleteGroup }: Props = $props();
 
-	const groupState = getGroupsState();
+	const groupState = getGroupState();
 
 	let renameError = $state<string | null>(null);
 	const renameGroupModal = new ModalState();
