@@ -9,20 +9,16 @@
 		SidebarItem,
 		setSidebarState
 	} from '$lib/components/sidebar';
-	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import { cn } from '$lib/utils';
-	import type { RouterInputs } from '$lib/trpc/router';
-	import { onSuccess, redirectToast } from '$lib/components/ui/sonner';
 	import * as Command from '$lib/components/ui/command';
 	import type { DeleteDetail } from '$lib/types';
 	import { ModalState, setCtrCollectionModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
-	import { onError } from '$lib/components/ui/sonner';
 	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
 	import { setGroupState } from '$lib/components/group';
@@ -98,50 +94,6 @@
 		crtCollectionModal.closeModal();
 	}
 
-	async function duplicateCollection(id: string) {
-		const targetCollection = collections.find((collection) => collection.id === id);
-
-		if (!targetCollection) {
-			onError({ msg: '(main)/+layout: Invalid collection' }, 'Selection invalid collection');
-			return;
-		}
-
-		const { id: _, ownerId, name, ...rest } = targetCollection;
-
-		try {
-			const createdCollection = await trpc().collections.create.mutate({
-				...rest,
-				name: name + ' copy'
-			});
-
-			const collectionItems = await trpc().items.list.query(id);
-
-			await trpc().items.createMany.mutate(
-				collectionItems.map(({ id, collectionId, ...rest }) => ({
-					collectionId: createdCollection.id,
-					...rest
-				}))
-			);
-
-			await invalidateAll();
-			redirectToast(
-				`Collection [${name}] duplicated successfully`,
-				`/collections/${createdCollection.id}`
-			);
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	async function updCollection(args: RouterInputs['collections']['update']) {
-		try {
-			await trpc().collections.update.mutate(args);
-			onSuccess('Collection updated');
-		} catch (error) {
-			onError(error);
-		}
-	}
-
 	async function handleDelete() {
 		if (deleteDetail.type === 'collection') collectionState.deleteCollection(deleteDetail.id);
 		else if (deleteDetail.type === 'group') groupState.deleteGroup(deleteDetail.id);
@@ -210,7 +162,6 @@
 							<SidebarCollection
 								{collection}
 								active={activeCollection(collection.id)}
-								duplicateCollection={(id) => duplicateCollection(id)}
 								deleteCollection={(id, name) => {
 									deleteDetail = { type: 'collection', id, name };
 									deleteModal.openModal();
@@ -254,7 +205,6 @@
 									asChild
 									{collection}
 									active={activeCollection(collection.id)}
-									duplicateCollection={(id) => duplicateCollection(id)}
 									deleteCollection={(id, name) => {
 										deleteDetail = { type: 'collection', id, name };
 										deleteModal.openModal();

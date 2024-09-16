@@ -4,6 +4,7 @@ import { onError, redirectToast } from '../ui/sonner';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
+import { invalidateAll } from '$app/navigation';
 
 export class CollectionState {
 	collections = $state<Collection[]>([]);
@@ -45,6 +46,49 @@ export class CollectionState {
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 			redirectToast('New collection created', `/collections/${result.id}`);
+		} catch (err) {
+			onError(err);
+			this.#removeCollection(tmpId);
+		}
+	}
+
+	async duplicateCollection(id: string) {
+		const target = this.#getCollection(id);
+		if (!target) {
+			onError({ msg: 'collection state: Invalid collection' }, 'Selection invalid collection');
+			return;
+		}
+
+		const { id: _, ownerId, name, ...rest } = target;
+
+		const tmpId = crypto.randomUUID();
+
+		try {
+			this.collections.push({
+				id: tmpId,
+				ownerId: tmpId,
+				name: name + ' copy',
+				...rest
+			});
+			const result = await trpc().collections.create.mutate({
+				...rest,
+				name: name + ' copy'
+			});
+
+			const items = await trpc().items.list.query(id);
+
+			if (items.length > 0) {
+				await trpc().items.createMany.mutate(
+					items.map(({ id, collectionId, ...rest }) => ({
+						collectionId: result.id,
+						...rest
+					}))
+				);
+			}
+
+			await invalidateAll();
+
+			redirectToast(`Collection [${name}] duplicated successfully`, `/collections/${result.id}`);
 		} catch (err) {
 			onError(err);
 			this.#removeCollection(tmpId);

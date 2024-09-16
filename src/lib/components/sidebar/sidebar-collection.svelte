@@ -31,17 +31,10 @@
 		asChild?: boolean;
 		collection: Collection;
 
-		duplicateCollection: (id: string) => void;
 		deleteCollection: (id: string, name: string) => void;
 	};
 
-	let {
-		active,
-		asChild = false,
-		collection,
-		duplicateCollection,
-		deleteCollection
-	}: Props = $props();
+	let { active, asChild = false, collection, deleteCollection }: Props = $props();
 
 	let renameError = $state<string | null>(null);
 
@@ -141,7 +134,7 @@
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => duplicateCollection(collection.id)}>
+				<DropdownMenu.Item on:click={() => collectionState.duplicateCollection(collection.id)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
@@ -206,7 +199,7 @@
 					<Button
 						variant="secondary"
 						on:click={() => {
-							duplicateCollection(collection.id);
+							collectionState.duplicateCollection(collection.id);
 							smallScreenDrawer.closeModal();
 						}}
 					>
