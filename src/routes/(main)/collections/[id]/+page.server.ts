@@ -3,6 +3,7 @@ import { createContext } from '$lib/trpc/context';
 import { router } from '$lib/trpc/router';
 import { z } from 'zod';
 import { message, superValidate } from 'sveltekit-superforms/server';
+import { zod } from 'sveltekit-superforms/adapters';
 
 const createItemSchema = z.object({
 	name: z
@@ -16,7 +17,7 @@ const createItemSchema = z.object({
 export const load: PageServerLoad = async (event) => {
 	const id = event.params.id;
 
-	const form = await superValidate(createItemSchema);
+	const form = await superValidate(zod(createItemSchema));
 
 	return {
 		collection: await router.createCaller(await createContext(event)).collections.load(id),
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	createItem: async (event) => {
-		const form = await superValidate(event.request, createItemSchema);
+		const form = await superValidate(event.request, zod(createItemSchema));
 
 		try {
 			await router.createCaller(await createContext(event)).items.create(form.data);
