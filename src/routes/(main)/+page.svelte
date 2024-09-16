@@ -2,16 +2,18 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { ArrowRight, Dna, Egg, FolderPlus } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { CollectionOverview } from '$lib/components/collection';
+	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { getCrtCollectionModalState } from '$lib/components/modal';
 
-	let { data } = $props();
+	const collectionState = getCollectionState();
 	let pinnedCollections = $derived.by(() => {
-		return data.collections.filter((collection) => collection.isPinned);
+		return collectionState.collections.filter((collection) => collection.isPinned);
 	});
 
 	let updCollections = $derived.by(() => {
-		const sorted = data.collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+		const sorted = collectionState.collections.toSorted(
+			(a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
+		);
 
 		// return the 12 most recently updated collections
 		return sorted.slice(0, 12);

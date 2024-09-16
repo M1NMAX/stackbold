@@ -1,3 +1,4 @@
+import { type DeleteDetail } from '$lib/types';
 import { getContext, setContext } from 'svelte';
 
 export class ModalState {
@@ -7,7 +8,7 @@ export class ModalState {
 		this.isOpen = isOpen;
 	}
 
-	openModal() {
+	openModal(args?: unknown) {
 		this.isOpen = true;
 	}
 
@@ -31,6 +32,24 @@ export class CreateCollectionModal extends ModalState {
 	closeModal(): void {
 		super.closeModal();
 		this.group = undefined;
+	}
+}
+
+export class DeleteContentModal extends ModalState {
+	deleteDetail = $state<DeleteDetail>({ type: null });
+
+	constructor(isOpen: boolean = false) {
+		super(isOpen);
+	}
+
+	openModal(detail: DeleteDetail): void {
+		super.openModal();
+		this.deleteDetail = detail;
+	}
+
+	closeModal(): void {
+		super.closeModal();
+		this.deleteDetail = { type: null };
 	}
 }
 

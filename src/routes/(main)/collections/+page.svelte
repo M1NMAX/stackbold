@@ -8,15 +8,14 @@
 	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { getCrtCollectionModalState } from '$lib/components/modal';
-	import { CollectionOverview } from '$lib/components/collection';
+	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { getScreenState } from '$lib/components/view';
 	import { Label } from '$lib/components/ui/label';
 
-	let { data } = $props();
-
+	const collectionState = getCollectionState();
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
 	let sort = $state(sortOptions[0]);
 
@@ -24,7 +23,7 @@
 	let collections = $derived.by(() => {
 		const searchTerm = search.toLowerCase() || '';
 
-		return data.collections
+		return collectionState.collections
 			.filter((collection) => collection.name.toLowerCase().includes(searchTerm))
 			.sort(sortFun(sort.field, sort.order));
 	});

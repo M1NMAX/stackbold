@@ -65,7 +65,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { CollectionMenu } from '$lib/components/collection';
-	import { getGroupsState } from '$lib/components/group';
+	import { getGroupState } from '$lib/components/group';
 
 	let { data } = $props();
 	let collection = $state(data.collection);
@@ -115,7 +115,7 @@
 
 	let reload = $state(false);
 
-	const groupState = getGroupsState();
+	const groupState = getGroupState();
 	const isDesktop = getScreenState();
 	const activeItem = setActiveItemState(null);
 

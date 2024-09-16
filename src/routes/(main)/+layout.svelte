@@ -25,7 +25,8 @@
 	import { onError } from '$lib/components/ui/sonner';
 	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
-	import { setGroupsState } from '$lib/components/group';
+	import { setGroupState } from '$lib/components/group';
+	import { setCollectionState } from '$lib/components/collection';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -35,7 +36,8 @@
 	let innerWidth = $state<number>(0);
 	let activeUrl = $state<string>('');
 
-	const groupState = setGroupsState(data.groups);
+	const collectionState = setCollectionState(data.collections);
+	const groupState = setGroupState(data.groups);
 
 	const deleteModal = new ModalState();
 	const globalSearchModal = new ModalState();
@@ -57,7 +59,7 @@
 
 	const isDesktop = getScreenState();
 
-	// Groups services
+	// Groups handlers
 	async function handleSubmitNewGroup(e: Event & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
@@ -76,18 +78,7 @@
 		createGroupModal.closeModal();
 	}
 
-	// COLLECTION HANDLERS
-	async function createCollection(args: RouterInputs['collections']['create']) {
-		try {
-			const createdCollection = await trpc().collections.create.mutate(args);
-
-			redirectToast('New collection created', `/collections/${createdCollection.id}`);
-			await invalidateAll();
-		} catch (error) {
-			onError(error);
-		}
-	}
-
+	// collection handlers
 	async function handleSubmitCollection(e: Event & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
@@ -103,7 +94,7 @@
 
 		error = { type: null };
 
-		createCollection({ name, groupId: group || null });
+		collectionState.createCollection({ name, groupId: group });
 		crtCollectionModal.closeModal();
 	}
 
@@ -151,20 +142,8 @@
 		}
 	}
 
-	async function deleteCollection(id: string, name: string) {
-		try {
-			await trpc().collections.delete.mutate(id);
-
-			await onSuccess(`Collection [${name}] deleted successfully`);
-
-			if (activeCollection(id)) goto('/');
-		} catch (error) {
-			onError(error);
-		}
-	}
-
 	async function handleDelete() {
-		if (deleteDetail.type === 'collection') deleteCollection(deleteDetail.id, deleteDetail.name);
+		if (deleteDetail.type === 'collection') collectionState.deleteCollection(deleteDetail.id);
 		else if (deleteDetail.type === 'group') groupState.deleteGroup(deleteDetail.id);
 		deleteModal.closeModal();
 	}
@@ -226,14 +205,12 @@
 				value={['item-0'].concat(groupState.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
 				<div class="space-y-0">
-					{#each collections as collection}
+					{#each collectionState.collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
 							<SidebarCollection
 								{collection}
 								active={activeCollection(collection.id)}
 								duplicateCollection={(id) => duplicateCollection(id)}
-								updCollection={(id, field, value) =>
-									updCollection({ id, data: { [field]: value } })}
 								deleteCollection={(id, name) => {
 									deleteDetail = { type: 'collection', id, name };
 									deleteModal.openModal();
@@ -244,7 +221,7 @@
 				</div>
 
 				{#each groupState.groups as group, idx (group.id)}
-					{@const groupCollections = collections.filter(
+					{@const groupCollections = collectionState.collections.filter(
 						(collection) =>
 							collection.groupId && collection.groupId === group.id && collection.isPinned
 					)}
@@ -278,8 +255,6 @@
 									{collection}
 									active={activeCollection(collection.id)}
 									duplicateCollection={(id) => duplicateCollection(id)}
-									updCollection={(id, field, value) =>
-										updCollection({ id, data: { [field]: value } })}
 									deleteCollection={(id, name) => {
 										deleteDetail = { type: 'collection', id, name };
 										deleteModal.openModal();

@@ -23,14 +23,14 @@
 	import { nameSchema } from '$lib/schema.js';
 	import { getScreenState } from '$lib/components/view';
 	import { ModalState } from '$lib/components/modal';
-	import { getGroupsState } from '$lib/components/group';
+	import { getGroupState } from '$lib/components/group';
+	import { getCollectionState } from '$lib/components/collection';
 
 	type Props = {
 		active: boolean;
 		asChild?: boolean;
 		collection: Collection;
 
-		updCollection: (id: string, field: keyof Collection, value: string | boolean | null) => void;
 		duplicateCollection: (id: string) => void;
 		deleteCollection: (id: string, name: string) => void;
 	};
@@ -39,14 +39,14 @@
 		active,
 		asChild = false,
 		collection,
-		updCollection,
 		duplicateCollection,
 		deleteCollection
 	}: Props = $props();
 
 	let renameError = $state<string | null>(null);
 
-	const groupState = getGroupsState();
+	const groupState = getGroupState();
+	const collectionState = getCollectionState();
 	const currentGroup = $derived.by(() => {
 		return groupState.groups.find((group) => group.id === collection.groupId) ?? 'Without group';
 	});
@@ -74,7 +74,7 @@
 
 		renameError = null;
 
-		updCollection(collection.id, 'name', name);
+		collectionState.updCollection({ id: collection.id, data: { name } });
 		renameCollectionModal.closeModal();
 	}
 
@@ -126,7 +126,11 @@
 				</DropdownMenu.Item>
 
 				{#if collection.isPinned}
-					<DropdownMenu.Item on:click={() => updCollection(collection.id, 'isPinned', false)}>
+					<DropdownMenu.Item
+						on:click={() => {
+							collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
+						}}
+					>
 						<PinOff class="icon-xs" />
 						<span> Remove from Sidebar </span>
 					</DropdownMenu.Item>
@@ -180,7 +184,7 @@
 						<Button
 							variant="secondary"
 							on:click={() => {
-								updCollection(collection.id, 'isPinned', false);
+								collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
 								smallScreenDrawer.closeModal();
 							}}
 						>
@@ -259,7 +263,7 @@
 				<Command.Item
 					value="collection"
 					onSelect={() => {
-						updCollection(collection.id, 'groupId', null);
+						collectionState.updCollection({ id: collection.id, data: { groupId: null } });
 						moveCollectionModal.closeModal();
 						smallScreenDrawer.closeModal();
 					}}
@@ -273,7 +277,7 @@
 					<Command.Item
 						value={group.name}
 						onSelect={() => {
-							updCollection(collection.id, 'groupId', group.id);
+							collectionState.updCollection({ id: collection.id, data: { groupId: group.id } });
 							moveCollectionModal.closeModal();
 							smallScreenDrawer.closeModal();
 						}}
