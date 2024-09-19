@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { AppWindow, LayoutDashboard, LogOut, UserPlus } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
-	import type { ActionData } from './$types';
 	import type { DeleteDetail } from '$lib/types';
 	import type { User } from '@prisma/client';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent } from '$lib/components/page';
 	import { MoreVertical, Trash2 } from 'lucide-svelte';
 	import { SortArrow, SortDropdown } from '$lib/components/sort';
-	import { superForm, type FormResult } from 'sveltekit-superforms/client';
+	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidateAll } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
@@ -53,9 +52,7 @@
 	const isDesktop = getScreenState();
 
 	const { form, message, errors, enhance } = superForm(data.form, {
-		onResult(event) {
-			const result = event.result as FormResult<ActionData>;
-
+		onResult({ result }) {
 			switch (result.type) {
 				case 'success':
 					addUserModal.closeModal();
