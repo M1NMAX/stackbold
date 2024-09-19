@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '../app.css';
-	import { onMount } from 'svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
-	import { setScreenState } from '$lib/components/view';
+	import { mediaQuery, setScreenState } from '$lib/components/view';
 	import { readable } from 'svelte/store';
 
+	let { children } = $props();
+
 	// TODO: CHANGE URG
-	const isDesktop = setScreenState(readable(true));
+	const isDesktop = setScreenState(mediaQuery(true, '(min-width: 768px)'));
 
 	async function detectSWUpdate() {
 		const registration = await navigator.serviceWorker.ready;
@@ -26,11 +27,12 @@
 		});
 	}
 
-	onMount(() => {
+	$effect(() => {
 		detectSWUpdate();
 	});
 </script>
 
 <ModeWatcher />
 <Toaster position={$isDesktop ? 'top-center' : 'bottom-center'} richColors />
-<slot />
+
+{@render children()}
