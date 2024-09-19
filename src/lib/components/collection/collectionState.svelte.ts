@@ -1,5 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import type { Collection } from '@prisma/client';
+import { Aggregator, Color, PropertyType, type Collection, type Property } from '@prisma/client';
 import { onError, redirectToast } from '../ui/sonner';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
@@ -29,6 +29,27 @@ export class CollectionState {
 		const tmpId = crypto.randomUUID();
 
 		try {
+			let properties: Property[] = [];
+
+			if (args.properties) {
+				properties = args.properties.map((property) => ({
+					createdAt: new Date(),
+					id: property.id || crypto.randomUUID(),
+					name: property.name,
+					type: property.type || PropertyType.TEXT,
+					visibleInViews: property.visibleInViews || [],
+					aggregator: property.aggregator || Aggregator.NONE,
+					defaultValue: property.defaultValue || '',
+					options: !property.options
+						? []
+						: property.options.map((opt) => ({
+								id: opt.id || crypto.randomUUID(),
+								value: opt.value,
+								color: opt.color || Color.GRAY
+							}))
+				}));
+			}
+
 			this.collections.push({
 				id: tmpId,
 				ownerId: tmpId,
@@ -41,7 +62,7 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || false,
 				groupByConfigs: args.groupByConfigs || [],
-				properties: [] // TODO: ref to support `properties`  value
+				properties: properties
 			});
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
@@ -61,19 +82,13 @@ export class CollectionState {
 
 		const { id: _, ownerId, name, ...rest } = target;
 
-		const tmpId = crypto.randomUUID();
-
 		try {
-			this.collections.push({
-				id: tmpId,
-				ownerId: tmpId,
-				name: name + ' copy',
-				...rest
-			});
 			const result = await trpc().collections.create.mutate({
 				...rest,
 				name: name + ' copy'
 			});
+
+			this.collections.push({ ...result });
 
 			const items = await trpc().items.list.query(id);
 
@@ -86,12 +101,12 @@ export class CollectionState {
 				);
 			}
 
-			await invalidateAll();
+			// await invalidateAll();
 
 			redirectToast(`Collection [${name}] duplicated successfully`, `/collections/${result.id}`);
 		} catch (err) {
 			onError(err);
-			this.#removeCollection(tmpId);
+			// TODO: consider possible fallback
 		}
 	}
 
