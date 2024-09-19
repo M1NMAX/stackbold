@@ -3,31 +3,31 @@ import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { signInSchema } from '$lib/schema';
 import { prisma } from '$lib/server/prisma';
-import { verify } from "@node-rs/argon2"
+import { verify } from '@node-rs/argon2';
 import { lucia } from '$lib/server/auth';
 import { Role } from '@prisma/client';
+import { zod } from 'sveltekit-superforms/adapters';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 
-	if (user) redirect(302, '/')
+	if (user) redirect(302, '/');
 
-	const form = await superValidate(signInSchema);
+	const form = await superValidate(zod(signInSchema));
 	return { form };
 };
 
 export const actions: Actions = {
 	default: async ({ request, cookies }) => {
-		const form = await superValidate(request, signInSchema);
+		const form = await superValidate(request, zod(signInSchema));
 
 		if (!form.valid) return fail(400, { form });
 
 		const { email, password } = form.data;
 
 		//TODO: Think about brute-force attack
-		const storedUser = await prisma.user.findFirst({ where: { email } })
-		if (!storedUser) return message(form, "Invalid Credentials")
-
+		const storedUser = await prisma.user.findFirst({ where: { email } });
+		if (!storedUser) return message(form, 'Invalid Credentials');
 
 		const validPassword = await verify(storedUser.password, password, {
 			memoryCost: 19456,
@@ -36,20 +36,20 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 
-		if (!validPassword) return message(form, "Invalid Credentials")
+		if (!validPassword) return message(form, 'Invalid Credentials');
 
 		const session = await lucia.createSession(storedUser.id, {
-			role: Role.MEMBER,
+			role: Role.MEMBER
 		});
 
 		const sessionCookie = lucia.createSessionCookie(session.id);
 		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
+			path: '.',
 			...sessionCookie.attributes
 		});
 
-		if (!storedUser.emailVerified) return redirect(302, "/email-verification")
+		if (!storedUser.emailVerified) return redirect(302, '/email-verification');
 
-		return redirect(302, "/");
-	},
+		return redirect(302, '/');
+	}
 };

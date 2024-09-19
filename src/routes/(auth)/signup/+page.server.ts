@@ -4,29 +4,28 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { signUpSchema } from '$lib/schema';
 import { generateIdFromEntropySize } from 'lucia';
 import { prisma } from '$lib/server/prisma';
-import { hash } from "@node-rs/argon2"
+import { hash } from '@node-rs/argon2';
 import { lucia } from '$lib/server/auth';
-import { generateEmailVerificationCode, sendEmailVerificationCode } from "$lib/server/email";
+import { generateEmailVerificationCode, sendEmailVerificationCode } from '$lib/server/email';
+import { zod } from 'sveltekit-superforms/adapters';
 
 export const load: PageServerLoad = async ({ locals }) => {
-
 	const user = locals.user;
 	if (user) {
 		redirect(302, '/');
 	}
 
-	const form = await superValidate(signUpSchema);
+	const form = await superValidate(zod(signUpSchema));
 	return { form };
 };
 
 export const actions: Actions = {
 	default: async ({ request, cookies }) => {
-		const form = await superValidate(request, signUpSchema);
+		const form = await superValidate(request, zod(signUpSchema));
 
 		if (!form.valid) return fail(400, { form });
 
 		const { email, password } = form.data;
-
 
 		// recommended minimum parameters
 		const passwordHash = await hash(password, {
@@ -40,12 +39,11 @@ export const actions: Actions = {
 		const createdUser = await prisma.user.create({
 			data: {
 				id: generateIdFromEntropySize(10), // 16 characters long
-				name: email.split("@")[0],
+				name: email.split('@')[0],
 				email: email,
 				password: passwordHash
 			}
-		})
-
+		});
 
 		const verficationCode = await generateEmailVerificationCode(createdUser.id, email);
 		await sendEmailVerificationCode(email, verficationCode);
@@ -54,12 +52,10 @@ export const actions: Actions = {
 		});
 		const sessionCookie = lucia.createSessionCookie(session.id);
 		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
+			path: '.',
 			...sessionCookie.attributes
 		});
 
-		redirect(302, "/email-verification");
+		redirect(302, '/email-verification');
 	}
 };
-
-
