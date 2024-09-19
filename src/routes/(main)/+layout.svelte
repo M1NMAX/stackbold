@@ -90,7 +90,7 @@
 
 		error = { type: null };
 
-		collectionState.createCollection({ name, groupId: group });
+		collectionState.createCollection({ name, groupId: group || null });
 		crtCollectionModal.closeModal();
 	}
 

@@ -11,12 +11,10 @@
 	});
 
 	let updCollections = $derived.by(() => {
-		const sorted = collectionState.collections.toSorted(
-			(a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
-		);
-
 		// return the 12 most recently updated collections
-		return sorted.slice(0, 12);
+		return [...collectionState.collections]
+			.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+			.slice(0, 12);
 	});
 
 	const crtCollectionModal = getCrtCollectionModalState();
