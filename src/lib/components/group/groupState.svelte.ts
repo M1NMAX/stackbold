@@ -28,9 +28,9 @@ export class GroupState {
 		const tmpId = crypto.randomUUID();
 		try {
 			this.groups.push({
+				...args,
 				id: tmpId.toString(),
 				ownerId: tmpId.toString(),
-				name: args.name,
 				createdAt: new Date(),
 				updatedAt: new Date()
 			});
