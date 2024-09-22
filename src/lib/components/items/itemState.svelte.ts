@@ -12,16 +12,16 @@ export class ItemState {
 		this.items = items;
 	}
 
-	#getItem(id: string) {
-		return this.items.find((item) => item.id === id);
-	}
-
 	#updItem(id: string, item: Item) {
 		this.items = this.items.map((it) => (it.id !== id ? it : item));
 	}
 
 	#removeItem(id: string) {
 		this.items = this.items.filter((item) => item.id !== id);
+	}
+
+	getItem(id: string) {
+		return this.items.find((item) => item.id === id);
 	}
 
 	async createItem(args: RouterInputs['items']['create']) {
@@ -56,7 +56,7 @@ export class ItemState {
 
 	async updItem(args: RouterInputs['items']['update']) {
 		const { id, data } = args;
-		const target = this.#getItem(id);
+		const target = this.getItem(id);
 		if (target == null) return;
 		try {
 			this.#updItem(id, { ...target, ...data });
@@ -68,7 +68,7 @@ export class ItemState {
 	}
 
 	async duplicateItem(id: string) {
-		const target = this.#getItem(id);
+		const target = this.getItem(id);
 		if (target == null) {
 			onError({ msg: 'Invalid item' });
 			return;
@@ -86,7 +86,7 @@ export class ItemState {
 
 			const createdItem = await trpc().items.create.mutate({
 				...rest,
-				name: name + 'copy'
+				name: name + ' copy'
 			});
 
 			this.#updItem(tmpId, createdItem);
@@ -99,7 +99,7 @@ export class ItemState {
 	}
 
 	async deleteItem(id: string) {
-		const target = this.#getItem(id);
+		const target = this.getItem(id);
 		if (target == null) return;
 
 		try {
@@ -110,6 +110,63 @@ export class ItemState {
 		} catch (err) {
 			onError(err);
 			this.items.push({ ...target });
+		}
+	}
+
+	async addPropertyRef(id: string) {
+		try {
+			const ref = { id, value: '' };
+
+			this.items = this.items.map((item) => {
+				const propertiesRef = [...item.properties, ref];
+
+				return { ...item, ...propertiesRef };
+			});
+
+			await trpc().items.addProperty.mutate({
+				property: ref,
+				ids: this.items.map(({ id }) => id)
+			});
+		} catch (err) {
+			onError(err);
+		}
+	}
+
+	async updPropertyRef(id: string, propertyRef: { id: string; value: string }) {
+		const target = this.getItem(id);
+		if (!target) {
+			onError({ msg: 'Invalid property' });
+			return;
+		}
+
+		try {
+			const propertiesRef = target.properties.map((ref) =>
+				ref.id !== propertyRef.id ? ref : { ...ref, value: propertyRef.value }
+			);
+
+			this.#updItem(id, { ...target, properties: propertiesRef });
+
+			await trpc().items.updateProperty.mutate({ id, property: propertyRef });
+		} catch (err) {
+			onError(err);
+			this.#updItem(target.id, target);
+		}
+	}
+
+	async deletePropertyRef(id: string) {
+		try {
+			this.items = this.items.map((item) => {
+				const propertiesRef = item.properties.filter((ref) => ref.id !== id);
+
+				return { ...item, ...propertiesRef };
+			});
+
+			await trpc().items.deleteProperty.mutate({
+				propertyId: id,
+				ids: this.items.map(({ id }) => id)
+			});
+		} catch (err) {
+			onError(err);
 		}
 	}
 
