@@ -15,7 +15,6 @@
 	} from 'lucide-svelte';
 	import type { Collection } from '@prisma/client';
 	import { icons } from '$lib/components/icon';
-	import { createEventDispatcher } from 'svelte';
 
 	type Props = {
 		collection: Collection;
@@ -40,13 +39,6 @@
 	let isOpen = $state(false);
 	const isDesktop = getScreenState();
 
-	const dispatch = createEventDispatcher<{
-		clickToggleDescStatus: null;
-		clickMove: null;
-		clickDuplicate: null;
-		clickDelete: null;
-	}>();
-
 	function onClickDrawerBtn(fn: () => void) {
 		isOpen = false;
 		fn();
@@ -62,7 +54,7 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => dispatch('clickToggleDescStatus')}>
+				<DropdownMenu.Item on:click={() => onClickToggleDescState()}>
 					{#if collection.isDescHidden}
 						<Eye class="icon-xs" />
 						<span> Show description </span>
@@ -71,16 +63,16 @@
 						<span> Hide description </span>
 					{/if}
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => dispatch('clickMove')}>
+				<DropdownMenu.Item on:click={() => onClickMove()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDuplicate')}>
+				<DropdownMenu.Item on:click={() => onClickDuplicate()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => dispatch('clickDelete')} class="group">
+				<DropdownMenu.Item on:click={() => onClickDelete()} class="group">
 					<Trash class="icon-xs group-hover:text-primary " />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
