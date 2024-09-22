@@ -1,10 +1,10 @@
 import type { RouterInputs } from '$lib/trpc/router';
 import { Aggregator, Color, PropertyType, type Collection, type Property } from '@prisma/client';
-import { onError, redirectToast } from '../ui/sonner';
+import { onError, redirectToast } from '$lib/components/ui/sonner';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
-import { invalidateAll } from '$app/navigation';
+import { goto } from '$app/navigation';
 
 export class CollectionState {
 	collections = $state<Collection[]>([]);
@@ -101,8 +101,6 @@ export class CollectionState {
 				);
 			}
 
-			// await invalidateAll();
-
 			redirectToast(`Collection [${name}] duplicated successfully`, `/collections/${result.id}`);
 		} catch (err) {
 			onError(err);
@@ -124,7 +122,7 @@ export class CollectionState {
 		}
 	}
 
-	async deleteCollection(id: string) {
+	async deleteCollection(id: string, redirect: boolean = false) {
 		let target = this.#getCollection(id);
 		if (target == null) return;
 
@@ -132,6 +130,8 @@ export class CollectionState {
 			this.#removeCollection(id);
 			await trpc().collections.delete.mutate(id);
 			toast.success(`Collection [${target.name}] deleted successfully`);
+
+			if (redirect) setTimeout(() => goto('/collections'), 500);
 		} catch (err) {
 			onError(err);
 			this.collections.push({ ...target });
