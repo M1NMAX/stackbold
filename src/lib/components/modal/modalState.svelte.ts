@@ -8,7 +8,7 @@ export class ModalState {
 		this.isOpen = isOpen;
 	}
 
-	openModal(args?: unknown) {
+	openModal(_args?: unknown) {
 		this.isOpen = true;
 	}
 
@@ -60,4 +60,13 @@ export function setCtrCollectionModalState() {
 
 export function getCrtCollectionModalState() {
 	return getContext<ReturnType<typeof setCtrCollectionModalState>>(CRT_COLLECTION_MODAL_CTX_KEY);
+}
+
+const DELETE_MODAL_CTX_KEY = Symbol('DELETE_MODAL_CTX_KEY');
+export function setDeleteModalState() {
+	return setContext(DELETE_MODAL_CTX_KEY, new DeleteContentModal());
+}
+
+export function getDeleteModalState() {
+	return getContext<ReturnType<typeof setDeleteModalState>>(DELETE_MODAL_CTX_KEY);
 }
