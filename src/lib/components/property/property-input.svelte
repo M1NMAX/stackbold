@@ -9,37 +9,61 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
-	import { PROPERTY_COLORS } from '$lib/constant';
+	import { DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
+	import { getItemState } from '$lib/components/items';
+	import debounce from 'debounce';
 
 	type Props = {
 		property: Property;
-		value: string;
-		updPropertyValue: (pid: string, value: string) => void;
+		itemId: string;
 	};
 
-	let { property, value, updPropertyValue }: Props = $props();
+	let { property, itemId }: Props = $props();
 
 	let open = $state(false);
+	let value = $derived(getPropertyValue());
+
 	let selectedValue = $derived.by(() => {
 		return property.options.find((opt) => opt.id === value) ?? 'Empty';
 	});
 
 	const isDesktop = getScreenState();
+	const itemState = getItemState();
+
+	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
+	async function updPropertyRef(ref: { id: string; value: string }) {
+		await itemState.updPropertyRef(itemId, ref);
+	}
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 		const currValue = targetEl.type === 'checkbox' ? targetEl.checked.toString() : targetEl.value;
 		if (!targetEl.validity.badInput) {
-			updPropertyValue(property.id, currValue);
+			updPropertyRefDebounced({ id: property.id, value: currValue });
 		}
 	}
 
 	function onClickClear() {
-		updPropertyValue(property.id, '');
+		updPropertyRef({ id: property.id, value: '' });
 		open = false;
+	}
+
+	// utils
+	function getPropertyValue() {
+		const item = itemState.getItem(itemId);
+		if (!item) return '';
+
+		const propertyRef = item.properties.find((ref) => ref.id === property.id);
+
+		if (!propertyRef) return '';
+
+		if (property.type !== 'SELECT') return propertyRef.value;
+
+		const option = property.options.find((opt) => opt.id === propertyRef.value);
+		return option ? option.id : '';
 	}
 </script>
 
@@ -87,7 +111,7 @@
 							<Command.Item
 								value={option.value}
 								onSelect={() => {
-									updPropertyValue(property.id, option.id);
+									updPropertyRef({ id: property.id, value: option.id });
 									open = false;
 								}}
 								class="justify-between space-x-2 p-1 rounded"
@@ -151,7 +175,7 @@
 							<Command.Item
 								value={option.value}
 								onSelect={() => {
-									updPropertyValue(property.id, option.id);
+									updPropertyRef({ id: property.id, value: option.id });
 									open = false;
 								}}
 								class="justify-between space-x-2 p-1 rounded"
@@ -209,7 +233,7 @@
 					)}
 					onValueChange={(dt) => {
 						if (!dt) return;
-						updPropertyValue(property.id, dt.toString());
+						updPropertyRef({ id: property.id, value: dt.toString() });
 						open = false;
 					}}
 				/>
@@ -253,7 +277,7 @@
 							)}
 							onValueChange={(dt) => {
 								if (!dt) return;
-								updPropertyValue(property.id, dt.toString());
+								updPropertyRef({ id: property.id, value: dt.toString() });
 
 								open = false;
 							}}
@@ -279,7 +303,7 @@
 		oninput={handleOnInput}
 		placeholder="Empty"
 		class="textarea textarea-ghost"
-	/>
+	></textarea>
 {:else if property.type === 'NUMBER'}
 	<input
 		id={property.id}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PropertyOptions, containsView, getOption, toggleView } from '.';
+	import { PropertyOptions, containsView, getOption, getPropertyState, toggleView } from '.';
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
 	import { tick, type Snippet } from 'svelte';
 	import {
@@ -20,33 +20,55 @@
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
 	import { Separator } from '$lib/components/ui/separator';
-	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
-	import type { PropertyInputWrapperCallbacks } from './types';
-	type Props = PropertyInputWrapperCallbacks & {
+	import {
+		DEBOUNCE_INTERVAL,
+		PROPERTY_COLORS,
+		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
+	} from '$lib/constant';
+	import { getDeleteModalState } from '$lib/components/modal';
+	import type { UpdProperty } from '$lib/types';
+	import debounce from 'debounce';
+	import { getItemState } from '$lib/components/items';
+
+	type Props = {
 		children: Snippet;
 		property: Property;
 	};
 
-	let { children, property, duplicate, deleteProperty, updPropertyField, ...rest }: Props =
-		$props();
+	let { children, property }: Props = $props();
 
 	let isEditorOpen = $state(false);
 	let isDrawerOpen = $state(false);
 
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
+	const deleteModal = getDeleteModalState();
 	const isDesktop = getScreenState();
+
+	async function duplicateProperty() {
+		if (isDrawerOpen) isDrawerOpen = false;
+		await propertyState.duplicateProperty(property.id);
+		const prop = propertyState.getMostRecentProperty(propertyState.properties);
+		await itemState.addPropertyRef(prop.id);
+	}
+
+	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
+	async function updProperty(property: UpdProperty) {
+		await propertyState.updProperty(property);
+	}
 
 	function handleOnInput(e: Event) {
 		//TODO: correct property value when property type changes
 		const targetEl = e.target as HTMLInputElement;
-		const name = targetEl.name as keyof Property;
-		const value = targetEl.value;
-
-		updPropertyField(property.id, name, value);
+		updPropertyDebounced({ id: property.id, name: targetEl.value });
 	}
 
-	function eventForward(fun: (id: string) => void) {
-		fun(property.id);
-		isDrawerOpen = false;
+	function deleteProperty() {
+		if (isDrawerOpen) isDrawerOpen = false;
+		deleteModal.openModal({
+			id: property.id,
+			type: 'property'
+		});
 	}
 
 	function openEditor() {
@@ -113,7 +135,10 @@
 									<DropdownMenu.RadioGroup
 										value={property.type}
 										onValueChange={(value) => {
-											updPropertyField(property.id, 'aggregator', value ?? PropertyType.TEXT);
+											updProperty({
+												id: property.id,
+												aggregator: value as Aggregator
+											});
 										}}
 									>
 										{#each Object.values(PropertyType) as propertyType}
@@ -144,7 +169,10 @@
 									<DropdownMenu.RadioGroup
 										value={property.aggregator}
 										onValueChange={(value) => {
-											updPropertyField(property.id, 'aggregator', value ?? Aggregator.NONE);
+											updProperty({
+												id: property.id,
+												aggregator: value as Aggregator
+											});
 										}}
 									>
 										<DropdownMenu.RadioItem value={Aggregator.NONE}>None</DropdownMenu.RadioItem>
@@ -182,9 +210,8 @@
 													{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
 												{:else}
 													<!-- svelte-ignore element_invalid_self_closing_tag -->
-													<span
-														class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}
-													/>
+													<span class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}
+													></span>
 													{selectedOpt.value}
 												{/if}
 												<ChevronRight class="icon-xs" />
@@ -196,7 +223,7 @@
 										<DropdownMenu.RadioGroup
 											value={property.defaultValue}
 											onValueChange={(value) => {
-												updPropertyField(property.id, 'defaultValue', value ?? '');
+												updProperty({ id: property.id, defaultValue: value });
 											}}
 										>
 											<DropdownMenu.RadioItem value="">
@@ -206,7 +233,7 @@
 											{#each property.options as opt}
 												<DropdownMenu.RadioItem value={opt.id}>
 													<!-- svelte-ignore element_invalid_self_closing_tag -->
-													<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
+													<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`}></span>
 													{opt.value}
 												</DropdownMenu.RadioItem>
 											{/each}
@@ -214,13 +241,13 @@
 									</DropdownMenu.Content>
 								</DropdownMenu.Root>
 								<Separator />
-								<PropertyOptions propertyId={property.id} options={property.options} {...rest} />
+								<PropertyOptions propertyId={property.id} options={property.options} />
 							{/if}
 							<Separator />
 
 							<div>
 								<Button
-									on:click={() => duplicate(property.id)}
+									on:click={() => duplicateProperty()}
 									variant="ghost"
 									size="xs"
 									class="w-full justify-start"
@@ -229,7 +256,7 @@
 									<span>Duplicate property</span>
 								</Button>
 								<Button
-									on:click={() => deleteProperty(property.id)}
+									on:click={() => deleteProperty()}
 									variant="ghost"
 									size="xs"
 									class="w-full justify-start group"
@@ -255,11 +282,10 @@
 								<DropdownMenu.CheckboxItem
 									checked={containsView(property.visibleInViews, View.LIST)}
 									on:click={() => {
-										updPropertyField(
-											property.id,
-											'visibleInViews',
-											toggleView(property.visibleInViews, View.LIST)
-										);
+										updProperty({
+											id: property.id,
+											visibleInViews: toggleView(property.visibleInViews, View.LIST)
+										});
 									}}
 								>
 									List view
@@ -268,11 +294,10 @@
 								<DropdownMenu.CheckboxItem
 									checked={containsView(property.visibleInViews, View.TABLE)}
 									on:click={() => {
-										updPropertyField(
-											property.id,
-											'visibleInViews',
-											toggleView(property.visibleInViews, View.TABLE)
-										);
+										updProperty({
+											id: property.id,
+											visibleInViews: toggleView(property.visibleInViews, View.TABLE)
+										});
 									}}
 								>
 									Table view
@@ -280,7 +305,7 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 						<Button
-							on:click={() => duplicate(property.id)}
+							on:click={() => duplicateProperty()}
 							variant="ghost"
 							size="xs"
 							class="w-full justify-start"
@@ -291,7 +316,7 @@
 
 						<Separator />
 						<Button
-							on:click={() => deleteProperty(property.id)}
+							on:click={() => deleteProperty()}
 							variant="ghost"
 							size="xs"
 							class="w-full justify-start group"
@@ -356,7 +381,10 @@
 											name="type"
 											value={property.type}
 											class="select select-sm"
-											oninput={handleOnInput}
+											onchange={(e) => {
+												const targetEl = e.target as HTMLSelectElement;
+												updProperty({ id: property.id, type: targetEl.value as PropertyType });
+											}}
 										>
 											{#each Object.values(PropertyType) as propertyType}
 												<option value={propertyType}>
@@ -368,21 +396,23 @@
 
 									{#if property.type === 'SELECT'}
 										<hr class="border border-secondary" />
-										<PropertyOptions
-											propertyId={property.id}
-											options={property.options}
-											{...rest}
-										/>
+										<PropertyOptions propertyId={property.id} options={property.options} />
 									{/if}
 								</div>
 							</Dialog.Content>
 						</Dialog.Root>
 
-						<Button variant="secondary" on:click={() => eventForward(duplicate)}>
+						<Button variant="secondary" on:click={() => duplicateProperty()}>
 							<Copy class="icon-xs" />
 							<span>Duplicate property</span>
 						</Button>
-						<Button variant="destructive" on:click={() => eventForward(deleteProperty)}>
+						<Button
+							variant="destructive"
+							on:click={() => {
+								deleteProperty();
+								isDrawerOpen = false;
+							}}
+						>
 							<Trash class="icon-xs" />
 							<span>Delete property</span>
 						</Button>

@@ -19,3 +19,5 @@ export const DEFAULT_SORT_OPTIONS = [
 ];
 
 export const PROPERTY_DEFAULT_VALUE_NOT_DEFINED = 'Not Defined';
+
+export const DEBOUNCE_INTERVAL = 1000;

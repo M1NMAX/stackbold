@@ -6,22 +6,24 @@
 	import { Plus, X } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
-	import type { PropertyOptionsCallbacks } from './types';
+	import { getPropertyState } from '.';
 
-	type Props = PropertyOptionsCallbacks & {
+	type Props = {
 		propertyId: string;
 		options: OptionType[];
 	};
 
-	let { propertyId, options, addOption, ...rest }: Props = $props();
+	let { propertyId, options }: Props = $props();
 
 	let show = $state(false);
+
+	const propertyState = getPropertyState();
 
 	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
 		e.stopPropagation();
 		if (e.key !== 'Enter') return;
 		const value = e.currentTarget.value;
-		addOption(propertyId, value);
+		propertyState.addOptionToProperty(propertyId, value);
 		e.currentTarget.value = '';
 	}
 
@@ -59,7 +61,7 @@
 
 	<div class="space-y-1">
 		{#each options as option}
-			<PropertyOption {propertyId} {option} {...rest} />
+			<PropertyOption {propertyId} {option} />
 		{/each}
 	</div>
 </div>

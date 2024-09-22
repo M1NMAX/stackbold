@@ -8,14 +8,17 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/view';
-	import type { PropertyOptionCallbacks } from './types';
+	import { getDeleteModalState } from '$lib/components/modal';
+	import debounce from 'debounce';
+	import { getPropertyState } from './propertyState.svelte';
+	import type { UpdOption } from '$lib/types';
 
-	type Props = PropertyOptionCallbacks & {
+	type Props = {
 		propertyId: string;
 		option: Option;
 	};
 
-	let { propertyId, option, updOptColor, updOptValue, deleteOpt }: Props = $props();
+	let { propertyId, option }: Props = $props();
 
 	let isSmallScreenDrawerOpen = $state(false);
 
@@ -25,16 +28,24 @@
 		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
 	});
 
+	const propertyState = getPropertyState();
 	const isDesktop = getScreenState();
+	const deleteModal = getDeleteModalState();
+
+	const updOptionDebounded = debounce(updOption, 1000);
+
+	async function updOption(pid: string, option: UpdOption) {
+		await propertyState.updPropertyOption(pid, option);
+	}
 
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		updOptValue(propertyId, option.id, targetEl.value);
+		updOptionDebounded(propertyId, { id: option.id, value: targetEl.value });
 	}
 
 	function handleSelectColor(selectedKey: string, triggerId?: string) {
 		value = selectedKey;
-		updOptColor(propertyId, option.id, value as Color);
+		updOptionDebounded(propertyId, { id: option.id, color: value as Color });
 
 		// Refocus the trigger btn when user selects and item from the list,
 		// so users can navigating using the keyboard
@@ -49,6 +60,16 @@
 	function closeSmallScreenDrawer() {
 		isSmallScreenDrawerOpen = false;
 	}
+
+	function deleteOption() {
+		if (isSmallScreenDrawerOpen) isSmallScreenDrawerOpen = false;
+
+		deleteModal.openModal({
+			type: 'option',
+			id: propertyId,
+			option: option.id
+		});
+	}
 </script>
 
 {#if $isDesktop}
@@ -62,7 +83,7 @@
 			>
 				<span class="flex gap-2">
 					<!-- svelte-ignore element_invalid_self_closing_tag -->
-					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`} />
+					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
 					<span>{option.value}</span>
 				</span>
 				<ChevronRight class="icon-xs" />
@@ -89,7 +110,7 @@
 					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
 						<DropdownMenu.RadioItem value={colorName} class="py-1">
 							<!-- svelte-ignore element_invalid_self_closing_tag -->
-							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`} />
+							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`}></span>
 
 							{capitalizeFirstLetter(colorName)}
 						</DropdownMenu.RadioItem>
@@ -98,7 +119,7 @@
 			</DropdownMenu.Group>
 
 			<DropdownMenu.Separator />
-			<DropdownMenu.Item class="space-x-2 " on:click={() => deleteOpt(propertyId, option.id)}>
+			<DropdownMenu.Item class="space-x-2 " on:click={() => deleteOption()}>
 				<Trash class="icon-xs" />
 				<span>Delete option </span>
 			</DropdownMenu.Item>
@@ -109,7 +130,7 @@
 		<div class="w-full relative">
 			<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
 				<!-- svelte-ignore element_invalid_self_closing_tag -->
-				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`} />
+				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
 			</div>
 
 			<input
@@ -159,13 +180,7 @@
 					</div>
 					<hr />
 
-					<Button
-						variant="destructive"
-						on:click={() => {
-							closeSmallScreenDrawer();
-							deleteOpt(propertyId, option.id);
-						}}
-					>
+					<Button variant="destructive" on:click={() => deleteOption()}>
 						<Trash class="icon-xs" />
 						<span>Delete option </span>
 					</Button>

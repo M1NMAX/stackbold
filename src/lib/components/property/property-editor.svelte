@@ -21,38 +21,57 @@
 		toggleView,
 		// components
 		PropertyOptions,
-		PropertyIcon
+		PropertyIcon,
+		getPropertyState
 	} from '.';
-	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
+	import {
+		DEBOUNCE_INTERVAL,
+		PROPERTY_COLORS,
+		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
+	} from '$lib/constant';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as Select from '$lib/components/ui/select';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
-	import type { PropertyInputWrapperCallbacks } from './types';
+	import { getDeleteModalState } from '../modal';
+	import type { UpdProperty } from '$lib/types';
+	import debounce from 'debounce';
+	import { getItemState } from '$lib/components/items';
 
-	type Props = PropertyInputWrapperCallbacks & {
+	type Props = {
 		property: Property;
 		isOpen: boolean;
 		openChange: (value: string | null) => void;
 	};
 
-	let {
-		property,
-		isOpen = false,
-		openChange,
-		duplicate,
-		deleteProperty,
-		updPropertyField,
-		...rest
-	}: Props = $props();
+	let { property, isOpen = false, openChange }: Props = $props();
+
+	const deleteModal = getDeleteModalState();
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
+
+	async function duplicateProperty() {
+		await propertyState.duplicateProperty(property.id);
+		const prop = propertyState.getMostRecentProperty(propertyState.properties);
+		await itemState.addPropertyRef(prop.id);
+	}
+
+	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
+	async function updProperty(property: UpdProperty) {
+		await propertyState.updProperty(property);
+	}
 
 	function handleOnInput(e: Event) {
 		// TODO: clean property value, when property type changes
-
 		const targetEl = e.target as HTMLInputElement;
-		const name = targetEl.name as keyof Property;
-		const value = targetEl.value;
-		updPropertyField(property.id, name, value);
+		updPropertyDebounced({ id: property.id, name: targetEl.value });
+	}
+
+	function deleteProperty() {
+		deleteModal.openModal({
+			id: property.id,
+			type: 'property'
+		});
 	}
 </script>
 
@@ -83,7 +102,8 @@
 				portal={null}
 				selected={{ value: property.type, label: property.type.toLowerCase() }}
 				onSelectedChange={(opt) => {
-					updPropertyField(property.id, 'type', opt ? opt.value : PropertyType.TEXT);
+					const type = opt ? opt.value : PropertyType.TEXT;
+					updProperty({ id: property.id, type: type });
 				}}
 			>
 				<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
@@ -117,7 +137,8 @@
 					label: capitalizeFirstLetter(aggregatorLabel[property.aggregator.toLowerCase()])
 				}}
 				onSelectedChange={(opt) => {
-					updPropertyField(property.id, 'aggregator', opt ? opt.value : Aggregator.NONE);
+					const aggregator = opt ? opt.value : Aggregator.NONE;
+					updProperty({ id: property.id, aggregator });
 				}}
 			>
 				<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
@@ -152,7 +173,8 @@
 						label: selectedOpt ? selectedOpt.value : PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 					}}
 					onSelectedChange={(opt) => {
-						updPropertyField(property.id, 'defaultValue', opt ? opt.value : '');
+						const value = opt ? opt.value : '';
+						updProperty({ id: property.id, defaultValue: value });
 					}}
 				>
 					<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
@@ -177,7 +199,7 @@
 								<Select.Item value={opt.id}>
 									<span class="flex items-center">
 										<!-- svelte-ignore element_invalid_self_closing_tag -->
-										<span class={` icon-sm mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
+										<span class={` icon-sm mr-2 rounded ${PROPERTY_COLORS[opt.color]}`}></span>
 										{opt.value}
 									</span>
 								</Select.Item>
@@ -200,11 +222,10 @@
 								id={view}
 								checked={containsView(property.visibleInViews, view)}
 								onCheckedChange={() => {
-									updPropertyField(
-										property.id,
-										'visibleInViews',
-										toggleView(property.visibleInViews, view)
-									);
+									updProperty({
+										id: property.id,
+										visibleInViews: toggleView(property.visibleInViews, view)
+									});
 								}}
 							/>
 						</div>
@@ -213,21 +234,17 @@
 			</div>
 			{#if property.type === 'SELECT'}
 				<Separator />
-				<PropertyOptions propertyId={property.id} options={property.options} {...rest} />
+				<PropertyOptions propertyId={property.id} options={property.options} />
 			{/if}
 
 			<Separator />
 			<div class="flex justify-end items-center space-x-1.5 pt-1">
-				<Button variant="ghost" on:click={() => duplicate(property.id)}>
+				<Button variant="ghost" on:click={() => duplicateProperty()}>
 					<Copy class="icon-xs" />
 					<span> Duplicate</span>
 				</Button>
 
-				<Button
-					variant="ghost"
-					class="hover:text-primary"
-					on:click={() => deleteProperty(property.id)}
-				>
+				<Button variant="ghost" class="hover:text-primary" on:click={() => deleteProperty()}>
 					<Trash class="icon-xs" />
 					<span> Delete</span>
 				</Button>
