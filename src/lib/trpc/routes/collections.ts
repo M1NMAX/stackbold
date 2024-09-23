@@ -79,9 +79,9 @@ const collectionUpdatePropertySchema = z.object({
 		options: z
 			.array(
 				z.object({
-					id: z.string().optional(),
+					id: z.string(),
 					value: z.string(),
-					color: z.lazy(() => ColorSchema).optional()
+					color: z.lazy(() => ColorSchema)
 				})
 			)
 			.optional()
