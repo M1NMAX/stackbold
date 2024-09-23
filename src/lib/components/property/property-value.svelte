@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { PROPERTY_COLORS } from '$lib/constant';
-	import { createEventDispatcher } from 'svelte';
+	import { DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
 	import type { Property, Color } from '@prisma/client';
 	import { CalendarIcon, CheckCheck } from 'lucide-svelte';
 	import * as Command from '$lib/components/ui/command';
@@ -13,6 +12,8 @@
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { PropertyValueWrapper } from '.';
 	import { getScreenState } from '$lib/components/view';
+	import { getItemState } from '$lib/components/items';
+	import debounce from 'debounce';
 
 	type Props = {
 		itemId: string;
@@ -20,17 +21,9 @@
 		color: Color;
 		value: string | null;
 		isTableView?: boolean;
-		updPropertyValue: (itemId: string, property: { id: string; value: string }) => void;
 	};
 
-	let {
-		itemId,
-		property,
-		color = 'GRAY',
-		value,
-		isTableView = false,
-		updPropertyValue
-	}: Props = $props();
+	let { itemId, property, color = 'GRAY', value, isTableView = false }: Props = $props();
 
 	let open = $state(false);
 	let selectedValue = $derived.by(() => {
@@ -38,15 +31,19 @@
 	});
 
 	const isDesktop = getScreenState();
+	const itemState = getItemState();
 
-	const dispatch = createEventDispatcher<{
-		updPropertyValue: { itemId: string; property: { id: string; value: string } };
-	}>();
+	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
+	async function updPropertyRef(value: string) {
+		if (open) open = false;
+		await itemState.updPropertyRef(itemId, { id: property.id, value });
+	}
 
 	function handleOnInput(e: Event) {
+		// TODO: add validation
 		const input = e.target as HTMLInputElement;
 		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-		updPropertyValue(itemId, { id: property.id, value: currValue });
+		updPropertyRefDebounced(currValue);
 	}
 
 	const buttonClass = cn(
@@ -98,11 +95,7 @@
 						{#each property.options as option}
 							<Command.Item
 								value={option.value}
-								onSelect={() => {
-									// value = option.id;
-									updPropertyValue(itemId, { id: property.id, value: option.id });
-									open = false;
-								}}
+								onSelect={() => updPropertyRef(option.id)}
 								class="justify-between"
 							>
 								<span
@@ -152,11 +145,7 @@
 						{#each property.options as option}
 							<Command.Item
 								value={option.value}
-								onSelect={() => {
-									// value = option.id;
-									updPropertyValue(itemId, { id: property.id, value: option.id });
-									open = false;
-								}}
+								onSelect={() => updPropertyRef(option.id)}
 								class="justify-between"
 							>
 								<span
@@ -214,8 +203,7 @@
 					)}
 					onValueChange={(dt) => {
 						if (!dt) return;
-						updPropertyValue(itemId, { id: property.id, value: dt.toString() });
-						open = false;
+						updPropertyRef(dt.toString());
 					}}
 				/>
 			</Popover.Content>
@@ -255,8 +243,7 @@
 							)}
 							onValueChange={(dt) => {
 								if (!dt) return;
-								updPropertyValue(itemId, { id: property.id, value: dt.toString() });
-								open = false;
+								updPropertyRef(dt.toString());
 							}}
 						/>
 					</div>
@@ -289,7 +276,7 @@
 						class="textarea textarea-ghost"
 						{value}
 						oninput={handleOnInput}
-					/>
+					></textarea>
 				</form>
 			</Popover.Content>
 		</Popover.Root>
@@ -321,7 +308,7 @@
 						class="textarea textarea-ghost"
 						{value}
 						oninput={handleOnInput}
-					/>
+					></textarea>
 				</form>
 			</Dialog.Content>
 		</Dialog.Root>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PropertyIcon } from '.';
+	import { getPropertyState, PropertyIcon } from '.';
 	import { Button } from '$lib/components/ui/button';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
@@ -8,19 +8,15 @@
 	import { getScreenState } from '$lib/components/view';
 	import { Plus } from 'lucide-svelte';
 
-	type Props = {
-		onClickPropertyType: (type: PropertyType) => void;
-	};
-
-	let { onClickPropertyType }: Props = $props();
-
 	let isOpen = $state(false);
+
+	const propertyState = getPropertyState();
 
 	const isDesktop = getScreenState();
 
-	function handleClickPropertyType(propertyType: PropertyType) {
-		onClickPropertyType(propertyType);
-		isOpen = false;
+	function addProperty(propType: PropertyType) {
+		if (isOpen) isOpen = false;
+		propertyState.addProperty(propType);
 	}
 </script>
 
@@ -37,7 +33,7 @@
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
-						on:click={() => handleClickPropertyType(propertyType)}
+						on:click={() => addProperty(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm"
 					>
 						<PropertyIcon key={propertyType} />
@@ -65,7 +61,7 @@
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
-						on:click={() => handleClickPropertyType(propertyType)}
+						on:click={() => addProperty(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm "
 					>
 						<PropertyIcon key={propertyType} />
