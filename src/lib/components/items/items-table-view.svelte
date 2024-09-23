@@ -2,10 +2,10 @@
 	import { cn } from '$lib/utils';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import {Label} from '$lib/components/ui/label'
-	import {Switch} from '$lib/components/ui/switch'
+	import { Label } from '$lib/components/ui/label';
+	import { Switch } from '$lib/components/ui/switch';
 	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
-	import { getActiveItemState, ItemMenu } from '.';
+	import { getActiveItemState, getItemState, ItemMenu } from '.';
 	import {
 		PropertyValue,
 		PropertyIcon,
@@ -14,35 +14,34 @@
 		getPropertyColor,
 		getPropertyRef,
 		getPropertyValue,
-		toggleView
+		toggleView,
+		getPropertyState
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/view';
+	import { DEBOUNCE_INTERVAL } from '$lib/constant';
+	import type { RouterInputs } from '$lib/trpc/router';
+	import debounce from 'debounce';
 
 	type Props = {
 		items: Item[];
-		properties: Property[];
 		clickOpenItem: (id: string) => void;
-		renameItem: (id: string, name: string) => void;
-		updPropertyVisibility: (pid: string, name: string, value: View[]) => void;
-
-		//TODO: ref
-		//forward
-		clickDuplicateItem: (id: string) => void;
-		clickDeleteItem: (id: string) => void;
-
-		//forward too
-		updPropertyValue: (itemId: string, property: { id: string; value: string }) => void;
 	};
 
-	let { items, properties, clickOpenItem, renameItem, updPropertyVisibility, ...rest }: Props =
-		$props();
+	let { items, clickOpenItem }: Props = $props();
 
 	const activeItem = getActiveItemState();
 
 	const isDesktop = getScreenState();
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
+
+	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
+	async function updItem(args: RouterInputs['items']['update']) {
+		itemState.updItem(args);
+	}
 
 	//TODO: validate inner text
 	function handleOnInput(e: { currentTarget: EventTarget & HTMLDivElement }) {
@@ -50,7 +49,7 @@
 
 		const id = targetEl.dataset.id!;
 		const name = targetEl.innerText;
-		renameItem(id, name);
+		updItemDebounced({ id, data: { name } });
 	}
 
 	function preventEnterKeypress(e: KeyboardEvent) {
@@ -98,7 +97,7 @@
 						Name
 					</span>
 				</th>
-				{#each properties as property (property.id)}
+				{#each propertyState.properties as property (property.id)}
 					{#if containsView(property.visibleInViews, View.TABLE)}
 						<th
 							scope="col"
@@ -116,7 +115,7 @@
 		<tbody>
 			{#if items.length === 0}
 				<tr>
-					<td colspan={properties.length + 3}>
+					<td colspan={propertyState.properties.length + 3}>
 						<div class="empty" in:fade>No items found.</div>
 					</td>
 				</tr>
@@ -131,7 +130,7 @@
 					>
 						<td class="min-w-10 px-1 border border-l-0">
 							<div class="flex justify-between items-center space-x-2">
-								<ItemMenu itemId={item.id} {clickOpenItem} {...rest} />
+								<ItemMenu itemId={item.id} {clickOpenItem} />
 								<Button
 									variant="secondary"
 									size="sm"
@@ -171,7 +170,7 @@
 							</Button>
 						</td>
 
-						{#each properties as property (property.id)}
+						{#each propertyState.properties as property (property.id)}
 							{@const propertyRef = getPropertyRef(item.properties, property.id)}
 							{#if containsView(property.visibleInViews, View.TABLE) && propertyRef}
 								{@const color = getPropertyColor(property, propertyRef.value)}
@@ -179,14 +178,7 @@
 
 								<td class="border last:border-r-0">
 									{#if propertyRef}
-										<PropertyValue
-											isTableView
-											{property}
-											{color}
-											{value}
-											itemId={item.id}
-											{...rest}
-										/>
+										<PropertyValue isTableView {property} {color} {value} itemId={item.id} />
 									{/if}
 								</td>
 							{/if}
@@ -194,15 +186,12 @@
 					</tr>
 				{/each}
 				<tr>
-					<!-- svelte-ignore element_invalid_self_closing_tag -->
-					<td />
-					<!-- svelte-ignore element_invalid_self_closing_tag -->
-					<td />
-					{#each properties as property (property.id)}
+					<td></td>
+					<td></td>
+					{#each propertyState.properties as property (property.id)}
 						{#if property.visibleInViews.some((v) => v === View.LIST)}
 							{#if property.aggregator === 'NONE'}
-								<!-- svelte-ignore element_invalid_self_closing_tag -->
-								<td />
+								<td></td>
 							{:else}
 								<td class="text-right text-nowrap px-2">
 									<span class="text-[0.65rem] font-medium"> {property.aggregator}</span>
@@ -219,42 +208,40 @@
 	</table>
 </div>
 
-
 {#snippet viewVisibilityMenu()}
 	{#if $isDesktop}
 		<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild let:builder>
-					<Button variant="ghost" size="xs" builders={[builder]}>
-						<Settings2 class="icon-xs" />
-					</Button>
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content align="start" class="w-56">
-					<DropdownMenu.Label>Toggle properties visibility</DropdownMenu.Label>
-					<DropdownMenu.Separator />
+			<DropdownMenu.Trigger asChild let:builder>
+				<Button variant="ghost" size="xs" builders={[builder]}>
+					<Settings2 class="icon-xs" />
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="start" class="w-56">
+				<DropdownMenu.Label>Toggle properties visibility</DropdownMenu.Label>
+				<DropdownMenu.Separator />
 
-					<div class="p-1 space-y-2">
-						{#each properties as property (property.id)}
-							<div class="flex justify-between items-center">
-								<Label for={property.id} class="flex items-center text-sm font-semibold">
-									<PropertyIcon key={property.type} />
-									{property.name}
-								</Label>
-								<Switch
-									id={property.id}
-									checked={containsView(property.visibleInViews, View.TABLE)}
-									onCheckedChange={() => {
-										updPropertyVisibility(
-											property.id,
-											'visibleInViews',
-											toggleView(property.visibleInViews, View.TABLE)
-										);
-									}}
-								/>
-							</div>
-						{/each}
-					</div>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+				<div class="p-1 space-y-2">
+					{#each propertyState.properties as property (property.id)}
+						<div class="flex justify-between items-center">
+							<Label for={property.id} class="flex items-center text-sm font-semibold">
+								<PropertyIcon key={property.type} />
+								{property.name}
+							</Label>
+							<Switch
+								id={property.id}
+								checked={containsView(property.visibleInViews, View.TABLE)}
+								onCheckedChange={() => {
+									propertyState.updProperty({
+										id: property.id,
+										visibleInViews: toggleView(property.visibleInViews, View.TABLE)
+									});
+								}}
+							/>
+						</div>
+					{/each}
+				</div>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 	{:else}
 		<Drawer.Root>
 			<Drawer.Trigger asChild let:builder>
@@ -273,7 +260,7 @@
 				</Drawer.Header>
 				<Drawer.Footer>
 					<div class="p-1 space-y-2.5">
-						{#each properties as property (property.id)}
+						{#each propertyState.properties as property (property.id)}
 							<div class="flex justify-between items-center">
 								<Label for={property.id} class="flex items-center text-base ">
 									<PropertyIcon key={property.type} class="icon-md mr-2" />
@@ -283,11 +270,10 @@
 									id={property.id}
 									checked={containsView(property.visibleInViews, View.TABLE)}
 									onCheckedChange={() => {
-										updPropertyVisibility(
-											property.id,
-											'visibleInViews',
-											toggleView(property.visibleInViews, View.TABLE)
-										);
+										propertyState.updProperty({
+											id: property.id,
+											visibleInViews: toggleView(property.visibleInViews, View.TABLE)
+										});
 									}}
 								/>
 							</div>
@@ -296,5 +282,5 @@
 				</Drawer.Footer>
 			</Drawer.Content>
 		</Drawer.Root>
-	{/if}	
+	{/if}
 {/snippet}

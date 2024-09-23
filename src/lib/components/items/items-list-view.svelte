@@ -1,40 +1,37 @@
 <script lang="ts">
-	import { ItemMenu, getActiveItemState } from '.';
+	import { ItemMenu, getActiveItemState, getItemState } from '.';
 	import {
 		PropertyValue,
 		containsView,
 		// helpers
 		getPropertyColor,
 		getPropertyRef,
+		getPropertyState,
 		getPropertyValue
 	} from '$lib/components/property';
-	import { type Property, type Item, View } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
+	import { type Item, View } from '@prisma/client';
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
+	import type { RouterInputs } from '$lib/trpc/router';
+	import { DEBOUNCE_INTERVAL } from '$lib/constant';
+	import debounce from 'debounce';
 
 	type Props = {
 		items: Item[];
-		properties: Property[];
 		clickOpenItem: (id: string) => void;
-		renameItem: (id: string, name: string) => void;
-
-		//forward
-		updPropertyValue: (itemId: string, property: { id: string; value: string }) => void;
-
-		clickDuplicateItem: (id: string) => void;
-		clickDeleteItem: (id: string) => void;
 	};
 
-	let { items, properties, clickOpenItem, renameItem, updPropertyValue, ...rest }: Props = $props();
+	let { items, clickOpenItem }: Props = $props();
 
-	const activeItem = getActiveItemState();
 	const isDesktop = getScreenState();
+	const activeItem = getActiveItemState();
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
 
-	const dispatch = createEventDispatcher<{
-		clickOpenItem: string;
-		renameItem: { id: string; name: string };
-	}>();
+	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
+	async function updItem(args: RouterInputs['items']['update']) {
+		itemState.updItem(args);
+	}
 
 	//TODO: validate inner text
 	function handleOnInput(e: { currentTarget: EventTarget & HTMLDivElement }) {
@@ -42,7 +39,7 @@
 
 		const id = targetEl.dataset.id!;
 		const name = targetEl.innerText;
-		renameItem(id, name);
+		updItemDebounced({ id, data: { name } });
 	}
 
 	function preventEnterKeypress(e: KeyboardEvent) {
@@ -92,18 +89,17 @@
 			<ItemMenu
 				itemId={item.id}
 				{clickOpenItem}
-				{...rest}
 				class={cn('absolute right-2 top-0', $isDesktop && 'invisible group-hover:visible')}
 			/>
 
 			<div class="flex flex-wrap gap-2">
-				{#each properties as property (property.id)}
+				{#each propertyState.properties as property (property.id)}
 					{#if containsView(property.visibleInViews, View.LIST)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
 							{@const color = getPropertyColor(property, propertyRef.value)}
 							{@const value = getPropertyValue(property, propertyRef.value, false)}
-							<PropertyValue itemId={item.id} {property} {color} {value} {updPropertyValue} />
+							<PropertyValue itemId={item.id} {property} {color} {value} />
 						{/if}
 					{/if}
 				{/each}

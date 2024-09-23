@@ -5,26 +5,27 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { cn } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
+	import { getDeleteModalState } from '$lib/components/modal';
+	import { getItemState } from '.';
 
 	type Props = {
 		itemId: string;
 		class?: string;
 		clickOpenItem: (id: string) => void;
-		clickDuplicateItem: (id: string) => void;
-		clickDeleteItem: (id: string) => void;
 	};
 
-	let {
-		itemId,
-		class: className,
-		clickOpenItem,
-		clickDuplicateItem,
-		clickDeleteItem
-	}: Props = $props();
+	let { itemId, class: className, clickOpenItem }: Props = $props();
 
 	let open = $state(false);
 
+	const itemState = getItemState();
 	const isDesktop = getScreenState();
+	const deleteModal = getDeleteModalState();
+
+	function deleteItem() {
+		if (open) open = false;
+		deleteModal.openModal({ type: 'item', id: itemId });
+	}
 
 	function clickDrawerBtn(fun: (id: string) => void) {
 		open = false;
@@ -51,12 +52,12 @@
 					<span> Open in side </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => clickDuplicateItem(itemId)}>
+				<DropdownMenu.Item on:click={() => itemState.duplicateItem(itemId)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => clickDeleteItem(itemId)} class="group">
+				<DropdownMenu.Item on:click={() => deleteItem()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -82,15 +83,11 @@
 					<span> Open </span>
 				</Button>
 
-				<Button variant="secondary" on:click={() => clickDrawerBtn(clickDuplicateItem)}>
+				<Button variant="secondary" on:click={() => itemState.duplicateItem(itemId)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button
-					variant="destructive"
-					on:click={() => clickDrawerBtn(clickDeleteItem)}
-					class="group"
-				>
+				<Button variant="destructive" on:click={() => deleteItem()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span>Delete</span>
 				</Button>
