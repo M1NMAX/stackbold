@@ -15,33 +15,49 @@
 	} from 'lucide-svelte';
 	import type { Collection } from '@prisma/client';
 	import { icons } from '$lib/components/icon';
+	import { getDeleteModalState } from '$lib/components/modal';
+	import { getCollectionState } from '.';
+	import { getGroupState } from '$lib/components/group';
 
 	type Props = {
 		collection: Collection;
-		groupName: string | null;
-		onClickToggleDescState: () => void;
 		onClickMove: () => void;
-		onClickDuplicate: () => void;
-		onClickDelete: () => void;
 	};
 
-	let {
-		collection,
-		groupName,
-		onClickToggleDescState,
-		onClickMove,
-		onClickDuplicate,
-		onClickDelete
-	}: Props = $props();
+	let { collection, onClickMove }: Props = $props();
+
+	let isOpen = $state(false);
 
 	const Icon = $derived(icons[collection.icon]);
 
-	let isOpen = $state(false);
+	const collectionState = getCollectionState();
+	const groupState = getGroupState();
+	const deleteModal = getDeleteModalState();
 	const isDesktop = getScreenState();
 
-	function onClickDrawerBtn(fn: () => void) {
-		isOpen = false;
-		fn();
+	const groupName = $derived.by(() => {
+		return groupState.groups.find((group) => group.id === collection.id)?.name ?? 'without group';
+	});
+
+	function duplicateCollection() {
+		if (isOpen) isOpen = false;
+		collectionState.duplicateCollection(collection.id);
+	}
+
+	function toggleDescState() {
+		collectionState.updCollection({
+			id: collection.id,
+			data: { isDescHidden: !collection.isDescHidden }
+		});
+	}
+	function deleteCollection() {
+		if (isOpen) isOpen = false;
+		deleteModal.openModal({ type: 'collection', id: collection.id, name: collection.name });
+	}
+
+	function moveCollection() {
+		if (isOpen) isOpen = false;
+		onClickMove();
 	}
 </script>
 
@@ -54,7 +70,7 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => onClickToggleDescState()}>
+				<DropdownMenu.Item on:click={() => toggleDescState()}>
 					{#if collection.isDescHidden}
 						<Eye class="icon-xs" />
 						<span> Show description </span>
@@ -63,16 +79,16 @@
 						<span> Hide description </span>
 					{/if}
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => onClickMove()}>
+				<DropdownMenu.Item on:click={() => moveCollection()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => onClickDuplicate()}>
+				<DropdownMenu.Item on:click={() => duplicateCollection()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => onClickDelete()} class="group">
+				<DropdownMenu.Item on:click={() => deleteCollection()} class="group">
 					<Trash class="icon-xs group-hover:text-primary " />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -102,7 +118,7 @@
 				</div>
 			</Drawer.Header>
 			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" on:click={() => onClickDrawerBtn(onClickToggleDescState)}>
+				<Button variant="secondary" on:click={() => toggleDescState()}>
 					{#if collection.isPinned}
 						<PinOff class="icon-xs" />
 						<span> Remove from Sidebar</span>
@@ -111,15 +127,15 @@
 						<span> Add to Sidebar </span>
 					{/if}
 				</Button>
-				<Button variant="secondary" on:click={() => onClickDrawerBtn(onClickMove)}>
+				<Button variant="secondary" on:click={() => moveCollection()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</Button>
-				<Button variant="secondary" on:click={() => onClickDrawerBtn(onClickDuplicate)}>
+				<Button variant="secondary" on:click={() => duplicateCollection()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="destructive" on:click={() => onClickDrawerBtn(onClickDelete)}>
+				<Button variant="destructive" on:click={() => deleteCollection()}>
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
