@@ -33,7 +33,7 @@ export class ItemState {
 			if (args.properties) {
 				properties = args.properties.map((property) => ({
 					id: property.id,
-					value: ''
+					value: property.value ?? ''
 				}));
 			}
 
