@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {
-		ArrowLeft,
 		Check,
 		CheckSquare2,
 		Pin,
@@ -10,23 +9,18 @@
 		Square,
 		SquareSlash,
 		StretchHorizontal,
-		Table,
-		X
+		Table
 	} from 'lucide-svelte';
-	import { PropertyType, View, type Item } from '@prisma/client';
+	import { View, type Item } from '@prisma/client';
 	import {
-		ItemMenuPanel,
 		ItemNew,
 		Items,
 		groupItemsByPropertyValue,
-		setActiveItemState
+		setActiveItemState,
+		setItemState
 	} from '$lib/components/items';
 	import {
-		AddPropertyPopover,
-		PropertyEditor,
 		PropertyIcon,
-		PropertyInput,
-		PropertyInputWrapper,
 		PropertyValueWrapper,
 		containsView,
 		//helpers
@@ -36,8 +30,7 @@
 		toggleView
 	} from '$lib/components/property';
 	import debounce from 'debounce';
-	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { fade } from 'svelte/transition';
@@ -49,7 +42,6 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
-	import type { DeleteDetail } from '$lib/types';
 	import { SearchInput } from '$lib/components/search';
 	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButtonsGroup, getScreenState } from '$lib/components/view';
@@ -57,25 +49,45 @@
 	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { DEFAULT_SORT_OPTIONS, PROPERTY_COLORS } from '$lib/constant';
-	import { onError } from '$lib/components/ui/sonner';
-	import { toast } from 'svelte-sonner';
-	import { clickOutside } from '$lib/actions';
-	import { superForm } from 'sveltekit-superforms/client';
+	import {
+		DEBOUNCE_INTERVAL,
+		DEFAULT_SORT_OPTIONS,
+		ITEM_PANEL_CTX_KEY,
+		PROPERTIES_PANEL_CTX_KEY,
+		PROPERTY_COLORS
+	} from '$lib/constant';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
-	import { CollectionMenu } from '$lib/components/collection';
+	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { getGroupState } from '$lib/components/group';
+	import { setPropertyState } from '$lib/components/property';
+	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import ItemPage from './item/[itemid]/+page.svelte';
+	import PropertiesPage from './properties/+page.svelte';
+	import { getContext } from 'svelte';
+	import { clickOutside } from '$lib/actions';
+	import { nameSchema } from '$lib/schema';
 
 	let { data } = $props();
-	let collection = $state(data.collection);
 	let items = $state(data.items);
-	let properties = $state(data.collection.properties);
+
+	const collectionState = getCollectionState();
+
+	let collection = $derived(getCurrentCollection());
+
+	const itemState = setItemState(data.items);
+
+	const propertyState = setPropertyState(getCurrentCollection().properties, data.cid);
+
+	function getCurrentCollection() {
+		return collectionState.collections.find((collection) => collection.id == data.cid)!;
+	}
 
 	$effect(() => {
-		items = data.items;
-		collection = data.collection;
-		properties = data.collection.properties;
+		itemState.items = data.items;
+		propertyState.collectionId = collection.id;
+
+		propertyState.properties = collection.properties;
 	});
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
 
@@ -85,7 +97,7 @@
 	let filteredItems = $derived.by(() => {
 		const searchTerm = search.toLowerCase() || '';
 
-		return items
+		return [...itemState.items]
 			.filter((item) => item.name.toLowerCase().includes(searchTerm))
 			.sort(sortFun(sort.field, sort.order));
 	});
@@ -97,17 +109,15 @@
 		return filteredItems.reduce(groupItemsByPropertyValue(findGroupByConfig(view) || ''), {});
 	});
 
+	let itemName = $state('');
+
+	let itemNameError = $state<string | null>(null);
 	let renameCollectionError = $state<string | null>(null);
 
-	let itemNameError: string | null = null;
-
-	let isMoveDialogOpen = $state(false);
 	let isSmallHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
-
-	// Delete Modal
-	let deleteDetail = $state<DeleteDetail>({ type: null });
-	let isDeleteModalOpen = $state(false);
+	const moveCollectionModal = new ModalState();
+	const deleteModal = getDeleteModalState();
 
 	// item and properties sliding panel
 	let isPropertiesPanelOpen = $state(false);
@@ -119,53 +129,10 @@
 	const isDesktop = getScreenState();
 	const activeItem = setActiveItemState(null);
 
-	const DEBOUNCE_INTERVAL = 1000;
-
-	// Collection service fuctions
+	async function updCollection(data: RouterInputs['collections']['update']['data']) {
+		await collectionState.updCollection({ id: collection.id, data });
+	}
 	const updCollectionDebounced = debounce(updCollection, DEBOUNCE_INTERVAL);
-
-	async function updCollection(detail: RouterInputs['collections']['update']['data']) {
-		await trpc().collections.update.mutate({
-			id: collection.id,
-			data: detail
-		});
-
-		await invalidateAll();
-		reload = !reload;
-	}
-
-	async function duplicateCollection() {
-		const { id, name, ownerId, ...rest } = data.collection;
-
-		const createdCollection = await trpc().collections.create.mutate({
-			...rest,
-			name: name + ' copy'
-		});
-
-		const itemsCopy = items.map((item) => {
-			const { id, collectionId, ...rest } = item;
-			return { collectionId: createdCollection.id, ...rest };
-		});
-
-		await trpc().items.createMany.mutate(itemsCopy);
-		await invalidateAll();
-
-		const msg = `Collection [${collection.name}] duplicated successfully`;
-		const url = `/collections/${createdCollection.id}`;
-
-		toast(msg, { action: { label: 'Go', onClick: () => goto(url) } });
-	}
-
-	async function deleteCollection(id: string, name: string) {
-		try {
-			await trpc().collections.delete.mutate(id);
-
-			toast.success(`Collection [${name}] deleted successfully`);
-			setTimeout(() => goto('/collections'), 1000);
-		} catch (error) {
-			onError(error);
-		}
-	}
 
 	// collection input handlers
 	async function handleOnInputCollectionName(e: {
@@ -190,292 +157,66 @@
 	}
 
 	// Item service functions
+	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 
-	// handle create item form
-	const { form, enhance } = superForm(data.form, {
-		dataType: 'json',
-		onSubmit: () => {
-			form.update(
-				($form) => {
-					$form.collectionId = collection.id;
-					$form.properties = collection.properties.map((prop) => ({
-						id: prop.id,
-						value: getPropertyDefaultValue(prop.type, prop.defaultValue)
-					}));
-					return $form;
-				},
-				{ taint: false }
-			);
-		}
-	});
-
-	async function handleClickOpenItem(id: string) {
-		goto(`/collections/${collection.id}?id=${id}`);
-	}
-
-	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
-
-	async function updItem(args: RouterInputs['items']['update']) {
-		try {
-			const updatedItem = await trpc().items.update.mutate(args);
-
-			const itemsCopy = items.filter((item) => item.id !== updatedItem.id);
-			items = [...itemsCopy, updatedItem];
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	async function duplicateItem(itemId: string) {
-		const item = items.find(({ id }) => id === itemId);
-		if (!item) {
-			onError({ location: '/collections/page[id]', msg: 'Invalid item selected' });
+		const parseResult = nameSchema.safeParse(itemName);
+		if (!parseResult.success) {
+			itemNameError = parseResult.error.issues[0].message;
 			return;
 		}
 
-		const { id, name, ...rest } = item;
-		const createdItem = await trpc().items.create.mutate({ ...rest, name: name + ' copy' });
+		itemNameError = null;
 
-		items.push(createdItem);
-		items = items;
-
-		toast.success(`Item [${item.name}] duplicated successfully `);
-	}
-
-	async function deleteItem(id: string) {
-		await trpc().items.delete.mutate(id);
-
-		toast.success('Item deleted successfully');
-		if ($page.url.searchParams.has('id') && $page.url.searchParams.get('id') === id) {
-			isItemPanelOpen = false;
-			$page.url.searchParams.delete('id');
-			goto(`/collections/${collection.id}`);
-		}
-
-		data.items = items.filter((item) => item.id !== id);
-	}
-
-	// Item input handlers
-	async function handleOnInputItemName(e: { currentTarget: EventTarget & HTMLHeadingElement }) {
-		if (!$activeItem) return;
-		const id = $activeItem.id;
-
-		//TODO: valide inner text
-		const name = e.currentTarget.innerText;
-
-		updItemDebounced({ id, data: { name } });
+		itemState.createItem({
+			name: itemName,
+			collectionId: collection.id,
+			properties: propertyState.properties.map((prop) => ({
+				id: prop.id,
+				value: getPropertyDefaultValue(prop.type, prop.defaultValue)
+			}))
+		});
+		itemName = '';
 	}
 
 	// Property Handlers
 	function getProperty(pid: string) {
-		return properties.find((property) => property.id === pid) || null;
-	}
-
-	function getPropertyValue(pid: string) {
-		if (!$activeItem) return '';
-
-		const itemProperty = $activeItem.properties.find((property) => property.id === pid);
-
-		const collectionProperty = properties.find((property) => property.id === pid);
-
-		if (!itemProperty || !collectionProperty) return '';
-
-		if (collectionProperty.type !== 'SELECT') return itemProperty.value;
-
-		const option = collectionProperty.options.find((opt) => opt.id === itemProperty.value);
-
-		return option ? option.id : '';
-	}
-
-	async function addPropertyToCollection(args: RouterInputs['collections']['addProperty']) {
-		const { properties: updatedProps } = await trpc().collections.addProperty.mutate(args);
-
-		const sortedProps = updatedProps.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-		return sortedProps[sortedProps.length - 1];
-	}
-
-	async function addProperty(type: PropertyType) {
-		try {
-			const name = capitalizeFirstLetter(type);
-
-			const lastProperty = await addPropertyToCollection({
-				id: collection.id,
-				property: { name, type }
-			});
-
-			properties = [...properties, lastProperty];
-
-			await Promise.all([
-				trpc().items.addProperty.mutate({
-					ids: items.map(({ id }) => id),
-					property: { id: lastProperty.id, value: '' }
-				}),
-				trpc()
-					.items.list.query(collection.id)
-					.then((updatedItems) => {
-						items = updatedItems;
-					})
-			]);
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	async function duplicateProperty(pid: string) {
-		const property = getProperty(pid);
-		if (!property) {
-			onError({ location: '/collections/page[id]', msg: 'Invalid property selected' });
-			return;
-		}
-
-		try {
-			const { id, name, createdAt, ...rest } = property;
-
-			const lastAddedProperty = await addPropertyToCollection({
-				id: collection.id,
-				property: { ...rest, name: name + ' copy' }
-			});
-
-			properties = [...properties, lastAddedProperty];
-
-			await trpc().items.addProperty.mutate({
-				ids: items.map(({ id }) => id),
-				property: {
-					id: lastAddedProperty.id,
-					value: ''
-				}
-			});
-			items = await trpc().items.list.query(collection.id);
-		} catch (error) {
-			onError(error);
-		}
+		return propertyState.properties.find((property) => property.id === pid) || null;
 	}
 
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
 	async function updProperty(property: RouterInputs['collections']['updateProperty']['property']) {
-		try {
-			const updateCollection = await trpc().collections.updateProperty.mutate({
-				id: collection.id,
-				property
-			});
-
-			properties = updateCollection.properties;
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	async function deleteProperty(pid: string) {
-		try {
-			await trpc().collections.deleteProperty.mutate({ id: collection.id, propertyId: pid });
-
-			await trpc().items.deleteProperty.mutate({
-				ids: items.map(({ id }) => id),
-				propertyId: pid
-			});
-
-			properties = properties.filter((property) => property.id !== pid);
-
-			toast.success('Property deleted successfully');
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	//Property Value handle
-	const updPropertyValueDebounced = debounce(updPropertyValue, DEBOUNCE_INTERVAL);
-
-	async function updPropertyValue(id: string, property: { id: string; value: string }) {
-		try {
-			const updatedItem = await trpc().items.updateProperty.mutate({ id, property });
-
-			if ($activeItem && $activeItem.id === updatedItem.id) $activeItem = updatedItem;
-
-			await invalidateAll();
-		} catch (error) {
-			onError(error);
-		}
+		await propertyState.updProperty(property);
 	}
 
 	//Property option services
-	async function addOptionToProperty(pid: string, value: string) {
-		try {
-			const updatedCollection = await trpc().collections.addPropertyOption.mutate({
-				id: collection.id,
-				property: { id: pid, option: { value } }
-			});
-
-			//TODO: add: find a better solution, with lower overhead
-			properties = updatedCollection.properties;
-		} catch (error) {
-			onError(error);
-		}
-	}
-	const updPropertyOptionDebounced = debounce(updPropertyOption, DEBOUNCE_INTERVAL);
-
-	type UpdOptionInput = RouterInputs['collections']['updatePropertyOption']['property']['option'];
-	async function updPropertyOption(pid: string, option: UpdOptionInput) {
-		try {
-			const updatedCollection = await trpc().collections.updatePropertyOption.mutate({
-				id: collection.id,
-				property: { id: pid, option }
-			});
-
-			//TODO: upd: find a better solution, with lower overhead
-			properties = updatedCollection.properties;
-		} catch (error) {
-			onError(error);
-		}
-	}
-
-	async function deletePropertyOption(pid: string, optionId: string) {
-		try {
-			const updatedCollection = await trpc().collections.deletePropertyOption.mutate({
-				id: collection.id,
-				property: { id: pid, optionId }
-			});
-
-			// TODO: think about items that use the deleted property
-			//TODO: del: find a better solution, with lower overhead
-			properties = updatedCollection.properties;
-
-			// toast.success('Property option deleted successfully');
-		} catch (error) {
-			onError(error);
-		}
-	}
-
 	async function handleDelete() {
-		switch (deleteDetail.type) {
+		switch (deleteModal.deleteDetail.type) {
 			case 'collection':
-				deleteCollection(deleteDetail.id, deleteDetail.name);
+				collectionState.deleteCollection(deleteModal.deleteDetail.id, true);
 				break;
 
 			case 'item':
-				deleteItem(deleteDetail.id);
+				//TODO: Handle when deleted item is the active item
+				itemState.deleteItem(deleteModal.deleteDetail.id);
 				break;
 
 			case 'property':
-				deleteProperty(deleteDetail.id);
+				propertyState.deleteProperty(deleteModal.deleteDetail.id);
 				break;
 
 			case 'option':
-				deletePropertyOption(deleteDetail.id, deleteDetail.option);
+				propertyState.deletePropertyOption(
+					deleteModal.deleteDetail.id,
+					deleteModal.deleteDetail.option
+				);
 				break;
 		}
-		isDeleteModalOpen = false;
+		deleteModal.closeModal();
 	}
 
 	function preventEnterKeypress(e: KeyboardEvent) {
 		if (e.key == 'Enter') e.preventDefault();
-	}
-
-	function openMoveDialog() {
-		isMoveDialogOpen = true;
-	}
-
-	function closeMoveDialog() {
-		isMoveDialogOpen = false;
 	}
 
 	function handleScroll(e: Event) {
@@ -486,7 +227,7 @@
 	}
 
 	function includesGroupableProperties() {
-		return properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
+		return propertyState.properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
 	}
 
 	$effect(() => {
@@ -524,7 +265,7 @@
 
 	function sortGroupedItems(a: string, b: string) {
 		const propId = findGroupByConfig(view);
-		const actualProp = properties.find((prop) => prop.id === propId);
+		const actualProp = propertyState.properties.find((prop) => prop.id === propId);
 		if (actualProp == null || actualProp.type !== 'SELECT') return 0;
 
 		const left = actualProp.options.findIndex((opt) => opt.id == a);
@@ -552,23 +293,47 @@
 		});
 	}
 
-	// Properties Sliding panel
-	let currentOpenPropEditor = $state<string | null>(null);
-	function onClickTogglePropertyEditor(propId: string | null) {
-		currentOpenPropEditor = propId;
-	}
+	//  Sliding panels
+	const propertiesPanel = getContext<ModalState>(PROPERTIES_PANEL_CTX_KEY);
 
-	function openPropertiesPanel() {
-		if (properties.length != 0 && currentOpenPropEditor == null) {
-			currentOpenPropEditor = properties[0].id;
+	async function onClickOpenProperties() {
+		const url = `/collections/${collection.id}/properties`;
+		if (!isDesktop) {
+			goto(url);
+			return;
 		}
-		isItemPanelOpen = false;
-		isPropertiesPanelOpen = true;
+
+		const result = await preloadData(url);
+
+		if (result.type === 'loaded' && result.status === 200) {
+			pushState(url, { showPanel: true });
+			propertiesPanel.openModal();
+		} else {
+			goto(url);
+		}
 	}
 
-	function closePropertiesPanel() {
-		isPropertiesPanelOpen = false;
-		currentOpenPropEditor = null;
+	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
+
+	async function clickItem(id: string) {
+		const url = `/collections/${collection.id}/item/${id}`;
+		if (!$isDesktop) {
+			goto(url);
+			return;
+		}
+
+		const result = await preloadData(url);
+
+		if (result.type === 'loaded' && result.status === 200) {
+			pushState(url, { id: result.data.id });
+			itemPanel.openModal();
+		} else {
+			goto(url);
+		}
+	}
+
+	function noCheck(x: any) {
+		return x;
 	}
 </script>
 
@@ -579,7 +344,8 @@
 <PageContainer
 	class={cn(
 		'flex flex-col space-y-1 ease-in-out duration-300',
-		(isPropertiesPanelOpen || isItemPanelOpen) && 'w-2/3'
+		(isPropertiesPanelOpen || isItemPanelOpen || itemPanel.isOpen || propertiesPanel.isOpen) &&
+			'w-2/3'
 	)}
 >
 	<PageHeader>
@@ -617,22 +383,11 @@
 					{/if}
 				</Button>
 
-				<Button variant="secondary" size="icon" on:click={openPropertiesPanel}>
+				<Button variant="secondary" size="icon" on:click={() => onClickOpenProperties()}>
 					<Settings2 />
 				</Button>
 
-				<CollectionMenu
-					{collection}
-					groupName={groupState.groups.find((group) => group.id === collection.groupId)?.name ??
-						null}
-					onClickToggleDescState={() => updCollection({ isDescHidden: !collection.isDescHidden })}
-					onClickMove={openMoveDialog}
-					onClickDuplicate={duplicateCollection}
-					onClickDelete={() => {
-						deleteDetail = { type: 'collection', id: collection.id, name: collection.name };
-						isDeleteModalOpen = true;
-					}}
-				/>
+				<CollectionMenu {collection} onClickMove={() => moveCollectionModal.openModal()} />
 			</div>
 		</div>
 	</PageHeader>
@@ -676,7 +431,7 @@
 				<SearchInput placeholder="Find Item" bind:value={search} />
 
 				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-				{#key properties}
+				{#key propertyState.properties}
 					{#if includesGroupableProperties()}
 						<div>
 							<DropdownMenu.Root>
@@ -699,7 +454,7 @@
 									>
 										<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
 
-										{#each properties as property (property.id)}
+										{#each propertyState.properties as property (property.id)}
 											{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
 												<DropdownMenu.RadioItem value={property.id}>
 													{property.name}
@@ -776,7 +531,7 @@
 							<label for="visibility"> Visible in {capitalizeFirstLetter(view)} view </label>
 							<div class="px-2 py-1 space-y-2.5 rounded-md bg-secondary/40">
 								{#if view === View.LIST}
-									{#each properties as property}
+									{#each propertyState.properties as property}
 										<div class="flex items-center justify-between">
 											<Label
 												for={`visibility-list-${property.id}`}
@@ -798,7 +553,7 @@
 										</div>
 									{/each}
 								{:else}
-									{#each properties as property}
+									{#each propertyState.properties as property}
 										<div class="flex items-center justify-between">
 											<Label
 												for={`visibility-table-${property.id}`}
@@ -838,7 +593,7 @@
 
 									<RadioGroup.Item id="group-by-none" value="none" />
 								</div>
-								{#each properties as property (property.id)}
+								{#each propertyState.properties as property (property.id)}
 									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
 										<div class="w-full flex items-center justify-between">
 											<Label for={`group-by-${property.id}`} class="w-full flex items-center">
@@ -858,27 +613,7 @@
 		{/if}
 		{#key reload}
 			{#if !findGroupByConfig(view)}
-				<Items
-					items={filteredItems}
-					{view}
-					{properties}
-					clickOpenItem={(id) => handleClickOpenItem(id)}
-					clickDuplicateItem={(id) => duplicateItem(id)}
-					clickDeleteItem={(id) => {
-						deleteDetail = { type: 'item', id: id };
-						isDeleteModalOpen = true;
-					}}
-					updPropertyValue={(itemId, property) => {
-						updPropertyValueDebounced(itemId, {
-							id: property.id,
-							value: property.value
-						});
-					}}
-					updPropertyVisibility={(id, name, value) => {
-						updPropertyDebounced({ id, [name]: value });
-					}}
-					renameItem={(id, name) => updItemDebounced({ id, data: { name } })}
-				/>
+				<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
 			{:else}
 				<Accordion.Root
 					multiple
@@ -911,23 +646,7 @@
 									<Items
 										items={groupedItems[key].items}
 										{view}
-										{properties}
-										clickOpenItem={(id) => handleClickOpenItem(id)}
-										clickDuplicateItem={(id) => duplicateItem(id)}
-										clickDeleteItem={(id) => {
-											deleteDetail = { type: 'item', id: id };
-											isDeleteModalOpen = true;
-										}}
-										updPropertyValue={(itemId, property) => {
-											updPropertyValueDebounced(itemId, {
-												id: property.id,
-												value: property.value
-											});
-										}}
-										updPropertyVisibility={(id, name, value) => {
-											updPropertyDebounced({ id, [name]: value });
-										}}
-										renameItem={(id, name) => updItemDebounced({ id, data: { name } })}
+										clickOpenItem={(id) => clickItem(id)}
 									/>
 								</Accordion.Content>
 							</Accordion.Item>
@@ -939,28 +658,28 @@
 		{#if $isDesktop}
 			<div class="sticky inset-x-0 bottom-0">
 				<!-- TODO: CHANGE URG -->
-				<!-- {#if itemNameError}
+				{#if itemNameError}
 					<span
 						use:clickOutside
-						on:clickoutside={() => (itemNameError = null)}
+						onclickoutside={() => (itemNameError = null)}
 						class="w-full text-error"
 					>
 						{itemNameError}
 					</span>
-				{/if} -->
-				<form class="relative" method="post" action="?/createItem" use:enhance>
+				{/if}
+				<form onsubmit={handleCreateItem} class="relative">
+					<label for="item-name" class="sr-only"> Name</label>
 					<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
 						<Plus class="text-primary" />
 					</div>
 					<input
+						bind:value={itemName}
+						id="item-name"
 						name="name"
 						placeholder="New item"
-						bind:value={$form.name}
 						autocomplete="off"
 						class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 					/>
-
-					<input type="submit" class="hidden" />
 				</form>
 			</div>
 		{:else}
@@ -975,186 +694,36 @@
 	</PageContent>
 </PageContainer>
 
-<!-- Item sliding-panel -->
-<SlidingPanel bind:open={isItemPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-	<div class="flex justify-between items-center">
-		<Button
-			variant="secondary"
-			size="icon"
-			on:click={() => {
-				$page.url.searchParams.delete('id');
-				goto(`/collections/${collection.id}`);
-				isItemPanelOpen = false;
-				$activeItem = null;
-			}}
-		>
-			{#if $isDesktop}
-				<X />
-			{:else}
-				<ArrowLeft />
-			{/if}
-		</Button>
-
-		{#if $activeItem != null}
-			<div class="flex items-center space-x-1.5">
-				<span class="font-semibold text-xs text-gray-500">
-					Updated
-					{dayjs($activeItem.updatedAt).fromNow()}
-				</span>
-				<ItemMenuPanel
-					itemId={$activeItem.id}
-					itemName={$activeItem.name}
-					collectionName={collection.name}
-					onClickDuplicate={(id) => duplicateItem(id)}
-					onClickDelete={(id) => {
-						deleteDetail = { type: 'item', id: id };
-						isDeleteModalOpen = true;
-					}}
-				/>
-			</div>
-		{/if}
-	</div>
-
-	<div class="grow flex flex-col space-y-4 overflow-y-auto">
-		<h2
-			id="item-name"
-			contenteditable
-			spellcheck={false}
-			onkeypress={preventEnterKeypress}
-			oninput={handleOnInputItemName}
-			class="pt-1 text-2xl font-semibold break-words focus:outline-none"
-		>
-			{$activeItem?.name}
-		</h2>
-
-		<div class="space-y-2">
-			{#each properties as property}
-				<PropertyInputWrapper
-					{property}
-					updPropertyField={(pid, name, value) => updPropertyDebounced({ id: pid, [name]: value })}
-					duplicate={(id) => duplicateProperty(id)}
-					deleteProperty={(id) => {
-						deleteDetail = { id: id, type: 'property' };
-						isDeleteModalOpen = true;
-					}}
-					addOption={(propertyId, value) => addOptionToProperty(propertyId, value)}
-					updOptColor={(propertyId, optionId, color) => {
-						updPropertyOptionDebounced(propertyId, {
-							id: optionId,
-							color: color
-						});
-					}}
-					updOptValue={(propertyId, optionId, value) => {
-						updPropertyOptionDebounced(propertyId, {
-							id: optionId,
-							value: value
-						});
-					}}
-					deleteOpt={(propertyId, optionId) => {
-						deleteDetail = {
-							type: 'option',
-							id: propertyId,
-							option: optionId
-						};
-						isDeleteModalOpen = true;
-					}}
-				>
-					{#key $activeItem?.id}
-						<PropertyInput
-							{property}
-							value={getPropertyValue(property.id)}
-							updPropertyValue={(pid, value) => {
-								if (!$activeItem) return;
-
-								updPropertyValueDebounced($activeItem.id, {
-									id: pid,
-									value: value
-								});
-							}}
-						/>
-					{/key}
-				</PropertyInputWrapper>
-			{/each}
-		</div>
-	</div>
-	<div>
-		<AddPropertyPopover onClickPropertyType={(type) => addProperty(type)} />
-	</div>
-</SlidingPanel>
-
-<!-- Properties Sliding panel -->
-<SlidingPanel open={isPropertiesPanelOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-	<div class="flex items-center space-x-4">
-		<Button variant="secondary" size="icon" on:click={closePropertiesPanel}>
-			{#if $isDesktop}
-				<X />
-			{:else}
-				<ArrowLeft />
-			{/if}
-		</Button>
-
-		<h2 class="text-xl font-semibold">Properties</h2>
-	</div>
-
-	<div class="grow flex flex-col space-y-2 overflow-y-auto">
-		{#each properties as property}
-			<PropertyEditor
-				{property}
-				isOpen={currentOpenPropEditor === property.id}
-				openChange={(value) => onClickTogglePropertyEditor(value)}
-				updPropertyField={(pid, name, value) => updPropertyDebounced({ id: pid, [name]: value })}
-				duplicate={(id) => duplicateProperty(id)}
-				deleteProperty={(id) => {
-					deleteDetail = { id: id, type: 'property' };
-					isDeleteModalOpen = true;
-				}}
-				addOption={(propertyId, value) => addOptionToProperty(propertyId, value)}
-				updOptColor={(propertyId, optionId, color) => {
-					updPropertyOptionDebounced(propertyId, {
-						id: optionId,
-						color: color
-					});
-				}}
-				updOptValue={(propertyId, optionId, value) => {
-					updPropertyOptionDebounced(propertyId, {
-						id: optionId,
-						value: value
-					});
-				}}
-				deleteOpt={(propertyId, optionId) => {
-					deleteDetail = {
-						type: 'option',
-						id: propertyId,
-						option: optionId
-					};
-					isDeleteModalOpen = true;
-				}}
-			/>
-		{/each}
-	</div>
-	<div>
-		<AddPropertyPopover onClickPropertyType={(type) => addProperty(type)} />
-	</div>
-</SlidingPanel>
-
+{#if $page.state.id}
+	<!-- Item sliding-panel -->
+	<SlidingPanel open={itemPanel.isOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+		<ItemPage data={noCheck($page.state)} />
+	</SlidingPanel>
+{/if}
+{#if $page.state.showPanel}
+	<!-- Properties Sliding panel -->
+	<SlidingPanel open={propertiesPanel.isOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+		<PropertiesPage />
+	</SlidingPanel>
+{/if}
 <ItemNew bind:isOpen={isCreateItemDialogOpen}>
-	<form use:enhance method="post" action="?/createItem" class="flex flex-col space-y-2">
-		<label for="item-name"> Name</label>
+	<form onsubmit={handleCreateItem} class="flex flex-col space-y-2">
+		<label for="item-name" class="sr-only"> Name</label>
 
 		<input
+			bind:value={itemName}
 			id="item-name"
 			placeholder="New item"
 			name="name"
 			autocomplete="off"
 			class="input"
-			bind:value={$form.name}
 		/>
 
 		<Button type="submit" class="w-full">Create</Button>
 	</form>
 </ItemNew>
 
-<Command.Dialog bind:open={isMoveDialogOpen}>
+<Command.Dialog bind:open={moveCollectionModal.isOpen}>
 	<Command.Input placeholder="Move collection to..." />
 	<Command.List>
 		<Command.Empty>No group found.</Command.Empty>
@@ -1164,7 +733,7 @@
 					value={group.name}
 					onSelect={() => {
 						updCollection({ groupId: group.id });
-						closeMoveDialog();
+						moveCollectionModal.closeModal();
 					}}
 					class="space-x-2"
 				>
@@ -1177,12 +746,12 @@
 	</Command.List>
 </Command.Dialog>
 
-<AlertDialog.Root bind:open={isDeleteModalOpen}>
+<AlertDialog.Root bind:open={deleteModal.isOpen}>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
 			<AlertDialog.Title>Delete</AlertDialog.Title>
 			<AlertDialog.Description class="text-lg">
-				Are you sure you want to delete this {deleteDetail.type} ?
+				Are you sure you want to delete this {deleteModal.deleteDetail.type} ?
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
