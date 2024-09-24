@@ -127,7 +127,7 @@
 
 	const groupState = getGroupState();
 	const isDesktop = getScreenState();
-	const activeItem = setActiveItemState(null);
+	const activeItemState = setActiveItemState();
 
 	async function updCollection(data: RouterInputs['collections']['update']['data']) {
 		await collectionState.updCollection({ id: collection.id, data });
@@ -235,10 +235,8 @@
 			isPropertiesPanelOpen = false;
 			isItemPanelOpen = true;
 			const itemId = $page.url.searchParams.get('id');
-			$activeItem = items.find((item) => item.id === itemId) || null;
 		} else {
 			isItemPanelOpen = false;
-			$activeItem = null;
 		}
 	});
 
@@ -316,6 +314,7 @@
 	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
 
 	async function clickItem(id: string) {
+		activeItemState.id = id;
 		const url = `/collections/${collection.id}/item/${id}`;
 		if (!$isDesktop) {
 			goto(url);
