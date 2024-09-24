@@ -414,7 +414,6 @@
 				<label transition:fade for="description" class="sr-only"> Collection description </label>
 				<!-- TODO: CHANGE URG -->
 
-				<!-- svelte-ignore element_invalid_self_closing_tag -->
 				<textarea
 					id="description"
 					value={collection.description}
@@ -657,7 +656,6 @@
 		{/key}
 		{#if $isDesktop}
 			<div class="sticky inset-x-0 bottom-0">
-				<!-- TODO: CHANGE URG -->
 				{#if itemNameError}
 					<span
 						use:clickOutside

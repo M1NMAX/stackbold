@@ -48,7 +48,6 @@
 	const addUserModal = new ModalState();
 	const deleteUserModal = new ModalState();
 
-	// TODO: CHANGE URG
 	const isDesktop = getScreenState();
 
 	const { form, message, errors, enhance } = superForm(data.form, {

@@ -294,8 +294,7 @@
 		</Drawer.Root>
 	{/if}
 {:else if property.type === 'TEXT'}
-	<!-- TODO: CHANGE URG -->
-	<!-- svelte-ignore element_invalid_self_closing_tag -->
+	<!-- TODO : CHANGE URG -->
 	<textarea
 		id={property.id}
 		name={property.name}

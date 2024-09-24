@@ -266,9 +266,8 @@
 			>
 				<form>
 					<label for={property.id} class="sr-only"> {property.name} </label>
-					<!-- TODO:CHANGE URG -->
+					<!-- TODO : CHANGE URG -->
 
-					<!-- svelte-ignore element_invalid_self_closing_tag -->
 					<textarea
 						id={property.id}
 						name={property.name}
@@ -298,9 +297,7 @@
 				<form>
 					<label for={property.id} class="sr-only"> {property.name} </label>
 
-					<!-- TODO: GHANGE URG -->
-
-					<!-- svelte-ignore element_invalid_self_closing_tag -->
+					<!-- TODO : GHANGE URG -->
 					<textarea
 						id={property.id}
 						name={property.name}

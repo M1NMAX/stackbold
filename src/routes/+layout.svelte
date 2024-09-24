@@ -3,11 +3,9 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import { mediaQuery, setScreenState } from '$lib/components/view';
-	import { readable } from 'svelte/store';
 
 	let { children } = $props();
 
-	// TODO: CHANGE URG
 	const isDesktop = setScreenState(mediaQuery(true, '(min-width: 768px)'));
 
 	async function detectSWUpdate() {
