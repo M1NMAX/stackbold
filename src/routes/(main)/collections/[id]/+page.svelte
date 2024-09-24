@@ -69,7 +69,6 @@
 	import { nameSchema } from '$lib/schema';
 
 	let { data } = $props();
-	let items = $state(data.items);
 
 	const collectionState = getCollectionState();
 
@@ -118,12 +117,6 @@
 	let isCreateItemDialogOpen = $state(false);
 	const moveCollectionModal = new ModalState();
 	const deleteModal = getDeleteModalState();
-
-	// item and properties sliding panel
-	let isPropertiesPanelOpen = $state(false);
-	let isItemPanelOpen = $state(false);
-
-	let reload = $state(false);
 
 	const groupState = getGroupState();
 	const isDesktop = getScreenState();
@@ -230,16 +223,6 @@
 		return propertyState.properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
 	}
 
-	$effect(() => {
-		if ($page.url.searchParams.has('id')) {
-			isPropertiesPanelOpen = false;
-			isItemPanelOpen = true;
-			const itemId = $page.url.searchParams.get('id');
-		} else {
-			isItemPanelOpen = false;
-		}
-	});
-
 	const VIEW_STORAGE_KEY = $derived(`collection-${collection.id}-view`);
 
 	$effect(() => {
@@ -343,8 +326,7 @@
 <PageContainer
 	class={cn(
 		'flex flex-col space-y-1 ease-in-out duration-300',
-		(isPropertiesPanelOpen || isItemPanelOpen || itemPanel.isOpen || propertiesPanel.isOpen) &&
-			'w-2/3'
+		(itemPanel.isOpen || propertiesPanel.isOpen) && 'w-2/3'
 	)}
 >
 	<PageHeader>
@@ -609,50 +591,48 @@
 				</Drawer.Root>
 			</div>
 		{/if}
-		{#key reload}
-			{#if !findGroupByConfig(view)}
-				<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
-			{:else}
-				<Accordion.Root
-					multiple
-					value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
-					class="w-full"
-				>
-					{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
-						{@const property = getProperty(groupedItems[key].pid)}
+		{#if !findGroupByConfig(view)}
+			<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
+		{:else}
+			<Accordion.Root
+				multiple
+				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
+				class="w-full"
+			>
+				{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
+					{@const property = getProperty(groupedItems[key].pid)}
 
-						{#if property}
-							{@const color = getPropertyColor(property, key)}
-							<Accordion.Item value={`accordion-item-${key}`}>
-								<Accordion.Trigger class="justify-start p-2 hover:no-underline">
-									<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
-										{#if property.type === 'SELECT'}
-											{@const option = getOption(property.options, key)}
-											{option ? option.value : `No ${property.name}`}
-										{:else if property.type === 'CHECKBOX'}
-											{#if key === 'true'}
-												<CheckSquare2 class="icon-xs mr-1.5" />
-											{:else}
-												<Square class="icon-xs mr-1.5" />
-											{/if}
-
-											{property.name}
+					{#if property}
+						{@const color = getPropertyColor(property, key)}
+						<Accordion.Item value={`accordion-item-${key}`}>
+							<Accordion.Trigger class="justify-start p-2 hover:no-underline">
+								<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
+									{#if property.type === 'SELECT'}
+										{@const option = getOption(property.options, key)}
+										{option ? option.value : `No ${property.name}`}
+									{:else if property.type === 'CHECKBOX'}
+										{#if key === 'true'}
+											<CheckSquare2 class="icon-xs mr-1.5" />
+										{:else}
+											<Square class="icon-xs mr-1.5" />
 										{/if}
-									</PropertyValueWrapper>
-								</Accordion.Trigger>
-								<Accordion.Content>
-									<Items
-										items={groupedItems[key].items}
-										{view}
-										clickOpenItem={(id) => clickItem(id)}
-									/>
-								</Accordion.Content>
-							</Accordion.Item>
-						{/if}
-					{/each}
-				</Accordion.Root>
-			{/if}
-		{/key}
+
+										{property.name}
+									{/if}
+								</PropertyValueWrapper>
+							</Accordion.Trigger>
+							<Accordion.Content>
+								<Items
+									items={groupedItems[key].items}
+									{view}
+									clickOpenItem={(id) => clickItem(id)}
+								/>
+							</Accordion.Content>
+						</Accordion.Item>
+					{/if}
+				{/each}
+			</Accordion.Root>
+		{/if}
 		{#if $isDesktop}
 			<div class="sticky inset-x-0 bottom-0">
 				{#if itemNameError}
