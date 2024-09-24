@@ -29,6 +29,7 @@
 	import type { UpdProperty } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
+	import { clickOutside, escapeKeydown } from '$lib/actions';
 
 	type Props = {
 		children: Snippet;
@@ -75,6 +76,10 @@
 		isEditorOpen = true;
 	}
 
+	function closeEditor() {
+		isEditorOpen = false;
+	}
+
 	$effect.pre(() => {
 		if (isEditorOpen) {
 			tick().then(() => {
@@ -105,8 +110,13 @@
 				</Popover.Trigger>
 				<Popover.Content>
 					{#if isEditorOpen}
-						<!-- TODO: ADD on escape and click outside action CHANGE URG -->
-						<div class="px-1 space-y-2">
+						<div
+							use:clickOutside
+							use:escapeKeydown
+							onclickoutside={closeEditor}
+							onescapekey={closeEditor}
+							class="px-1 space-y-2"
+						>
 							<label for={`${property.id}-name`} class="sr-only"> Name</label>
 							<input
 								id={`${property.id}-name`}
