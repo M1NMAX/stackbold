@@ -9,9 +9,9 @@
 
 	let { data } = $props();
 
-	let item = $derived(getCurrentItem());
-	const itemState = getItemState();
 	const propertyState = getPropertyState();
+	const itemState = getItemState();
+	let item = $derived(getCurrentItem());
 
 	// Utils functions
 	function getCurrentItem() {

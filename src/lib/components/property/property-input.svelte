@@ -22,6 +22,8 @@
 
 	let { property, itemId }: Props = $props();
 
+	const itemState = getItemState();
+
 	let open = $state(false);
 	let value = $derived(getPropertyValue());
 
@@ -30,7 +32,6 @@
 	});
 
 	const isDesktop = getScreenState();
-	const itemState = getItemState();
 
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(ref: { id: string; value: string }) {
