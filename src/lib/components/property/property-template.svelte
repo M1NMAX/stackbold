@@ -58,8 +58,7 @@
 			transition:fade={{ duration: 100 }}
 			class="z-10 rounded-lg bg-secondary shadow"
 		>
-			<!-- svelte-ignore element_invalid_self_closing_tag -->
-			<div use:melt={$arrow} />
+			<div use:melt={$arrow}></div>
 			<div class="flex items-center p-1">
 				<PropertyIcon key={property.type} class="icon-xs mr-1" />
 				<span class="text-sm font-semibold">{property.name}</span>
