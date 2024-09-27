@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Database, Dna, FolderPlus, Hash, Home, PackagePlus } from 'lucide-svelte';
+	import { Boxes, Database, Dna, FolderPlus, Hash, Home, PackagePlus } from 'lucide-svelte';
 	import {
 		Sidebar,
 		SidebarCollection,
@@ -15,7 +15,11 @@
 	import * as Accordion from '$lib/components/ui/accordion';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
-	import { ModalState, setCtrCollectionModalState } from '$lib/components/modal';
+	import {
+		ModalState,
+		setCtrCollectionModalState,
+		setMoveCollectionModalState
+	} from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
@@ -36,6 +40,7 @@
 	const globalSearchModal = new ModalState();
 	const createGroupModal = new ModalState();
 	const crtCollectionModal = setCtrCollectionModalState();
+	const moveCollectionModal = setMoveCollectionModalState();
 
 	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
 	let error = $state<Error>({ type: null });
@@ -336,3 +341,43 @@
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
+
+<!-- Move collection dialog -->
+{#if moveCollectionModal.detail}
+	{@const currentGroupId = moveCollectionModal.detail.currentGroupId}
+	{@const collectionId = moveCollectionModal.detail.collectionId}
+	<Command.Dialog bind:open={moveCollectionModal.isOpen}>
+		<Command.Input placeholder="Move collection to..." />
+		<Command.List>
+			<Command.Empty>No group found.</Command.Empty>
+			<Command.Group>
+				{#if currentGroupId}
+					<Command.Item
+						value="collection"
+						onSelect={() => {
+							collectionState.updCollection({ id: collectionId, data: { groupId: null } });
+							moveCollectionModal.closeModal();
+						}}
+					>
+						<Database class="icon-sm" />
+						<span> Collection</span>
+					</Command.Item>
+				{/if}
+				{#each groupState.groups as group (group.id)}
+					{#if group.id != currentGroupId}
+						<Command.Item
+							value={group.name}
+							onSelect={() => {
+								collectionState.updCollection({ id: collectionId, data: { groupId: group.id } });
+								moveCollectionModal.closeModal();
+							}}
+						>
+							<Boxes class="icon-sm" />
+							<span> {group.name} </span>
+						</Command.Item>
+					{/if}
+				{/each}
+			</Command.Group>
+		</Command.List>
+	</Command.Dialog>
+{/if}

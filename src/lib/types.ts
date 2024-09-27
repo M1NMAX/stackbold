@@ -18,6 +18,10 @@ export type DeleteDetail =
 			fun: () => void;
 	  };
 
+export type MoveCollectionDetail = {
+	collectionId: string;
+	currentGroupId: string | null;
+};
 export type UpdOption = RouterInputs['collections']['updatePropertyOption']['property']['option'];
 
 export type UpdProperty = RouterInputs['collections']['updateProperty']['property'];

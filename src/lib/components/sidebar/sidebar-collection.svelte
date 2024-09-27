@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
 	import {
-		Boxes,
 		Copy,
 		CornerUpRight,
-		Database,
 		HeartOff,
 		MoreHorizontal,
 		Pencil,
@@ -13,7 +11,6 @@
 	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { cn } from '$lib/utils';
@@ -22,7 +19,11 @@
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
 	import { getScreenState } from '$lib/components/view';
-	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import {
+		getDeleteModalState,
+		getMoveCollectionModalState,
+		ModalState
+	} from '$lib/components/modal';
 	import { getGroupState } from '$lib/components/group';
 	import { getCollectionState } from '$lib/components/collection';
 
@@ -43,12 +44,12 @@
 	});
 	const Icon = $derived(icons[collection.icon]);
 
-	const moveCollectionModal = new ModalState();
 	const renameCollectionModal = new ModalState();
 	const smallScreenDrawer = new ModalState();
 
 	const sidebarState = getSidebarState();
 	const isDesktop = getScreenState();
+	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
 	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
@@ -76,6 +77,14 @@
 		const { href } = e.currentTarget;
 		$sidebarState = false;
 		goto(href);
+	}
+
+	function moveCollection() {
+		if (smallScreenDrawer.isOpen) smallScreenDrawer.closeModal();
+		moveCollectionModal.openModal({
+			collectionId: collection.id,
+			currentGroupId: collection.groupId || null
+		});
 	}
 
 	function deleteCollection() {
@@ -139,7 +148,7 @@
 					</DropdownMenu.Item>
 				{/if}
 
-				<DropdownMenu.Item on:click={() => moveCollectionModal.openModal()}>
+				<DropdownMenu.Item on:click={() => moveCollection()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
@@ -193,13 +202,7 @@
 						</Button>
 					{/if}
 
-					<Button
-						variant="secondary"
-						on:click={() => {
-							smallScreenDrawer.closeModal();
-							moveCollectionModal.openModal();
-						}}
-					>
+					<Button variant="secondary" on:click={() => moveCollection()}>
 						<CornerUpRight class="icon-xs" />
 						<span>Move to</span>
 					</Button>
@@ -253,40 +256,3 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
-
-<Command.Dialog bind:open={moveCollectionModal.isOpen}>
-	<Command.Input placeholder="Move collection to..." />
-	<Command.List>
-		<Command.Empty>No group found.</Command.Empty>
-		<Command.Group>
-			{#if collection.groupId}
-				<Command.Item
-					value="collection"
-					onSelect={() => {
-						collectionState.updCollection({ id: collection.id, data: { groupId: null } });
-						moveCollectionModal.closeModal();
-						smallScreenDrawer.closeModal();
-					}}
-				>
-					<Database class="icon-sm" />
-					<span> Collection</span>
-				</Command.Item>
-			{/if}
-			{#each groupState.groups as group (group.id)}
-				{#if group.id != collection.groupId}
-					<Command.Item
-						value={group.name}
-						onSelect={() => {
-							collectionState.updCollection({ id: collection.id, data: { groupId: group.id } });
-							moveCollectionModal.closeModal();
-							smallScreenDrawer.closeModal();
-						}}
-					>
-						<Boxes class="icon-sm" />
-						<span> {group.name} </span>
-					</Command.Item>
-				{/if}
-			{/each}
-		</Command.Group>
-	</Command.List>
-</Command.Dialog>

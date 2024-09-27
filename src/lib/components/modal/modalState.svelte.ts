@@ -1,4 +1,4 @@
-import { type DeleteDetail } from '$lib/types';
+import type { MoveCollectionDetail, DeleteDetail } from '$lib/types';
 import { getContext, setContext } from 'svelte';
 
 export class ModalState {
@@ -53,6 +53,24 @@ export class DeleteContentModal extends ModalState {
 	}
 }
 
+export class MoveCollectionModal extends ModalState {
+	detail = $state<MoveCollectionDetail | null>(null);
+
+	constructor(isOpen: boolean = false) {
+		super(isOpen);
+	}
+
+	openModal(detail: MoveCollectionDetail): void {
+		super.openModal();
+		this.detail = detail;
+	}
+
+	closeModal(): void {
+		super.closeModal();
+		this.detail = null;
+	}
+}
+
 const CRT_COLLECTION_MODAL_CTX_KEY = Symbol('CRT_COLLECTION_MODAL_CTX_KEY');
 export function setCtrCollectionModalState() {
 	return setContext(CRT_COLLECTION_MODAL_CTX_KEY, new CreateCollectionModal());
@@ -69,4 +87,13 @@ export function setDeleteModalState() {
 
 export function getDeleteModalState() {
 	return getContext<ReturnType<typeof setDeleteModalState>>(DELETE_MODAL_CTX_KEY);
+}
+
+const MOVE_COLLECTION_MODAL_CTX_KEY = Symbol('MOVE_COLLECTION_MODAL_CTX_KEY');
+export function setMoveCollectionModalState() {
+	return setContext(MOVE_COLLECTION_MODAL_CTX_KEY, new MoveCollectionModal());
+}
+
+export function getMoveCollectionModalState() {
+	return getContext<ReturnType<typeof setMoveCollectionModalState>>(MOVE_COLLECTION_MODAL_CTX_KEY);
 }

@@ -339,7 +339,7 @@
 					<Settings2 />
 				</Button>
 
-				<CollectionMenu {collection} onClickMove={() => moveCollectionModal.openModal()} />
+				<CollectionMenu {collection} />
 			</div>
 		</div>
 	</PageHeader>

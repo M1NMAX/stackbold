@@ -15,16 +15,15 @@
 	} from 'lucide-svelte';
 	import type { Collection } from '@prisma/client';
 	import { icons } from '$lib/components/icon';
-	import { getDeleteModalState } from '$lib/components/modal';
+	import { getDeleteModalState, getMoveCollectionModalState } from '$lib/components/modal';
 	import { getCollectionState } from '.';
 	import { getGroupState } from '$lib/components/group';
 
 	type Props = {
 		collection: Collection;
-		onClickMove: () => void;
 	};
 
-	let { collection, onClickMove }: Props = $props();
+	let { collection }: Props = $props();
 
 	let isOpen = $state(false);
 
@@ -32,6 +31,7 @@
 
 	const collectionState = getCollectionState();
 	const groupState = getGroupState();
+	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 	const isDesktop = getScreenState();
 
@@ -64,7 +64,10 @@
 
 	function moveCollection() {
 		if (isOpen) isOpen = false;
-		onClickMove();
+		moveCollectionModal.openModal({
+			collectionId: collection.id,
+			currentGroupId: collection.groupId
+		});
 	}
 </script>
 
