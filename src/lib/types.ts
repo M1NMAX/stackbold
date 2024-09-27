@@ -10,10 +10,13 @@ export type Sizes = {
 
 export type DeleteDetail =
 	| { type: null }
-	| { type: 'item' | 'property'; id: string }
-	| { type: 'option'; id: string; option: string }
-	| { type: 'collection' | 'user'; id: string; name: string }
-	| { type: 'group'; id: string; name: string; includeCollections: boolean };
+	| { type: 'option'; id: string; option: string; name: string; fun: () => void }
+	| {
+			type: 'user' | 'group' | 'collection' | 'item' | 'property' | 'option';
+			id: string;
+			name: string;
+			fun: () => void;
+	  };
 
 export type UpdOption = RouterInputs['collections']['updatePropertyOption']['property']['option'];
 

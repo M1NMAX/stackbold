@@ -19,7 +19,7 @@
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
-	import { ModalState } from '$lib/components/modal';
+	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 	import { getScreenState } from '$lib/components/view';
 
 	let { data } = $props();
@@ -43,6 +43,7 @@
 			.sort(sortFun(sort.field, sort.order));
 	});
 
+	const deleteModal = getDeleteModalState();
 	let deleteDetail = $state<DeleteDetail>({ type: null });
 
 	const addUserModal = new ModalState();
@@ -197,7 +198,8 @@
 								<div
 									title="Delete"
 									onclick={() => {
-										deleteDetail = { type: 'user', id: user.id, name: user.email };
+										//TODO: implement delete user using modal
+										// deleteDetail = { type: 'user', id: user.id, name: user.email };
 										deleteUserModal.openModal();
 									}}
 									class={cn(

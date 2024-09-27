@@ -67,7 +67,11 @@
 		deleteModal.openModal({
 			type: 'option',
 			id: propertyId,
-			option: option.id
+			option: option.id,
+			name: option.value,
+			fun: () => {
+				propertyState.deletePropertyOption(propertyId, option.id);
+			}
 		});
 	}
 </script>
@@ -82,7 +86,6 @@
 				class="h-7 w-full justify-between px-0.5"
 			>
 				<span class="flex gap-2">
-					<!-- svelte-ignore element_invalid_self_closing_tag -->
 					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
 					<span>{option.value}</span>
 				</span>
@@ -109,7 +112,6 @@
 				>
 					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
 						<DropdownMenu.RadioItem value={colorName} class="py-1">
-							<!-- svelte-ignore element_invalid_self_closing_tag -->
 							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`}></span>
 
 							{capitalizeFirstLetter(colorName)}
@@ -129,7 +131,6 @@
 	<div class="w-full flex justify-between items-center space-x-1">
 		<div class="w-full relative">
 			<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
-				<!-- svelte-ignore element_invalid_self_closing_tag -->
 				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
 			</div>
 

@@ -130,7 +130,7 @@
 					>
 						<td class="min-w-10 px-1 border border-l-0">
 							<div class="flex justify-between items-center space-x-2">
-								<ItemMenu itemId={item.id} {clickOpenItem} />
+								<ItemMenu id={item.id} name={item.name} {clickOpenItem} />
 								<Button
 									variant="secondary"
 									size="sm"

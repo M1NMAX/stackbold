@@ -10,13 +10,11 @@
 		setSidebarState
 	} from '$lib/components/sidebar';
 	import { goto } from '$app/navigation';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
-	import type { DeleteDetail } from '$lib/types';
 	import { ModalState, setCtrCollectionModalState } from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
 	import { getScreenState } from '$lib/components/view';
@@ -35,15 +33,12 @@
 	const collectionState = setCollectionState(data.collections);
 	const groupState = setGroupState(data.groups);
 
-	const deleteModal = new ModalState();
 	const globalSearchModal = new ModalState();
 	const createGroupModal = new ModalState();
 	const crtCollectionModal = setCtrCollectionModalState();
 
 	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
 	let error = $state<Error>({ type: null });
-
-	let deleteDetail = $state<DeleteDetail>({ type: null });
 
 	const sidebarState = setSidebarState();
 
@@ -92,12 +87,6 @@
 
 		collectionState.createCollection({ name, groupId: group || null });
 		crtCollectionModal.closeModal();
-	}
-
-	async function handleDelete() {
-		if (deleteDetail.type === 'collection') collectionState.deleteCollection(deleteDetail.id);
-		else if (deleteDetail.type === 'group') groupState.deleteGroup(deleteDetail.id);
-		deleteModal.closeModal();
 	}
 
 	function activeCollection(id: string) {
@@ -159,14 +148,7 @@
 				<div class="space-y-0">
 					{#each collectionState.collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
-							<SidebarCollection
-								{collection}
-								active={activeCollection(collection.id)}
-								deleteCollection={(id, name) => {
-									deleteDetail = { type: 'collection', id, name };
-									deleteModal.openModal();
-								}}
-							/>
+							<SidebarCollection {collection} active={activeCollection(collection.id)} />
 						{/if}
 					{/each}
 				</div>
@@ -183,33 +165,13 @@
 							{group.name}
 
 							<svelte:fragment slot="extra">
-								<SidebarGroupMenu
-									id={group.id}
-									name={group.name}
-									deleteGroup={(id, name) => {
-										deleteDetail = {
-											type: 'group',
-											id,
-											name,
-											includeCollections: false
-										};
-										deleteModal.openModal();
-									}}
-								/>
+								<SidebarGroupMenu id={group.id} />
 							</svelte:fragment>
 						</Accordion.Trigger>
 
 						<Accordion.Content>
 							{#each groupCollections as collection}
-								<SidebarCollection
-									asChild
-									{collection}
-									active={activeCollection(collection.id)}
-									deleteCollection={(id, name) => {
-										deleteDetail = { type: 'collection', id, name };
-										deleteModal.openModal();
-									}}
-								/>
+								<SidebarCollection asChild {collection} active={activeCollection(collection.id)} />
 							{/each}
 						</Accordion.Content>
 					</Accordion.Item>
@@ -374,20 +336,3 @@
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
-
-<AlertDialog.Root bind:open={deleteModal.isOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete</AlertDialog.Title>
-			<AlertDialog.Description class="text-lg">
-				Are you sure you want to delete this {deleteDetail.type} ?
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
-			</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>

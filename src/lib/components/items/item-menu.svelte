@@ -9,12 +9,13 @@
 	import { getItemState } from '.';
 
 	type Props = {
-		itemId: string;
+		id: string;
+		name: string;
 		class?: string;
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { itemId, class: className, clickOpenItem }: Props = $props();
+	let { id, name, class: className, clickOpenItem }: Props = $props();
 
 	let open = $state(false);
 
@@ -24,12 +25,24 @@
 
 	function deleteItem() {
 		if (open) open = false;
-		deleteModal.openModal({ type: 'item', id: itemId });
+		deleteModal.openModal({
+			type: 'item',
+			id,
+			name,
+			fun: () => {
+				itemState.deleteItem(id);
+			}
+		});
 	}
 
-	function clickDrawerBtn(fun: (id: string) => void) {
-		open = false;
-		fun(itemId);
+	async function duplicateItem() {
+		if (open) open = false;
+		await itemState.duplicateItem(id);
+	}
+
+	function openItem() {
+		if (open) open = false;
+		clickOpenItem(id);
 	}
 </script>
 
@@ -47,12 +60,12 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => clickOpenItem(itemId)}>
+				<DropdownMenu.Item on:click={() => openItem()}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open in side </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => itemState.duplicateItem(itemId)}>
+				<DropdownMenu.Item on:click={() => duplicateItem()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
@@ -78,12 +91,12 @@
 		</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Footer>
-				<Button variant="secondary" on:click={() => clickDrawerBtn(clickOpenItem)}>
+				<Button variant="secondary" on:click={() => openItem()}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open </span>
 				</Button>
 
-				<Button variant="secondary" on:click={() => itemState.duplicateItem(itemId)}>
+				<Button variant="secondary" on:click={() => duplicateItem()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>

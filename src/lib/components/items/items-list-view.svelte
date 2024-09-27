@@ -10,7 +10,7 @@
 		getPropertyValue
 	} from '$lib/components/property';
 	import { type Item, View } from '@prisma/client';
-	import { cn } from '$lib/utils';
+	import { cn, preventEnterKeypress } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEBOUNCE_INTERVAL } from '$lib/constant';
@@ -40,10 +40,6 @@
 		const id = targetEl.dataset.id!;
 		const name = targetEl.innerText;
 		updItemDebounced({ id, data: { name } });
-	}
-
-	function preventEnterKeypress(e: KeyboardEvent) {
-		if (e.key === 'Enter') e.preventDefault();
 	}
 
 	function onClickItemBody(
@@ -87,7 +83,8 @@
 			</div>
 
 			<ItemMenu
-				itemId={item.id}
+				id={item.id}
+				name={item.name}
 				{clickOpenItem}
 				class={cn('absolute right-2 top-0', $isDesktop && 'invisible group-hover:visible')}
 			/>

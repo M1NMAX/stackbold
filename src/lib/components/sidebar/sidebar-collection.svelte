@@ -22,7 +22,7 @@
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
 	import { getScreenState } from '$lib/components/view';
-	import { ModalState } from '$lib/components/modal';
+	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 	import { getGroupState } from '$lib/components/group';
 	import { getCollectionState } from '$lib/components/collection';
 
@@ -30,11 +30,9 @@
 		active: boolean;
 		asChild?: boolean;
 		collection: Collection;
-
-		deleteCollection: (id: string, name: string) => void;
 	};
 
-	let { active, asChild = false, collection, deleteCollection }: Props = $props();
+	let { active, asChild = false, collection }: Props = $props();
 
 	let renameError = $state<string | null>(null);
 
@@ -51,6 +49,7 @@
 
 	const sidebarState = getSidebarState();
 	const isDesktop = getScreenState();
+	const deleteModal = getDeleteModalState();
 
 	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
@@ -77,6 +76,17 @@
 		const { href } = e.currentTarget;
 		$sidebarState = false;
 		goto(href);
+	}
+
+	function deleteCollection() {
+		deleteModal.openModal({
+			type: 'collection',
+			id: collection.id,
+			name: collection.name,
+			fun: () => {
+				collectionState.deleteCollection(collection.id);
+			}
+		});
 	}
 </script>
 
@@ -139,10 +149,7 @@
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					on:click={() => deleteCollection(collection.id, collection.name)}
-					class="group"
-				>
+				<DropdownMenu.Item on:click={() => deleteCollection()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -210,7 +217,7 @@
 						variant="destructive"
 						on:click={() => {
 							smallScreenDrawer.closeModal();
-							deleteCollection(collection.id, collection.name);
+							deleteCollection();
 						}}
 					>
 						<Trash class="icon-xs" />

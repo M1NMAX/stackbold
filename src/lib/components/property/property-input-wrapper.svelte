@@ -67,8 +67,12 @@
 	function deleteProperty() {
 		if (isDrawerOpen) isDrawerOpen = false;
 		deleteModal.openModal({
+			type: 'property',
 			id: property.id,
-			type: 'property'
+			name: property.name,
+			fun: () => {
+				propertyState.deleteProperty(property.id);
+			}
 		});
 	}
 
@@ -219,7 +223,6 @@
 												{#if !selectedOpt}
 													{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
 												{:else}
-													<!-- svelte-ignore element_invalid_self_closing_tag -->
 													<span class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}
 													></span>
 													{selectedOpt.value}
@@ -242,7 +245,6 @@
 											</DropdownMenu.RadioItem>
 											{#each property.options as opt}
 												<DropdownMenu.RadioItem value={opt.id}>
-													<!-- svelte-ignore element_invalid_self_closing_tag -->
 													<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`}></span>
 													{opt.value}
 												</DropdownMenu.RadioItem>

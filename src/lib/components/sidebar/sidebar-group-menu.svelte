@@ -5,25 +5,31 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { getCrtCollectionModalState, ModalState } from '$lib/components/modal';
+	import {
+		getCrtCollectionModalState,
+		getDeleteModalState,
+		ModalState
+	} from '$lib/components/modal';
 	import { nameSchema } from '$lib/schema';
 	import { getGroupState } from '$lib/components/group';
 
 	type Props = {
 		id: string;
-		name: string;
-		deleteGroup: (id: string, name: string) => void;
 	};
 
-	let { id, name, deleteGroup }: Props = $props();
+	let { id }: Props = $props();
 
 	const groupState = getGroupState();
+	const group = $derived.by(() => {
+		return groupState.getGroup(id)!;
+	});
 
 	let renameError = $state<string | null>(null);
 	const renameGroupModal = new ModalState();
 	const smallScreenDrawer = new ModalState();
 
 	const crtCollectionModal = getCrtCollectionModalState();
+	const deleteModal = getDeleteModalState();
 
 	const isDesktop = getScreenState();
 
@@ -42,6 +48,17 @@
 		renameError = null;
 		groupState.updGroup({ id, data: { name } });
 		renameGroupModal.closeModal();
+	}
+
+	function deleteGroup() {
+		deleteModal.openModal({
+			type: 'group',
+			id,
+			name: group.name,
+			fun: () => {
+				groupState.deleteGroup(id);
+			}
+		});
 	}
 </script>
 
@@ -69,7 +86,7 @@
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => deleteGroup(id, name)} class="group">
+				<DropdownMenu.Item on:click={() => deleteGroup()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -89,7 +106,7 @@
 							<ChevronRight class="icon-sm" />
 						</div>
 
-						<div class=" text-base font-semibold truncate">{name}</div>
+						<div class=" text-base font-semibold truncate">{group.name}</div>
 					</div>
 				</Drawer.Header>
 				<Drawer.Footer class="pt-2">
@@ -104,7 +121,7 @@
 						<span> Rename </span>
 					</Button>
 
-					<Button variant="destructive" on:click={() => deleteGroup(id, name)}>
+					<Button variant="destructive" on:click={() => deleteGroup()}>
 						<Trash class="icon-xs" />
 						<span>Delete</span>
 					</Button>
@@ -126,7 +143,7 @@
 				type="text"
 				name="name"
 				autocomplete="off"
-				value={name}
+				value={group.name}
 				class="input"
 			/>
 

@@ -61,7 +61,7 @@
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { getGroupState } from '$lib/components/group';
 	import { setPropertyState } from '$lib/components/property';
-	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/components/modal';
 	import ItemPage from './item/[itemid]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext } from 'svelte';
@@ -180,36 +180,6 @@
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
 	async function updProperty(property: RouterInputs['collections']['updateProperty']['property']) {
 		await propertyState.updProperty(property);
-	}
-
-	//Property option services
-	async function handleDelete() {
-		switch (deleteModal.deleteDetail.type) {
-			case 'collection':
-				collectionState.deleteCollection(deleteModal.deleteDetail.id, true);
-				break;
-
-			case 'item':
-				//TODO: Handle when deleted item is the active item
-				itemState.deleteItem(deleteModal.deleteDetail.id);
-				break;
-
-			case 'property':
-				propertyState.deleteProperty(deleteModal.deleteDetail.id);
-				break;
-
-			case 'option':
-				propertyState.deletePropertyOption(
-					deleteModal.deleteDetail.id,
-					deleteModal.deleteDetail.option
-				);
-				break;
-		}
-		deleteModal.closeModal();
-	}
-
-	function preventEnterKeypress(e: KeyboardEvent) {
-		if (e.key == 'Enter') e.preventDefault();
 	}
 
 	function handleScroll(e: Event) {
@@ -722,20 +692,3 @@
 		</Command.Group>
 	</Command.List>
 </Command.Dialog>
-
-<AlertDialog.Root bind:open={deleteModal.isOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete</AlertDialog.Title>
-			<AlertDialog.Description class="text-lg">
-				Are you sure you want to delete this {deleteModal.deleteDetail.type} ?
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
-			</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>

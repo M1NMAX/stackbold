@@ -52,7 +52,14 @@
 	}
 	function deleteCollection() {
 		if (isOpen) isOpen = false;
-		deleteModal.openModal({ type: 'collection', id: collection.id, name: collection.name });
+		deleteModal.openModal({
+			type: 'collection',
+			id: collection.id,
+			name: collection.name,
+			fun: () => {
+				collectionState.deleteCollection(collection.id);
+			}
+		});
 	}
 
 	function moveCollection() {

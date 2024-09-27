@@ -70,7 +70,11 @@
 	function deleteProperty() {
 		deleteModal.openModal({
 			id: property.id,
-			type: 'property'
+			type: 'property',
+			name: property.name,
+			fun: () => {
+				propertyState.deleteProperty(property.id);
+			}
 		});
 	}
 </script>
@@ -198,7 +202,6 @@
 							{#each property.options as opt}
 								<Select.Item value={opt.id}>
 									<span class="flex items-center">
-										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<span class={` icon-sm mr-2 rounded ${PROPERTY_COLORS[opt.color]}`}></span>
 										{opt.value}
 									</span>

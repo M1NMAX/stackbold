@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getCollectionState } from '$lib/components/collection';
 	import { setItemState } from '$lib/components/items';
-	import { ModalState, setDeleteModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/components/modal';
 	import { setPropertyState } from '$lib/components/property';
 	import { ITEM_PANEL_CTX_KEY, PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
 	import { setContext } from 'svelte';
@@ -13,8 +13,6 @@
 	const itemState = setItemState(data.items);
 
 	const propertyState = setPropertyState(findCurrentCollection().properties, data.cid);
-
-	setDeleteModalState();
 
 	function findCurrentCollection() {
 		return collectionState.collections.find((collection) => collection.id === data.cid)!;

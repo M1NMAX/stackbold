@@ -36,7 +36,7 @@ export class CreateCollectionModal extends ModalState {
 }
 
 export class DeleteContentModal extends ModalState {
-	deleteDetail = $state<DeleteDetail>({ type: null });
+	detail = $state<DeleteDetail>({ type: null });
 
 	constructor(isOpen: boolean = false) {
 		super(isOpen);
@@ -44,12 +44,12 @@ export class DeleteContentModal extends ModalState {
 
 	openModal(detail: DeleteDetail): void {
 		super.openModal();
-		this.deleteDetail = detail;
+		this.detail = detail;
 	}
 
 	closeModal(): void {
 		super.closeModal();
-		this.deleteDetail = { type: null };
+		this.detail = { type: null };
 	}
 }
 
