@@ -20,7 +20,7 @@ export class GroupState {
 		this.groups = this.groups.filter((group) => group.id !== id);
 	}
 
-	#getGroup(id: string) {
+	getGroup(id: string) {
 		return this.groups.find((group) => group.id === id) || null;
 	}
 
@@ -47,7 +47,7 @@ export class GroupState {
 	async updGroup(args: RouterInputs['groups']['update']) {
 		const { id, data } = args;
 
-		let target = this.#getGroup(id);
+		let target = this.getGroup(id);
 		if (target == null) return;
 		try {
 			this.#updGroup(id, { ...target, ...data });
@@ -59,7 +59,7 @@ export class GroupState {
 	}
 
 	async deleteGroup(id: string) {
-		let target = this.#getGroup(id);
+		let target = this.getGroup(id);
 		if (target == null) return;
 
 		try {
