@@ -1,8 +1,7 @@
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
+export const load: PageServerLoad = async () => {
 	return {
-		id: event.params.itemid,
 		insidePanel: false
 	};
 };

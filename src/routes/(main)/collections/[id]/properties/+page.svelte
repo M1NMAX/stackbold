@@ -1,16 +1,20 @@
 <script lang="ts">
 	import { ModalState } from '$lib/components/modal';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { AddPropertyPopover, getPropertyState, PropertyEditor } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
-	import { X } from 'lucide-svelte';
+	import { cn } from '$lib/utils/index.js';
+	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 
-	let currentlyOpen = $state<string | null>(null);
+	let { data } = $props();
+
 	const propertyState = getPropertyState();
 
 	const propertiesPanel = getContext<ModalState>(PROPERTIES_PANEL_CTX_KEY);
 
+	let currentlyOpen = $state<string | null>(propertyState.properties[0].id);
 	function toggleEditor(pid: string | null) {
 		currentlyOpen = pid;
 	}
@@ -19,15 +23,61 @@
 		history.back();
 		propertiesPanel.closeModal();
 	}
+
+	let isSmHeadingVisible = $state(false);
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
 </script>
 
-<div class="flex items-center justify-between">
-	<h2 class="text-2xl font-semibold text-center">Properties</h2>
-	<Button variant="secondary" size="icon" on:click={() => onClickCloseBtn()}>
-		<X class="icon-sm" />
-	</Button>
-</div>
-<div class="grow flex flex-col space-y-2 overflow-y-auto">
+{#if data.insidePanel}
+	<div class="flex items-center justify-between">
+		<h2 class="text-2xl font-semibold text-center">Properties</h2>
+		<Button variant="secondary" size="icon" on:click={() => onClickCloseBtn()}>
+			<X class="icon-sm" />
+		</Button>
+	</div>
+
+	<div class="grow flex flex-col space-y-2 overflow-y-auto">
+		{@render editors()}
+	</div>
+
+	<div>
+		<AddPropertyPopover />
+	</div>
+{:else}
+	<PageContainer>
+		<PageContent class="flex flex-col pb-1 px-0 overflow-hidden">
+			<div class="flex items-center space-x-2 sticky top-0">
+				<Button variant="secondary" size="icon" on:click={() => history.back()}>
+					<ChevronLeft />
+				</Button>
+
+				<h1 class={cn('font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+					Properties
+				</h1>
+			</div>
+
+			<div class="flex flex-col grow overflow-y-auto hd-scroll" onscroll={handleScroll}>
+				<h1 class={cn('pb-2 font-semibold text-3xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+					Properties
+				</h1>
+
+				<div class="grow flex flex-col space-y-2">
+					{@render editors()}
+				</div>
+			</div>
+			<div>
+				<AddPropertyPopover />
+			</div>
+		</PageContent>
+	</PageContainer>
+{/if}
+
+{#snippet editors()}
 	{#each propertyState.properties as property}
 		<PropertyEditor
 			{property}
@@ -35,7 +85,4 @@
 			openChange={(value) => toggleEditor(value)}
 		/>
 	{/each}
-</div>
-<div>
-	<AddPropertyPopover />
-</div>
+{/snippet}

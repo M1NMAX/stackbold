@@ -1,17 +1,31 @@
 <script lang="ts">
 	import { getItemState } from '$lib/components/items';
-	import { ModalState } from '$lib/components/modal';
+	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import { PageContainer, PageContent } from '$lib/components/page';
 	import { getPropertyState, PropertyInput, PropertyInputWrapper } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
-	import { ITEM_PANEL_CTX_KEY } from '$lib/constant';
-	import { X } from 'lucide-svelte';
+	import { getScreenState } from '$lib/components/view';
+	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY } from '$lib/constant';
+	import type { RouterInputs } from '$lib/trpc/router.js';
+	import { cn, preventEnterKeypress } from '$lib/utils';
+	import debounce from 'debounce';
+	import { ChevronLeft, Copy, X, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { getContext } from 'svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Drawer from '$lib/components/ui/drawer';
 
 	let { data } = $props();
 
+	const isDesktop = getScreenState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	let item = $derived(getCurrentItem());
+
+	let isSmHeadingVisible = $state(false);
+	let renameItemError = $state<string | null>(null);
+
+	const menuState = new ModalState();
+	const deleteModal = getDeleteModalState();
 
 	// Utils functions
 	function getCurrentItem() {
@@ -19,24 +33,115 @@
 	}
 
 	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
-	function onClickCloseBtn() {
+	function goBack() {
 		history.back();
 		itemPanel.closeModal();
 	}
+
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
+
+	async function updItem(data: RouterInputs['items']['update']['data']) {
+		await itemState.updItem({ id: item.id, data });
+	}
+
+	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
+
+	async function handleOnInputItemName(e: Event) {
+		const targetEl = e.currentTarget as HTMLParagraphElement;
+		const name = targetEl.innerText;
+
+		if (name.length > 50) {
+			renameItemError = 'Item name must be at most 50 characters';
+			return;
+		}
+
+		renameItemError = null;
+		updItemDebounced({ name });
+	}
+
+	function duplicateItem() {
+		if (menuState.isOpen) menuState.closeModal();
+		itemState.duplicateItem(item.id);
+	}
+
+	function deleteItem() {
+		if (menuState.isOpen) menuState.closeModal();
+		deleteModal.openModal({
+			type: 'item',
+			id: item.id,
+			name: item.name,
+			fun: () => {
+				itemState.deleteItem(item.id);
+				goBack();
+			}
+		});
+	}
 </script>
 
-<div class="flex items-center justify-between">
-	<!-- TODO: add handler for onInput ev -->
+{#if data.insidePanel}
+	<div class="flex items-center justify-between space-x-1">
+		<!-- TODO: add handler for onInput ev -->
 		<h2 class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'invisble')}>
 			{item.name}
 		</h2>
 
 		{@render menu()}
 		<Button variant="secondary" size="icon" on:click={() => goBack()}>
-		<X class="icon-sm" />
-	</Button>
-</div>
-<div class="space-y-2">
+			<X class="icon-sm" />
+		</Button>
+	</div>
+	<div class="hd-scroll" onscroll={handleScroll}>
+		<p
+			contenteditable
+			spellcheck={false}
+			onkeypress={preventEnterKeypress}
+			oninput={handleOnInputItemName}
+			class="pt-1 pb-2 text-2xl font-semibold break-words focus:outline-none"
+		>
+			{item.name}
+		</p>
+		<div class="space-y-2">
+			{@render properties()}
+		</div>
+	</div>
+{:else}
+	<PageContainer>
+		<PageContent>
+			<div class="flex justify-between items-center space-x-2">
+				<Button variant="secondary" size="icon" on:click={() => history.back()}>
+					<ChevronLeft />
+				</Button>
+				<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+					{item.name}
+				</h1>
+
+				{@render menu()}
+			</div>
+
+			<div class="hd-scroll" onscroll={handleScroll}>
+				<p
+					contenteditable
+					spellcheck={false}
+					onkeypress={preventEnterKeypress}
+					oninput={handleOnInputItemName}
+					class="pt-1 pb-2 text-2xl font-semibold break-words focus:outline-none"
+				>
+					{item.name}
+				</p>
+				<div class="space-y-2">
+					{@render properties()}
+				</div>
+			</div>
+		</PageContent>
+	</PageContainer>
+{/if}
+
+{#snippet properties()}
 	{#each propertyState.properties as property}
 		<PropertyInputWrapper {property}>
 			<PropertyInput {property} itemId={item.id} />

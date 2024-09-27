@@ -32,12 +32,18 @@
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
+	import {
+		capitalizeFirstLetter,
+		cn,
+		noCheck,
+		preventEnterKeypress,
+		sortFun,
+		type SortOption
+	} from '$lib/utils';
 	import { fade } from 'svelte/transition';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
@@ -116,7 +122,6 @@
 	let isSmallHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
 	const moveCollectionModal = new ModalState();
-	const deleteModal = getDeleteModalState();
 
 	const groupState = getGroupState();
 	const isDesktop = getScreenState();
@@ -249,7 +254,7 @@
 
 	async function onClickOpenProperties() {
 		const url = `/collections/${collection.id}/properties`;
-		if (!isDesktop) {
+		if (!$isDesktop) {
 			goto(url);
 			return;
 		}
@@ -257,7 +262,7 @@
 		const result = await preloadData(url);
 
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { showPanel: true });
+			pushState(url, { showPanel: true, insidePanel: true });
 			propertiesPanel.openModal();
 		} else {
 			goto(url);
@@ -277,15 +282,11 @@
 		const result = await preloadData(url);
 
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { id: result.data.id });
+			pushState(url, { id: result.data.id, insidePanel: true });
 			itemPanel.openModal();
 		} else {
 			goto(url);
 		}
-	}
-
-	function noCheck(x: any) {
-		return x;
 	}
 </script>
 
@@ -650,7 +651,7 @@
 {#if $page.state.showPanel}
 	<!-- Properties Sliding panel -->
 	<SlidingPanel open={propertiesPanel.isOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
-		<PropertiesPage />
+		<PropertiesPage data={noCheck($page.state)} />
 	</SlidingPanel>
 {/if}
 <ItemNew bind:isOpen={isCreateItemDialogOpen}>

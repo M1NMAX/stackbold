@@ -15,6 +15,7 @@ declare global {
 		// interface PageData {}
 		interface PageState {
 			id?: string;
+			insidePanel?: boolean;
 			showPanel?: boolean;
 		}
 	}
