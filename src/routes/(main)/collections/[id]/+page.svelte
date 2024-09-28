@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {
-		Check,
 		CheckSquare2,
 		Pin,
 		PinOff,
@@ -11,7 +10,7 @@
 		StretchHorizontal,
 		Table
 	} from 'lucide-svelte';
-	import { View, type Item } from '@prisma/client';
+	import { View } from '@prisma/client';
 	import {
 		ItemNew,
 		Items,
@@ -94,7 +93,7 @@
 
 		propertyState.properties = collection.properties;
 	});
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Item>[])];
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 
 	let sort = $state(sortOptions[0]);
 
@@ -121,7 +120,6 @@
 
 	let isSmallHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
-	const moveCollectionModal = new ModalState();
 
 	const groupState = getGroupState();
 	const isDesktop = getScreenState();
@@ -670,26 +668,3 @@
 		<Button type="submit" class="w-full">Create</Button>
 	</form>
 </ItemNew>
-
-<Command.Dialog bind:open={moveCollectionModal.isOpen}>
-	<Command.Input placeholder="Move collection to..." />
-	<Command.List>
-		<Command.Empty>No group found.</Command.Empty>
-		<Command.Group>
-			{#each groupState.groups as group (group.id)}
-				<Command.Item
-					value={group.name}
-					onSelect={() => {
-						updCollection({ groupId: group.id });
-						moveCollectionModal.closeModal();
-					}}
-					class="space-x-2"
-				>
-					<Check class={cn('icon-xxs', group.id !== collection.groupId && 'text-transparent')} />
-
-					<span> {group.name} </span>
-				</Command.Item>
-			{/each}
-		</Command.Group>
-	</Command.List>
-</Command.Dialog>

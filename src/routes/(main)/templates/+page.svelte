@@ -27,7 +27,7 @@
 
 	let isPanelOpen = $state(false);
 
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Template>[])];
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 	let sort = $state(sortOptions[0]);
 
 	let search = $state('');
