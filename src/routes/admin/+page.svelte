@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { AppWindow, LayoutDashboard, LogOut, UserPlus } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
-	import type { DeleteDetail } from '$lib/types';
 	import type { User } from '@prisma/client';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent } from '$lib/components/page';
@@ -9,12 +8,11 @@
 	import { SortArrow, SortDropdown } from '$lib/components/sort';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { onError } from '$lib/components/ui/sonner';
@@ -27,7 +25,7 @@
 	let user = $state(data.user);
 
 	type UserWithoutPassword = Omit<User, 'password'>;
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<UserWithoutPassword>[])];
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 	let sort = $state(sortOptions[0]);
 
 	let search = $state('');
@@ -44,10 +42,8 @@
 	});
 
 	const deleteModal = getDeleteModalState();
-	let deleteDetail = $state<DeleteDetail>({ type: null });
 
 	const addUserModal = new ModalState();
-	const deleteUserModal = new ModalState();
 
 	const isDesktop = getScreenState();
 
@@ -58,7 +54,7 @@
 					addUserModal.closeModal();
 					toast.success('User added successfully');
 
-					invalidateAll();
+					invalidate('/admin');
 					break;
 
 				case 'error':
@@ -72,24 +68,18 @@
 		try {
 			await trpc().users.delete.mutate(id);
 
-			// TODO: remove user from `users`
-			// users = users.filter((user) => user.id !== id);
+			await invalidateAll();
 
 			toast.success(`User [${name}] deleted successfully`);
 		} catch (error) {
 			onError(error);
 		}
 	}
-	async function handleDelete() {
-		if (deleteDetail.type !== 'user') return;
-
-		await deleteUser(deleteDetail.id, deleteDetail.name);
-		deleteUserModal.closeModal();
-	}
 
 	function clickHead(head: string) {
-		const field = head as keyof UserWithoutPassword;
+		const field = head as keyof UserWithoutPassword | string;
 		const order = sort.order === 'asc' ? 'desc' : 'asc';
+		// @ts-ignore
 		sort = { ...sort, field, order };
 	}
 </script>
@@ -198,9 +188,14 @@
 								<div
 									title="Delete"
 									onclick={() => {
-										//TODO: implement delete user using modal
-										// deleteDetail = { type: 'user', id: user.id, name: user.email };
-										deleteUserModal.openModal();
+										deleteModal.openModal({
+											type: 'user',
+											id: user.id,
+											name: user.name,
+											fun: () => {
+												deleteUser(user.id, user.name);
+											}
+										});
 									}}
 									class={cn(
 										buttonVariants({ variant: 'ghost' }),
@@ -312,20 +307,3 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
-
-<AlertDialog.Root bind:open={deleteUserModal.isOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete</AlertDialog.Title>
-			<AlertDialog.Description class="text-lg">
-				Are you sure you want to delete this {deleteDetail.type} ?
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
-			</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>

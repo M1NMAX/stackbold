@@ -39,7 +39,7 @@ export const actions: Actions = {
 		if (!validPassword) return message(form, 'Invalid Credentials');
 
 		const session = await lucia.createSession(storedUser.id, {
-			role: Role.MEMBER
+			role: storedUser.role
 		});
 
 		const sessionCookie = lucia.createSessionCookie(session.id);
