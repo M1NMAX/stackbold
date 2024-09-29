@@ -84,10 +84,11 @@
 </script>
 
 {#if data.insidePanel}
-	<div class="flex items-center justify-between space-x-1">
-		<!-- TODO: add handler for onInput ev -->
-		<h2 class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'invisble')}>
-			{item.name}
+	<div
+		class={cn('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
+	>
+		<h2 class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
+			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
 		</h2>
 
 		{@render menu()}
