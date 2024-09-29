@@ -51,7 +51,6 @@
 	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButtonsGroup, getScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import {

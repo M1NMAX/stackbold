@@ -17,6 +17,7 @@ declare global {
 			id?: string;
 			insidePanel?: boolean;
 			showPanel?: boolean;
+			template?: Template;
 		}
 	}
 }
