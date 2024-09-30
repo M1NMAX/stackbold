@@ -69,7 +69,7 @@
 	import ItemPage from './item/[itemid]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext } from 'svelte';
-	import { clickOutside } from '$lib/actions';
+	import { clickOutside, textareaAutoSize } from '$lib/actions';
 	import { nameSchema } from '$lib/schema';
 
 	let { data } = $props();
@@ -364,6 +364,7 @@
 				<!-- TODO: CHANGE URG -->
 
 				<textarea
+					use:textareaAutoSize
 					id="description"
 					value={collection.description}
 					oninput={handleOnInputCollectionDesc}

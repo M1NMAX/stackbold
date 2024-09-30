@@ -14,6 +14,7 @@
 	import { getScreenState } from '$lib/components/view';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
+	import { textareaAutoSize } from '$lib/actions';
 
 	type Props = {
 		itemId: string;
@@ -269,6 +270,7 @@
 					<!-- TODO : CHANGE URG -->
 
 					<textarea
+						use:textareaAutoSize
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
@@ -299,6 +301,7 @@
 
 					<!-- TODO : GHANGE URG -->
 					<textarea
+						use:textareaAutoSize
 						id={property.id}
 						name={property.name}
 						placeholder="Empty"
