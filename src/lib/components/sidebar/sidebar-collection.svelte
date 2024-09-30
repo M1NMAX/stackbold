@@ -81,14 +81,14 @@
 
 	function moveCollection() {
 		if (smallScreenDrawer.isOpen) smallScreenDrawer.closeModal();
-		moveCollectionModal.openModal({
+		moveCollectionModal.open({
 			collectionId: collection.id,
 			currentGroupId: collection.groupId || null
 		});
 	}
 
 	function deleteCollection() {
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
@@ -132,7 +132,7 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={() => renameCollectionModal.openModal()}>
+				<DropdownMenu.Item on:click={() => renameCollectionModal.open()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>

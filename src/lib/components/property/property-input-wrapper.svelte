@@ -66,7 +66,7 @@
 
 	function deleteProperty() {
 		if (isDrawerOpen) isDrawerOpen = false;
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'property',
 			id: property.id,
 			name: property.name,

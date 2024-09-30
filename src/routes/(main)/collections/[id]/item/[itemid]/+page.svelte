@@ -71,7 +71,7 @@
 
 	function deleteItem() {
 		if (menuState.isOpen) menuState.closeModal();
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'item',
 			id: item.id,
 			name: item.name,

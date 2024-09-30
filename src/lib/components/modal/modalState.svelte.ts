@@ -8,7 +8,7 @@ export class ModalState {
 		this.isOpen = isOpen;
 	}
 
-	openModal(_args?: unknown) {
+	open(_args?: unknown) {
 		this.isOpen = true;
 	}
 
@@ -24,8 +24,8 @@ export class CreateCollectionModal extends ModalState {
 		super(isOpen);
 	}
 
-	openModal(group?: string | undefined): void {
-		super.openModal();
+	open(group?: string | undefined): void {
+		super.open();
 		this.group = group;
 	}
 
@@ -42,8 +42,8 @@ export class DeleteContentModal extends ModalState {
 		super(isOpen);
 	}
 
-	openModal(detail: DeleteDetail): void {
-		super.openModal();
+	open(detail: DeleteDetail): void {
+		super.open();
 		this.detail = detail;
 	}
 
@@ -60,8 +60,8 @@ export class MoveCollectionModal extends ModalState {
 		super(isOpen);
 	}
 
-	openModal(detail: MoveCollectionDetail): void {
-		super.openModal();
+	open(detail: MoveCollectionDetail): void {
+		super.open();
 		this.detail = detail;
 	}
 

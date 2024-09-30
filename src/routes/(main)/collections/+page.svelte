@@ -60,7 +60,7 @@
 					<SearchInput placeholder="Find Collection" bind:value={search} />
 
 					<SortDropdown options={sortOptions} bind:value={sort} />
-					<Button onclick={() => crtCollectionModal.openModal()}>New Collection</Button>
+					<Button onclick={() => crtCollectionModal.open()}>New Collection</Button>
 				</div>
 			{:else}
 				<div class="flex space-x-1">
@@ -120,7 +120,7 @@
 			<Button
 				size="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
-				onclick={() => crtCollectionModal.openModal()}
+				onclick={() => crtCollectionModal.open()}
 			>
 				<FolderPlus />
 			</Button>

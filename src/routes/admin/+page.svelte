@@ -131,7 +131,7 @@
 				<SearchInput placeholder="Find User" bind:value={search} />
 
 				<SortDropdown options={sortOptions} bind:value={sort} />
-				<Button on:click={() => addUserModal.openModal()}>New user</Button>
+				<Button on:click={() => addUserModal.open()}>New user</Button>
 			</div>
 		{:else}
 			<SearchInput placeholder="Find User" bind:value={search} />
@@ -188,7 +188,7 @@
 								<div
 									title="Delete"
 									onclick={() => {
-										deleteModal.openModal({
+										deleteModal.open({
 											type: 'user',
 											id: user.id,
 											name: user.name,
@@ -218,7 +218,7 @@
 		</div>
 		{#if !$isDesktop}
 			<Button
-				on:click={() => addUserModal.openModal()}
+				on:click={() => addUserModal.open()}
 				class="fixed bottom-4 right-4 z-10 h-12 w-12 rounded-full"
 			>
 				<UserPlus />

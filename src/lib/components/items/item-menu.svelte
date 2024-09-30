@@ -25,7 +25,7 @@
 
 	function deleteItem() {
 		if (open) open = false;
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'item',
 			id,
 			name,

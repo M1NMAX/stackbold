@@ -51,7 +51,7 @@
 	}
 
 	function deleteGroup() {
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'group',
 			id,
 			name: group.name,
@@ -76,12 +76,12 @@
 				</Button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={() => crtCollectionModal.openModal(id)}>
+				<DropdownMenu.Item on:click={() => crtCollectionModal.open(id)}>
 					<Plus class="icon-xs" />
 					<span>New collection</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => renameGroupModal.openModal()}>
+				<DropdownMenu.Item on:click={() => renameGroupModal.open()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
@@ -113,7 +113,7 @@
 					<Button
 						variant="secondary"
 						on:click={() => {
-							renameGroupModal.openModal();
+							renameGroupModal.open();
 							smallScreenDrawer.closeModal();
 						}}
 					>

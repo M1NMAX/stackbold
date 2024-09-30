@@ -52,7 +52,7 @@
 	}
 	function deleteCollection() {
 		if (isOpen) isOpen = false;
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
@@ -64,7 +64,7 @@
 
 	function moveCollection() {
 		if (isOpen) isOpen = false;
-		moveCollectionModal.openModal({
+		moveCollectionModal.open({
 			collectionId: collection.id,
 			currentGroupId: collection.groupId
 		});

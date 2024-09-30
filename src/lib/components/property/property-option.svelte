@@ -64,7 +64,7 @@
 	function deleteOption() {
 		if (isSmallScreenDrawerOpen) isSmallScreenDrawerOpen = false;
 
-		deleteModal.openModal({
+		deleteModal.open({
 			type: 'option',
 			id: propertyId,
 			option: option.id,

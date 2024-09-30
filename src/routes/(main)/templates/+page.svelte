@@ -51,7 +51,7 @@
 
 		if (result.type === 'loaded' && result.status === 200) {
 			pushState(href, { template: result.data.template, insidePanel: true });
-			templatePanel.openModal();
+			templatePanel.open();
 		} else {
 			goto(href);
 		}

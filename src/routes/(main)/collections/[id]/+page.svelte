@@ -260,7 +260,7 @@
 
 		if (result.type === 'loaded' && result.status === 200) {
 			pushState(url, { showPanel: true, insidePanel: true });
-			propertiesPanel.openModal();
+			propertiesPanel.open();
 		} else {
 			goto(url);
 		}
@@ -280,7 +280,7 @@
 
 		if (result.type === 'loaded' && result.status === 200) {
 			pushState(url, { id: result.data.id, insidePanel: true });
-			itemPanel.openModal();
+			itemPanel.open();
 		} else {
 			goto(url);
 		}

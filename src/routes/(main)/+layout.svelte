@@ -134,7 +134,7 @@
 			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
 		>
 			<div class=" flex justify-between space-x-0.5 px-1">
-				<SidebarUserMenu {user} search={() => globalSearchModal.openModal()} />
+				<SidebarUserMenu {user} search={() => globalSearchModal.open()} />
 			</div>
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
@@ -184,15 +184,11 @@
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
-				<Button
-					variant="secondary"
-					class="grow h-9"
-					on:click={() => crtCollectionModal.openModal()}
-				>
+				<Button variant="secondary" class="grow h-9" on:click={() => crtCollectionModal.open()}>
 					<FolderPlus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" on:click={() => createGroupModal.openModal()}>
+				<Button variant="secondary" size="icon" on:click={() => createGroupModal.open()}>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>
@@ -283,7 +279,7 @@
 					value="new collection"
 					onSelect={() => {
 						globalSearchModal.closeModal();
-						crtCollectionModal.openModal();
+						crtCollectionModal.open();
 					}}
 				>
 					<FolderPlus class="icon-xs" />
@@ -295,7 +291,7 @@
 					value="new group"
 					onSelect={() => {
 						globalSearchModal.closeModal();
-						createGroupModal.openModal();
+						createGroupModal.open();
 					}}
 				>
 					<PackagePlus class="icon-xs" />

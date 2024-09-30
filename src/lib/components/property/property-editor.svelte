@@ -68,7 +68,7 @@
 	}
 
 	function deleteProperty() {
-		deleteModal.openModal({
+		deleteModal.open({
 			id: property.id,
 			type: 'property',
 			name: property.name,
