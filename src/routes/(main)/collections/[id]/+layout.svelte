@@ -14,6 +14,9 @@
 
 	const propertyState = setPropertyState(findCurrentCollection().properties, data.cid);
 
+	const propertiesPanel = setContext(PROPERTIES_PANEL_CTX_KEY, new ModalState());
+	const itemPanel = setContext(ITEM_PANEL_CTX_KEY, new ModalState());
+
 	function findCurrentCollection() {
 		return collectionState.collections.find((collection) => collection.id === data.cid)!;
 	}
@@ -24,8 +27,11 @@
 		propertyState.properties = findCurrentCollection().properties;
 	});
 
-	setContext(PROPERTIES_PANEL_CTX_KEY, new ModalState());
-	setContext(ITEM_PANEL_CTX_KEY, new ModalState());
+	$effect(() => {
+		data.cid;
+		propertiesPanel.closeModal();
+		itemPanel.closeModal();
+	});
 </script>
 
 {@render children()}
