@@ -12,7 +12,7 @@ export class ModalState {
 		this.isOpen = true;
 	}
 
-	closeModal() {
+	close() {
 		this.isOpen = false;
 	}
 }
@@ -29,8 +29,8 @@ export class CreateCollectionModal extends ModalState {
 		this.group = group;
 	}
 
-	closeModal(): void {
-		super.closeModal();
+	close(): void {
+		super.close();
 		this.group = undefined;
 	}
 }
@@ -47,8 +47,8 @@ export class DeleteContentModal extends ModalState {
 		this.detail = detail;
 	}
 
-	closeModal(): void {
-		super.closeModal();
+	close(): void {
+		super.close();
 		this.detail = { type: null };
 	}
 }
@@ -65,8 +65,8 @@ export class MoveCollectionModal extends ModalState {
 		this.detail = detail;
 	}
 
-	closeModal(): void {
-		super.closeModal();
+	close(): void {
+		super.close();
 		this.detail = null;
 	}
 }

@@ -21,7 +21,7 @@
 
 	function onClickCloseBtn() {
 		history.back();
-		propertiesPanel.closeModal();
+		propertiesPanel.close();
 	}
 
 	let isSmHeadingVisible = $state(false);

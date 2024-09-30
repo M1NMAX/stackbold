@@ -35,7 +35,7 @@
 	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
 	function goBack() {
 		history.back();
-		itemPanel.closeModal();
+		itemPanel.close();
 	}
 
 	function handleScroll(e: Event) {
@@ -65,12 +65,12 @@
 	}
 
 	function duplicateItem() {
-		if (menuState.isOpen) menuState.closeModal();
+		if (menuState.isOpen) menuState.close();
 		itemState.duplicateItem(item.id);
 	}
 
 	function deleteItem() {
-		if (menuState.isOpen) menuState.closeModal();
+		if (menuState.isOpen) menuState.close();
 		deleteModal.open({
 			type: 'item',
 			id: item.id,

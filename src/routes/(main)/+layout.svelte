@@ -71,7 +71,7 @@
 
 		error = { type: null };
 		await groupState.createGroup({ name });
-		createGroupModal.closeModal();
+		createGroupModal.close();
 	}
 
 	// collection handlers
@@ -91,7 +91,7 @@
 		error = { type: null };
 
 		collectionState.createCollection({ name, groupId: group || null });
-		crtCollectionModal.closeModal();
+		crtCollectionModal.close();
 	}
 
 	function activeCollection(id: string) {
@@ -278,7 +278,7 @@
 					class="space-x-2"
 					value="new collection"
 					onSelect={() => {
-						globalSearchModal.closeModal();
+						globalSearchModal.close();
 						crtCollectionModal.open();
 					}}
 				>
@@ -290,7 +290,7 @@
 					class="space-x-2"
 					value="new group"
 					onSelect={() => {
-						globalSearchModal.closeModal();
+						globalSearchModal.close();
 						createGroupModal.open();
 					}}
 				>
@@ -308,7 +308,7 @@
 					value={collection.name}
 					onSelect={() => {
 						goto(`/collections/${collection.id}`);
-						globalSearchModal.closeModal();
+						globalSearchModal.close();
 					}}
 				>
 					<Icon class="icon-xs" />
@@ -324,7 +324,7 @@
 					value={`${item.collection.name} ${item.name}`}
 					onSelect={() => {
 						goto(`/collections/${item.collection.id}?id=${item.id}`);
-						globalSearchModal.closeModal();
+						globalSearchModal.close();
 					}}
 				>
 					<Hash class="icon-xs" />
@@ -352,7 +352,7 @@
 						value="collection"
 						onSelect={() => {
 							collectionState.updCollection({ id: collectionId, data: { groupId: null } });
-							moveCollectionModal.closeModal();
+							moveCollectionModal.close();
 						}}
 					>
 						<Database class="icon-sm" />
@@ -365,7 +365,7 @@
 							value={group.name}
 							onSelect={() => {
 								collectionState.updCollection({ id: collectionId, data: { groupId: group.id } });
-								moveCollectionModal.closeModal();
+								moveCollectionModal.close();
 							}}
 						>
 							<Boxes class="icon-sm" />

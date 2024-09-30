@@ -68,7 +68,7 @@
 		renameError = null;
 
 		collectionState.updCollection({ id: collection.id, data: { name } });
-		renameCollectionModal.closeModal();
+		renameCollectionModal.close();
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -80,7 +80,7 @@
 	}
 
 	function moveCollection() {
-		if (smallScreenDrawer.isOpen) smallScreenDrawer.closeModal();
+		if (smallScreenDrawer.isOpen) smallScreenDrawer.close();
 		moveCollectionModal.open({
 			collectionId: collection.id,
 			currentGroupId: collection.groupId || null
@@ -194,7 +194,7 @@
 							variant="secondary"
 							on:click={() => {
 								collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
-								smallScreenDrawer.closeModal();
+								smallScreenDrawer.close();
 							}}
 						>
 							<HeartOff class="icon-xs" />
@@ -210,7 +210,7 @@
 						variant="secondary"
 						on:click={() => {
 							collectionState.duplicateCollection(collection.id);
-							smallScreenDrawer.closeModal();
+							smallScreenDrawer.close();
 						}}
 					>
 						<Copy class="icon-xs" />
@@ -219,7 +219,7 @@
 					<Button
 						variant="destructive"
 						on:click={() => {
-							smallScreenDrawer.closeModal();
+							smallScreenDrawer.close();
 							deleteCollection();
 						}}
 					>

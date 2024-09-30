@@ -29,8 +29,8 @@
 
 	$effect(() => {
 		data.cid;
-		propertiesPanel.closeModal();
-		itemPanel.closeModal();
+		propertiesPanel.close();
+		itemPanel.close();
 	});
 </script>
 

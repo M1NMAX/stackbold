@@ -51,7 +51,7 @@
 		onResult({ result }) {
 			switch (result.type) {
 				case 'success':
-					addUserModal.closeModal();
+					addUserModal.close();
 					toast.success('User added successfully');
 
 					invalidate('/admin');

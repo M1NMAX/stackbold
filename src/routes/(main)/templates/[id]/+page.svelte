@@ -20,7 +20,7 @@
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
 	function goBack() {
 		history.back();
-		templatePanel.closeModal();
+		templatePanel.close();
 	}
 
 	// TODO: ref better try catch and feedback

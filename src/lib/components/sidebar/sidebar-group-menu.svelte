@@ -47,7 +47,7 @@
 
 		renameError = null;
 		groupState.updGroup({ id, data: { name } });
-		renameGroupModal.closeModal();
+		renameGroupModal.close();
 	}
 
 	function deleteGroup() {
@@ -114,7 +114,7 @@
 						variant="secondary"
 						on:click={() => {
 							renameGroupModal.open();
-							smallScreenDrawer.closeModal();
+							smallScreenDrawer.close();
 						}}
 					>
 						<Pencil class="icon-xs" />
