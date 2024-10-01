@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
 	import { cn } from '$lib/utils/index.js';
-	import { ChevronLeft, X } from 'lucide-svelte';
+	import { ArrowDown, ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 
 	let { data } = $props();
@@ -14,7 +14,9 @@
 
 	const propertiesPanel = getContext<ModalState>(PROPERTIES_PANEL_CTX_KEY);
 
-	let currentlyOpen = $state<string | null>(propertyState.properties[0].id);
+	let currentlyOpen = $state<string | null>(
+		propertyState.properties.length > 0 ? propertyState.properties[0].id : null
+	);
 	function toggleEditor(pid: string | null) {
 		currentlyOpen = pid;
 	}
@@ -28,6 +30,7 @@
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
 
+		console.log(targetEl.scrollTop);
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
 	}
@@ -84,5 +87,11 @@
 			isOpen={currentlyOpen === property.id}
 			openChange={(value) => toggleEditor(value)}
 		/>
+	{:else}
+		<div class="h-full flex flex-col items-center justify-center space-y-2">
+			<p class="text-center text-lg">This collection has no properties. <br /> Please add one</p>
+
+			<ArrowDown class=" icon-lg" />
+		</div>
 	{/each}
 {/snippet}
