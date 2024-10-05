@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createTooltip, melt } from '@melt-ui/svelte';
 	import { DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
 	import type { Property } from '@prisma/client';
-	import { CalendarIcon, Check } from 'lucide-svelte';
+	import { Check } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { cn } from '$lib/utils';
@@ -11,13 +12,15 @@
 		getOption,
 		getPropertyColor,
 		getPropertyRef,
-		PropertyResponsiveWrapper,
-		PropertyValueWrapper
+		PropertyIcon,
+		PropertyResponsiveWrapper
 	} from '.';
 	import { getScreenState } from '$lib/components/view';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
+	import { ModalState } from '$lib/components/modal';
+	import { fade } from 'svelte/transition';
 
 	type Props = {
 		itemId: string;
@@ -30,14 +33,14 @@
 	const itemState = getItemState();
 	const isDesktop = getScreenState();
 
-	let open = $state(false);
+	let wrapperState = new ModalState();
 
 	let value = $derived(getPropertyValue());
 	let color = $derived(getPropertyColor(property, value));
 
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(value: string) {
-		if (shouldClose()) open = false;
+		if (shouldClose()) wrapperState.close();
 		await itemState.updPropertyRef(itemId, { id: property.id, value });
 	}
 
@@ -74,8 +77,21 @@
 	}
 
 	function shouldClose() {
-		return open && (property.type === 'SELECT' || property.type === 'DATE');
+		return wrapperState.isOpen && (property.type === 'SELECT' || property.type === 'DATE');
 	}
+
+	// tooltip
+	const {
+		elements: { trigger, content, arrow },
+		states: { open }
+	} = createTooltip({
+		positioning: {
+			placement: 'top'
+		},
+		openDelay: 0,
+		closeDelay: 0,
+		closeOnPointerDown: false
+	});
 </script>
 
 {#if property.type === 'CHECKBOX'}
@@ -93,17 +109,14 @@
 	</label>
 {:else if property.type === 'SELECT' && (value || isTableView)}
 	{@const selected = getOption(property.options, value)?.value ?? ''}
-
 	<PropertyResponsiveWrapper
-		bind:open
+		bind:open={wrapperState.isOpen}
 		btnClass={buttonClass}
 		mobileClass="p-2"
 		desktopClass="w-full max-w-48 p-1"
 	>
 		{#snippet header()}
-			<PropertyValueWrapper isWrappered={!!value && isTableView} class={PROPERTY_COLORS[color]}>
-				{selected}
-			</PropertyValueWrapper>
+			{@render miniWrapper(selected, !!value && isTableView)}
 		{/snippet}
 
 		<div>
@@ -137,20 +150,22 @@
 	{@const plus = value ? 0 : 1}
 	{@const valueAsDate = value ? new Date(value) : new Date()}
 	{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
+	{@const content = df.format(
+		new CalendarDate(
+			valueAsDate.getFullYear(),
+			valueAsDate.getMonth(),
+			valueAsDate.getDate()
+		).toDate(getLocalTimeZone())
+	)}
 
-	<PropertyResponsiveWrapper bind:open btnClass={buttonClass} desktopClass="w-auto p-0">
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		btnClass={buttonClass}
+		desktopClass="w-auto p-0"
+	>
 		{#snippet header()}
 			{#if value}
-				<PropertyValueWrapper isWrappered={!!value && isTableView} class={PROPERTY_COLORS['GRAY']}>
-					<CalendarIcon class="icon-xs mr-2" />
-					{df.format(
-						new CalendarDate(
-							valueAsDate.getFullYear(),
-							valueAsDate.getMonth(),
-							valueAsDate.getDate()
-						).toDate(getLocalTimeZone())
-					)}
-				</PropertyValueWrapper>
+				{@render miniWrapper(content, !!value && isTableView)}
 			{/if}
 		{/snippet}
 
@@ -171,16 +186,16 @@
 		</div>
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'TEXT' && (value || isTableView)}
-	{@const MAX_STR_LENGTH = 50}
+	{@const MAX_LENGTH = 50}
+	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
 	<PropertyResponsiveWrapper
-		bind:open
+		bind:open={wrapperState.isOpen}
 		btnClass={buttonClass}
 		mobileClass="p-2"
-		desktopClass={cn('w-full max-w-lg', value && value?.length < MAX_STR_LENGTH && 'max-w-xs')}
+		desktopClass={cn('w-full max-w-lg', value && value?.length < MAX_LENGTH && 'max-w-xs')}
 	>
 		{#snippet header()}
-			{value?.substring(0, MAX_STR_LENGTH)}
-			{value && value.length > MAX_STR_LENGTH ? '...' : ''}
+			{@render miniWrapper(content)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -198,9 +213,13 @@
 		</form>
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'NUMBER' && (value || isTableView)}
-	<PropertyResponsiveWrapper bind:open btnClass={buttonClass} mobileClass="p-2">
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		btnClass={buttonClass}
+		mobileClass="p-2"
+	>
 		{#snippet header()}
-			{value}
+			{@render miniWrapper(value)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -221,9 +240,9 @@
 		</form>
 	</PropertyResponsiveWrapper>
 {:else if value || isTableView}
-	<PropertyResponsiveWrapper bind:open btnClass={buttonClass}>
+	<PropertyResponsiveWrapper bind:open={wrapperState.isOpen} btnClass={buttonClass}>
 		{#snippet header()}
-			{value}
+			{@render miniWrapper(value)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -243,3 +262,49 @@
 		</form>
 	</PropertyResponsiveWrapper>
 {/if}
+
+{#snippet miniWrapper(content: string, isWrappered: boolean = false)}
+	{@const wrapperClass = cn(
+		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
+		PROPERTY_COLORS[color]
+	)}
+
+	{#if property.type === 'SELECT'}
+		<span use:melt={$trigger} class={wrapperClass}>
+			{content}
+		</span>
+
+		{@render tooltipContent()}
+	{:else if property.type === 'DATE'}
+		<span use:melt={$trigger} class={wrapperClass}>
+			{content}
+		</span>
+		{@render tooltipContent()}
+	{:else if property.type === 'TEXT'}
+		<span use:melt={$trigger} class={wrapperClass}>
+			{content}
+		</span>
+		{@render tooltipContent()}
+	{:else}
+		<span use:melt={$trigger}>
+			{content}
+		</span>
+		{@render tooltipContent()}
+	{/if}
+{/snippet}
+
+{#snippet tooltipContent()}
+	{#if $open && !isTableView}
+		<div
+			use:melt={$content}
+			transition:fade={{ duration: 100 }}
+			class="z-10 rounded-lg bg-secondary shadow"
+		>
+			<div use:melt={$arrow}></div>
+			<div class="flex items-center p-1">
+				<PropertyIcon key={property.type} class="icon-xs mr-1" />
+				<span class="text-sm font-semibold">{property.name}</span>
+			</div>
+		</div>
+	{/if}
+{/snippet}
