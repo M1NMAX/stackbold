@@ -10,7 +10,7 @@
 		StretchHorizontal,
 		Table
 	} from 'lucide-svelte';
-	import { View } from '@prisma/client';
+	import { Color, View, type Property } from '@prisma/client';
 	import {
 		ItemNew,
 		Items,
@@ -20,7 +20,6 @@
 	} from '$lib/components/items';
 	import {
 		PropertyIcon,
-		PropertyValueWrapper,
 		containsView,
 		//helpers
 		getOption,
@@ -575,20 +574,7 @@
 						{@const color = getPropertyColor(property, key)}
 						<Accordion.Item value={`accordion-item-${key}`}>
 							<Accordion.Trigger class="justify-start p-2 hover:no-underline">
-								<PropertyValueWrapper isWrappered class={PROPERTY_COLORS[color]}>
-									{#if property.type === 'SELECT'}
-										{@const option = getOption(property.options, key)}
-										{option ? option.value : `No ${property.name}`}
-									{:else if property.type === 'CHECKBOX'}
-										{#if key === 'true'}
-											<CheckSquare2 class="icon-xs mr-1.5" />
-										{:else}
-											<Square class="icon-xs mr-1.5" />
-										{/if}
-
-										{property.name}
-									{/if}
-								</PropertyValueWrapper>
+								{@render groupLabel(key, property, color)}
 							</Accordion.Trigger>
 							<Accordion.Content>
 								<Items
@@ -668,3 +654,22 @@
 		<Button type="submit" class="w-full">Create</Button>
 	</form>
 </ItemNew>
+
+{#snippet groupLabel(key: string, property: Property, color: Color)}
+	<span
+		class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+	>
+		{#if property.type === 'SELECT'}
+			{@const option = getOption(property.options, key)}
+			{option ? option.value : `No ${property.name}`}
+		{:else if property.type === 'CHECKBOX'}
+			{#if key === 'true'}
+				<CheckSquare2 class="icon-xs mr-1.5" />
+			{:else}
+				<Square class="icon-xs mr-1.5" />
+			{/if}
+
+			{property.name}
+		{/if}
+	</span>
+{/snippet}
