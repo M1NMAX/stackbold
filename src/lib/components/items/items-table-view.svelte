@@ -171,15 +171,9 @@
 						</td>
 
 						{#each propertyState.properties as property (property.id)}
-							{@const propertyRef = getPropertyRef(item.properties, property.id)}
-							{#if containsView(property.visibleInViews, View.TABLE) && propertyRef}
-								{@const color = getPropertyColor(property, propertyRef.value)}
-								{@const value = getPropertyValue(property, propertyRef.value, false)}
-
+							{#if containsView(property.visibleInViews, View.TABLE)}
 								<td class="border last:border-r-0">
-									{#if propertyRef}
-										<PropertyValue isTableView {property} {color} {value} itemId={item.id} />
-									{/if}
+									<PropertyValue isTableView {property} itemId={item.id} />
 								</td>
 							{/if}
 						{/each}
