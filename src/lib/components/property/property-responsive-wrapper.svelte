@@ -3,7 +3,7 @@
 	import { getScreenState } from '$lib/components/view';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { Button } from '../ui/button';
+	import { Button } from '$lib/components/ui/button';
 
 	type Props = {
 		children: Snippet;
@@ -11,8 +11,13 @@
 		open: boolean;
 
 		btnClass?: string;
-		desktopClass?: string;
 		mobileClass?: string;
+
+		// popover props
+		desktopClass?: string;
+		portal?: boolean;
+		alignCenter?: boolean;
+		sameWidth?: boolean;
 	};
 
 	let {
@@ -20,22 +25,27 @@
 		open = $bindable(),
 		header,
 		btnClass,
+		mobileClass,
+
+		// popover props
 		desktopClass,
-		mobileClass
+		portal = false,
+		alignCenter = true,
+		sameWidth = false
 	}: Props = $props();
 
 	const isDesktop = getScreenState();
 </script>
 
 {#if $isDesktop}
-	<Popover.Root bind:open>
+	<Popover.Root bind:open portal={portal ? 'HTMLElement' : undefined}>
 		<Popover.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" class={btnClass}>
 				{@render header()}
 			</Button>
 		</Popover.Trigger>
 
-		<Popover.Content align="center" class={desktopClass}>
+		<Popover.Content align={alignCenter ? 'center' : 'start'} {sameWidth} class={desktopClass}>
 			{@render children()}
 		</Popover.Content>
 	</Popover.Root>
