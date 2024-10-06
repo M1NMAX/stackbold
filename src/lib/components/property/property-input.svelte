@@ -4,17 +4,16 @@
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Calendar } from '$lib/components/ui/calendar';
-	import * as Command from '$lib/components/ui/command';
-	import * as Popover from '$lib/components/ui/popover';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Button } from '$lib/components/ui/button';
+	import { Label } from '$lib/components/ui/label';
 	import { DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
 	import { cn } from '$lib/utils';
-	import { getScreenState } from '$lib/components/view';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
+	import { ModalState } from '$lib/components/modal';
+	import { getOption, getPropertyColor, getPropertyRef, PropertyResponsiveWrapper } from '.';
 
 	type Props = {
 		property: Property;
@@ -25,14 +24,10 @@
 
 	const itemState = getItemState();
 
-	let open = $state(false);
 	let value = $derived(getPropertyValue());
+	let color = $derived(getPropertyColor(property, value));
 
-	let selectedValue = $derived.by(() => {
-		return property.options.find((opt) => opt.id === value) ?? 'Empty';
-	});
-
-	const isDesktop = getScreenState();
+	let wrapperState = new ModalState();
 
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(ref: { id: string; value: string }) {
@@ -50,7 +45,7 @@
 
 	function onClickClear() {
 		updPropertyRef({ id: property.id, value: '' });
-		open = false;
+		wrapperState.close();
 	}
 
 	// utils
@@ -58,13 +53,12 @@
 		const item = itemState.getItem(itemId);
 		if (!item) return '';
 
-		const propertyRef = item.properties.find((ref) => ref.id === property.id);
+		const propertyRef = getPropertyRef(item.properties, property.id);
 
 		if (!propertyRef) return '';
-
 		if (property.type !== 'SELECT') return propertyRef.value;
 
-		const option = property.options.find((opt) => opt.id === propertyRef.value);
+		const option = getOption(property.options, propertyRef.value);
 		return option ? option.id : '';
 	}
 </script>
@@ -78,225 +72,96 @@
 		class="checkbox"
 	/>
 {:else if property.type === 'SELECT'}
-	{#if $isDesktop}
-		<Popover.Root bind:open portal="HTMLElement">
-			<Popover.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="ghost"
-					role="combobox"
-					aria-expanded={open}
-					class="w-full justify-start p-0.5"
-				>
-					{#if typeof selectedValue === 'string'}
-						<span class="px-1 text-base text-slate-500">
-							{selectedValue}
-						</span>
-					{:else}
-						<span
-							class={cn(
-								'h-6 flex items-center py-1 px-1.5  rounded font-semibold',
-								PROPERTY_COLORS[selectedValue.color]
-							)}
-						>
-							{selectedValue.value}
-						</span>
-					{/if}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content sameWidth={true}>
-				<Command.Root>
-					<Command.Input placeholder="Search for an options..." />
+	{@const selected = getOption(property.options, value)?.value ?? ''}
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		btnClass="w-full justify-start p-0.5 bg-secondary/40 hover:bg-secondary/80"
+		mobileClass="p-2"
+		desktopClass="p-1"
+		sameWidth
+		portal
+	>
+		{#snippet header()}
+			{#if selected}
+				{@render miniWrapper(selected)}
+			{/if}
+		{/snippet}
 
-					<Command.Group heading={property.options.length > 0 ? 'Select an option' : undefined}>
-						{#each property.options as option}
-							<Command.Item
-								value={option.value}
-								onSelect={() => {
-									updPropertyRef({ id: property.id, value: option.id });
-									open = false;
-								}}
-								class="justify-between space-x-2 p-1 rounded"
-							>
-								<span
-									class={cn(
-										'h-6 flex items-center py-1 px-1.5 rounded',
-										PROPERTY_COLORS[option.color]
-									)}
-								>
-									{option.value}
-								</span>
-								<Check
-									class={cn('icon-sm text-primary', value !== option.id && 'text-transparent')}
-								/>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-					<Command.Empty>No option found.</Command.Empty>
-				</Command.Root>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Dialog.Root bind:open>
-			<Dialog.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="ghost"
-					role="combobox"
-					aria-expanded={open}
-					class="w-full justify-start p-0.5"
-				>
-					{#if typeof selectedValue === 'string'}
-						<span class="px-1 text-base text-slate-500">
-							{selectedValue}
+		<div>
+			<p class="font-semibold text-sm px-0 pb-0.5">{property.name}</p>
+			<RadioGroup.Root value={value || undefined} class="gap-y-0">
+				{#each property.options as option}
+					<Label
+						for={option.id}
+						class="w-full flex items-center space-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+					>
+						<span class={cn('size-4 rounded-sm', PROPERTY_COLORS[option.color])}></span>
+						<span class="grow text-sm font-semibold">
+							{option.value}
 						</span>
-					{:else}
-						<span
-							class={cn(
-								'h-6 flex items-center py-1 px-1.5  rounded font-semibold',
-								PROPERTY_COLORS[selectedValue.color]
-							)}
-						>
-							{selectedValue.value}
-						</span>
-					{/if}
-				</Button>
-			</Dialog.Trigger>
-			<Dialog.Content class="p-0 pt-2">
-				<Dialog.Header class="pb-0">
-					<Dialog.Title class="text-center">{property.name}</Dialog.Title>
-				</Dialog.Header>
 
-				<Command.Root class="bg-inherit">
-					<Command.Input
-						placeholder={property.options.length > 0 ? 'Search for an options...' : undefined}
-					/>
+						<Check class={cn('icon-xs', value !== option.id && 'text-transparent')} />
+						<RadioGroup.Item
+							value={option.id}
+							id={option.id}
+							class="sr-only"
+							on:click={() => {
+								updPropertyRef({ id: property.id, value: option.id });
+								wrapperState.close();
+							}}
+						/>
+					</Label>
+				{/each}
+			</RadioGroup.Root>
+		</div>
 
-					<Command.Group heading="Select an option">
-						{#each property.options as option}
-							<Command.Item
-								value={option.value}
-								onSelect={() => {
-									updPropertyRef({ id: property.id, value: option.id });
-									open = false;
-								}}
-								class="justify-between space-x-2 p-1 rounded"
-							>
-								<span
-									class={cn(
-										'h-6 flex items-center py-1 px-1.5 rounded',
-										PROPERTY_COLORS[option.color]
-									)}
-								>
-									{option.value}
-								</span>
-								<Check
-									class={cn('icon-sm text-primary', value !== option.id && 'text-transparent')}
-								/>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-					<Command.Empty>No option found.</Command.Empty>
-				</Command.Root>
-			</Dialog.Content>
-		</Dialog.Root>
-	{/if}
+		{@render clearBtn()}
+	</PropertyResponsiveWrapper>
 {:else if property.type === 'DATE'}
 	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
 	{@const plus = value ? 0 : 1}
 	{@const valueAsDate = value ? new Date(value) : new Date()}
 	{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
+	{@const content = df.format(
+		new CalendarDate(
+			valueAsDate.getFullYear(),
+			valueAsDate.getMonth(),
+			valueAsDate.getDate()
+		).toDate(getLocalTimeZone())
+	)}
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		btnClass="w-full justify-start p-0.5 bg-secondary/40 hover:bg-secondary/80"
+		desktopClass="w-auto p-0"
+	>
+		{#snippet header()}
+			{#if value}
+				{@render miniWrapper(content)}
+			{/if}
+		{/snippet}
 
-	{#if $isDesktop}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" class="w-full justify-start p-0.5">
-					{#if !value}
-						<span class="px-1 text-base text-slate-500">Empty</span>
-					{:else}
-						<span class={cn('h-6 flex items-center py-1 px-1.5 rounded', PROPERTY_COLORS['GRAY'])}>
-							{df.format(
-								new CalendarDate(
-									valueAsDate.getFullYear(),
-									valueAsDate.getMonth(),
-									valueAsDate.getDate()
-								).toDate(getLocalTimeZone())
-							)}
-						</span>
-					{/if}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content class="w-auto space-y-1" align="start">
-				<Calendar
-					value={new CalendarDate(
-						valueAsDate.getFullYear(),
-						valueAsDate.getMonth() + plus,
-						valueAsDate.getDate()
-					)}
-					onValueChange={(dt) => {
-						if (!dt) return;
-						updPropertyRef({ id: property.id, value: dt.toString() });
-						open = false;
-					}}
-				/>
+		<p class="font-semibold text-sm px-0 py-1 text-center">
+			{property.name}
+		</p>
+		<div class="w-full max-w-xs mx-auto px-6 md:px-4 pb-2">
+			<Calendar
+				value={new CalendarDate(
+					valueAsDate.getFullYear(),
+					valueAsDate.getMonth() + plus,
+					valueAsDate.getDate()
+				)}
+				onValueChange={(dt) => {
+					if (!dt) return;
 
-				<Separator />
-				<Button variant="ghost" on:click={onClickClear} class="h-7 w-full font-semibold">
-					Clear
-				</Button>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Drawer.Root>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" class="w-full justify-start p-0.5">
-					{#if !value}
-						<span class="px-1 text-base text-slate-500">Empty</span>
-					{:else}
-						<span class={cn('h-6 flex items-center py-1 px-1.5 rounded', PROPERTY_COLORS['GRAY'])}>
-							{df.format(
-								new CalendarDate(
-									valueAsDate.getFullYear(),
-									valueAsDate.getMonth(),
-									valueAsDate.getDate()
-								).toDate(getLocalTimeZone())
-							)}
-						</span>
-					{/if}
-				</Button>
-			</Drawer.Trigger>
-			<Drawer.Content>
-				<div class="mx-auto w-full max-w-xs">
-					<Drawer.Header>
-						<Drawer.Description>{property.name}</Drawer.Description>
-					</Drawer.Header>
-					<div class="px-4 pb-0">
-						<Calendar
-							value={new CalendarDate(
-								valueAsDate.getFullYear(),
-								valueAsDate.getMonth() + plus,
-								valueAsDate.getDate()
-							)}
-							onValueChange={(dt) => {
-								if (!dt) return;
-								updPropertyRef({ id: property.id, value: dt.toString() });
-
-								open = false;
-							}}
-						/>
-					</div>
-				</div>
-				<Separator />
-				<Drawer.Footer>
-					<Button variant="secondary" on:click={onClickClear} class="h-7 w-full font-semibold">
-						Clear
-					</Button>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+					updPropertyRef({ id: property.id, value: dt.toString() });
+					wrapperState.close();
+				}}
+				class="p-0"
+			/>
+		</div>
+		{@render clearBtn()}
+	</PropertyResponsiveWrapper>
 {:else if property.type === 'TEXT'}
-	<!-- TODO : CHANGE URG -->
 	<textarea
 		use:textareaAutoSize
 		id={property.id}
@@ -324,3 +189,19 @@
 		class="input input-ghost"
 	/>
 {/if}
+
+{#snippet miniWrapper(content: string)}
+	{@const wrapperClass = cn(
+		'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
+		PROPERTY_COLORS[color]
+	)}
+
+	<span class={wrapperClass}>
+		{content}
+	</span>
+{/snippet}
+
+{#snippet clearBtn()}
+	<Separator class="my-0.5" />
+	<Button variant="ghost" on:click={onClickClear} class="h-7 w-full font-semibold">Clear</Button>
+{/snippet}
