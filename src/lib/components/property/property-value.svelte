@@ -141,7 +141,6 @@
 						/>
 					</Label>
 				{/each}
-				<RadioGroup.Input name="spacing" />
 			</RadioGroup.Root>
 		</div>
 	</PropertyResponsiveWrapper>
@@ -268,29 +267,11 @@
 		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
 		PROPERTY_COLORS[color]
 	)}
+	<span use:melt={$trigger} class={wrapperClass}>
+		{content}
+	</span>
 
-	{#if property.type === 'SELECT'}
-		<span use:melt={$trigger} class={wrapperClass}>
-			{content}
-		</span>
-
-		{@render tooltipContent()}
-	{:else if property.type === 'DATE'}
-		<span use:melt={$trigger} class={wrapperClass}>
-			{content}
-		</span>
-		{@render tooltipContent()}
-	{:else if property.type === 'TEXT'}
-		<span use:melt={$trigger} class={wrapperClass}>
-			{content}
-		</span>
-		{@render tooltipContent()}
-	{:else}
-		<span use:melt={$trigger}>
-			{content}
-		</span>
-		{@render tooltipContent()}
-	{/if}
+	{@render tooltipContent()}
 {/snippet}
 
 {#snippet tooltipContent()}
