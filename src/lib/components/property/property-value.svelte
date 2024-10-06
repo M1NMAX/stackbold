@@ -21,6 +21,8 @@
 	import { textareaAutoSize } from '$lib/actions';
 	import { ModalState } from '$lib/components/modal';
 	import { fade } from 'svelte/transition';
+	import { Separator } from '../ui/separator';
+	import { Button } from '../ui/button';
 
 	type Props = {
 		itemId: string;
@@ -143,6 +145,8 @@
 				{/each}
 			</RadioGroup.Root>
 		</div>
+
+		{@render clearBtn()}
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'DATE' && (value || isTableView)}
 	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
@@ -183,6 +187,7 @@
 				class="p-0"
 			/>
 		</div>
+		{@render clearBtn()}
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'TEXT' && (value || isTableView)}
 	{@const MAX_LENGTH = 50}
@@ -288,4 +293,19 @@
 			</div>
 		</div>
 	{/if}
+{/snippet}
+
+{#snippet clearBtn()}
+	<Separator class="my-0.5" />
+	<Button
+		variant="ghost"
+		class="h-7 w-full font-semibold"
+		disabled={value === ''}
+		on:click={() => {
+			updPropertyRef('');
+			wrapperState.close();
+		}}
+	>
+		Clear
+	</Button>
 {/snippet}

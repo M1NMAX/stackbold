@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ModalState } from '$lib/components/modal';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
+	import { PageContainer, PageContent } from '$lib/components/page';
 	import { AddPropertyPopover, getPropertyState, PropertyEditor } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
@@ -65,7 +65,7 @@
 			</div>
 
 			<div class="flex flex-col grow overflow-y-auto hd-scroll" onscroll={handleScroll}>
-				<h1 class={cn('pb-2 font-semibold text-3xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+				<h1 class={cn('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
 					Properties
 				</h1>
 

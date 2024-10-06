@@ -203,5 +203,10 @@
 
 {#snippet clearBtn()}
 	<Separator class="my-0.5" />
-	<Button variant="ghost" on:click={onClickClear} class="h-7 w-full font-semibold">Clear</Button>
+	<Button
+		variant="ghost"
+		disabled={value === ''}
+		on:click={onClickClear}
+		class="h-7 w-full font-semibold">Clear</Button
+	>
 {/snippet}
