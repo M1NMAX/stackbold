@@ -21,8 +21,8 @@
 	import { textareaAutoSize } from '$lib/actions';
 	import { ModalState } from '$lib/components/modal';
 	import { fade } from 'svelte/transition';
-	import { Separator } from '../ui/separator';
-	import { Button } from '../ui/button';
+	import { Separator } from '$lib/components/ui/separator';
+	import { Button } from '$lib/components/ui/button';
 
 	type Props = {
 		itemId: string;
@@ -190,7 +190,7 @@
 		{@render clearBtn()}
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'TEXT' && (value || isTableView)}
-	{@const MAX_LENGTH = 50}
+	{@const MAX_LENGTH = $isDesktop ? 50 : 20}
 	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}

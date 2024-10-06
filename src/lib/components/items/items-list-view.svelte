@@ -4,10 +4,8 @@
 		PropertyValue,
 		containsView,
 		// helpers
-		getPropertyColor,
 		getPropertyRef,
-		getPropertyState,
-		getPropertyValue
+		getPropertyState
 	} from '$lib/components/property';
 	import { type Item, View } from '@prisma/client';
 	import { cn, preventEnterKeypress } from '$lib/utils';
@@ -94,9 +92,7 @@
 					{#if containsView(property.visibleInViews, View.LIST)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
-							{@const color = getPropertyColor(property, propertyRef.value)}
-							{@const value = getPropertyValue(property, propertyRef.value, false)}
-							<PropertyValue itemId={item.id} {property} {color} {value} />
+							<PropertyValue itemId={item.id} {property} />
 						{/if}
 					{/if}
 				{/each}
