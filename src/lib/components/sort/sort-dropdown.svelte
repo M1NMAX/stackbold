@@ -71,7 +71,7 @@
 	<Drawer.Root bind:open={isOpen}>
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary">
-				<CurrentIcon class="icon-xs mr-2" />
+				<CurrentIcon class="icon-sm" />
 			</Button>
 		</Drawer.Trigger>
 		<Drawer.Content>

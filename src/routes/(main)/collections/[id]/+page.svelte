@@ -325,14 +325,14 @@
 					on:click={() => updCollection({ isPinned: !collection.isPinned })}
 				>
 					{#if collection.isPinned}
-						<PinOff />
+						<PinOff class="icon-sm" />
 					{:else}
-						<Pin />
+						<Pin class="icon-sm" />
 					{/if}
 				</Button>
 
 				<Button variant="secondary" size="icon" on:click={() => onClickOpenProperties()}>
-					<Settings2 />
+					<Settings2 class="icon-sm" />
 				</Button>
 
 				<CollectionMenu {collection} />
@@ -431,9 +431,9 @@
 					<Drawer.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="secondary">
 							{#if view === View.LIST}
-								<StretchHorizontal class="icon-md" />
+								<StretchHorizontal class="icon-sm" />
 							{:else}
-								<Table class="icon-md" />
+								<Table class="icon-sm" />
 							{/if}
 						</Button>
 					</Drawer.Trigger>
