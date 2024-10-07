@@ -51,11 +51,11 @@
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" class="w-full">
 				<Plus class="icon-sm" />
-				<span> Add a property </span>
+				<span> New property </span>
 			</Button>
 		</Drawer.Trigger>
 		<Drawer.Content>
-			<Drawer.Header class="py-2 font-semibold">Type</Drawer.Header>
+			<Drawer.Header class="py-2 font-semibold">New property</Drawer.Header>
 
 			<Drawer.Footer class="pt-2">
 				{#each Object.values(PropertyType) as propertyType}

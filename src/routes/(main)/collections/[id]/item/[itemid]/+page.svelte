@@ -2,7 +2,12 @@
 	import { getItemState } from '$lib/components/items';
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 	import { PageContainer, PageContent } from '$lib/components/page';
-	import { getPropertyState, PropertyInput, PropertyInputWrapper } from '$lib/components/property';
+	import {
+		AddPropertyPopover,
+		getPropertyState,
+		PropertyInput,
+		PropertyInputWrapper
+	} from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/view';
 	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY } from '$lib/constant';
@@ -96,7 +101,7 @@
 			<X class="icon-sm" />
 		</Button>
 	</div>
-	<div class="hd-scroll" onscroll={handleScroll}>
+	<div class="grow hd-scroll" onscroll={handleScroll}>
 		<p
 			contenteditable
 			spellcheck={false}
@@ -110,10 +115,13 @@
 			{@render properties()}
 		</div>
 	</div>
+	<div>
+		<AddPropertyPopover />
+	</div>
 {:else}
 	<PageContainer>
-		<PageContent>
-			<div class="flex justify-between items-center space-x-2">
+		<PageContent class="flex flex-col pb-1 px-0 overflow-hidden">
+			<div class="flex justify-between items-center space-x-2 sticky">
 				<Button variant="secondary" size="icon" on:click={() => history.back()}>
 					<ChevronLeft />
 				</Button>
@@ -124,7 +132,7 @@
 				{@render menu()}
 			</div>
 
-			<div class="hd-scroll" onscroll={handleScroll}>
+			<div class="grow overflow-y-auto hd-scroll" onscroll={handleScroll}>
 				<p
 					contenteditable
 					spellcheck={false}
@@ -137,6 +145,10 @@
 				<div class="space-y-2">
 					{@render properties()}
 				</div>
+			</div>
+
+			<div>
+				<AddPropertyPopover />
 			</div>
 		</PageContent>
 	</PageContainer>

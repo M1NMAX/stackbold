@@ -54,7 +54,7 @@
 {:else}
 	<PageContainer>
 		<PageContent class="flex flex-col pb-1 px-0 overflow-hidden">
-			<div class="flex items-center space-x-2 sticky top-0">
+			<div class="flex items-center space-x-2">
 				<Button variant="secondary" size="icon" on:click={() => history.back()}>
 					<ChevronLeft />
 				</Button>
