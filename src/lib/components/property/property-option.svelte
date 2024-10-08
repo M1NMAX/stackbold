@@ -1,39 +1,51 @@
 <script lang="ts">
 	import { Check, ChevronRight, MoreHorizontal, Trash } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import type { Color, Option } from '@prisma/client';
 	import { tick } from 'svelte';
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/view';
+	import { getDeleteModalState } from '$lib/components/modal';
+	import debounce from 'debounce';
+	import { getPropertyState } from './propertyState.svelte';
+	import type { UpdOption } from '$lib/types';
 
-	export let propertyId: string;
-	export let option: Option;
-	let isSmallScreenDrawerOpen = false;
+	type Props = {
+		propertyId: string;
+		option: Option;
+	};
 
-	let value = option.color as string;
-	$: selectedKey = (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
+	let { propertyId, option }: Props = $props();
 
+	let isSmallScreenDrawerOpen = $state(false);
+
+	let value = $state(option.color as string);
+
+	let selectedKey = $derived.by(() => {
+		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
+	});
+
+	const propertyState = getPropertyState();
 	const isDesktop = getScreenState();
+	const deleteModal = getDeleteModalState();
 
-	const dispatch = createEventDispatcher<{
-		updOptColor: { propertyId: string; optionId: string; color: Color };
-		updOptValue: { propertyId: string; optionId: string; value: string };
-		deleteOpt: { propertyId: string; optionId: string };
-	}>();
+	const updOptionDebounded = debounce(updOption, 1000);
+
+	async function updOption(pid: string, option: UpdOption) {
+		await propertyState.updPropertyOption(pid, option);
+	}
 
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		dispatch('updOptValue', { propertyId, optionId: option.id, value: targetEl.value });
+		updOptionDebounded(propertyId, { id: option.id, value: targetEl.value });
 	}
 
 	function handleSelectColor(selectedKey: string, triggerId?: string) {
 		value = selectedKey;
-		dispatch('updOptColor', { propertyId, optionId: option.id, color: value as Color });
+		updOptionDebounded(propertyId, { id: option.id, color: value as Color });
 
 		// Refocus the trigger btn when user selects and item from the list,
 		// so users can navigating using the keyboard
@@ -48,6 +60,20 @@
 	function closeSmallScreenDrawer() {
 		isSmallScreenDrawerOpen = false;
 	}
+
+	function deleteOption() {
+		if (isSmallScreenDrawerOpen) isSmallScreenDrawerOpen = false;
+
+		deleteModal.open({
+			type: 'option',
+			id: propertyId,
+			option: option.id,
+			name: option.value,
+			fun: () => {
+				propertyState.deletePropertyOption(propertyId, option.id);
+			}
+		});
+	}
 </script>
 
 {#if $isDesktop}
@@ -60,7 +86,7 @@
 				class="h-7 w-full justify-between px-0.5"
 			>
 				<span class="flex gap-2">
-					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`} />
+					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
 					<span>{option.value}</span>
 				</span>
 				<ChevronRight class="icon-xs" />
@@ -70,7 +96,7 @@
 			<input
 				name="option"
 				value={option.value}
-				on:input={handleOnInput}
+				oninput={handleOnInput}
 				class="input input-bordered input-sm"
 			/>
 			<DropdownMenu.Separator />
@@ -86,7 +112,7 @@
 				>
 					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
 						<DropdownMenu.RadioItem value={colorName} class="py-1">
-							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`} />
+							<span class={`h-5 w-5 mr-2 rounded ${colorClasses}`}></span>
 
 							{capitalizeFirstLetter(colorName)}
 						</DropdownMenu.RadioItem>
@@ -95,10 +121,7 @@
 			</DropdownMenu.Group>
 
 			<DropdownMenu.Separator />
-			<DropdownMenu.Item
-				class="space-x-2 "
-				on:click={() => dispatch('deleteOpt', { propertyId, optionId: option.id })}
-			>
+			<DropdownMenu.Item class="space-x-2 " on:click={() => deleteOption()}>
 				<Trash class="icon-xs" />
 				<span>Delete option </span>
 			</DropdownMenu.Item>
@@ -108,13 +131,13 @@
 	<div class="w-full flex justify-between items-center space-x-1">
 		<div class="w-full relative">
 			<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
-				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`} />
+				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
 			</div>
 
 			<input
 				name="option"
 				value={option.value}
-				on:input={handleOnInput}
+				oninput={handleOnInput}
 				class={`h-7 w-full pl-8 px-1.5 text-base font-semibold rounded bg-secondary focus:outline-none `}
 			/>
 		</div>
@@ -158,13 +181,7 @@
 					</div>
 					<hr />
 
-					<Button
-						variant="destructive"
-						on:click={() => {
-							closeSmallScreenDrawer();
-							dispatch('deleteOpt', { propertyId, optionId: option.id });
-						}}
-					>
+					<Button variant="destructive" on:click={() => deleteOption()}>
 						<Trash class="icon-xs" />
 						<span>Delete option </span>
 					</Button>

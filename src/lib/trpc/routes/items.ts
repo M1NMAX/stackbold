@@ -1,6 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { PropertyRefCreateInputSchema, ItemUpdateInputSchema } from '$prisma-zod';
+import { PropertyRefCreateInputSchema } from '$prisma-zod';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -8,11 +8,30 @@ const itemCreateSchema = z.object({
 	name: z.string(),
 	collectionId: z.string(),
 	properties: z
-		.union([
-			z.lazy(() => PropertyRefCreateInputSchema),
-			z.lazy(() => PropertyRefCreateInputSchema).array()
-		])
+		.array(
+			z.object({
+				id: z.string(),
+				value: z.string().optional().default('')
+			})
+		)
 		.optional()
+		.default([])
+});
+
+const itemUpdateSchema = z.object({
+	id: z.string(),
+	data: z.object({
+		name: z.string().optional(),
+		collectionId: z.string().optional(),
+		properties: z
+			.array(
+				z.object({
+					id: z.string(),
+					value: z.string()
+				})
+			)
+			.optional()
+	})
 });
 
 export const items = createTRPCRouter({
@@ -38,14 +57,12 @@ export const items = createTRPCRouter({
 			});
 		}),
 
-	update: protectedProcedure
-		.input(z.object({ id: z.string(), data: ItemUpdateInputSchema }))
-		.mutation(async ({ input: { id, data } }) => {
-			return await prisma.item.update({
-				data,
-				where: { id }
-			});
-		}),
+	update: protectedProcedure.input(itemUpdateSchema).mutation(async ({ input: { id, data } }) => {
+		return await prisma.item.update({
+			data,
+			where: { id }
+		});
+	}),
 
 	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
 		const item = await prisma.item.findUniqueOrThrow({

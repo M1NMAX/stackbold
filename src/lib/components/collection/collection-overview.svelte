@@ -3,8 +3,15 @@
 	import { icons } from '$lib/components/icon';
 	import dayjs from '$lib/utils/dayjs';
 	import { Hash, Pin, PinOff } from 'lucide-svelte';
+	import type { Collection } from '@prisma/client';
 
-	export let collection: RouterOutputs['collections']['list'][0];
+	type Props = {
+		// collection: RouterOutputs['collections']['list'][0];
+		collection: Collection;
+	};
+	let { collection }: Props = $props();
+
+	const Icon = $derived(icons[collection.icon]);
 </script>
 
 <a
@@ -13,7 +20,7 @@
 	class="flex flex-col items-start p-1.5 space-y-2 rounded bg-secondary/40 hover:bg-secondary/60"
 >
 	<div class="w-full flex items-center justify-between space-x-2">
-		<svelte:component this={icons[collection.icon]} class="icon icon-md" />
+		<Icon class="icon-md" />
 		<h2 class="grow text-lg font-semibold">
 			{collection.name}
 		</h2>
@@ -28,7 +35,8 @@
 	<div class="flex space-x-4 text-sm text-muted-foreground">
 		<div class="flex items-center">
 			<Hash class="icon-xxs mr-1 text-primary" />
-			{collection.nItems > 0 ? collection.nItems + ' Items' : 'Empty'}
+			<!-- TODO: add number of items -->
+			<!-- {collection.nItems > 0 ? collection.nItems + ' Items' : 'Empty'} -->
 		</div>
 		<div>
 			Updated {dayjs(collection.updatedAt).fromNow()}

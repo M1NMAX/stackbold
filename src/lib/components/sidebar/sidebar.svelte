@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { twMerge } from 'tailwind-merge';
+	import { cn } from '$lib/utils';
+	import type { Snippet } from 'svelte';
+	type Props = {
+		children: Snippet;
+		class?: string;
+	};
 
-	export let ariaLabel: string = 'Sidebar';
-	let className: string = '';
-	export { className as class };
+	let { children, class: className }: Props = $props();
 </script>
 
-<aside class={twMerge('w-64 h-screen z-20 transition-all', className)} aria-label={ariaLabel}>
-	<slot />
+<aside class={cn('w-64 h-screen z-20 transition-all', className)} aria-label="sidebar">
+	{@render children()}
 </aside>

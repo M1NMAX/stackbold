@@ -1,16 +1,40 @@
+import { browser } from '$app/environment';
 import { getContext, setContext } from 'svelte';
-import { writable, type Readable, type Writable } from 'svelte/store';
+import { readable, type Readable } from 'svelte/store';
 
-const VIEW_CTX = 'VIEW_CTX';
+export function mediaQuery(initalValue: boolean, query: string) {
+	return readable(initalValue, (set) => {
+		const isSupported =
+			browser && window && 'matchMedia' in window && typeof window.matchMedia === 'function';
+		let mediaQuery: MediaQueryList | undefined;
 
-export function setViewState<T>(initial: T) {
-	const viewState = writable(initial);
-	setContext(VIEW_CTX, viewState);
-	return viewState;
-}
+		function cleanup() {
+			if (!mediaQuery) return;
+			if ('removeEventListener' in mediaQuery)
+				// eslint-disable-next-line @typescript-eslint/no-use-before-define
+				mediaQuery.removeEventListener('change', update);
+			// @ts-expect-error deprecated API
+			// eslint-disable-next-line @typescript-eslint/no-use-before-define
+			else mediaQuery.removeListener(update);
+		}
 
-export function getViewState<T>() {
-	return getContext<Writable<T>>(VIEW_CTX);
+		function update() {
+			if (!isSupported) return;
+
+			cleanup();
+
+			mediaQuery = window!.matchMedia(query);
+
+			set(mediaQuery.matches);
+
+			if ('addEventListener' in mediaQuery) mediaQuery.addEventListener('change', update);
+			// @ts-expect-error deprecated API
+			else mediaQuery.addListener(update);
+		}
+
+		update();
+		return cleanup;
+	});
 }
 
 const SCREEN_CTX = Symbol('SCREEN_CTX');

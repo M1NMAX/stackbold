@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { type Snippet } from 'svelte';
 	import { cn } from '$lib/utils';
 
-	let className: string | undefined = undefined;
-	export { className as class };
+	type Props = {
+		children?: Snippet;
+		class?: string;
+	};
+	let {children, class: className }: Props = $props();
 </script>
 
 <main
@@ -12,6 +16,8 @@
 	)}
 >
 	<div class="h-full w-full p-2 bg-card rounded-md text-secondary-foreground overflow-hidden">
-		<slot />
+		{#if children}
+			{@render children()}
+		{/if}
 	</div>
 </main>
