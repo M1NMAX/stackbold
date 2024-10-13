@@ -21,10 +21,10 @@
 	import {
 		PropertyIcon,
 		containsView,
-		//helpers
 		getOption,
 		getPropertyColor,
 		getPropertyDefaultValue,
+		getPropertyRef,
 		toggleView
 	} from '$lib/components/property';
 	import debounce from 'debounce';
@@ -62,7 +62,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
-	import { getGroupState } from '$lib/components/group';
 	import { setPropertyState } from '$lib/components/property';
 	import { ModalState } from '$lib/components/modal';
 	import ItemPage from './item/[itemid]/+page.svelte';
@@ -70,6 +69,8 @@
 	import { getContext } from 'svelte';
 	import { clickOutside, textareaAutoSize } from '$lib/actions';
 	import { nameSchema } from '$lib/schema';
+	import { FilterMenu, getFilters } from '$lib/components/filter';
+	import type { Filter } from '$lib/types';
 
 	let { data } = $props();
 
@@ -93,20 +94,40 @@
 	});
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 
-	let sort = $state(sortOptions[0]);
-
-	let search = $state('');
-	let filteredItems = $derived.by(() => {
-		const searchTerm = search.toLowerCase() || '';
-
-		return [...itemState.items]
-			.filter((item) => item.name.toLowerCase().includes(searchTerm))
-			.sort(sortFun(sort.field, sort.order));
-	});
-
 	const Icon = $derived(icons[collection.icon]);
 
 	let view = $state<View>(View.LIST);
+
+	let sort = $state(sortOptions[0]);
+
+	let search = $state('');
+
+	let filteredItems = $derived.by(() => {
+		const searchTerm = search.toLowerCase() || '';
+
+		const filters = getFilters(collection.filterConfigs, view);
+
+		return [...itemState.items]
+			.filter((item) => item.name.toLowerCase().includes(searchTerm))
+			.filter((item) => {
+				if (!filters) return true;
+				if (filters.length === 0) return true;
+
+				for (const filter of filters) {
+					const ref = getPropertyRef(item.properties, filter.id);
+					if (!ref) return false;
+					if (!filter.values.includes(ref.value)) return false;
+				}
+				return true;
+			})
+			.sort(sortFun(sort.field, sort.order));
+	});
+
+	$effect(() => {
+		data.cid;
+		search = '';
+	});
+
 	let groupedItems = $derived.by(() => {
 		return filteredItems.reduce(groupItemsByPropertyValue(findGroupByConfig(view) || ''), {});
 	});
@@ -119,7 +140,6 @@
 	let isSmallHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
 
-	const groupState = getGroupState();
 	const isDesktop = getScreenState();
 	const activeItemState = setActiveItemState();
 
@@ -174,10 +194,6 @@
 	}
 
 	// Property Handlers
-	function getProperty(pid: string) {
-		return propertyState.properties.find((property) => property.id === pid) || null;
-	}
-
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
 	async function updProperty(property: RouterInputs['collections']['updateProperty']['property']) {
 		await propertyState.updProperty(property);
@@ -243,6 +259,30 @@
 				propertyId: value
 			};
 		});
+	}
+
+	//Filters
+
+	function updFilterConfig(filters: Filter[]) {
+		if (collection.filterConfigs.length === 0) {
+			const baseConfigs = [
+				{
+					view: View.LIST,
+					filters: view === View.LIST ? filters : []
+				},
+				{
+					view: View.TABLE,
+					filters: view === View.TABLE ? filters : []
+				}
+			];
+			updCollection({ filterConfigs: baseConfigs });
+			return;
+		}
+
+		const filterConfigs = collection.filterConfigs.map((config) =>
+			config.view !== view ? config : { ...config, filters }
+		);
+		updCollection({ filterConfigs });
 	}
 
 	//  Sliding panels
@@ -360,7 +400,6 @@
 		{#key collection.id}
 			{#if !collection.isDescHidden}
 				<label transition:fade for="description" class="sr-only"> Collection description </label>
-				<!-- TODO: CHANGE URG -->
 
 				<textarea
 					use:textareaAutoSize
@@ -380,6 +419,10 @@
 
 				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
 				{#if includesGroupableProperties()}
+					<FilterMenu
+						filters={getFilters(collection.filterConfigs, view)}
+						updFilters={updFilterConfig}
+					/>
 					<div>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger asChild let:builder>
@@ -423,6 +466,11 @@
 		{:else}
 			<div class="flex space-x-1">
 				<SearchInput placeholder="Find Item" bind:value={search} />
+
+				<FilterMenu
+					filters={getFilters(collection.filterConfigs, view)}
+					updFilters={updFilterConfig}
+				/>
 				<SortDropdown options={sortOptions} bind:value={sort} />
 
 				<Drawer.Root>
@@ -566,7 +614,7 @@
 				class="w-full"
 			>
 				{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
-					{@const property = getProperty(groupedItems[key].pid)}
+					{@const property = propertyState.getProperty(groupedItems[key].pid)}
 
 					{#if property}
 						{@const color = getPropertyColor(property, key)}

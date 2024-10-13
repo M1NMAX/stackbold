@@ -1,5 +1,12 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import { Aggregator, Color, PropertyType, type Collection, type Property } from '@prisma/client';
+import {
+	Aggregator,
+	Color,
+	PropertyType,
+	type Collection,
+	type FilterConfig,
+	type Property
+} from '@prisma/client';
 import { onError, redirectToast } from '$lib/components/ui/sonner';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
@@ -50,6 +57,15 @@ export class CollectionState {
 				}));
 			}
 
+			let filterConfigs: FilterConfig[] = [];
+
+			if (args.filterConfigs) {
+				filterConfigs = args.filterConfigs.map((config) => ({
+					view: config.view,
+					filters: config.filters || []
+				}));
+			}
+
 			this.collections.push({
 				id: tmpId,
 				ownerId: tmpId,
@@ -62,6 +78,7 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || false,
 				groupByConfigs: args.groupByConfigs || [],
+				filterConfigs: filterConfigs,
 				properties: properties
 			});
 			const result = await trpc().collections.create.mutate({ ...args });

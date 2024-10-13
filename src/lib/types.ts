@@ -25,3 +25,5 @@ export type MoveCollectionDetail = {
 export type UpdOption = RouterInputs['collections']['updatePropertyOption']['property']['option'];
 
 export type UpdProperty = RouterInputs['collections']['updateProperty']['property'];
+
+export type Filter = { id: string; values: string[] };

@@ -93,6 +93,16 @@ enum View {
   TABLE @map("table")
 }
 
+type Filter {
+  id     String
+  values String[]
+}
+
+type FilterConfig {
+  view    View
+  filters Filter[]
+}
+
 type GroupByConfig {
   view       View
   propertyId String @default("")
@@ -146,6 +156,7 @@ model Collection {
   group          Group?          @relation(fields: [groupId], references: [id])
   groupId        String?         @db.ObjectId
   icon           String          @default("folder")
+  filterConfigs  FilterConfig[]
 
   @@index([properties.id], name: "property_id_index")
   @@index([properties.options.id], name: "property_option_id_index")

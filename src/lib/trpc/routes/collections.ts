@@ -16,9 +16,24 @@ const groupByConfigSchema = z.object({
 	propertyId: z.string()
 });
 
+const filterConfigsSchema = z.object({
+	view: ViewSchema,
+	filters: z.array(
+		z.object({
+			id: z.string(),
+			values: z.array(z.string())
+		})
+	)
+});
+
 const defaultGroupByConfigs = [
 	{ view: View.LIST, propertyId: '' },
 	{ view: View.TABLE, propertyId: '' }
+];
+
+const defaultFilterConfigs = [
+	{ view: View.LIST, filters: [] },
+	{ view: View.TABLE, filters: [] }
 ];
 
 const collectionCreateSchema = z.object({
@@ -29,7 +44,7 @@ const collectionCreateSchema = z.object({
 	isDescHidden: z.boolean().optional(),
 	groupId: z.string().nullable().optional(),
 	groupByConfigs: z.array(groupByConfigSchema).optional().default(defaultGroupByConfigs),
-	groupItemsBy: z.string().nullable().optional(),
+	filterConfigs: z.array(filterConfigsSchema).optional().default(defaultFilterConfigs),
 	properties: z
 		.array(
 			z.object({
@@ -63,7 +78,7 @@ const collectionUpdateSchema = z.object({
 		isDescHidden: z.boolean().optional(),
 		groupId: z.string().nullable().optional(),
 		groupByConfigs: z.array(groupByConfigSchema).optional(),
-		groupItemsBy: z.string().nullable().optional()
+		filterConfigs: z.array(filterConfigsSchema).optional()
 	})
 });
 
