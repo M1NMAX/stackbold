@@ -379,42 +379,40 @@
 				<SearchInput placeholder="Find Item" bind:value={search} />
 
 				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-				{#key propertyState.properties}
-					{#if includesGroupableProperties()}
-						<div>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content class="w-56">
-									<DropdownMenu.Label>Group by</DropdownMenu.Label>
-									<DropdownMenu.Separator />
-									<DropdownMenu.RadioGroup
-										value={findGroupByConfig(view) || 'none'}
-										onValueChange={(value) => {
-											updCollection({
-												groupByConfigs: updGroupByConfig(
-													view,
-													value === 'none' || !value ? '' : value
-												)
-											});
-										}}
-									>
-										<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
+				{#if includesGroupableProperties()}
+					<div>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger asChild let:builder>
+								<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content class="w-56">
+								<DropdownMenu.Label>Group by</DropdownMenu.Label>
+								<DropdownMenu.Separator />
+								<DropdownMenu.RadioGroup
+									value={findGroupByConfig(view) || 'none'}
+									onValueChange={(value) => {
+										updCollection({
+											groupByConfigs: updGroupByConfig(
+												view,
+												value === 'none' || !value ? '' : value
+											)
+										});
+									}}
+								>
+									<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
 
-										{#each propertyState.properties as property (property.id)}
-											{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-												<DropdownMenu.RadioItem value={property.id}>
-													{property.name}
-												</DropdownMenu.RadioItem>
-											{/if}
-										{/each}
-									</DropdownMenu.RadioGroup>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-						</div>
-					{/if}
-				{/key}
+									{#each propertyState.properties as property (property.id)}
+										{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
+											<DropdownMenu.RadioItem value={property.id}>
+												{property.name}
+											</DropdownMenu.RadioItem>
+										{/if}
+									{/each}
+								</DropdownMenu.RadioGroup>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					</div>
+				{/if}
 
 				<SortDropdown options={sortOptions} bind:value={sort} />
 

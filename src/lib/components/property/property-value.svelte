@@ -101,7 +101,7 @@
 		class={cn(
 			'flex justify-center',
 			!isTableView &&
-				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded text-sm font-semibold',
+				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-sm text-sm font-semibold',
 			!isTableView && PROPERTY_COLORS[color]
 		)}
 	>
