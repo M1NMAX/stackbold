@@ -2,6 +2,7 @@
 	import logoSrc from '$lib/assets/logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Button } from '$lib/components/ui/button';
+	import { dev } from '$app/environment';
 
 	let { data } = $props();
 
@@ -46,8 +47,12 @@
 		<Button type="submit" variant="secondary" class="w-full">Resend</Button>
 	</form>
 </div>
-<div class="my-8 leading-8 font-medium text-sm">
-	<p class="text-center text-gray-500">
-		<a href="/signup" class="no-underline text-primary hover:text-primary/70"> Back to Sign up </a>
-	</p>
-</div>
+{#if dev}
+	<div class="my-8 leading-8 font-medium text-sm">
+		<p class="text-center text-gray-500">
+			<a href="/signup" class="no-underline text-primary hover:text-primary/70">
+				Back to Sign up
+			</a>
+		</p>
+	</div>
+{/if}

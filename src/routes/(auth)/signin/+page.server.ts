@@ -5,7 +5,6 @@ import { signInSchema } from '$lib/schema';
 import { prisma } from '$lib/server/prisma';
 import { verify } from '@node-rs/argon2';
 import { lucia } from '$lib/server/auth';
-import { Role } from '@prisma/client';
 import { zod } from 'sveltekit-superforms/adapters';
 
 export const load: PageServerLoad = async ({ locals }) => {

@@ -8,11 +8,16 @@ import { hash } from '@node-rs/argon2';
 import { lucia } from '$lib/server/auth';
 import { generateEmailVerificationCode, sendEmailVerificationCode } from '$lib/server/email';
 import { zod } from 'sveltekit-superforms/adapters';
+import { dev } from '$app/environment';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 	if (user) {
 		redirect(302, '/');
+	}
+
+	if (!dev) {
+		redirect(302, '/signin');
 	}
 
 	const form = await superValidate(zod(signUpSchema));
