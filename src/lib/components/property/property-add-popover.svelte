@@ -1,24 +1,22 @@
 <script lang="ts">
-	import { PropertyIcon } from '.';
+	import { getPropertyState, PropertyIcon } from '.';
 	import { Button } from '$lib/components/ui/button';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
 	import { getScreenState } from '$lib/components/view';
 	import { Plus } from 'lucide-svelte';
 
-	let isOpen = false;
+	let isOpen = $state(false);
+
+	const propertyState = getPropertyState();
 
 	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		clickPropType: PropertyType;
-	}>();
 
-	function handleClickPropertyType(propertyType: PropertyType) {
-		dispatch('clickPropType', propertyType);
-		isOpen = false;
+	function addProperty(propType: PropertyType) {
+		if (isOpen) isOpen = false;
+		propertyState.addProperty(propType);
 	}
 </script>
 
@@ -35,7 +33,7 @@
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
-						on:click={() => handleClickPropertyType(propertyType)}
+						on:click={() => addProperty(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm"
 					>
 						<PropertyIcon key={propertyType} />
@@ -53,17 +51,17 @@
 		<Drawer.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" class="w-full">
 				<Plus class="icon-sm" />
-				<span> Add a property </span>
+				<span> New property </span>
 			</Button>
 		</Drawer.Trigger>
 		<Drawer.Content>
-			<Drawer.Header class="py-2 font-semibold">Type</Drawer.Header>
+			<Drawer.Header class="py-2 font-semibold">New property</Drawer.Header>
 
 			<Drawer.Footer class="pt-2">
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
-						on:click={() => handleClickPropertyType(propertyType)}
+						on:click={() => addProperty(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm "
 					>
 						<PropertyIcon key={propertyType} />

@@ -3,10 +3,16 @@
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
 	import { getScreenState } from '$lib/components/view';
+	import type { Snippet } from 'svelte';
 
-	export let href: string | undefined = undefined;
-	export let active = false;
-	export let label: string;
+	type Props = {
+		children: Snippet;
+		href?: string;
+		active: boolean;
+		label: string;
+	};
+
+	let { children, href, active = false, label, ...rest }: Props = $props();
 
 	const sidebarState = getSidebarState();
 	const isDesktop = getScreenState();
@@ -22,21 +28,14 @@
 
 <a
 	{href}
-	on:click={onClickSidebarItem}
-	on:change
-	on:keydown
-	on:keyup
-	on:touchstart|passive
-	on:touchend
-	on:touchcancel
-	on:mouseenter
-	on:mouseleave
+	onclick={onClickSidebarItem}
+	{...rest}
 	class={cn(
 		'w-full flex items-center space-x-1.5 py-0.5 px-1.5  hover:bg-secondary/95 	transition duration-75 text-secondary-foreground',
 		active && 'border-r-2 border-primary bg-secondary'
 	)}
 >
-	<slot name="icon" />
+{@render children()}
 
 	<span class={cn('font-semibold', active && 'text-primary')}>
 		{label}

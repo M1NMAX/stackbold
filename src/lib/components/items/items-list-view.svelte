@@ -1,28 +1,35 @@
 <script lang="ts">
-	import { ItemMenu, getActiveItemState } from '.';
+	import { ItemMenu, getActiveItemState, getItemState } from '.';
 	import {
 		PropertyValue,
 		containsView,
 		// helpers
-		getPropertyColor,
 		getPropertyRef,
-		getPropertyValue
+		getPropertyState
 	} from '$lib/components/property';
-	import { type Property, type Item, View } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
-	import { cn } from '$lib/utils';
+	import { type Item, View } from '@prisma/client';
+	import { cn, preventEnterKeypress } from '$lib/utils';
 	import { getScreenState } from '$lib/components/view';
+	import type { RouterInputs } from '$lib/trpc/router';
+	import { DEBOUNCE_INTERVAL } from '$lib/constant';
+	import debounce from 'debounce';
 
-	export let items: Item[];
-	export let properties: Property[];
+	type Props = {
+		items: Item[];
+		clickOpenItem: (id: string) => void;
+	};
 
-	const activeItem = getActiveItemState();
+	let { items, clickOpenItem }: Props = $props();
+
 	const isDesktop = getScreenState();
+	const activeItem = getActiveItemState();
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
 
-	const dispatch = createEventDispatcher<{
-		clickOpenItem: string;
-		renameItem: { id: string; name: string };
-	}>();
+	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
+	async function updItem(args: RouterInputs['items']['update']) {
+		itemState.updItem(args);
+	}
 
 	//TODO: validate inner text
 	function handleOnInput(e: { currentTarget: EventTarget & HTMLDivElement }) {
@@ -30,11 +37,18 @@
 
 		const id = targetEl.dataset.id!;
 		const name = targetEl.innerText;
-		dispatch('renameItem', { id, name });
+		updItemDebounced({ id, data: { name } });
 	}
 
-	function preventEnterKeypress(e: KeyboardEvent) {
-		if (e.key === 'Enter') e.preventDefault();
+	function onClickItemBody(
+		e: MouseEvent & {
+			currentTarget: EventTarget & HTMLDivElement;
+		},
+		itemId: string
+	) {
+		if (e.target === e.currentTarget) {
+			clickOpenItem(itemId);
+		}
 	}
 </script>
 
@@ -43,23 +57,23 @@
 		<div
 			tabindex="0"
 			role="button"
-			on:click|self={() => dispatch('clickOpenItem', item.id)}
-			on:keydown={(e) => {
+			onclick={(e) => onClickItemBody(e, item.id)}
+			onkeydown={(e) => {
 				if (e.key === 'Enter') {
-					dispatch('clickOpenItem', item.id);
+					clickOpenItem(item.id);
 				}
 			}}
 			class={cn(
 				'relative flex flex-col items-start py-1 px-2 space-y-2 overflow-hidden rounded-sm  bg-secondary/40 hover:bg-secondary/50 group ',
-				item.id === $activeItem?.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
+				item.id === activeItem.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			)}
 		>
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				contenteditable
 				spellcheck={false}
-				on:keypress={preventEnterKeypress}
-				on:input={handleOnInput}
+				onkeypress={preventEnterKeypress}
+				oninput={handleOnInput}
 				data-id={item.id}
 				class="text-lg font-semibold focus:outline-none"
 			>
@@ -67,21 +81,18 @@
 			</div>
 
 			<ItemMenu
-				itemId={item.id}
-				on:clickOpenItem={(e) => dispatch('clickOpenItem', e.detail)}
-				on:clickDuplicateItem
-				on:clickDeleteItem
+				id={item.id}
+				name={item.name}
+				{clickOpenItem}
 				class={cn('absolute right-2 top-0', $isDesktop && 'invisible group-hover:visible')}
 			/>
 
 			<div class="flex flex-wrap gap-2">
-				{#each properties as property (property.id)}
+				{#each propertyState.properties as property (property.id)}
 					{#if containsView(property.visibleInViews, View.LIST)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
-							{@const color = getPropertyColor(property, propertyRef.value)}
-							{@const value = getPropertyValue(property, propertyRef.value, false)}
-							<PropertyValue itemId={item.id} {property} {color} {value} on:updPropertyValue />
+							<PropertyValue itemId={item.id} {property} />
 						{/if}
 					{/if}
 				{/each}

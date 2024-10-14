@@ -4,6 +4,13 @@ import { GroupCreateWithoutOwnerInputSchema, GroupUpdateInputSchema } from '$pri
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
+const groupUpdateSchema = z.object({
+	id: z.string(),
+	data: z.object({
+		name: z.string()
+	})
+});
+
 export const groups = createTRPCRouter({
 	list: protectedProcedure.query(({ ctx: { userId } }) => {
 		return prisma.group.findMany({
@@ -19,7 +26,7 @@ export const groups = createTRPCRouter({
 			})
 	),
 	update: protectedProcedure
-		.input(z.object({ id: z.string(), data: GroupUpdateInputSchema }))
+		.input(groupUpdateSchema)
 		.mutation(async ({ input: { id, data }, ctx: userId }) => {
 			await prisma.group.update({ data, where: { id } });
 		}),

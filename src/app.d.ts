@@ -9,15 +9,17 @@ declare global {
 
 		// interface Platform {}
 		interface Locals {
-			user: import("lucia").User | null;
-			session: import("lucia").Session | null;
+			user: import('lucia').User | null;
+			session: import('lucia').Session | null;
 		}
 		// interface PageData {}
 		interface PageState {
-			template: Template;
+			id?: string;
+			insidePanel?: boolean;
+			showPanel?: boolean;
+			template?: Template;
 		}
 	}
 }
 
-
-export { };
+export {};
