@@ -3,55 +3,29 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';
-	import { Lock, LogOut, PanelLeftInactive, Search, Settings, SunMoon, X } from 'lucide-svelte';
+	import { Lock, LogOut, Settings, SunMoon } from 'lucide-svelte';
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
-	import { getSidebarState } from './context';
 	import { type User } from 'lucia';
 	type Props = {
 		user: User;
-		search: () => void;
 	};
 
-	let { user, search }: Props = $props();
+	let { user }: Props = $props();
 	let avatarUrl = $derived(
 		`https://api.dicebear.com/7.x/shapes/svg?seed=${user.email?.split('@')[0]}`
 	);
 
 	const isDesktop = getScreenState();
-	const sidebarState = getSidebarState();
 </script>
 
 {#if $isDesktop}
 	<DropdownMenu.Root>
-		<div class="w-full flex items-center justify-between space-x-1">
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5">
-					<img src={avatarUrl} class="icon-lg object-contain rounded-md" alt="avatar" />
-				</Button>
-			</DropdownMenu.Trigger>
-			<Button
-				variant="secondary"
-				class="grow h-9 justify-between items-center space-x-1"
-				on:click={() => search()}
-			>
-				<span class="flex items-center space-x-0.5">
-					<Search class="icon-sm" />
-					<span> Search</span>
-				</span>
-				<kbd
-					class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-0.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
-				>
-					<span class="text-xs">Ctrl</span>
-					<span>K</span>
-				</kbd>
+		<DropdownMenu.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5 rounded-full">
+				<img src={avatarUrl} class="h-full w-full object-contain rounded-full" alt="avatar" />
 			</Button>
-
-			<Button variant="secondary" size="icon" on:click={() => ($sidebarState = false)}>
-				<PanelLeftInactive class="icon-sm" />
-				<span class="sr-only"> Hide sidebar </span>
-			</Button>
-		</div>
+		</DropdownMenu.Trigger>
 
 		<DropdownMenu.Content class="w-56">
 			<DropdownMenu.Label>{user.email}</DropdownMenu.Label>
@@ -107,32 +81,11 @@
 	</DropdownMenu.Root>
 {:else}
 	<Drawer.Root>
-		<div class="w-full flex justify-between items-center space-x-1">
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class="p-0.5 rounded-full">
-					<img src={avatarUrl} class="icon-lg object-contain rounded-full" alt="avatar" />
-				</Button>
-			</Drawer.Trigger>
-			<div class="grow flex space-x-1">
-				<Button
-					variant="secondary"
-					on:click={() => search()}
-					class="grow justify-start px-2 rounded-full "
-				>
-					<Search class="icon-sm" />
-					<span>Search</span>
-				</Button>
-				<Button
-					variant="secondary"
-					size="icon"
-					on:click={() => ($sidebarState = false)}
-					class="rounded-full"
-				>
-					<X class="icon-sm" />
-					<span class="sr-only"> Hide sidebar </span>
-				</Button>
-			</div>
-		</div>
+		<Drawer.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class="p-0.5 rounded-full">
+				<img src={avatarUrl} class="icon-lg object-contain rounded-full" alt="avatar" />
+			</Button>
+		</Drawer.Trigger>
 
 		<Drawer.Content>
 			<Drawer.Header class="py-2">
