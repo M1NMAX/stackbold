@@ -30,7 +30,6 @@
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
 
-		console.log(targetEl.scrollTop);
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
 	}

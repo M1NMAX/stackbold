@@ -75,7 +75,7 @@
 		if (e.metaKey || e.ctrlKey || $isDesktop) return;
 
 		const { href } = e.currentTarget;
-		$sidebarState = false;
+		sidebarState.close();
 		goto(href);
 	}
 

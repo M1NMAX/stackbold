@@ -21,7 +21,7 @@
 		if (e.metaKey || e.ctrlKey || $isDesktop) return;
 
 		const { href } = e.currentTarget;
-		$sidebarState = false;
+		sidebarState.close();
 		goto(href);
 	}
 </script>
@@ -35,7 +35,7 @@
 		active && 'border-r-2 border-primary bg-secondary'
 	)}
 >
-{@render children()}
+	{@render children()}
 
 	<span class={cn('font-semibold', active && 'text-primary')}>
 		{label}
