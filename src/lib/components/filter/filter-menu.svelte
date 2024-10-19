@@ -13,7 +13,6 @@
 	import { ModalState } from '$lib/components/modal';
 	import { isFilterSeletect, toggleFilter } from './helpers';
 	import { Separator } from '$lib/components/ui/separator';
-	import { getScreenState } from '$lib/components/view';
 
 	type Props = {
 		filters: Filter[];
@@ -22,7 +21,6 @@
 
 	let { filters, updFilters }: Props = $props();
 
-	const isDesktop = getScreenState();
 	const propertyState = getPropertyState();
 	const detailViewState = new ModalState();
 
@@ -57,100 +55,97 @@
 	}
 </script>
 
-{#if $isDesktop}
-	<Popover.Root
-		onOpenChange={(value) => {
-			if (value) detailViewState.close();
-		}}
+<Popover.Root
+	onOpenChange={(value) => {
+		if (value) detailViewState.close();
+	}}
+>
+	<Popover.Trigger asChild let:builder>
+		<Button builders={[builder]} variant="secondary" class="hidden md:block">Filters</Button>
+	</Popover.Trigger>
+	<Popover.Content
+		class="w-auto min-w-60 max-w-lg flex flex-col items-center justify-start space-y-1"
 	>
-		<Popover.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary">Filter</Button>
-		</Popover.Trigger>
-		<Popover.Content
-			class="w-auto min-w-60 max-w-lg flex flex-col items-center justify-start space-y-1"
-		>
-			{#if !detailViewState.isOpen}
-				<p class="w-full px-2 py-1.5 text-sm font-semibold">Filters</p>
-				<Separator />
+		{#if !detailViewState.isOpen}
+			<p class="w-full px-2 py-1.5 text-sm font-semibold">Filters</p>
+			<Separator />
 
-				{@render activeFilters()}
+			{@render activeFilters()}
 
-				<p class="w-full text-xs font-semibold px-2 py-0.5">Add filter</p>
-				{#each propertyState.properties as property}
-					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
-						<Button
-							variant="ghost"
-							class="h-8 w-full justify-start"
-							on:click={() => {
-								selectedProperty = property;
-								detailViewState.open();
-							}}
-						>
-							<PropertyIcon key={property.type} />
-							{property.name}
-						</Button>
-					{/if}
-				{/each}
-			{:else}
-				{@render header()}
-				{@render content()}
-				{@render clearBtn(selectedProperty.id)}
-			{/if}
-		</Popover.Content>
-	</Popover.Root>
-{:else}
-	<Drawer.Root>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary">
-				<FilterIcon class="icon-xs" />
-			</Button>
-		</Drawer.Trigger>
-		<Drawer.Content>
-			<Drawer.Header class="py-1">
-				<div class="flex items-center space-x-2">
-					<div class="p-2.5 rounded bg-secondary">
-						<FilterIcon class="icon-sm" />
-					</div>
-					<div class="text-base font-semibold">Filters</div>
-				</div>
-			</Drawer.Header>
-			<Drawer.Footer class="pt-2 px-1 ">
-				{@render activeFilters()}
-				<Accordion.Root
-					class="w-full sm:max-w-[70%]"
-					onValueChange={(value) => {
-						if (value && typeof value === 'string') {
-							const property = propertyState.getProperty(value);
-							if (!property) return;
+			<p class="w-full text-xs font-semibold px-2 py-0.5">Add filter</p>
+			{#each propertyState.properties as property}
+				{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
+					<Button
+						variant="ghost"
+						class="h-8 w-full justify-start"
+						on:click={() => {
 							selectedProperty = property;
 							detailViewState.open();
-						}
-					}}
-				>
-					{#each propertyState.properties as property}
-						{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
-							<Accordion.Item value={property.id}>
-								<Accordion.Trigger
-									showArrow={false}
-									class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold rounded-sm hover:no-underline hover:bg-muted"
-								>
-									<PropertyIcon key={property.type} class="icon-sm mr-2 rotate-0" />
+						}}
+					>
+						<PropertyIcon key={property.type} />
+						{property.name}
+					</Button>
+				{/if}
+			{/each}
+		{:else}
+			{@render header()}
+			{@render content()}
+			{@render clearBtn(selectedProperty.id)}
+		{/if}
+	</Popover.Content>
+</Popover.Root>
+<Drawer.Root>
+	<Drawer.Trigger asChild let:builder>
+		<Button builders={[builder]} variant="secondary" class="md:hidden">
+			<FilterIcon class="icon-xs" />
+		</Button>
+	</Drawer.Trigger>
+	<Drawer.Content>
+		<Drawer.Header class="py-1">
+			<div class="flex items-center space-x-2">
+				<div class="p-2.5 rounded bg-secondary">
+					<FilterIcon class="icon-sm" />
+				</div>
+				<div class="text-base font-semibold">Filters</div>
+			</div>
+		</Drawer.Header>
+		<Drawer.Footer class="pt-2 px-1 ">
+			{@render activeFilters()}
+			<Accordion.Root
+				class="w-full sm:max-w-[70%]"
+				onValueChange={(value) => {
+					if (value && typeof value === 'string') {
+						const property = propertyState.getProperty(value);
+						if (!property) return;
+						selectedProperty = property;
+						detailViewState.open();
+					}
+				}}
+			>
+				{#each propertyState.properties as property}
+					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
+						<Accordion.Item value={property.id}>
+							<Accordion.Trigger
+								showArrow={false}
+								class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold rounded-sm hover:no-underline hover:bg-muted"
+							>
+								<PropertyIcon key={property.type} class="icon-sm mr-2 rotate-0" />
 
-									{property.name}
-								</Accordion.Trigger>
-								<Accordion.Content>
-									<div class="px-2">
-										{@render content()}
-									</div>
-								</Accordion.Content>
-							</Accordion.Item>
-						{/if}
-					{/each}
-				</Accordion.Root>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
-{/if}
+								{property.name}
+							</Accordion.Trigger>
+							<Accordion.Content>
+								<div class="px-2">
+									{@render content()}
+								</div>
+							</Accordion.Content>
+						</Accordion.Item>
+					{/if}
+				{/each}
+			</Accordion.Root>
+		</Drawer.Footer>
+	</Drawer.Content>
+</Drawer.Root>
 
 {#snippet header()}
 	<div class="w-full flex items-center space-x-2 px-2 py-0.5">
