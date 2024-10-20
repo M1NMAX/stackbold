@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowUpDown, Database, Plus } from 'lucide-svelte';
+	import { Database, Plus } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput } from '$lib/components/search';
@@ -10,10 +10,6 @@
 	import { getCrtCollectionModalState } from '$lib/components/modal';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { getScreenState } from '$lib/components/view';
-	import { Label } from '$lib/components/ui/label';
 	import { UserMenu } from '$lib/components/user';
 
 	let { data } = $props();
@@ -31,7 +27,6 @@
 			.sort(sortFun(sort.field, sort.order));
 	});
 
-	const isDesktop = getScreenState();
 	const crtCollectionModal = getCrtCollectionModalState();
 
 	const SORT_STORAGE_KEY = 'collection-sort';
@@ -56,16 +51,14 @@
 	<title>Collections - Stackbold</title>
 </svelte:head>
 
-<PageContainer class="flex flex-col space-y-1">
-	<PageHeader class={cn('flex justify-end space-x-4 p-2', isSmHeadingVisible && 'justify-between')}>
-		{#if isSmHeadingVisible}
-			<div class="grow flex items-center space-x-2">
-				<Database class="icon-sm" />
-				<h1 class="text-lg font-semibold">Collections</h1>
-			</div>
-		{/if}
+<PageContainer>
+	<PageHeader>
+		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
+			<Database class="icon-md" />
+			<h1 class="text-lg font-semibold">Collections</h1>
+		</div>
 
-		<div class="flex md:hidden items-center space-x-2">
+		<div class=" flex md:hidden items-center space-x-2">
 			<Button size="icon" variant="ghost" onclick={() => crtCollectionModal.open()}>
 				<Plus />
 			</Button>
@@ -73,61 +66,20 @@
 		</div>
 	</PageHeader>
 	<PageContent onScroll={handleScroll}>
-		<div class="flex items-center space-x-2">
+		<div class=" hidden md:flex items-center space-x-2">
 			<Database class="icon-lg" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
 		</div>
 
 		<div class="space-y-2">
-			{#if $isDesktop}
-				<div class="flex justify-between space-x-2">
-					<SearchInput placeholder="Find Collection" bind:value={search} />
+			<div class="w-full flex justify-between space-x-1 md:space-x-2">
+				<SearchInput placeholder="Find Collection" bind:value={search} />
 
-					<SortMenu options={sortOptions} bind:value={sort} />
-					<Button onclick={() => crtCollectionModal.open()}>New Collection</Button>
-				</div>
-			{:else}
-				<div class="flex space-x-1">
-					<SearchInput placeholder="Find Collection" bind:value={search} />
-					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary">
-								<ArrowUpDown class="icon-sm" />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-1">
-								<div class="flex items-center space-x-2">
-									<div class="p-2.5 rounded bg-secondary">
-										<ArrowUpDown class="icon-sm" />
-									</div>
-									<div class="text-base font-semibold">Sort By</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer>
-								<RadioGroup.Root
-									id="sort"
-									value={sort.field + '-' + sort.order}
-									class="px-2 py-1 rounded-md bg-secondary"
-								>
-									{#each sortOptions as sortOpt}
-										<Label class="flex items-center justify-between space-x-2">
-											<span class="font-semibold text-lg"> {sortOpt.label} </span>
-											<RadioGroup.Item
-												value={sortOpt.field + '-' + sortOpt.order}
-												id={sortOpt.label}
-												on:click={() => {
-													sort = { ...sortOpt };
-												}}
-											/>
-										</Label>
-									{/each}
-								</RadioGroup.Root>
-							</Drawer.Footer>
-						</Drawer.Content>
-					</Drawer.Root>
-				</div>
-			{/if}
+				<SortMenu options={sortOptions} bind:value={sort} />
+				<Button class="hidden md:flex" onclick={() => crtCollectionModal.open()}>
+					New Collection
+				</Button>
+			</div>
 
 			{#if collections.length > 0}
 				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>

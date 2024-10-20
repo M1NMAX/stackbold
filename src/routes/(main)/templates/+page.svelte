@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowUpDown, ChevronLeft, Dna } from 'lucide-svelte';
+	import { ChevronLeft, Dna } from 'lucide-svelte';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
 	import { SortMenu } from '$lib/components/filters';
@@ -11,9 +11,6 @@
 	import { cn, noCheck } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { SlidingPanel } from '$lib/components/sliding-panel';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { Label } from '$lib/components/ui/label';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/components/modal';
 	import TemplatePage from './[id]/+page.svelte';
@@ -69,10 +66,7 @@
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <PageContainer
-	class={cn(
-		'flex flex-col space-y-1 ease-in-out duration-300',
-		templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6'
-	)}
+	class={cn('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
 >
 	<PageHeader>
 		<Button variant="secondary" size="icon" class="md:hidden" on:click={() => history.back()}>
@@ -81,7 +75,7 @@
 
 		{#if isSmHeadingVisible}
 			<div class="flex items-center space-x-2">
-				<Dna class="icon-sm" />
+				<Dna class="icon-md" />
 				<h1 class="text-lg font-semibold">Templates</h1>
 			</div>
 		{/if}
@@ -94,53 +88,11 @@
 		</div>
 
 		<div class="space-y-2">
-			{#if $isDesktop}
-				<div class="w-full flex justify-between space-x-2">
-					<SearchInput placeholder="Find Template" bind:value={search} />
-					<SortMenu options={sortOptions} bind:value={sort} />
-				</div>
-			{:else}
-				<div class="flex space-x-1">
-					<SearchInput placeholder="Find Collection" bind:value={search} />
-					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary">
-								<ArrowUpDown class="icon-sm" />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-1">
-								<div class="flex items-center space-x-2">
-									<div class="p-2.5 rounded bg-secondary">
-										<ArrowUpDown class="icon-sm" />
-									</div>
-									<div class="text-base font-semibold">Sort By</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer>
-								<RadioGroup.Root
-									id="sort"
-									value={sort.field + '-' + sort.order}
-									class="px-2 py-1 rounded-md bg-secondary"
-								>
-									{#each sortOptions as sortOpt}
-										<Label class="flex items-center justify-between space-x-2">
-											<span class="font-semibold text-lg"> {sortOpt.label} </span>
-											<RadioGroup.Item
-												value={sortOpt.field + '-' + sortOpt.order}
-												id={sortOpt.label}
-												onclick={() => {
-													sort = { ...sortOpt };
-												}}
-											/>
-										</Label>
-									{/each}
-								</RadioGroup.Root>
-							</Drawer.Footer>
-						</Drawer.Content>
-					</Drawer.Root>
-				</div>
-			{/if}
+			<div class="w-full flex justify-between space-x-1 md:space-x-2">
+				<SearchInput placeholder="Find Template" bind:value={search} />
+				<SortMenu options={sortOptions} bind:value={sort} />
+			</div>
+
 			<div class="space-y-2">
 				{#each templates as template (template.id)}
 					{@const Icon = icons[template.icon]}

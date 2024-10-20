@@ -167,12 +167,6 @@
 		itemName = '';
 	}
 
-	// Property Handlers
-	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
-	async function updProperty(property: RouterInputs['collections']['updateProperty']['property']) {
-		await propertyState.updProperty(property);
-	}
-
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
 
@@ -306,14 +300,14 @@
 
 <PageContainer
 	class={cn(
-		'flex flex-col space-y-1 ease-in-out duration-300',
+		'ease-in-out duration-300',
 		itemPanel.isOpen || propertiesPanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6'
 	)}
 >
 	<PageHeader
 		class={cn('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
 	>
-		<Button variant="secondary" size="icon" class="md:hidden" on:click={() => history.back()}>
+		<Button variant="secondary" class="md:hidden" on:click={() => history.back()}>
 			<ChevronLeft class="icon-md" />
 		</Button>
 		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
@@ -394,7 +388,7 @@
 			<SearchInput placeholder="Find Item" bind:value={search} />
 
 			<div class="flex items-center justify-between space-x-1">
-				<div>
+				<div class="flex items-center gap-x-1">
 					<SortMenu options={sortOptions} bind:value={sort} />
 					<FilterMenu
 						filters={getFilters(collection.filterConfigs, view)}

@@ -10,7 +10,7 @@
 	let { children, class: className }: Props = $props();
 </script>
 
-<div class={cn('flex items-center justify-start space-x-4 p-2', className)}>
+<div class={cn('flex items-center justify-start gap-x-2  p-2', className)}>
 	{#if children}
 		{@render children()}
 	{/if}
