@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { ArrowUpDown, Database, FolderPlus } from 'lucide-svelte';
+	import { ArrowUpDown, Database, Plus } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput } from '$lib/components/search';
-	import { SortDropdown } from '$lib/components/sort';
+	import { SortMenu } from '$lib/components/filters';
 	import type { Collection } from '@prisma/client';
 	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
@@ -14,6 +14,9 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { getScreenState } from '$lib/components/view';
 	import { Label } from '$lib/components/ui/label';
+	import { UserMenu } from '$lib/components/user';
+
+	let { data } = $props();
 
 	const collectionState = getCollectionState();
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
@@ -40,15 +43,36 @@
 	$effect(() => {
 		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
 	});
+	let isSmHeadingVisible = $state(false);
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
 </script>
 
 <svelte:head>
 	<title>Collections - Stackbold</title>
 </svelte:head>
 
-<PageContainer>
-	<PageHeader />
-	<PageContent>
+<PageContainer class="flex flex-col space-y-1">
+	<PageHeader class={cn('flex justify-end space-x-4 p-2', isSmHeadingVisible && 'justify-between')}>
+		{#if isSmHeadingVisible}
+			<div class="grow flex items-center space-x-2">
+				<Database class="icon-sm" />
+				<h1 class="text-lg font-semibold">Collections</h1>
+			</div>
+		{/if}
+
+		<div class="flex md:hidden items-center space-x-2">
+			<Button size="icon" variant="ghost" onclick={() => crtCollectionModal.open()}>
+				<Plus />
+			</Button>
+			<UserMenu user={data.user} />
+		</div>
+	</PageHeader>
+	<PageContent onScroll={handleScroll}>
 		<div class="flex items-center space-x-2">
 			<Database class="icon-lg" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
@@ -59,7 +83,7 @@
 				<div class="flex justify-between space-x-2">
 					<SearchInput placeholder="Find Collection" bind:value={search} />
 
-					<SortDropdown options={sortOptions} bind:value={sort} />
+					<SortMenu options={sortOptions} bind:value={sort} />
 					<Button onclick={() => crtCollectionModal.open()}>New Collection</Button>
 				</div>
 			{:else}
@@ -115,15 +139,5 @@
 				<p class="py-10 text-center text-lg font-semibold">No collection found</p>
 			{/if}
 		</div>
-
-		{#if !$isDesktop}
-			<Button
-				size="icon"
-				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
-				onclick={() => crtCollectionModal.open()}
-			>
-				<FolderPlus />
-			</Button>
-		{/if}
 	</PageContent>
 </PageContainer>

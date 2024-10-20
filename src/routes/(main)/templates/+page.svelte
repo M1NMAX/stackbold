@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { ArrowUpDown, Dna } from 'lucide-svelte';
+	import { ArrowUpDown, ChevronLeft, Dna } from 'lucide-svelte';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput } from '$lib/components/search';
-	import { SortDropdown } from '$lib/components/sort';
+	import { SortMenu } from '$lib/components/filters';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
@@ -56,25 +56,48 @@
 			goto(href);
 		}
 	}
+
+	let isSmHeadingVisible = $state(false);
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
 </script>
 
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <PageContainer
-	class={cn('flex flex-col space-y-1 ease-in-out duration-300', templatePanel.isOpen && 'w-2/3')}
+	class={cn(
+		'flex flex-col space-y-1 ease-in-out duration-300',
+		templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6'
+	)}
 >
-	<PageHeader />
-	<PageContent>
+	<PageHeader>
+		<Button variant="secondary" size="icon" class="md:hidden" on:click={() => history.back()}>
+			<ChevronLeft class="icon-md" />
+		</Button>
+
+		{#if isSmHeadingVisible}
+			<div class="flex items-center space-x-2">
+				<Dna class="icon-sm" />
+				<h1 class="text-lg font-semibold">Templates</h1>
+			</div>
+		{/if}
+	</PageHeader>
+
+	<PageContent onScroll={handleScroll}>
 		<div class="flex items-center space-x-2">
 			<Dna class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Templates</h1>
 		</div>
 
-		<div class=" space-y-2">
+		<div class="space-y-2">
 			{#if $isDesktop}
 				<div class="w-full flex justify-between space-x-2">
 					<SearchInput placeholder="Find Template" bind:value={search} />
-					<SortDropdown options={sortOptions} bind:value={sort} />
+					<SortMenu options={sortOptions} bind:value={sort} />
 				</div>
 			{:else}
 				<div class="flex space-x-1">
@@ -118,7 +141,6 @@
 					</Drawer.Root>
 				</div>
 			{/if}
-
 			<div class="space-y-2">
 				{#each templates as template (template.id)}
 					{@const Icon = icons[template.icon]}
@@ -148,7 +170,7 @@
 </PageContainer>
 
 {#if $page.state.template}
-	<SlidingPanel open={templatePanel.isOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<SlidingPanel open={templatePanel.isOpen} class="w-full md:w-2/6">
 		<TemplatePage data={noCheck($page.state)} />
 	</SlidingPanel>
 {/if}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { ModalState } from '$lib/components/modal';
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
 	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
@@ -59,77 +59,84 @@
 </script>
 
 {#if data.insidePanel}
-	<div
-		class={cn('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
-	>
-		<h2 class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
-			{template.name}
-		</h2>
+	<div class="flex items-center justify-between space-x-1">
+		<div class="flex items-center space-x-2">
+			<Icon class="icon-md" />
+			<h1 class="grow text-xl font-semibold">
+				{template.name}
+			</h1>
+		</div>
 
 		<Button variant="secondary" size="icon" on:click={() => goBack()}>
 			<X class="icon-sm" />
 		</Button>
 	</div>
 
-	{@render templateData()}
+	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
+		{@render templateData()}
+	</div>
 
 	{@render useTemplateBtn()}
 {:else}
 	<PageContainer>
-		<PageContent class="flex flex-col pb-1 px-0 overflow-hidden">
-			<div class="flex justify-between items-center space-x-2">
-				<Button variant="secondary" size="icon" on:click={() => history.back()}>
-					<ChevronLeft />
-				</Button>
-				<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+		<PageHeader>
+			<Button variant="secondary" size="icon" on:click={() => history.back()}>
+				<ChevronLeft />
+			</Button>
+			{#if isSmHeadingVisible}
+				<div class="flex items-center space-x-2">
+					<Icon clas="icon-sm" />
+					<h1 class="text-lg font-semibold">
+						{template.name}
+					</h1>
+				</div>
+			{/if}
+		</PageHeader>
+		<PageContent class="grow" onScroll={handleScroll}>
+			<div class="flex items-center space-x-2 pt-1">
+				<Icon class="icon-md" />
+				<h2 class="text-2xl font-semibold">
 					{template.name}
-				</h1>
+				</h2>
 			</div>
-
 			{@render templateData()}
-
-			{@render useTemplateBtn()}
 		</PageContent>
+
+		<div class="p-2">
+			{@render useTemplateBtn()}
+		</div>
 	</PageContainer>
 {/if}
 
 {#snippet templateData()}
-	<div class="grow flex flex-col space-y-4 overflow-y-auto" onscroll={handleScroll}>
-		<div class="flex items-center space-x-2 pt-1">
-			<Icon class="icon-md" />
-			<h2 class="text-2xl font-semibold">
-				{template.name}
-			</h2>
-		</div>
-		<p>
-			{template.description}
-		</p>
-		<div class="grow flex flex-col space-y-2">
-			<div>
-				<h3 class="text-xl font-semibold">Items</h3>
+	<p>
+		{template.description}
+	</p>
+	<div class="grow flex flex-col space-y-2">
+		<div class="space-y-2">
+			<h3 class="text-lg font-semibold">Items</h3>
 
-				<div class="flex flex-col space-y-2">
-					{#each template.items as item (item.id)}
-						<div
-							class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
-						>
-							<div class="font-semibold text-lg">
-								{item.name}
-							</div>
-
-							<div class="flex flex-wrap gap-2">
-								{#each template.properties as property (property.id)}
-									{@const propertyRef = getPropertyRef(item.properties, property.id)}
-									{#if propertyRef && propertyRef.value !== ''}
-										{@const color = getPropertyColor(property, propertyRef.value)}
-
-										<PropertyTemplate {property} {color} value={propertyRef.value} />
-									{/if}
-								{/each}
-							</div>
+			<div class="flex flex-col space-y-2">
+				{#each template.items as item (item.id)}
+					<div
+						class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
+					>
+						<div class="font-semibold text-lg">
+							{item.name}
 						</div>
-					{/each}
-				</div>
+
+						<div class="flex flex-wrap gap-2">
+							{#each template.properties as property (property.id)}
+								{@const propertyRef = getPropertyRef(item.properties, property.id)}
+								{#if propertyRef && propertyRef.value !== ''}
+									{@const color = getPropertyColor(property, propertyRef.value)}
+
+									<PropertyTemplate {property} {color} value={propertyRef.value} />
+								{/if}
+							{/each}
+						</div>
+					</div>
+				{/each}
 			</div>
 		</div>
 	</div>

@@ -1,15 +1,5 @@
 <script lang="ts">
-	import {
-		CheckSquare2,
-		Pin,
-		PinOff,
-		Plus,
-		Settings2,
-		Square,
-		SquareSlash,
-		StretchHorizontal,
-		Table
-	} from 'lucide-svelte';
+	import { CheckSquare2, ChevronLeft, Plus, Settings2, Square } from 'lucide-svelte';
 	import { Color, View, type Property } from '@prisma/client';
 	import {
 		ItemNew,
@@ -19,39 +9,25 @@
 		setItemState
 	} from '$lib/components/items';
 	import {
-		PropertyIcon,
-		containsView,
 		getOption,
 		getPropertyColor,
 		getPropertyDefaultValue,
-		getPropertyRef,
-		toggleView
+		getPropertyRef
 	} from '$lib/components/property';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import {
-		capitalizeFirstLetter,
-		cn,
-		noCheck,
-		preventEnterKeypress,
-		sortFun,
-		type SortOption
-	} from '$lib/utils';
+	import { cn, noCheck, preventEnterKeypress, sortFun, type SortOption } from '$lib/utils';
 	import { fade } from 'svelte/transition';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
 	import { SearchInput } from '$lib/components/search';
-	import { SortDropdown } from '$lib/components/sort';
 	import { ViewButtonsGroup, getScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import {
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
@@ -59,8 +35,6 @@
 		PROPERTIES_PANEL_CTX_KEY,
 		PROPERTY_COLORS
 	} from '$lib/constant';
-	import { Label } from '$lib/components/ui/label';
-	import { Switch } from '$lib/components/ui/switch';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { setPropertyState } from '$lib/components/property';
 	import { ModalState } from '$lib/components/modal';
@@ -69,7 +43,7 @@
 	import { getContext } from 'svelte';
 	import { clickOutside, textareaAutoSize } from '$lib/actions';
 	import { nameSchema } from '$lib/schema';
-	import { FilterMenu, getFilters } from '$lib/components/filter';
+	import { FilterMenu, GroupByMenu, SortMenu, getFilters } from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
 
 	let { data } = $props();
@@ -137,7 +111,7 @@
 	let itemNameError = $state<string | null>(null);
 	let renameCollectionError = $state<string | null>(null);
 
-	let isSmallHeadingVisible = $state(false);
+	let isSmHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
 
 	const isDesktop = getScreenState();
@@ -202,8 +176,8 @@
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
 
-		if (targetEl.scrollTop > 0) isSmallHeadingVisible = true;
-		else isSmallHeadingVisible = false;
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
 	}
 
 	function includesGroupableProperties() {
@@ -333,54 +307,38 @@
 <PageContainer
 	class={cn(
 		'flex flex-col space-y-1 ease-in-out duration-300',
-		(itemPanel.isOpen || propertiesPanel.isOpen) && 'w-2/3'
+		itemPanel.isOpen || propertiesPanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6'
 	)}
 >
-	<PageHeader>
-		<div
-			class={cn(
-				'w-full flex justify-between items-center',
-				!isSmallHeadingVisible && 'justify-end'
-			)}
-		>
-			<div
-				class={cn('flex justify-center items-center space-x-2', !isSmallHeadingVisible && 'hidden')}
-			>
-				<Icon class="icon-md" />
-				<h1 class="grow font-semibold text-xl text-nowrap">
-					{collection.name.length > 18 && !$isDesktop
-						? collection.name.substring(0, 18) + '...'
-						: collection.name}
-				</h1>
-			</div>
-			<div class="flex justify-end items-center space-x-1.5">
-				<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
-					Updated
-					{dayjs(collection.updatedAt).fromNow()}
-				</span>
+	<PageHeader
+		class={cn('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
+	>
+		<Button variant="secondary" size="icon" class="md:hidden" on:click={() => history.back()}>
+			<ChevronLeft class="icon-md" />
+		</Button>
+		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
+			<Icon class="icon-md" />
+			<h1 class="grow font-semibold text-xl text-nowrap">
+				{collection.name.length > 18 && !$isDesktop
+					? collection.name.substring(0, 18) + '...'
+					: collection.name}
+			</h1>
+		</div>
+		<div class="flex justify-end items-center space-x-1.5">
+			<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
+				Updated
+				{dayjs(collection.updatedAt).fromNow()}
+			</span>
 
-				<Button
-					variant="secondary"
-					size="icon"
-					on:click={() => updCollection({ isPinned: !collection.isPinned })}
-				>
-					{#if collection.isPinned}
-						<PinOff class="icon-sm" />
-					{:else}
-						<Pin class="icon-sm" />
-					{/if}
-				</Button>
+			<Button variant="secondary" size="icon" on:click={() => onClickOpenProperties()}>
+				<Settings2 class="icon-sm" />
+			</Button>
 
-				<Button variant="secondary" size="icon" on:click={() => onClickOpenProperties()}>
-					<Settings2 class="icon-sm" />
-				</Button>
-
-				<CollectionMenu {collection} />
-			</div>
+			<CollectionMenu {collection} />
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1 lg:pb-12 lg:px-4" onScroll={handleScroll}>
+	<PageContent class="relative lg:pt-1" onScroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -397,214 +355,60 @@
 		{#if renameCollectionError}
 			<span class="text-primary"> {renameCollectionError}</span>
 		{/if}
-		{#key collection.id}
-			{#if !collection.isDescHidden}
-				<label transition:fade for="description" class="sr-only"> Collection description </label>
+		{#if !collection.isDescHidden}
+			<label transition:fade for="description" class="sr-only"> Collection description </label>
 
-				<textarea
-					use:textareaAutoSize
-					id="description"
-					value={collection.description}
-					oninput={handleOnInputCollectionDesc}
-					spellcheck={false}
-					class="textarea textarea-ghost"
-				></textarea>
-			{/if}
-		{/key}
+			<textarea
+				use:textareaAutoSize
+				id="description"
+				value={collection.description}
+				oninput={handleOnInputCollectionDesc}
+				spellcheck={false}
+				class="textarea textarea-ghost"
+			></textarea>
+		{/if}
 
-		{#if $isDesktop}
-			<!-- upper navigation handler -->
-			<div class="sticky -top-1 z-10 flex justify-between space-x-2 bg-card">
-				<SearchInput placeholder="Find Item" bind:value={search} />
+		<!-- upper navigation handler -->
+		<div class="sticky -top-1 z-10 hidden md:flex justify-between space-x-2 pb-1.5 bg-card">
+			<SearchInput placeholder="Find Item" bind:value={search} />
 
-				<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-				{#if includesGroupableProperties()}
-					<FilterMenu
-						filters={getFilters(collection.filterConfigs, view)}
-						updFilters={updFilterConfig}
-					/>
-					<div>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger asChild let:builder>
-								<Button variant="secondary" builders={[builder]} class="w-full">Group by</Button>
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content class="w-56">
-								<DropdownMenu.Label>Group by</DropdownMenu.Label>
-								<DropdownMenu.Separator />
-								<DropdownMenu.RadioGroup
-									value={findGroupByConfig(view) || 'none'}
-									onValueChange={(value) => {
-										updCollection({
-											groupByConfigs: updGroupByConfig(
-												view,
-												value === 'none' || !value ? '' : value
-											)
-										});
-									}}
-								>
-									<DropdownMenu.RadioItem value="none">None</DropdownMenu.RadioItem>
+			<SortMenu options={sortOptions} bind:value={sort} />
 
-									{#each propertyState.properties as property (property.id)}
-										{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-											<DropdownMenu.RadioItem value={property.id}>
-												{property.name}
-											</DropdownMenu.RadioItem>
-										{/if}
-									{/each}
-								</DropdownMenu.RadioGroup>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-					</div>
-				{/if}
-
-				<SortDropdown options={sortOptions} bind:value={sort} />
-
-				<ViewButtonsGroup options={[View.LIST, View.TABLE]} bind:value={view} />
-
-				<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
-			</div>
-		{:else}
-			<div class="flex space-x-1">
-				<SearchInput placeholder="Find Item" bind:value={search} />
-
+			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
+			{#if includesGroupableProperties()}
 				<FilterMenu
 					filters={getFilters(collection.filterConfigs, view)}
 					updFilters={updFilterConfig}
 				/>
-				<SortDropdown options={sortOptions} bind:value={sort} />
+				<GroupByMenu
+					value={findGroupByConfig(view) || 'none'}
+					updValue={(value) => updCollection({ groupByConfigs: updGroupByConfig(view, value) })}
+				/>
+			{/if}
 
-				<Drawer.Root>
-					<Drawer.Trigger asChild let:builder>
-						<Button builders={[builder]} variant="secondary">
-							{#if view === View.LIST}
-								<StretchHorizontal class="icon-sm" />
-							{:else}
-								<Table class="icon-sm" />
-							{/if}
-						</Button>
-					</Drawer.Trigger>
-					<Drawer.Content>
-						<Drawer.Header class="py-1">
-							<div class="flex items-center space-x-2">
-								<div class="p-2.5 rounded bg-secondary">
-									{#if view === View.LIST}
-										<StretchHorizontal class="icon-md" />
-									{:else}
-										<Table class="icon-md" />
-									{/if}
-								</div>
-								<div class="text-base font-semibold">Appereance</div>
-							</div>
-						</Drawer.Header>
-						<Drawer.Footer>
-							<label for="view"> View </label>
-							<RadioGroup.Root id="view" value={view} class="px-2 py-1 rounded-md bg-secondary/40">
-								<Label for="list" class="flex items-center justify-between space-x-2">
-									<div class="flex items-center space-x-2">
-										<StretchHorizontal class="icon-md" />
-										<span class="font-semibold text-lg"> List</span>
-									</div>
-									<RadioGroup.Item
-										id="list"
-										value={View.LIST}
-										on:click={() => (view = View.LIST)}
-									/>
-								</Label>
-								<Label for="table" class="flex items-center justify-between space-x-2">
-									<div class="flex items-center space-x-2">
-										<Table class="icon-md" />
-										<span class="font-semibold text-lg">Table</span>
-									</div>
-									<RadioGroup.Item
-										id="table"
-										value={View.TABLE}
-										on:click={() => (view = View.TABLE)}
-									/>
-								</Label>
-							</RadioGroup.Root>
-							<label for="visibility"> Visible in {capitalizeFirstLetter(view)} view </label>
-							<div class="px-2 py-1 space-y-2.5 rounded-md bg-secondary/40">
-								{#if view === View.LIST}
-									{#each propertyState.properties as property}
-										<div class="flex items-center justify-between">
-											<Label
-												for={`visibility-list-${property.id}`}
-												class="flex font-semibold text-base"
-											>
-												<PropertyIcon key={property.type} />
-												{property.name}
-											</Label>
+			<ViewButtonsGroup options={[View.LIST, View.TABLE]} bind:value={view} />
 
-											<Switch
-												id={`visibility-list-${property.id}`}
-												checked={containsView(property.visibleInViews, View.LIST)}
-												on:click={() =>
-													updPropertyDebounced({
-														id: property.id,
-														visibleInViews: toggleView(property.visibleInViews, View.LIST)
-													})}
-											/>
-										</div>
-									{/each}
-								{:else}
-									{#each propertyState.properties as property}
-										<div class="flex items-center justify-between">
-											<Label
-												for={`visibility-table-${property.id}`}
-												class="flex font-semibold text-base"
-											>
-												<PropertyIcon key={property.type} />
-												{property.name}
-											</Label>
-											<Switch
-												id={`visibility-table-${property.id}`}
-												checked={containsView(property.visibleInViews, View.TABLE)}
-												on:click={() =>
-													updPropertyDebounced({
-														id: property.id,
-														visibleInViews: toggleView(property.visibleInViews, View.TABLE)
-													})}
-											/>
-										</div>
-									{/each}
-								{/if}
-							</div>
-							<label for="groupBy"> Group by </label>
-							<RadioGroup.Root
-								id="groupBy"
-								value={findGroupByConfig(view) || 'none'}
-								onValueChange={(value) =>
-									updCollection({
-										groupByConfigs: updGroupByConfig(view, value === 'none' || !value ? '' : value)
-									})}
-								class="px-2 py-1 rounded-md bg-secondary/40"
-							>
-								<div class="flex items-center justify-between">
-									<Label for="group-by-none" class="w-full flex items-center ">
-										<SquareSlash class="icon-sm mr-2" />
-										<span class="grow font-semibold text-base">None</span>
-									</Label>
+			<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
+		</div>
+		<div class="flex flex-col md:hidden space-y-1">
+			<SearchInput placeholder="Find Item" bind:value={search} />
 
-									<RadioGroup.Item id="group-by-none" value="none" />
-								</div>
-								{#each propertyState.properties as property (property.id)}
-									{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-										<div class="w-full flex items-center justify-between">
-											<Label for={`group-by-${property.id}`} class="w-full flex items-center">
-												<PropertyIcon key={property.type} />
-												<span class="grow font-semibold text-base">{property.name}</span>
-											</Label>
+			<div class="flex items-center justify-between space-x-1">
+				<div>
+					<SortMenu options={sortOptions} bind:value={sort} />
+					<FilterMenu
+						filters={getFilters(collection.filterConfigs, view)}
+						updFilters={updFilterConfig}
+					/>
+					<GroupByMenu
+						value={findGroupByConfig(view) || 'none'}
+						updValue={(value) => updCollection({ groupByConfigs: updGroupByConfig(view, value) })}
+					/>
+				</div>
 
-											<RadioGroup.Item id={`group-by-${property.id}`} value={property.id} />
-										</div>
-									{/if}
-								{/each}
-							</RadioGroup.Root>
-						</Drawer.Footer>
-					</Drawer.Content>
-				</Drawer.Root>
+				<ViewButtonsGroup options={[View.LIST, View.TABLE]} bind:value={view} />
 			</div>
-		{/if}
+		</div>
 		{#if !findGroupByConfig(view)}
 			<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
@@ -674,13 +478,13 @@
 
 {#if $page.state.id}
 	<!-- Item sliding-panel -->
-	<SlidingPanel open={itemPanel.isOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<SlidingPanel open={itemPanel.isOpen} class="w-full md:w-2/6">
 		<ItemPage data={noCheck($page.state)} />
 	</SlidingPanel>
 {/if}
 {#if $page.state.showPanel}
 	<!-- Properties Sliding panel -->
-	<SlidingPanel open={propertiesPanel.isOpen} class="w-full lg:w-1/3 p-0 lg:p-1 lg:pl-0">
+	<SlidingPanel open={propertiesPanel.isOpen} class="w-full md:w-2/6 ">
 		<PropertiesPage data={noCheck($page.state)} />
 	</SlidingPanel>
 {/if}

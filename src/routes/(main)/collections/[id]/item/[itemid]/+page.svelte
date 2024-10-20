@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getItemState } from '$lib/components/items';
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import {
 		AddPropertyPopover,
 		getPropertyState,
@@ -9,7 +9,6 @@
 		PropertyInputWrapper
 	} from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
-	import { getScreenState } from '$lib/components/view';
 	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import { cn, preventEnterKeypress } from '$lib/utils';
@@ -21,7 +20,6 @@
 
 	let { data } = $props();
 
-	const isDesktop = getScreenState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	let item = $derived(getCurrentItem());
@@ -92,25 +90,26 @@
 	<div
 		class={cn('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
 	>
-		<h2 class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
+		<p class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
 			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
-		</h2>
+		</p>
 
 		{@render menu()}
-		<Button variant="secondary" size="icon" on:click={() => goBack()}>
+		<Button variant="secondary" on:click={() => goBack()}>
 			<X class="icon-sm" />
 		</Button>
 	</div>
-	<div class="grow hd-scroll" onscroll={handleScroll}>
+	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
 		<p
 			contenteditable
 			spellcheck={false}
 			onkeypress={preventEnterKeypress}
 			oninput={handleOnInputItemName}
-			class="pt-1 pb-2 text-2xl font-semibold break-words focus:outline-none"
+			class="pt-1 pb-2 text-xl font-semibold break-words focus:outline-none"
 		>
 			{item.name}
 		</p>
+
 		<div class="space-y-2">
 			{@render properties()}
 		</div>
@@ -120,37 +119,34 @@
 	</div>
 {:else}
 	<PageContainer>
-		<PageContent class="flex flex-col pb-1 px-0 overflow-hidden">
-			<div class="flex justify-between items-center space-x-2 sticky">
-				<Button variant="secondary" size="icon" on:click={() => history.back()}>
-					<ChevronLeft />
-				</Button>
-				<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
-					{item.name}
-				</h1>
+		<PageHeader class="flex items-center justify-between">
+			<Button variant="secondary" on:click={() => history.back()}>
+				<ChevronLeft class="icon-sm" />
+			</Button>
+			<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+				{item.name}
+			</h1>
 
-				{@render menu()}
-			</div>
+			{@render menu()}
+		</PageHeader>
 
-			<div class="grow overflow-y-auto hd-scroll" onscroll={handleScroll}>
-				<p
-					contenteditable
-					spellcheck={false}
-					onkeypress={preventEnterKeypress}
-					oninput={handleOnInputItemName}
-					class="pt-1 pb-2 text-2xl font-semibold break-words focus:outline-none"
-				>
-					{item.name}
-				</p>
-				<div class="space-y-2">
-					{@render properties()}
-				</div>
-			</div>
+		<PageContent class="grow" onScroll={handleScroll}>
+			<p
+				contenteditable
+				spellcheck={false}
+				onkeypress={preventEnterKeypress}
+				oninput={handleOnInputItemName}
+				class="pb-2 text-2xl font-semibold break-words focus:outline-none"
+			>
+				{item.name}
+			</p>
 
-			<div>
-				<AddPropertyPopover />
-			</div>
+			{@render properties()}
+			{@render properties()}
 		</PageContent>
+		<div class="p-2">
+			<AddPropertyPopover />
+		</div>
 	</PageContainer>
 {/if}
 
@@ -163,46 +159,43 @@
 {/snippet}
 
 {#snippet menu()}
-	{#if $isDesktop}
-		<DropdownMenu.Root bind:open={menuState.isOpen}>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" size="icon">
-					<MoreHorizontal />
-				</Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end" class="w-56">
-				<DropdownMenu.Group>
-					<DropdownMenu.Item on:click={() => duplicateItem()}>
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</DropdownMenu.Item>
+	<DropdownMenu.Root bind:open={menuState.isOpen}>
+		<DropdownMenu.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class="hidden md:block">
+				<MoreHorizontal class="icon-sm" />
+			</Button>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content align="end" class="w-56">
+			<DropdownMenu.Group>
+				<DropdownMenu.Item on:click={() => duplicateItem()}>
+					<Copy class="icon-xs" />
+					<span>Duplicate</span>
+				</DropdownMenu.Item>
 
-					<DropdownMenu.Item on:click={() => deleteItem()} class="group">
-						<Trash class="icon-xs group-hover:text-primary" />
-						<span class="group-hover:text-primary">Delete</span>
-					</DropdownMenu.Item>
-				</DropdownMenu.Group>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
-		<Drawer.Root bind:open={menuState.isOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" size="icon">
-					<MoreHorizontal />
+				<DropdownMenu.Item on:click={() => deleteItem()} class="group">
+					<Trash class="icon-xs group-hover:text-primary" />
+					<span class="group-hover:text-primary">Delete</span>
+				</DropdownMenu.Item>
+			</DropdownMenu.Group>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
+	<Drawer.Root bind:open={menuState.isOpen}>
+		<Drawer.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class="md:hidden">
+				<MoreHorizontal class="icon-sm" />
+			</Button>
+		</Drawer.Trigger>
+		<Drawer.Content>
+			<Drawer.Footer class="pt-2">
+				<Button variant="secondary" on:click={() => duplicateItem()}>
+					<Copy class="icon-xs" />
+					<span>Duplicate</span>
 				</Button>
-			</Drawer.Trigger>
-			<Drawer.Content>
-				<Drawer.Footer class="pt-2">
-					<Button variant="secondary" on:click={() => duplicateItem()}>
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</Button>
-					<Button variant="destructive" on:click={() => deleteItem()}>
-						<Trash class="icon-xs" />
-						<span>Delete</span>
-					</Button>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+				<Button variant="destructive" on:click={() => deleteItem()}>
+					<Trash class="icon-xs" />
+					<span>Delete</span>
+				</Button>
+			</Drawer.Footer>
+		</Drawer.Content>
+	</Drawer.Root>
 {/snippet}

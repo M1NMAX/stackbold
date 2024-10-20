@@ -5,7 +5,7 @@
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent } from '$lib/components/page';
 	import { MoreVertical, Trash2 } from 'lucide-svelte';
-	import { SortArrow, SortDropdown } from '$lib/components/sort';
+	import { SortArrow, SortMenu } from '$lib/components/filters';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidate, invalidateAll } from '$app/navigation';
@@ -130,7 +130,7 @@
 			<div class="flex justify-between space-x-2">
 				<SearchInput placeholder="Find User" bind:value={search} />
 
-				<SortDropdown options={sortOptions} bind:value={sort} />
+				<SortMenu options={sortOptions} bind:value={sort} />
 				<Button on:click={() => addUserModal.open()}>New user</Button>
 			</div>
 		{:else}
@@ -138,7 +138,7 @@
 
 			<div class="flex justify-between items-center">
 				<div>{users.length} Users</div>
-				<SortDropdown options={sortOptions} bind:value={sort} />
+				<SortMenu options={sortOptions} bind:value={sort} />
 			</div>
 		{/if}
 

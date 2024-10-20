@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ModalState } from '$lib/components/modal';
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { AddPropertyPopover, getPropertyState, PropertyEditor } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
@@ -37,13 +37,13 @@
 
 {#if data.insidePanel}
 	<div class="flex items-center justify-between">
-		<h2 class="text-2xl font-semibold text-center">Properties</h2>
+		<h2 class="text-xl font-semibold text-center">Properties</h2>
 		<Button variant="secondary" size="icon" on:click={() => onClickCloseBtn()}>
 			<X class="icon-sm" />
 		</Button>
 	</div>
 
-	<div class="grow flex flex-col space-y-2 overflow-y-auto">
+	<div class="grow flex flex-col space-y-2 overflow-y-auto hd-scroll">
 		{@render editors()}
 	</div>
 
@@ -52,30 +52,25 @@
 	</div>
 {:else}
 	<PageContainer>
-		<PageContent class="flex flex-col pb-1 px-0 overflow-hidden">
-			<div class="flex items-center space-x-2">
-				<Button variant="secondary" size="icon" on:click={() => history.back()}>
-					<ChevronLeft />
-				</Button>
+		<PageHeader>
+			<Button variant="secondary" size="icon" on:click={() => history.back()}>
+				<ChevronLeft />
+			</Button>
 
-				<h1 class={cn('font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
-					Properties
-				</h1>
-			</div>
+			<h1 class={cn('font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+				Properties
+			</h1>
+		</PageHeader>
+		<PageContent class="grow" onScroll={handleScroll}>
+			<h1 class={cn('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+				Properties
+			</h1>
 
-			<div class="flex flex-col grow overflow-y-auto hd-scroll" onscroll={handleScroll}>
-				<h1 class={cn('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
-					Properties
-				</h1>
-
-				<div class="grow flex flex-col space-y-2">
-					{@render editors()}
-				</div>
-			</div>
-			<div>
-				<AddPropertyPopover />
-			</div>
+			{@render editors()}
 		</PageContent>
+		<div class="px-2 pb-2">
+			<AddPropertyPopover />
+		</div>
 	</PageContainer>
 {/if}
 

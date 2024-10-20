@@ -1,14 +1,23 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Boxes, Database, Dna, FolderPlus, Hash, Home, PackagePlus } from 'lucide-svelte';
 	import {
-		Sidebar,
+		Boxes,
+		Database,
+		Dna,
+		FolderPlus,
+		Hash,
+		Home,
+		PackagePlus,
+		PanelLeftInactive,
+		Search
+	} from 'lucide-svelte';
+	import {
 		SidebarCollection,
 		SidebarGroupMenu,
-		SidebarUserMenu,
 		SidebarItem,
 		setSidebarState
 	} from '$lib/components/sidebar';
+	import { UserMenu } from '$lib/components/user';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -50,6 +59,12 @@
 	const SIDEBAR_ITEMS = [
 		{ label: 'Home', url: '/', icon: Home },
 		{ label: 'Templates', url: '/templates', icon: Dna },
+		{ label: 'Collections', url: '/collections', icon: Database }
+	];
+
+	const BOTTOM_BAR_ITEMS = [
+		{ label: 'Home', url: '/', icon: Home },
+		{ label: 'Search', url: '/search', icon: Search },
 		{ label: 'Collections', url: '/collections', icon: Database }
 	];
 
@@ -112,9 +127,9 @@
 		};
 	});
 
-	$effect(() => {
-		if (innerWidth < 700) $sidebarState = false;
-	});
+	// $effect(() => {
+	// 	if (innerWidth < 700) sidebarState.close();
+	// });
 
 	$effect(() => {
 		activeUrl = $page.url.pathname;
@@ -123,19 +138,44 @@
 
 <svelte:window bind:innerWidth />
 
-<div class="h-screen flex bg-secondary">
-	<Sidebar
-		class={cn(
-			'transition-all w-0 overflow-hidden',
-			$sidebarState && `${$isDesktop ? 'w-72' : 'w-full'}`
-		)}
-	>
-		<div
-			class="h-full flex flex-col space-y-2 overflow-hidden px-0 py-1.5 rounded-none bg-card text-card-foreground"
+<div class="h-screen w-screen flex flex-col overflow-hidden bg-background">
+	<div class="h-auto hidden md:flex items-center justify-between pt-1 px-1.5">
+		<Button
+			size="icon"
+			variant="ghost"
+			on:click={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 		>
-			<div class=" flex justify-between space-x-0.5 px-1">
-				<SidebarUserMenu {user} search={() => globalSearchModal.open()} />
-			</div>
+			<PanelLeftInactive />
+		</Button>
+
+		<Button
+			variant="secondary"
+			class="grow h-9 max-w-sm flex justify-between items-center space-x-1"
+			on:click={() => globalSearchModal.open()}
+		>
+			<span class="flex items-center space-x-0.5">
+				<Search class="icon-sm" />
+				<span> Search</span>
+			</span>
+			<kbd
+				class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-0.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+			>
+				<span class="text-xs">Ctrl</span>
+				<span>K</span>
+			</kbd>
+		</Button>
+
+		<UserMenu {user} />
+	</div>
+	<div
+		class="w-full h-full md:grow flex flex-col md:flex-row space-0 md:space-x-1.5 p-0 md:p-1 overflow-hidden bg-background"
+	>
+		<aside
+			class={cn(
+				'hidden md:flex h-full flex-col space-y-2 overflow-hidden rounded-md px-0 py-1.5 bg-card text-card-foreground transition-all',
+				sidebarState.isOpen ? 'w-1/6' : 'w-0'
+			)}
+		>
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					{@const Icon = item.icon}
@@ -146,7 +186,7 @@
 			</div>
 
 			<Accordion.Root
-				class="grow  space-y-1.5 overflow-y-auto"
+				class="grow space-y-1.5 overflow-y-auto"
 				multiple
 				value={['item-0'].concat(groupState.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
@@ -193,16 +233,31 @@
 					<span class="sr-only">New group</span>
 				</Button>
 			</div>
-		</div>
-	</Sidebar>
+		</aside>
 
-	<div
-		class={cn(
-			'w-full flex relative bg-secondary',
-			$sidebarState && `${$isDesktop ? 'w-full' : 'w-0'} `
-		)}
-	>
 		{@render children()}
+
+		<aside
+			class={cn(
+				'bg-secondary flex md:hidden justify-around items-center',
+				!BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl) && 'hidden'
+			)}
+		>
+			{#each BOTTOM_BAR_ITEMS as item}
+				{@const Icon = item.icon}
+				<Button
+					href={item.url}
+					variant="ghost"
+					class={cn(
+						'h-16 flex flex-col items-center justify-center space-x-0',
+						activeUrl === item.url && 'text-primary'
+					)}
+				>
+					<Icon class="icon-sm" />
+					<span class="text-xs font-semibold">{item.label}</span>
+				</Button>
+			{/each}
+		</aside>
 	</div>
 </div>
 

@@ -4,6 +4,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { getCrtCollectionModalState } from '$lib/components/modal';
+	import { UserMenu } from '$lib/components/user';
+
+	let { data } = $props();
 
 	const collectionState = getCollectionState();
 	let pinnedCollections = $derived.by(() => {
@@ -11,10 +14,10 @@
 	});
 
 	let updCollections = $derived.by(() => {
-		// return the 12 most recently updated collections
+		// return the 8 most recently updated collections
 		return [...collectionState.collections]
 			.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-			.slice(0, 12);
+			.slice(0, 8);
 	});
 
 	const crtCollectionModal = getCrtCollectionModalState();
@@ -24,16 +27,21 @@
 	<title>Home - Stackbold</title>
 </svelte:head>
 
-<PageContainer>
-	<PageHeader />
-	<PageContent class="space-y-5">
+<PageContainer class="flex flex-col space-y-1">
+	<PageHeader class="flex items-center justify-between space-x-4 p-2">
 		<h1 class="font-semibold text-2xl">Welcome!</h1>
 
+		<div class="block md:hidden">
+			<UserMenu user={data.user} />
+		</div>
+	</PageHeader>
+
+	<PageContent class="space-y-5">
 		{#if pinnedCollections.length > 0}
 			<section class="space-y-1.5">
 				<h2 class="text-xl">Pinned Collections</h2>
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+				<div class="grid grid-cols-2 md:grid-cols-3 gap-2">
 					{#each pinnedCollections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}
@@ -46,7 +54,9 @@
 				<div class="flex items-centers justify-between">
 					<h2 class="text-xl">Recently updated collections</h2>
 
-					<Button href="/collections" variant="ghost" size="icon"><ArrowRight /></Button>
+					<Button href="/collections" variant="ghost" size="icon">
+						<ArrowRight />
+					</Button>
 				</div>
 
 				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
