@@ -22,8 +22,8 @@
 {#if $isDesktop}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5 rounded-full">
-				<img src={avatarUrl} class="h-full w-full object-contain rounded-full" alt="avatar" />
+			<Button builders={[builder]} variant="secondary" class="p-0.5 rounded-full">
+				<img src={avatarUrl} class="icon-lg object-contain rounded-full" alt="avatar" />
 			</Button>
 		</DropdownMenu.Trigger>
 
