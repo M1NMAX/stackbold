@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Database, Plus } from 'lucide-svelte';
+	import { Plus, LibraryBig } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput } from '$lib/components/search';
@@ -54,8 +54,8 @@
 <PageContainer>
 	<PageHeader>
 		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
-			<Database class="icon-md" />
-			<h1 class="text-lg font-semibold">Collections</h1>
+			<LibraryBig class="icon-md" />
+			<h1 class="text-xl font-semibold">Collections</h1>
 		</div>
 
 		<div class=" flex md:hidden items-center space-x-2">
@@ -67,7 +67,7 @@
 	</PageHeader>
 	<PageContent onScroll={handleScroll}>
 		<div class=" hidden md:flex items-center space-x-2">
-			<Database class="icon-lg" />
+			<LibraryBig class="icon-lg" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
 		</div>
 

@@ -2,13 +2,13 @@
 	import { page } from '$app/stores';
 	import {
 		Boxes,
-		Database,
 		Dna,
 		FolderPlus,
 		Hash,
 		Home,
 		PackagePlus,
 		PanelLeftInactive,
+		LibraryBig,
 		Search
 	} from 'lucide-svelte';
 	import {
@@ -30,7 +30,6 @@
 		setMoveCollectionModalState
 	} from '$lib/components/modal';
 	import { icons } from '$lib/components/icon';
-	import { getScreenState } from '$lib/components/view';
 	import { nameSchema } from '$lib/schema';
 	import { setGroupState } from '$lib/components/group';
 	import { setCollectionState } from '$lib/components/collection';
@@ -59,16 +58,14 @@
 	const SIDEBAR_ITEMS = [
 		{ label: 'Home', url: '/', icon: Home },
 		{ label: 'Templates', url: '/templates', icon: Dna },
-		{ label: 'Collections', url: '/collections', icon: Database }
+		{ label: 'Collections', url: '/collections', icon: LibraryBig }
 	];
 
 	const BOTTOM_BAR_ITEMS = [
 		{ label: 'Home', url: '/', icon: Home },
 		{ label: 'Search', url: '/search', icon: Search },
-		{ label: 'Collections', url: '/collections', icon: Database }
+		{ label: 'Collections', url: '/collections', icon: LibraryBig }
 	];
-
-	const isDesktop = getScreenState();
 
 	// Groups handlers
 	async function handleSubmitNewGroup(e: Event & { currentTarget: HTMLFormElement }) {
@@ -263,7 +260,7 @@
 
 <!-- Create collection dialog -->
 <Dialog.Root bind:open={crtCollectionModal.isOpen}>
-	<Dialog.Content class={cn('sm:max-w-[425px]', !$isDesktop && 'top-auto bottom-0')}>
+	<Dialog.Content class="sm:max-w-[425px] md:top-auto md:bottom-0">
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
 		</Dialog.Header>
@@ -327,34 +324,32 @@
 	<Command.List>
 		<Command.Empty>No results found.</Command.Empty>
 
-		{#if $isDesktop}
-			<Command.Group heading="Shortcuts">
-				<Command.Item
-					class="space-x-2"
-					value="new collection"
-					onSelect={() => {
-						globalSearchModal.close();
-						crtCollectionModal.open();
-					}}
-				>
-					<FolderPlus class="icon-xs" />
-					<span> New collection </span>
-				</Command.Item>
+		<Command.Group heading="Shortcuts" class="hidden md:block">
+			<Command.Item
+				class="space-x-2"
+				value="new collection"
+				onSelect={() => {
+					globalSearchModal.close();
+					crtCollectionModal.open();
+				}}
+			>
+				<FolderPlus class="icon-xs" />
+				<span> New collection </span>
+			</Command.Item>
 
-				<Command.Item
-					class="space-x-2"
-					value="new group"
-					onSelect={() => {
-						globalSearchModal.close();
-						createGroupModal.open();
-					}}
-				>
-					<PackagePlus class="icon-xs" />
-					<span> New group </span>
-				</Command.Item>
-			</Command.Group>
-			<Command.Separator />
-		{/if}
+			<Command.Item
+				class="space-x-2"
+				value="new group"
+				onSelect={() => {
+					globalSearchModal.close();
+					createGroupModal.open();
+				}}
+			>
+				<PackagePlus class="icon-xs" />
+				<span> New group </span>
+			</Command.Item>
+		</Command.Group>
+		<Command.Separator />
 		<Command.Group heading="Collections">
 			{#each collections as collection}
 				{@const Icon = icons[collection.icon]}
@@ -410,7 +405,7 @@
 							moveCollectionModal.close();
 						}}
 					>
-						<Database class="icon-sm" />
+						<LibraryBig class="icon-sm" />
 						<span> Collection</span>
 					</Command.Item>
 				{/if}

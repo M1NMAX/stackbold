@@ -75,7 +75,7 @@
 				onkeypress={preventEnterKeypress}
 				oninput={handleOnInput}
 				data-id={item.id}
-				class="text-lg font-semibold focus:outline-none"
+				class="text-base font-semibold focus:outline-none cursor-text"
 			>
 				{item.name}
 			</div>

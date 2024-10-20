@@ -18,7 +18,6 @@
 	import { onError } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
-	import { getScreenState } from '$lib/components/view';
 
 	let { data } = $props();
 
@@ -44,8 +43,6 @@
 	const deleteModal = getDeleteModalState();
 
 	const addUserModal = new ModalState();
-
-	const isDesktop = getScreenState();
 
 	const { form, message, errors, enhance } = superForm(data.form, {
 		onResult({ result }) {
@@ -88,8 +85,8 @@
 	<title>Admin - Stackbold</title>
 </svelte:head>
 
-<PageContainer>
-	<PageContent class="relative ">
+<PageContainer class="h-screen ">
+	<PageContent class="h-full relative ">
 		<div class="w-full flex items-center justify-between">
 			<LayoutDashboard class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Admin Dashboard</h1>
@@ -126,21 +123,12 @@
 		</div>
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		{#if $isDesktop}
-			<div class="flex justify-between space-x-2">
-				<SearchInput placeholder="Find User" bind:value={search} />
-
-				<SortMenu options={sortOptions} bind:value={sort} />
-				<Button on:click={() => addUserModal.open()}>New user</Button>
-			</div>
-		{:else}
+		<div class="flex justify-between space-x-2">
 			<SearchInput placeholder="Find User" bind:value={search} />
 
-			<div class="flex justify-between items-center">
-				<div>{users.length} Users</div>
-				<SortMenu options={sortOptions} bind:value={sort} />
-			</div>
-		{/if}
+			<SortMenu options={sortOptions} bind:value={sort} />
+			<Button class="hidden md:flex" on:click={() => addUserModal.open()}>New user</Button>
+		</div>
 
 		<div class=" overflow-x-auto">
 			<table class="w-full table-auto">
@@ -216,14 +204,12 @@
 				</tbody>
 			</table>
 		</div>
-		{#if !$isDesktop}
-			<Button
-				on:click={() => addUserModal.open()}
-				class="fixed bottom-4 right-4 z-10 h-12 w-12 rounded-full"
-			>
-				<UserPlus />
-			</Button>
-		{/if}
+		<Button
+			on:click={() => addUserModal.open()}
+			class="fixed md:hidden bottom-4 right-4 z-10 h-12 w-12 rounded-full"
+		>
+			<UserPlus />
+		</Button>
 	</PageContent>
 </PageContainer>
 

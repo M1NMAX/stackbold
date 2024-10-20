@@ -27,10 +27,9 @@
 	<title>Home - Stackbold</title>
 </svelte:head>
 
-<PageContainer class="flex flex-col space-y-1">
-	<PageHeader class="flex items-center justify-between space-x-4 p-2">
-		<h1 class="font-semibold text-2xl">Welcome!</h1>
-
+<PageContainer>
+	<PageHeader class="flex justify-between">
+		<h1 class="font-semibold text-xl">Dashboard</h1>
 		<div class="block md:hidden">
 			<UserMenu user={data.user} />
 		</div>
