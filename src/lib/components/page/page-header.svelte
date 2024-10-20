@@ -1,8 +1,5 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { getSidebarState } from '$lib/components/sidebar';
-	import { Button } from '$lib/components/ui/button';
-	import { Menu } from 'lucide-svelte';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -10,19 +7,10 @@
 		class?: string;
 	};
 
-	let {children, class: className }: Props = $props();
-
-	const sidebarState = getSidebarState();
+	let { children, class: className }: Props = $props();
 </script>
 
-<div class={cn('flex justify-end pb-2', !$sidebarState && 'justify-between', className)}>
-	{#if !$sidebarState}
-		<Button variant="secondary" size="icon" on:click={() => ($sidebarState = true)} class="mr-2">
-			<Menu class="icon-sm" />
-			<span class="sr-only"> Show sidebar </span>
-		</Button>
-	{/if}
-
+<div class={cn('flex items-center justify-start space-x-4 p-2', className)}>
 	{#if children}
 		{@render children()}
 	{/if}

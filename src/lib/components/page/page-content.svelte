@@ -4,15 +4,14 @@
 	type Props = {
 		children: Snippet;
 		class?: string;
-
-		onScroll?: (e: Event) =>void 
+		onScroll?: (e: Event) => void;
 	};
 	let { children, class: className, onScroll }: Props = $props();
 </script>
 
 <div
 	onscroll={onScroll}
-	class={cn('h-full w-full mx-auto p-2 pb-10 lg:p-4 space-y-2 overflow-y-auto', className)}
+	class={cn('h-max w-full mx-auto p-2 md:p-4  space-y-2 overflow-y-auto', className)}
 >
 	{@render children()}
 </div>
