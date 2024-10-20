@@ -92,7 +92,7 @@
 				value={property.name}
 				name="name"
 				type="text"
-				class="w-full h-9 pl-9 text-sm rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+				class="w-full h-9 pl-9 text-sm rounded-sm bg-secondary/40 placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 				oninput={handleOnInput}
 			/>
 		</div>
