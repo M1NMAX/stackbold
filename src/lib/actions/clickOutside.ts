@@ -1,7 +1,7 @@
 import type { Action } from 'svelte/action';
 
 export type ClickOutsideAttributes = {
-	'on:clickoutside'?: (event: CustomEvent) => void;
+	onclickoutside?: (event: CustomEvent) => void;
 };
 
 type ClickOutsideAction = Action<HTMLElement, any, ClickOutsideAttributes>;
@@ -11,7 +11,7 @@ export const clickOutside: ClickOutsideAction = (element) => {
 		const targetEl = event.target as HTMLElement;
 
 		if (element && !element.contains(targetEl)) {
-			const clickOutsideEvent = new CustomEvent('clickoutside');
+			const clickOutsideEvent = new CustomEvent('onclickoutside');
 			element.dispatchEvent(clickOutsideEvent);
 		}
 	}

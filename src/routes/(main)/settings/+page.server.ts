@@ -1,5 +1,6 @@
 import { lucia } from '$lib/server/auth';
 import { prisma } from '$lib/server/prisma';
+import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
@@ -13,9 +14,9 @@ const updUserSchema = z.object({
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 
-	if (!user) redirect(302, '/signin')
+	if (!user) redirect(302, '/signin');
 
-	const form = await superValidate(user, updUserSchema);
+	const form = await superValidate(user, zod(updUserSchema));
 
 	return { user, form };
 };
@@ -27,7 +28,7 @@ export const actions: Actions = {
 		await lucia.invalidateSession(event.locals.session.id);
 		const sessionCookie = lucia.createBlankSessionCookie();
 		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
+			path: '.',
 			...sessionCookie.attributes
 		});
 
@@ -35,18 +36,18 @@ export const actions: Actions = {
 	},
 	updUserData: async ({ request, locals }) => {
 		const user = locals.user;
-		if (!user) return fail(400)
+		if (!user) return fail(400);
 
-		const form = await superValidate(request, updUserSchema);
+		const form = await superValidate(request, zod(updUserSchema));
 
 		if (!form.valid) return fail(400, { form });
 		const { name } = form.data;
 
 		try {
-			await prisma.user.update({ where: { id: user.id }, data: { name } })
-			return message(form, "Accout data updated successfully")
+			await prisma.user.update({ where: { id: user.id }, data: { name } });
+			return message(form, 'Accout data updated successfully');
 		} catch {
-			return message(form, "Unable to update account data")
+			return message(form, 'Unable to update account data');
 		}
 	}
 };

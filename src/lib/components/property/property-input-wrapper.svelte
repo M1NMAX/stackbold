@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { PropertyOptions, containsView, getOption, toggleView } from '.';
+	import { PropertyOptions, containsView, getOption, getPropertyState, toggleView } from '.';
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
-	import { createEventDispatcher, tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import {
 		ChevronRight,
 		ChevronRightSquare,
@@ -16,61 +16,78 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import { clickOutside, escapeKeydown } from '$lib/actions';
 	import { getScreenState } from '$lib/components/view';
 	import { Separator } from '$lib/components/ui/separator';
-	import { PROPERTY_COLORS, PROPERTY_DEFAULT_VALUE_NOT_DEFINED } from '$lib/constant';
+	import {
+		DEBOUNCE_INTERVAL,
+		PROPERTY_COLORS,
+		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
+	} from '$lib/constant';
+	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import type { UpdProperty } from '$lib/types';
+	import debounce from 'debounce';
+	import { getItemState } from '$lib/components/items';
+	import { clickOutside, escapeKeydown } from '$lib/actions';
 
-	export let property: Property;
+	type Props = {
+		children: Snippet;
+		property: Property;
+	};
 
-	let isEditorOpen = false;
-	let isDrawerOpen = false;
+	let { children, property }: Props = $props();
 
+	let editorState = new ModalState();
+	let wrapperState = new ModalState();
+
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
+	const deleteModal = getDeleteModalState();
 	const isDesktop = getScreenState();
 
-	const dispatch = createEventDispatcher<{
-		duplicate: string;
-		delete: string;
-		updPropertyField: {
-			pid: string;
-			name: keyof Property;
-			value: boolean | string | PropertyType | View[];
-		};
-	}>();
+	async function duplicateProperty() {
+		if (wrapperState.isOpen) wrapperState.close();
+		await propertyState.duplicateProperty(property.id);
+		const prop = propertyState.getMostRecentProperty(propertyState.properties);
+		await itemState.addPropertyRef(prop.id);
+	}
+
+	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
+	async function updProperty(property: UpdProperty) {
+		await propertyState.updProperty(property);
+	}
 
 	function handleOnInput(e: Event) {
 		//TODO: correct property value when property type changes
 		const targetEl = e.target as HTMLInputElement;
-		const name = targetEl.name as keyof Property;
-		const value = targetEl.value;
-		// const { name, value }: { name: keyof Property , value:string} = targetEl;
-		dispatch('updPropertyField', { pid: property.id, name, value });
+		updPropertyDebounced({ id: property.id, name: targetEl.value });
 	}
 
-	function openEditor() {
-		isEditorOpen = true;
-		tick().then(() => {
-			document.getElementById(`${property.id}-name`)?.focus();
+	function deleteProperty() {
+		if (wrapperState.isOpen) wrapperState.close();
+		deleteModal.open({
+			type: 'property',
+			id: property.id,
+			name: property.name,
+			fun: () => {
+				propertyState.deleteProperty(property.id);
+			}
 		});
 	}
 
-	function closeEditor() {
-		isEditorOpen = false;
-	}
-
-	type EventType = 'duplicate' | 'delete';
-	function eventForward(e: EventType) {
-		dispatch(e, property.id);
-		isDrawerOpen = false;
-	}
+	$effect.pre(() => {
+		if (editorState.isOpen) {
+			tick().then(() => {
+				document.getElementById(`${property.id}-name`)?.focus();
+			});
+		}
+	});
 </script>
 
 <div class="py-0.5 px-1 rounded bg-secondary/40 text-secondary-foreground">
 	<div class="flex justify-between items-center space-x-1">
 		{#if property.type === 'CHECKBOX'}
-			<slot />
+			{@render children()}
 		{/if}
 		<label
 			for={property.id}
@@ -87,193 +104,26 @@
 					</Button>
 				</Popover.Trigger>
 				<Popover.Content>
-					{#if isEditorOpen}
-						<div
-							use:escapeKeydown
-							use:clickOutside
-							on:escapeKey={closeEditor}
-							on:clickoutside={closeEditor}
-							class="px-1 space-y-2"
-						>
-							<label for={`${property.id}-name`} class="sr-only"> Name</label>
-							<input
-								id={`${property.id}-name`}
-								value={property.name}
-								name="name"
-								class="input input-bordered input-sm col-span-5"
-								on:input={handleOnInput}
-							/>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button
-										builders={[builder]}
-										variant="ghost"
-										size="xs"
-										class="w-full justify-between"
-									>
-										<span>Type </span>
-										<span class="flex items-center justify-between space-x-1.5">
-											{capitalizeFirstLetter(property.type)}
-											<ChevronRight class="icon-xs" />
-										</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Type</DropdownMenu.Label>
-									<DropdownMenu.RadioGroup
-										value={property.type}
-										onValueChange={(value) => {
-											dispatch('updPropertyField', {
-												pid: property.id,
-												name: 'type',
-												value: value ?? PropertyType.TEXT
-											});
-										}}
-									>
-										{#each Object.values(PropertyType) as propertyType}
-											<DropdownMenu.RadioItem value={propertyType}>
-												{capitalizeFirstLetter(propertyType)}
-											</DropdownMenu.RadioItem>
-										{/each}
-									</DropdownMenu.RadioGroup>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger asChild let:builder>
-									<Button
-										builders={[builder]}
-										variant="ghost"
-										size="xs"
-										class="w-full justify-between"
-									>
-										<span>Aggregador</span>
-										<span class="flex items-center justify-between space-x-1.5">
-											{capitalizeFirstLetter(property.aggregator)}
-											<ChevronRight class="icon-xs" />
-										</span>
-									</Button>
-								</DropdownMenu.Trigger>
-								<DropdownMenu.Content align="end">
-									<DropdownMenu.Label>Aggregador</DropdownMenu.Label>
-									<DropdownMenu.RadioGroup
-										value={property.aggregator}
-										onValueChange={(value) => {
-											dispatch('updPropertyField', {
-												pid: property.id,
-												name: 'aggregator',
-												value: value ?? Aggregator.NONE
-											});
-										}}
-									>
-										<DropdownMenu.RadioItem value={Aggregator.NONE}>None</DropdownMenu.RadioItem>
-										<DropdownMenu.RadioItem value={Aggregator.COUNT}>
-											Count all
-										</DropdownMenu.RadioItem>
-										<DropdownMenu.RadioItem value={Aggregator.COUNT_EMPTY}>
-											Count empty
-										</DropdownMenu.RadioItem>
-										<DropdownMenu.RadioItem value={Aggregator.COUNT_NOT_EMPTY}>
-											Count not empty
-										</DropdownMenu.RadioItem>
-										{#if property.type === 'NUMBER'}
-											<DropdownMenu.RadioItem value={Aggregator.AVG}>
-												Average
-											</DropdownMenu.RadioItem>
-											<DropdownMenu.RadioItem value={Aggregator.SUM}>Sum</DropdownMenu.RadioItem>
-										{/if}
-									</DropdownMenu.RadioGroup>
-								</DropdownMenu.Content>
-							</DropdownMenu.Root>
-							{#if property.type === 'SELECT'}
-								{@const selectedOpt = getOption(property.options, property.defaultValue)}
-								<DropdownMenu.Root>
-									<DropdownMenu.Trigger asChild let:builder>
-										<Button
-											builders={[builder]}
-											variant="ghost"
-											size="xs"
-											class="w-full justify-between"
-										>
-											<span>Default Value</span>
-											<span class="flex items-center justify-between space-x-1.5">
-												{#if !selectedOpt}
-													{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
-												{:else}
-													<span
-														class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}
-													/>
-													{selectedOpt.value}
-												{/if}
-												<ChevronRight class="icon-xs" />
-											</span>
-										</Button>
-									</DropdownMenu.Trigger>
-									<DropdownMenu.Content align="end">
-										<DropdownMenu.Label>Default Value</DropdownMenu.Label>
-										<DropdownMenu.RadioGroup
-											value={property.defaultValue}
-											onValueChange={(value) => {
-												dispatch('updPropertyField', {
-													pid: property.id,
-													name: 'defaultValue',
-													value: value ?? ''
-												});
-											}}
-										>
-											<DropdownMenu.RadioItem value="">
-												<SquareSlash class="icon-sm mr-2 text-primary" />
-												{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
-											</DropdownMenu.RadioItem>
-											{#each property.options as opt}
-												<DropdownMenu.RadioItem value={opt.id}>
-													<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`} />
-													{opt.value}</DropdownMenu.RadioItem
-												>
-											{/each}
-										</DropdownMenu.RadioGroup>
-									</DropdownMenu.Content>
-								</DropdownMenu.Root>
-								<Separator />
-								<PropertyOptions
-									propertyId={property.id}
-									options={property.options}
-									on:addOpt
-									on:deleteOpt
-									on:updOptColor
-									on:updOptValue
-								/>
-							{/if}
-							<Separator />
-
-							<div>
-								<Button
-									on:click={() => dispatch('duplicate', property.id)}
-									variant="ghost"
-									size="xs"
-									class="w-full justify-start"
-								>
-									<Copy class="icon-xs" />
-									<span>Duplicate property</span>
-								</Button>
-								<Button
-									on:click={() => dispatch('delete', property.id)}
-									variant="ghost"
-									size="xs"
-									class="w-full justify-start group"
-								>
-									<Trash class="icon-xs group-hover:text-primary" />
-									<span class="group-hover:text-primary">Delete property</span>
-								</Button>
-							</div>
-						</div>
+					{#if editorState.isOpen}
+						{@render editor()}
 					{:else}
-						<Button on:click={openEditor} variant="ghost" size="xs" class="w-full justify-start">
+						<Button
+							on:click={() => editorState.open()}
+							variant="ghost"
+							size="xs"
+							class="w-full justify-start px-1"
+						>
 							<FileSignature class="icon-xs" />
 							<span> Edit property </span>
 						</Button>
 						<DropdownMenu.Root>
 							<DropdownMenu.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="ghost" size="xs" class="w-full justify-start">
+								<Button
+									builders={[builder]}
+									variant="ghost"
+									size="xs"
+									class="w-full justify-start px-1"
+								>
 									<EyeOff class="icon-xs" />
 									<span> Property visibility</span>
 								</Button>
@@ -282,10 +132,9 @@
 								<DropdownMenu.CheckboxItem
 									checked={containsView(property.visibleInViews, View.LIST)}
 									on:click={() => {
-										dispatch('updPropertyField', {
-											pid: property.id,
-											name: 'visibleInViews',
-											value: toggleView(property.visibleInViews, View.LIST)
+										updProperty({
+											id: property.id,
+											visibleInViews: toggleView(property.visibleInViews, View.LIST)
 										});
 									}}
 								>
@@ -295,10 +144,9 @@
 								<DropdownMenu.CheckboxItem
 									checked={containsView(property.visibleInViews, View.TABLE)}
 									on:click={() => {
-										dispatch('updPropertyField', {
-											pid: property.id,
-											name: 'visibleInViews',
-											value: toggleView(property.visibleInViews, View.TABLE)
+										updProperty({
+											id: property.id,
+											visibleInViews: toggleView(property.visibleInViews, View.TABLE)
 										});
 									}}
 								>
@@ -307,10 +155,10 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 						<Button
-							on:click={() => dispatch('duplicate', property.id)}
+							on:click={() => duplicateProperty()}
 							variant="ghost"
 							size="xs"
-							class="w-full justify-start"
+							class="w-full justify-start px-1"
 						>
 							<Copy class="icon-xs" />
 							<span>Duplicate property </span>
@@ -318,10 +166,10 @@
 
 						<Separator />
 						<Button
-							on:click={() => dispatch('delete', property.id)}
+							on:click={() => deleteProperty()}
 							variant="ghost"
 							size="xs"
-							class="w-full justify-start group"
+							class="w-full justify-start px-1 group"
 						>
 							<Trash class="icon-xs group-hover:text-primary" />
 							<span class="group-hover:text-primary">Delete property</span>
@@ -330,14 +178,14 @@
 				</Popover.Content>
 			</Popover.Root>
 		{:else}
-			<Drawer.Root bind:open={isDrawerOpen}>
+			<Drawer.Root bind:open={wrapperState.isOpen}>
 				<Drawer.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="ghost" size="xs">
 						<MoreHorizontal class="icon-xs" />
 					</Button>
 				</Drawer.Trigger>
 				<Drawer.Content>
-					<Drawer.Header class="py-2">
+					<Drawer.Header class="pt-2 pb-0 ">
 						<div class="flex items-center space-x-2">
 							<div class="p-2.5 rounded bg-secondary">
 								<ChevronRightSquare class="icon-sm" />
@@ -352,67 +200,72 @@
 						</div>
 					</Drawer.Header>
 
-					<Drawer.Footer class="pt-2">
-						<Dialog.Root>
-							<Dialog.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="secondary" on:click={openEditor}>
+					<Drawer.Footer>
+						<Drawer.Root bind:open={editorState.isOpen}>
+							<Drawer.Trigger asChild let:builder>
+								<Button builders={[builder]} variant="secondary">
 									<FileSignature class="icon-xs" />
 									<span> Edit property </span>
 								</Button>
-							</Dialog.Trigger>
-							<Dialog.Content class="sm:max-w-[425px]">
-								<Dialog.Header>
-									<Dialog.Title>Edit property</Dialog.Title>
-								</Dialog.Header>
-								<div class="space-y-2">
-									<label for={`${property.id}-name`} class="sr-only"> Name </label>
-									<input
-										id={`${property.id}-name`}
-										value={property.name}
-										name="name"
-										class="input input-sm"
-										on:input={handleOnInput}
-									/>
+							</Drawer.Trigger>
 
-									<div class="flex space-x-1.5">
-										<label for={`${property.id}-type`} class="font-semibold space-x-2.5">
-											Type
-										</label>
-										<select
-											id={`${property.id}-type`}
-											name="type"
-											value={property.type}
-											class="select select-sm"
-											on:input={handleOnInput}
-										>
-											{#each Object.values(PropertyType) as propertyType}
-												<option value={propertyType}>
-													{capitalizeFirstLetter(propertyType)}
-												</option>
-											{/each}
-										</select>
+							{#if editorState.isOpen}
+								<Drawer.Content>
+									<div>
+										<p class="text-center text-lg font-semibold leading-none tracking-tight">
+											Edit property
+										</p>
+										<div class="p-4 space-y-1">
+											<div>
+												<label for={`${property.id}-name`} class="pb-0.5 text-sm font-semibold">
+													Name
+												</label>
+												<input
+													id={`${property.id}-name`}
+													value={property.name}
+													name="name"
+													class="input input-sm"
+													oninput={handleOnInput}
+												/>
+											</div>
+
+											<div class="pt-">
+												<label for={`${property.id}-type`} class="pb-0.5 text-sm font-semibold">
+													Type
+												</label>
+												<select
+													id={`${property.id}-type`}
+													name="type"
+													value={property.type}
+													class="select select-sm"
+													onchange={(e) => {
+														const targetEl = e.target as HTMLSelectElement;
+														updProperty({ id: property.id, type: targetEl.value as PropertyType });
+													}}
+												>
+													{#each Object.values(PropertyType) as propertyType}
+														<option value={propertyType}>
+															{capitalizeFirstLetter(propertyType)}
+														</option>
+													{/each}
+												</select>
+											</div>
+
+											{#if property.type === 'SELECT'}
+												<hr class="border border-secondary" />
+												<PropertyOptions propertyId={property.id} options={property.options} />
+											{/if}
+										</div>
 									</div>
+								</Drawer.Content>
+							{/if}
+						</Drawer.Root>
 
-									{#if property.type === 'SELECT'}
-										<hr class="border border-secondary" />
-										<PropertyOptions
-											propertyId={property.id}
-											options={property.options}
-											on:addOpt
-											on:deleteOpt
-											on:updOptColor
-											on:updOptValue
-										/>
-									{/if}
-								</div>
-							</Dialog.Content>
-						</Dialog.Root>
-
-						<Button variant="secondary" on:click={() => eventForward('duplicate')}>
+						<Button variant="secondary" on:click={() => duplicateProperty()}>
 							<Copy class="icon-xs" />
 							<span>Duplicate property</span>
 						</Button>
-						<Button variant="destructive" on:click={() => eventForward('delete')}>
+						<Button variant="destructive" on:click={() => deleteProperty()}>
 							<Trash class="icon-xs" />
 							<span>Delete property</span>
 						</Button>
@@ -423,6 +276,153 @@
 	</div>
 
 	{#if property.type !== 'CHECKBOX'}
-		<slot />
+		{@render children()}
 	{/if}
 </div>
+
+{#snippet editor()}
+	<div
+		use:clickOutside
+		use:escapeKeydown
+		onclickoutside={() => editorState.close()}
+		onescapekey={() => editorState.close()}
+		class="px-1 space-y-2"
+	>
+		<label for={`${property.id}-name`} class="sr-only"> Name</label>
+		<input
+			id={`${property.id}-name`}
+			value={property.name}
+			name="name"
+			class="input input-bordered input-sm col-span-5"
+			oninput={handleOnInput}
+		/>
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="ghost" size="xs" class="w-full justify-between">
+					<span>Type </span>
+					<span class="flex items-center justify-between space-x-1.5">
+						{capitalizeFirstLetter(property.type)}
+						<ChevronRight class="icon-xs" />
+					</span>
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end">
+				<DropdownMenu.Label>Type</DropdownMenu.Label>
+				<DropdownMenu.RadioGroup
+					value={property.type}
+					onValueChange={(value) => {
+						updProperty({
+							id: property.id,
+							aggregator: value as Aggregator
+						});
+					}}
+				>
+					{#each Object.values(PropertyType) as propertyType}
+						<DropdownMenu.RadioItem value={propertyType}>
+							{capitalizeFirstLetter(propertyType)}
+						</DropdownMenu.RadioItem>
+					{/each}
+				</DropdownMenu.RadioGroup>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="ghost" size="xs" class="w-full justify-between">
+					<span>Aggregador</span>
+					<span class="flex items-center justify-between space-x-1.5">
+						{capitalizeFirstLetter(property.aggregator)}
+						<ChevronRight class="icon-xs" />
+					</span>
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end">
+				<DropdownMenu.Label>Aggregador</DropdownMenu.Label>
+				<DropdownMenu.RadioGroup
+					value={property.aggregator}
+					onValueChange={(value) => {
+						updProperty({
+							id: property.id,
+							aggregator: value as Aggregator
+						});
+					}}
+				>
+					<DropdownMenu.RadioItem value={Aggregator.NONE}>None</DropdownMenu.RadioItem>
+					<DropdownMenu.RadioItem value={Aggregator.COUNT}>Count all</DropdownMenu.RadioItem>
+					<DropdownMenu.RadioItem value={Aggregator.COUNT_EMPTY}>
+						Count empty
+					</DropdownMenu.RadioItem>
+					<DropdownMenu.RadioItem value={Aggregator.COUNT_NOT_EMPTY}>
+						Count not empty
+					</DropdownMenu.RadioItem>
+					{#if property.type === 'NUMBER'}
+						<DropdownMenu.RadioItem value={Aggregator.AVG}>Average</DropdownMenu.RadioItem>
+						<DropdownMenu.RadioItem value={Aggregator.SUM}>Sum</DropdownMenu.RadioItem>
+					{/if}
+				</DropdownMenu.RadioGroup>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+		{#if property.type === 'SELECT'}
+			{@const selectedOpt = getOption(property.options, property.defaultValue)}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger asChild let:builder>
+					<Button builders={[builder]} variant="ghost" size="xs" class="w-full justify-between">
+						<span>Default Value</span>
+						<span class="flex items-center justify-between space-x-1.5">
+							{#if !selectedOpt}
+								{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
+							{:else}
+								<span class={`h-4 w-4 mr-1 rounded ${PROPERTY_COLORS[selectedOpt.color]}`}></span>
+								{selectedOpt.value}
+							{/if}
+							<ChevronRight class="icon-xs" />
+						</span>
+					</Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end">
+					<DropdownMenu.Label>Default Value</DropdownMenu.Label>
+					<DropdownMenu.RadioGroup
+						value={property.defaultValue}
+						onValueChange={(value) => {
+							updProperty({ id: property.id, defaultValue: value });
+						}}
+					>
+						<DropdownMenu.RadioItem value="">
+							<SquareSlash class="icon-sm mr-2 text-primary" />
+							{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
+						</DropdownMenu.RadioItem>
+						{#each property.options as opt}
+							<DropdownMenu.RadioItem value={opt.id}>
+								<span class={`h-5 w-5 mr-2 rounded ${PROPERTY_COLORS[opt.color]}`}></span>
+								{opt.value}
+							</DropdownMenu.RadioItem>
+						{/each}
+					</DropdownMenu.RadioGroup>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+			<Separator />
+			<PropertyOptions propertyId={property.id} options={property.options} />
+		{/if}
+		<Separator />
+
+		<div>
+			<Button
+				on:click={() => duplicateProperty()}
+				variant="ghost"
+				size="xs"
+				class="w-full justify-start px-1"
+			>
+				<Copy class="icon-xs" />
+				<span>Duplicate property</span>
+			</Button>
+			<Button
+				on:click={() => deleteProperty()}
+				variant="ghost"
+				size="xs"
+				class="w-full justify-start px-1 group"
+			>
+				<Trash class="icon-xs group-hover:text-primary" />
+				<span class="group-hover:text-primary">Delete property</span>
+			</Button>
+		</div>
+	</div>
+{/snippet}
