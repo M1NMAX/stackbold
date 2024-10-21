@@ -236,7 +236,7 @@
 
 		<aside
 			class={cn(
-				'bg-secondary flex md:hidden justify-around items-center',
+				'flex md:hidden justify-around items-center bg-secondary',
 				!BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl) && 'hidden'
 			)}
 		>
@@ -246,7 +246,7 @@
 					href={item.url}
 					variant="ghost"
 					class={cn(
-						'h-16 flex flex-col items-center justify-center space-x-0',
+						'grow h-16 flex flex-col items-center justify-center space-x-0 hover:text-primary hover:bg-transparent',
 						activeUrl === item.url && 'text-primary'
 					)}
 				>
