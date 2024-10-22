@@ -27,3 +27,22 @@ export type UpdOption = RouterInputs['collections']['updatePropertyOption']['pro
 export type UpdProperty = RouterInputs['collections']['updateProperty']['property'];
 
 export type Filter = { id: string; values: string[] };
+
+export type Searchable =
+	| {
+			id: string;
+			name: string;
+			type: 'collection';
+			updatedAt: Date;
+			icon: string;
+	  }
+	| {
+			id: string;
+			name: string;
+			type: 'item';
+			updatedAt: Date;
+			collection: {
+				id: string;
+				name: string;
+			};
+	  };

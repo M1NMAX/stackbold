@@ -369,20 +369,22 @@
 		<Command.Separator />
 		<Command.Group heading="Items">
 			{#each items as item}
-				<Command.Item
-					class="space-x-2"
-					value={`${item.collection.name} ${item.name}`}
-					onSelect={() => {
-						goto(`/collections/${item.collection.id}?id=${item.id}`);
-						globalSearchModal.close();
-					}}
-				>
-					<Hash class="icon-xs" />
-					<span>
-						{item.name}
-						<span class="text-xs font-light"> - {item.collection.name}</span>
-					</span>
-				</Command.Item>
+				{#if item.type === 'item'}
+					<Command.Item
+						class="space-x-2"
+						value={`${item.collection.name} ${item.name}`}
+						onSelect={() => {
+							goto(`/collections/${item.collection.id}?id=${item.id}`);
+							globalSearchModal.close();
+						}}
+					>
+						<Hash class="icon-xs" />
+						<span>
+							{item.name}
+							<span class="text-xs font-light"> - {item.collection.name}</span>
+						</span>
+					</Command.Item>
+				{/if}
 			{/each}
 		</Command.Group>
 	</Command.List>

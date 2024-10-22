@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-	<title>Home - Stackbold</title>
+	<title>Dashboard - Stackbold</title>
 </svelte:head>
 
 <PageContainer>
