@@ -2,8 +2,7 @@
 	import { Plus, LibraryBig } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { SearchInput } from '$lib/components/search';
-	import { SortMenu } from '$lib/components/filters';
+	import { SearchInput, SortMenu } from '$lib/components/filters';
 	import type { Collection } from '@prisma/client';
 	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';

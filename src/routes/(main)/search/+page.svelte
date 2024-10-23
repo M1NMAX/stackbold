@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { Hash, Search } from 'lucide-svelte';
-	import { SearchInput } from '$lib/components/search';
+	import { SearchInput } from '$lib/components/filters';
 	import type { Searchable } from '$lib/types';
 	import { icons } from '$lib/components/icon';
 

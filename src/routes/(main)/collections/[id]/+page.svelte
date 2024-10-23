@@ -25,7 +25,6 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
-	import { SearchInput } from '$lib/components/search';
 	import { ViewButtonsGroup, getScreenState } from '$lib/components/view';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import {
@@ -43,7 +42,13 @@
 	import { getContext } from 'svelte';
 	import { clickOutside, textareaAutoSize } from '$lib/actions';
 	import { nameSchema } from '$lib/schema';
-	import { FilterMenu, GroupByMenu, SortMenu, getFilters } from '$lib/components/filters';
+	import {
+		FilterMenu,
+		GroupByMenu,
+		SearchInput,
+		SortMenu,
+		getFilters
+	} from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
 
 	let { data } = $props();

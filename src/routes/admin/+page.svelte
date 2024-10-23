@@ -5,11 +5,10 @@
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent } from '$lib/components/page';
 	import { MoreVertical, Trash2 } from 'lucide-svelte';
-	import { SortArrow, SortMenu } from '$lib/components/filters';
+	import { SearchInput, SortArrow, SortMenu } from '$lib/components/filters';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidate, invalidateAll } from '$app/navigation';
-	import { SearchInput } from '$lib/components/search';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
