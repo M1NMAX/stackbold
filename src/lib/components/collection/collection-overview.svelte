@@ -31,7 +31,7 @@
 	</div>
 
 	<div class="flex items-center text-xs text-muted-foreground">
-		<FileClock class="icon-xxs mr-2 text-primary" />
+		<FileClock class="icon-xs mr-2 text-primary" />
 		Updated {dayjs(collection.updatedAt).fromNow()}
 	</div>
 </a>
