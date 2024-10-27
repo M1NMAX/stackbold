@@ -53,6 +53,15 @@
 		updPropertyRefDebounced(currValue);
 	}
 
+	async function handleEnterKeypress(e: KeyboardEvent) {
+		//TODO: verify what whould happen on mobile if the user press the Enter key
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
+		const targetEl = e.target as HTMLInputElement;
+		wrapperState.close();
+		await updPropertyRef(targetEl.value);
+	}
+
 	const buttonClass = $derived(
 		cn(
 			'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
@@ -113,6 +122,7 @@
 	{@const selected = getOption(property.options, value)?.value ?? ''}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
+		alignCenter={false}
 		btnClass={buttonClass}
 		mobileClass="p-2"
 		desktopClass="w-full max-w-48 p-1"
@@ -163,6 +173,7 @@
 
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
+		alignCenter={false}
 		btnClass={buttonClass}
 		desktopClass="w-auto p-0"
 	>
@@ -194,6 +205,7 @@
 	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
+		alignCenter={false}
 		btnClass={buttonClass}
 		mobileClass="p-2"
 		desktopClass={cn('w-full max-w-lg', value && value?.length < MAX_LENGTH && 'max-w-xs')}
@@ -213,12 +225,14 @@
 				class="textarea textarea-ghost"
 				{value}
 				oninput={handleOnInput}
+				onkeypress={handleEnterKeypress}
 			></textarea>
 		</form>
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'NUMBER' && (value || isTableView)}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
+		alignCenter={false}
 		btnClass={buttonClass}
 		mobileClass="p-2"
 	>
@@ -240,11 +254,16 @@
 				step="any"
 				{value}
 				oninput={handleOnInput}
+				onkeypress={handleEnterKeypress}
 			/>
 		</form>
 	</PropertyResponsiveWrapper>
 {:else if value || isTableView}
-	<PropertyResponsiveWrapper bind:open={wrapperState.isOpen} btnClass={buttonClass}>
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		btnClass={buttonClass}
+		alignCenter={false}
+	>
 		{#snippet header()}
 			{@render miniWrapper(value)}
 		{/snippet}
