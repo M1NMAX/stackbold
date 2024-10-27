@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';

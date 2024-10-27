@@ -20,7 +20,7 @@
 	import { fade } from 'svelte/transition';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { DEBOUNCE_INTERVAL } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';

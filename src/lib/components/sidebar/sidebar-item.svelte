@@ -2,7 +2,7 @@
 	import { cn } from '$lib/utils';
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import type { Snippet } from 'svelte';
 
 	type Props = {

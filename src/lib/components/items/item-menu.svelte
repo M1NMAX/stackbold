@@ -4,7 +4,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { cn } from '$lib/utils';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { getDeleteModalState } from '$lib/components/modal';
 	import { getItemState } from '.';
 

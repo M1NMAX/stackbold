@@ -17,7 +17,7 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { Separator } from '$lib/components/ui/separator';
 	import {
 		DEBOUNCE_INTERVAL,

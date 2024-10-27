@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import type { Snippet } from 'svelte';
@@ -8,7 +8,7 @@
 		children: Snippet;
 		isOpen: boolean;
 	};
-	let { children, isOpen = $bindable(false)  }: Props = $props();
+	let { children, isOpen = $bindable(false) }: Props = $props();
 
 	const isDesktop = getScreenState();
 </script>

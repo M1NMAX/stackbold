@@ -25,7 +25,7 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/stores';
-	import { ViewButtonsGroup, getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -47,6 +47,7 @@
 		GroupByMenu,
 		SearchInput,
 		SortMenu,
+		ViewButtons,
 		getFilters
 	} from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
@@ -387,7 +388,7 @@
 				/>
 			{/if}
 
-			<ViewButtonsGroup options={[View.LIST, View.TABLE]} bind:value={view} />
+			<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
 
 			<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
 		</div>
@@ -407,7 +408,7 @@
 					/>
 				</div>
 
-				<ViewButtonsGroup options={[View.LIST, View.TABLE]} bind:value={view} />
+				<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
 			</div>
 		</div>
 		{#if !findGroupByConfig(view)}

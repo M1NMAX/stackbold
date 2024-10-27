@@ -9,7 +9,7 @@
 	} from '$lib/components/property';
 	import { type Item, View } from '@prisma/client';
 	import { cn, preventEnterKeypress } from '$lib/utils';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEBOUNCE_INTERVAL } from '$lib/constant';
 	import debounce from 'debounce';

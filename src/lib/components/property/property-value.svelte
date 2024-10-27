@@ -15,7 +15,7 @@
 		PropertyIcon,
 		PropertyResponsiveWrapper
 	} from '.';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';

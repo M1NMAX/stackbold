@@ -7,7 +7,7 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { getDeleteModalState } from '$lib/components/modal';
 	import debounce from 'debounce';
 	import { getPropertyState } from './propertyState.svelte';

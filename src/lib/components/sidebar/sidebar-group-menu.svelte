@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';

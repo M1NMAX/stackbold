@@ -6,7 +6,7 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
 	import { DEFAULT_SORT_OPTIONS, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen';
 	import { cn, noCheck } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { SlidingPanel } from '$lib/components/sliding-panel';

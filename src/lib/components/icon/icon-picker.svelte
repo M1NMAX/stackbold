@@ -67,7 +67,7 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button } from '$lib/components/ui/button';
-	import { getScreenState } from '../view';
+	import { getScreenState } from '../screen';
 	import { cn } from '$lib/utils';
 
 	type Props = {

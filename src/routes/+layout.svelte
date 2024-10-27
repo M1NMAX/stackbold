@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
-	import { mediaQuery, setScreenState } from '$lib/components/view';
+	import { mediaQuery, setScreenState } from '$lib/components/screen';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { setDeleteModalState } from '$lib/components/modal';
 	import { Button } from '$lib/components/ui/button';

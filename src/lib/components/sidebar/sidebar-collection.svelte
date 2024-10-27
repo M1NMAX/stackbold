@@ -18,7 +18,7 @@
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenState } from '$lib/components/screen/index.js';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
