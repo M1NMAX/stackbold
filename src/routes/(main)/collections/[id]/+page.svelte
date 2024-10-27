@@ -187,7 +187,7 @@
 
 	$effect(() => {
 		const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
-		if (savedView) sort = JSON.parse(savedView);
+		if (savedView) view = JSON.parse(savedView);
 	});
 
 	$effect(() => {
@@ -355,16 +355,18 @@
 			<span class="text-primary"> {renameCollectionError}</span>
 		{/if}
 		{#if !collection.isDescHidden}
-			<label transition:fade for="description" class="sr-only"> Collection description </label>
+			{#key collection.description}
+				<label transition:fade for="description" class="sr-only"> Collection description </label>
 
-			<textarea
-				use:textareaAutoSize
-				id="description"
-				value={collection.description}
-				oninput={handleOnInputCollectionDesc}
-				spellcheck={false}
-				class="textarea textarea-ghost"
-			></textarea>
+				<textarea
+					use:textareaAutoSize
+					id="description"
+					value={collection.description}
+					oninput={handleOnInputCollectionDesc}
+					spellcheck={false}
+					class="textarea textarea-ghost"
+				></textarea>
+			{/key}
 		{/if}
 
 		<!-- upper navigation handler -->
