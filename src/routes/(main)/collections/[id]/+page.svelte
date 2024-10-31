@@ -17,8 +17,7 @@
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { cn, noCheck, preventEnterKeypress, sortFun, type SortOption } from '$lib/utils';
-	import { fade } from 'svelte/transition';
+	import { cn, noCheck, sortFun, type SortOption } from '$lib/utils';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
 	import { SlidingPanel } from '$lib/components/sliding-panel';
@@ -41,7 +40,7 @@
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext } from 'svelte';
 	import { clickOutside, textareaAutoSize } from '$lib/actions';
-	import { nameSchema } from '$lib/schema';
+	import { getNameSchema } from '$lib/schema';
 	import {
 		FilterMenu,
 		GroupByMenu,
@@ -129,19 +128,20 @@
 	const updCollectionDebounced = debounce(updCollection, DEBOUNCE_INTERVAL);
 
 	// collection input handlers
-	async function handleOnInputCollectionName(e: {
-		currentTarget: EventTarget & HTMLHeadingElement;
-	}) {
-		const targetEl = e.currentTarget;
-		const name = targetEl.innerText;
+	async function handleOnInputCollectionName(e: Event) {
+		const targetEl = e.target as HTMLInputElement;
 
-		if (name.length > 50) {
-			renameCollectionError = 'Collection name must be at most 50 characters long';
+		const parseResult = getNameSchema({ label: 'Collection name', max: 50 }).safeParse(
+			targetEl.value
+		);
+
+		if (!parseResult.success) {
+			renameCollectionError = parseResult.error.issues[0].message;
 			return;
 		}
 		renameCollectionError = null;
 
-		updCollectionDebounced({ name });
+		updCollectionDebounced({ name: targetEl.value });
 	}
 
 	async function handleOnInputCollectionDesc(e: Event) {
@@ -154,7 +154,7 @@
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
-		const parseResult = nameSchema.safeParse(itemName);
+		const parseResult = getNameSchema({ label: 'Item name', max: 50 }).safeParse(itemName);
 		if (!parseResult.success) {
 			itemNameError = parseResult.error.issues[0].message;
 			return;
@@ -342,32 +342,29 @@
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
-			<h1
-				class="grow font-semibold text-2xl md:text-3xl focus:outline-none"
-				contenteditable
-				spellcheck={false}
-				onkeypress={preventEnterKeypress}
+			<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+			<input
+				role="heading"
+				aria-level="1"
+				value={collection.name}
 				oninput={handleOnInputCollectionName}
-			>
-				{collection.name}
-			</h1>
+				class="grow font-semibold text-2xl md:text-3xl focus:outline-none bg-transparent"
+			/>
 		</div>
 		{#if renameCollectionError}
 			<span class="text-primary"> {renameCollectionError}</span>
 		{/if}
 		{#if !collection.isDescHidden}
-			{#key collection.description}
-				<label transition:fade for="description" class="sr-only"> Collection description </label>
+			<label for="description" class="sr-only"> Collection description </label>
 
-				<textarea
-					use:textareaAutoSize
-					id="description"
-					value={collection.description}
-					oninput={handleOnInputCollectionDesc}
-					spellcheck={false}
-					class="textarea textarea-ghost"
-				></textarea>
-			{/key}
+			<textarea
+				use:textareaAutoSize
+				id="description"
+				value={collection.description}
+				oninput={handleOnInputCollectionDesc}
+				spellcheck={false}
+				class="textarea textarea-ghost"
+			></textarea>
 		{/if}
 
 		<!-- upper navigation handler -->

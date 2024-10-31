@@ -11,7 +11,6 @@
 		PropertyIcon,
 		containsView,
 		// helpers
-		getPropertyColor,
 		getPropertyRef,
 		getPropertyValue,
 		toggleView,
@@ -43,17 +42,13 @@
 		itemState.updItem(args);
 	}
 
-	//TODO: validate inner text
-	function handleOnInput(e: { currentTarget: EventTarget & HTMLDivElement }) {
-		const targetEl = e.currentTarget;
+	//TODO: validate value
+	function handleOnInput(e: Event) {
+		const targetEl = e.target as HTMLInputElement;
 
 		const id = targetEl.dataset.id!;
-		const name = targetEl.innerText;
+		const name = targetEl.value;
 		updItemDebounced({ id, data: { name } });
-	}
-
-	function preventEnterKeypress(e: KeyboardEvent) {
-		if (e.key === 'Enter') e.preventDefault();
 	}
 
 	function aggregatePropertyValue(property: Property, type: Aggregator) {
@@ -142,17 +137,12 @@
 							</div>
 						</td>
 						<td class="flex items-center justify-between pl-2">
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
-							<div
-								contenteditable
-								spellcheck={false}
-								onkeypress={preventEnterKeypress}
-								oninput={handleOnInput}
+							<input
 								data-id={item.id}
-								class=" text-left py-2 px-1 focus:outline-none"
-							>
-								{item.name}
-							</div>
+								value={item.name}
+								oninput={handleOnInput}
+								class="grow py-2 px-1 focus:outline-none bg-inherit"
+							/>
 
 							<Button
 								variant="secondary"

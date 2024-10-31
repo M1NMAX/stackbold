@@ -55,7 +55,7 @@
 				size="xs"
 				class={cn(className, open && 'visible bg-accent')}
 			>
-				<MoreHorizontal />
+				<MoreHorizontal class="icon-sm" />
 			</Button>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">

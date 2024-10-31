@@ -11,7 +11,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router.js';
-	import { cn, preventEnterKeypress } from '$lib/utils';
+	import { cn } from '$lib/utils';
 	import debounce from 'debounce';
 	import { ChevronLeft, Copy, X, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { getContext } from 'svelte';
@@ -55,8 +55,8 @@
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 
 	async function handleOnInputItemName(e: Event) {
-		const targetEl = e.currentTarget as HTMLParagraphElement;
-		const name = targetEl.innerText;
+		const targetEl = e.currentTarget as HTMLInputElement;
+		const name = targetEl.value;
 
 		if (name.length > 50) {
 			renameItemError = 'Item name must be at most 50 characters';
@@ -100,15 +100,12 @@
 		</Button>
 	</div>
 	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
-		<p
-			contenteditable
-			spellcheck={false}
-			onkeypress={preventEnterKeypress}
+		<input
+			value={item.name}
+			type="text"
 			oninput={handleOnInputItemName}
-			class="pt-1 pb-2 text-xl font-semibold break-words focus:outline-none"
-		>
-			{item.name}
-		</p>
+			class="pt-1 pb-2 text-xl font-semibold break-words focus:outline-none bg-inherit"
+		/>
 
 		<div class="space-y-2">
 			{@render properties()}
@@ -131,17 +128,12 @@
 		</PageHeader>
 
 		<PageContent class="grow" onScroll={handleScroll}>
-			<p
-				contenteditable
-				spellcheck={false}
-				onkeypress={preventEnterKeypress}
+			<input
+				value={item.name}
 				oninput={handleOnInputItemName}
-				class="pb-2 text-2xl font-semibold break-words focus:outline-none"
-			>
-				{item.name}
-			</p>
+				class="pb-2 text-2xl font-semibold break-words focus:outline-none bg-inherit"
+			/>
 
-			{@render properties()}
 			{@render properties()}
 		</PageContent>
 		<div class="p-2">

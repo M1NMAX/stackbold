@@ -33,6 +33,7 @@
 	import { nameSchema } from '$lib/schema';
 	import { setGroupState } from '$lib/components/group';
 	import { setCollectionState } from '$lib/components/collection';
+	import { browser } from '$app/environment';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
