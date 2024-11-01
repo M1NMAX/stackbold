@@ -137,7 +137,7 @@
 <svelte:window bind:innerWidth />
 
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-background">
-	<div class="h-auto hidden md:flex items-center justify-between pt-1 px-1.5">
+	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1.5">
 		<Button
 			size="icon"
 			variant="ghost"
