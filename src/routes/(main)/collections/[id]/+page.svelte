@@ -4,8 +4,8 @@
 	import {
 		ItemNew,
 		Items,
+		getActiveItemState,
 		groupItemsByPropertyValue,
-		setActiveItemState,
 		setItemState
 	} from '$lib/components/items';
 	import {
@@ -120,7 +120,7 @@
 	let isCreateItemDialogOpen = $state(false);
 
 	const isDesktop = getScreenState();
-	const activeItemState = setActiveItemState();
+	const activeItemState = getActiveItemState();
 
 	async function updCollection(data: RouterInputs['collections']['update']['data']) {
 		await collectionState.updCollection({ id: collection.id, data });
@@ -282,7 +282,7 @@
 	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
 
 	async function clickItem(id: string) {
-		activeItemState.id = id;
+		activeItemState.update(id);
 		const url = `/collections/${collection.id}/item/${id}`;
 		if (!$isDesktop) {
 			goto(url);

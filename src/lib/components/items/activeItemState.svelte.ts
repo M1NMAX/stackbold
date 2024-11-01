@@ -6,6 +6,13 @@ export class ActiveItemState {
 	constructor(id: string = '') {
 		this.id = id;
 	}
+
+	update(id: string) {
+		this.id = id;
+	}
+	reset() {
+		this.id = '';
+	}
 }
 
 const ACTIVE_ITEM_CTX_KEY = Symbol('ACTIVE_ITEM_CTX_KEY');

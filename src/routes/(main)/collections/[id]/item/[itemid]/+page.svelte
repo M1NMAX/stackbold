@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getItemState } from '$lib/components/items';
+	import { getActiveItemState, getItemState } from '$lib/components/items';
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import {
@@ -29,6 +29,7 @@
 
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
+	const activeItem = getActiveItemState();
 
 	// Utils functions
 	function getCurrentItem() {
@@ -37,8 +38,11 @@
 
 	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
 	function goBack() {
+		activeItem.reset();
 		history.back();
-		itemPanel.close();
+		if (data.insidePanel) {
+			itemPanel.close();
+		}
 	}
 
 	function handleScroll(e: Event) {
@@ -117,7 +121,7 @@
 {:else}
 	<PageContainer>
 		<PageHeader class="flex items-center justify-between">
-			<Button variant="secondary" on:click={() => history.back()}>
+			<Button variant="secondary" on:click={() => goBack()}>
 				<ChevronLeft class="icon-sm" />
 			</Button>
 			<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
