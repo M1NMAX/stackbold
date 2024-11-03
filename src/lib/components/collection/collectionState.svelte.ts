@@ -157,8 +157,7 @@ export class CollectionState {
 
 	async refresh() {
 		try {
-			const result = await trpc().collections.list.query();
-			this.collections = result;
+			this.collections = await trpc().collections.list.query();
 		} catch (err) {
 			onError(err);
 		}

@@ -9,8 +9,7 @@
 	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { trpc } from '$lib/trpc/client';
 	import { onError, redirectToast } from '$lib/components/ui/sonner';
-	import { invalidateAll } from '$app/navigation';
-	import { cn } from '$lib/utils';
+	import { getCollectionState } from '$lib/components/collection/collectionState.svelte.js';
 
 	let { data } = $props();
 	let template = $derived(data.template);
@@ -18,6 +17,8 @@
 	let isSmHeadingVisible = $state(false);
 
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
+	const collectionState = getCollectionState();
+
 	function goBack() {
 		history.back();
 		templatePanel.close();
@@ -43,7 +44,7 @@
 
 			await trpc().items.createMany.mutate(itemsCopy);
 
-			await invalidateAll();
+			await collectionState.refresh();
 			redirectToast('New collection created', `/collections/${createdCollection.id}`);
 		} catch (error) {
 			onError(error);

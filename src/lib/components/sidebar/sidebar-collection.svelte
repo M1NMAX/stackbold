@@ -92,8 +92,11 @@
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
-			fun: () => {
-				collectionState.deleteCollection(collection.id);
+			fun: async () => {
+				await collectionState.deleteCollection(collection.id);
+				if (active) {
+					await goto('/collections');
+				}
 			}
 		});
 	}
@@ -118,7 +121,35 @@
 				: collection.name}
 		</span>
 	</a>
+	{@render menu()}
+</span>
 
+<Dialog.Root bind:open={renameCollectionModal.isOpen}>
+	<Dialog.Content class="sm:max-w-[425px]">
+		<Dialog.Header>
+			<Dialog.Title>Rename collection</Dialog.Title>
+		</Dialog.Header>
+		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
+			<label for="collection-name"> Name </label>
+			<input
+				id="collection-name"
+				type="text"
+				name="name"
+				autocomplete="off"
+				value={collection.name}
+				class="input"
+			/>
+
+			{#if renameError}
+				<span class="text-error"> {renameError}</span>
+			{/if}
+
+			<Button type="submit" class="w-full">Save</Button>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+{#snippet menu()}
 	{#if $isDesktop}
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
@@ -230,29 +261,4 @@
 			</Drawer.Content>
 		</Drawer.Root>
 	{/if}
-</span>
-
-<Dialog.Root bind:open={renameCollectionModal.isOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Rename collection</Dialog.Title>
-		</Dialog.Header>
-		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
-			<label for="collection-name"> Name </label>
-			<input
-				id="collection-name"
-				type="text"
-				name="name"
-				autocomplete="off"
-				value={collection.name}
-				class="input"
-			/>
-
-			{#if renameError}
-				<span class="text-error"> {renameError}</span>
-			{/if}
-
-			<Button type="submit" class="w-full">Save</Button>
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
+{/snippet}
