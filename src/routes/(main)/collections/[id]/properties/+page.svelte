@@ -11,19 +11,21 @@
 	let { data } = $props();
 
 	const propertyState = getPropertyState();
-
 	const propertiesPanel = getContext<ModalState>(PROPERTIES_PANEL_CTX_KEY);
 
 	let currentlyOpen = $state<string | null>(
 		propertyState.properties.length > 0 ? propertyState.properties[0].id : null
 	);
+
 	function toggleEditor(pid: string | null) {
 		currentlyOpen = pid;
 	}
 
-	function onClickCloseBtn() {
+	function goBack() {
 		history.back();
-		propertiesPanel.close();
+		if (data.insidePanel) {
+			propertiesPanel.close();
+		}
 	}
 
 	let isSmHeadingVisible = $state(false);
@@ -35,10 +37,14 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Properties - Stackbold</title>
+</svelte:head>
+
 {#if data.insidePanel}
 	<div class="flex items-center justify-between">
 		<h2 class="text-xl font-semibold text-center">Properties</h2>
-		<Button variant="secondary" size="icon" on:click={() => onClickCloseBtn()}>
+		<Button variant="secondary" size="icon" on:click={() => goBack()}>
 			<X class="icon-sm" />
 		</Button>
 	</div>
@@ -53,7 +59,7 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button variant="secondary" size="icon" on:click={() => history.back()}>
+			<Button variant="secondary" size="icon" on:click={() => goBack()}>
 				<ChevronLeft />
 			</Button>
 

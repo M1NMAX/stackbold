@@ -15,7 +15,7 @@ export type DeleteDetail =
 			type: 'user' | 'group' | 'collection' | 'item' | 'property' | 'option';
 			id: string;
 			name: string;
-			fun: () => void;
+			fun: () => Promise<void>;
 	  };
 
 export type MoveCollectionDetail = {

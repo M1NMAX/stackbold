@@ -118,9 +118,9 @@ export class ItemState {
 			const ref = { id, value: '' };
 
 			this.items = this.items.map((item) => {
-				const propertiesRef = [...item.properties, ref];
+				const refs = [...item.properties, ref];
 
-				return { ...item, ...propertiesRef };
+				return { ...item, properties: refs };
 			});
 
 			await trpc().items.addProperty.mutate({
@@ -156,9 +156,9 @@ export class ItemState {
 	async deletePropertyRef(id: string) {
 		try {
 			this.items = this.items.map((item) => {
-				const propertiesRef = item.properties.filter((ref) => ref.id !== id);
+				const refs = item.properties.filter((ref) => ref.id !== id);
 
-				return { ...item, ...propertiesRef };
+				return { ...item, properties: refs };
 			});
 
 			await trpc().items.deleteProperty.mutate({

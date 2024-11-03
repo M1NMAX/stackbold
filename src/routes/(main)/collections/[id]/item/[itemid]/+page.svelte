@@ -17,6 +17,7 @@
 	import { getContext } from 'svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import { getScreenState } from '$lib/components/screen/screenState.js';
 
 	let { data } = $props();
 
@@ -27,6 +28,7 @@
 	let isSmHeadingVisible = $state(false);
 	let renameItemError = $state<string | null>(null);
 
+	const isDesktop = getScreenState();
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
 	const activeItem = getActiveItemState();
@@ -82,13 +84,17 @@
 			type: 'item',
 			id: item.id,
 			name: item.name,
-			fun: () => {
-				itemState.deleteItem(item.id);
+			fun: async () => {
+				await itemState.deleteItem(item.id);
 				goBack();
 			}
 		});
 	}
 </script>
+
+<svelte:head>
+	<title>{item.name} - Stackbold</title>
+</svelte:head>
 
 {#if data.insidePanel}
 	<div
@@ -106,7 +112,6 @@
 	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
 		<input
 			value={item.name}
-			type="text"
 			oninput={handleOnInputItemName}
 			class="pt-1 pb-2 text-xl font-semibold break-words focus:outline-none bg-inherit"
 		/>
@@ -135,7 +140,7 @@
 			<input
 				value={item.name}
 				oninput={handleOnInputItemName}
-				class="pb-2 text-2xl font-semibold break-words focus:outline-none bg-inherit"
+				class="w-full pb-2 text-2xl font-semibold break-words focus:outline-none bg-inherit"
 			/>
 
 			{@render properties()}
@@ -155,43 +160,46 @@
 {/snippet}
 
 {#snippet menu()}
-	<DropdownMenu.Root bind:open={menuState.isOpen}>
-		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="hidden md:block">
-				<MoreHorizontal class="icon-sm" />
-			</Button>
-		</DropdownMenu.Trigger>
-		<DropdownMenu.Content align="end" class="w-56">
-			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => duplicateItem()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</DropdownMenu.Item>
+	{#if $isDesktop}
+		<DropdownMenu.Root bind:open={menuState.isOpen}>
+			<DropdownMenu.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="secondary" class="hidden md:block">
+					<MoreHorizontal class="icon-sm" />
+				</Button>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end" class="w-56">
+				<DropdownMenu.Group>
+					<DropdownMenu.Item on:click={() => duplicateItem()}>
+						<Copy class="icon-xs" />
+						<span>Duplicate</span>
+					</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => deleteItem()} class="group">
-					<Trash class="icon-xs group-hover:text-primary" />
-					<span class="group-hover:text-primary">Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Group>
-		</DropdownMenu.Content>
-	</DropdownMenu.Root>
-	<Drawer.Root bind:open={menuState.isOpen}>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="md:hidden">
-				<MoreHorizontal class="icon-sm" />
-			</Button>
-		</Drawer.Trigger>
-		<Drawer.Content>
-			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" on:click={() => duplicateItem()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
+					<DropdownMenu.Item on:click={() => deleteItem()} class="group">
+						<Trash class="icon-xs group-hover:text-primary" />
+						<span class="group-hover:text-primary">Delete</span>
+					</DropdownMenu.Item>
+				</DropdownMenu.Group>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+	{:else}
+		<Drawer.Root bind:open={menuState.isOpen}>
+			<Drawer.Trigger asChild let:builder>
+				<Button builders={[builder]} variant="secondary" class="md:hidden">
+					<MoreHorizontal class="icon-sm" />
 				</Button>
-				<Button variant="destructive" on:click={() => deleteItem()}>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
-				</Button>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
+			</Drawer.Trigger>
+			<Drawer.Content>
+				<Drawer.Footer class="pt-2">
+					<Button variant="secondary" on:click={() => duplicateItem()}>
+						<Copy class="icon-xs" />
+						<span>Duplicate</span>
+					</Button>
+					<Button variant="destructive" on:click={() => deleteItem()}>
+						<Trash class="icon-xs" />
+						<span>Delete</span>
+					</Button>
+				</Drawer.Footer>
+			</Drawer.Content>
+		</Drawer.Root>
+	{/if}
 {/snippet}

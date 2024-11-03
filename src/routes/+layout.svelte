@@ -15,7 +15,7 @@
 
 	async function handleDelete() {
 		if (deleteModal.detail.type) {
-			deleteModal.detail.fun();
+			await deleteModal.detail.fun();
 			deleteModal.close();
 		}
 	}

@@ -69,8 +69,9 @@
 			type: 'property',
 			id: property.id,
 			name: property.name,
-			fun: () => {
-				propertyState.deleteProperty(property.id);
+			fun: async () => {
+				await propertyState.deleteProperty(property.id);
+				await itemState.deletePropertyRef(property.id);
 			}
 		});
 	}
