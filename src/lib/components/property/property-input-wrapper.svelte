@@ -117,44 +117,9 @@
 							<FileSignature class="icon-xs" />
 							<span> Edit property </span>
 						</Button>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger asChild let:builder>
-								<Button
-									builders={[builder]}
-									variant="ghost"
-									size="xs"
-									class="w-full justify-start px-1"
-								>
-									<EyeOff class="icon-xs" />
-									<span> Property visibility</span>
-								</Button>
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content sameWidth>
-								<DropdownMenu.CheckboxItem
-									checked={containsView(property.visibleInViews, View.LIST)}
-									on:click={() => {
-										updProperty({
-											id: property.id,
-											visibleInViews: toggleView(property.visibleInViews, View.LIST)
-										});
-									}}
-								>
-									List view
-								</DropdownMenu.CheckboxItem>
 
-								<DropdownMenu.CheckboxItem
-									checked={containsView(property.visibleInViews, View.TABLE)}
-									on:click={() => {
-										updProperty({
-											id: property.id,
-											visibleInViews: toggleView(property.visibleInViews, View.TABLE)
-										});
-									}}
-								>
-									Table view
-								</DropdownMenu.CheckboxItem>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
+						{@render visibilityMenu()}
+
 						<Button
 							on:click={() => duplicateProperty()}
 							variant="ghost"
@@ -211,54 +176,7 @@
 							</Drawer.Trigger>
 
 							{#if editorState.isOpen}
-								<Drawer.Content>
-									<div>
-										<p class="text-center text-lg font-semibold leading-none tracking-tight">
-											Edit property
-										</p>
-										<div class="p-4 space-y-1">
-											<div>
-												<label for={`${property.id}-name`} class="pb-0.5 text-sm font-semibold">
-													Name
-												</label>
-												<input
-													id={`${property.id}-name`}
-													value={property.name}
-													name="name"
-													class="input input-sm"
-													oninput={handleOnInput}
-												/>
-											</div>
-
-											<div class="pt-">
-												<label for={`${property.id}-type`} class="pb-0.5 text-sm font-semibold">
-													Type
-												</label>
-												<select
-													id={`${property.id}-type`}
-													name="type"
-													value={property.type}
-													class="select select-sm"
-													onchange={(e) => {
-														const targetEl = e.target as HTMLSelectElement;
-														updProperty({ id: property.id, type: targetEl.value as PropertyType });
-													}}
-												>
-													{#each Object.values(PropertyType) as propertyType}
-														<option value={propertyType}>
-															{capitalizeFirstLetter(propertyType)}
-														</option>
-													{/each}
-												</select>
-											</div>
-
-											{#if property.type === 'SELECT'}
-												<hr class="border border-secondary" />
-												<PropertyOptions propertyId={property.id} options={property.options} />
-											{/if}
-										</div>
-									</div>
-								</Drawer.Content>
+								{@render editorSmScreen()}
 							{/if}
 						</Drawer.Root>
 
@@ -314,7 +232,7 @@
 					onValueChange={(value) => {
 						updProperty({
 							id: property.id,
-							aggregator: value as Aggregator
+							type: value as PropertyType
 						});
 					}}
 				>
@@ -426,4 +344,85 @@
 			</Button>
 		</div>
 	</div>
+{/snippet}
+
+{#snippet editorSmScreen()}
+	<Drawer.Content>
+		<div>
+			<p class="text-center text-lg font-semibold leading-none tracking-tight">Edit property</p>
+			<div class="p-4 space-y-1">
+				<div>
+					<label for={`${property.id}-name`} class="pb-0.5 text-sm font-semibold"> Name </label>
+					<input
+						id={`${property.id}-name`}
+						value={property.name}
+						name="name"
+						class="input input-sm"
+						oninput={handleOnInput}
+					/>
+				</div>
+
+				<div class="pt-">
+					<label for={`${property.id}-type`} class="pb-0.5 text-sm font-semibold"> Type </label>
+					<select
+						id={`${property.id}-type`}
+						name="type"
+						value={property.type}
+						class="select select-sm"
+						onchange={(e) => {
+							const targetEl = e.target as HTMLSelectElement;
+							updProperty({ id: property.id, type: targetEl.value as PropertyType });
+						}}
+					>
+						{#each Object.values(PropertyType) as propertyType}
+							<option value={propertyType}>
+								{capitalizeFirstLetter(propertyType)}
+							</option>
+						{/each}
+					</select>
+				</div>
+
+				{#if property.type === 'SELECT'}
+					<hr class="border border-secondary" />
+					<PropertyOptions propertyId={property.id} options={property.options} />
+				{/if}
+			</div>
+		</div>
+	</Drawer.Content>
+{/snippet}
+
+{#snippet visibilityMenu()}
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="ghost" size="xs" class="w-full justify-start px-1">
+				<EyeOff class="icon-xs" />
+				<span> Property visibility</span>
+			</Button>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content sameWidth>
+			<DropdownMenu.CheckboxItem
+				checked={containsView(property.visibleInViews, View.LIST)}
+				on:click={() => {
+					updProperty({
+						id: property.id,
+						visibleInViews: toggleView(property.visibleInViews, View.LIST)
+					});
+				}}
+			>
+				List view
+			</DropdownMenu.CheckboxItem>
+
+			<DropdownMenu.CheckboxItem
+				checked={containsView(property.visibleInViews, View.TABLE)}
+				on:click={() => {
+					updProperty({
+						id: property.id,
+						visibleInViews: toggleView(property.visibleInViews, View.TABLE)
+					});
+				}}
+			>
+				Table view
+			</DropdownMenu.CheckboxItem>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 {/snippet}
