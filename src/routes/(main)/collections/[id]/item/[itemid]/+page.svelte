@@ -10,9 +10,7 @@
 	import debounce from 'debounce';
 	import { ChevronLeft, Copy, X, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { getScreenState } from '$lib/components/screen/screenState.js';
 
 	let { data } = $props();
 
@@ -23,7 +21,6 @@
 	let isSmHeadingVisible = $state(false);
 	let renameItemError = $state<string | null>(null);
 
-	const isDesktop = getScreenState();
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
 	const activeItem = getActiveItemState();
@@ -126,7 +123,7 @@
 				{item.name}
 			</h1>
 
-			{@render menu()}
+			{@render topMenu()}
 		</PageHeader>
 
 		<PageContent class="grow" onScroll={handleScroll}>
@@ -148,62 +145,41 @@
 	{/each}
 {/snippet}
 
-{#snippet menu()}
-	{#if $isDesktop}
-		<DropdownMenu.Root bind:open={menuState.isOpen}>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class="hidden md:block">
-					<MoreHorizontal class="icon-sm" />
+{#snippet topMenu()}
+	<Drawer.Root bind:open={menuState.isOpen}>
+		<Drawer.Trigger asChild let:builder>
+			<Button builders={[builder]} variant="secondary" class="md:hidden">
+				<MoreHorizontal class="icon-sm" />
+			</Button>
+		</Drawer.Trigger>
+		<Drawer.Content>
+			<Drawer.Footer class="pt-2">
+				<Button variant="secondary" on:click={() => duplicateItem()}>
+					<Copy class="icon-xs" />
+					<span>Duplicate</span>
 				</Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end" class="w-56">
-				<DropdownMenu.Group>
-					<DropdownMenu.Item on:click={() => duplicateItem()}>
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</DropdownMenu.Item>
-
-					<DropdownMenu.Item on:click={() => deleteItem()} class="group">
-						<Trash class="icon-xs group-hover:text-primary" />
-						<span class="group-hover:text-primary">Delete</span>
-					</DropdownMenu.Item>
-				</DropdownMenu.Group>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
-		<Drawer.Root bind:open={menuState.isOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class="md:hidden">
-					<MoreHorizontal class="icon-sm" />
+				<Button variant="destructive" on:click={() => deleteItem()}>
+					<Trash class="icon-xs" />
+					<span>Delete</span>
 				</Button>
-			</Drawer.Trigger>
-			<Drawer.Content>
-				<Drawer.Footer class="pt-2">
-					<Button variant="secondary" on:click={() => duplicateItem()}>
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</Button>
-					<Button variant="destructive" on:click={() => deleteItem()}>
-						<Trash class="icon-xs" />
-						<span>Delete</span>
-					</Button>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+			</Drawer.Footer>
+		</Drawer.Content>
+	</Drawer.Root>
 {/snippet}
 
 {#snippet bottomMenu()}
-	<hr />
-	<div class="flex items-center justify-end gap-x-1.5">
-		<Button variant="secondary" on:click={() => duplicateItem()}>
-			<Copy class="icon-xs" />
-			<span> Duplicate</span>
-		</Button>
+	<div class="hidden md:block">
+		<hr class="mb-1.5" />
+		<div class="flex items-center justify-end gap-x-1.5">
+			<Button variant="secondary" on:click={() => duplicateItem()}>
+				<Copy class="icon-xs" />
+				<span> Duplicate</span>
+			</Button>
 
-		<Button variant="secondary" class="hover:text-primary" on:click={() => deleteItem()}>
-			<Trash class="icon-xs" />
-			<span> Delete</span>
-		</Button>
+			<Button variant="secondary" class="hover:text-primary" on:click={() => deleteItem()}>
+				<Trash class="icon-xs" />
+				<span> Delete</span>
+			</Button>
+		</div>
 	</div>
 {/snippet}
