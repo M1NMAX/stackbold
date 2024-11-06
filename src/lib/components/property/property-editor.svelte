@@ -37,6 +37,7 @@
 	import type { UpdProperty } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
+	import { slide } from 'svelte/transition';
 
 	type Props = {
 		property: Property;
@@ -102,7 +103,7 @@
 		</Button>
 	</div>
 	{#if isOpen}
-		<div class="pt-2 px-1">
+		<div class="pt-2 px-1" transition:slide>
 			<Select.Root
 				portal={null}
 				selected={{ value: property.type, label: property.type.toLowerCase() }}

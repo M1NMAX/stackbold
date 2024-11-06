@@ -2,12 +2,7 @@
 	import { getActiveItemState, getItemState } from '$lib/components/items';
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import {
-		AddPropertyPopover,
-		getPropertyState,
-		PropertyInput,
-		PropertyInputWrapper
-	} from '$lib/components/property';
+	import { getPropertyState, PropertyInput } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
 	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router.js';
@@ -104,7 +99,6 @@
 			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
 		</p>
 
-		{@render menu()}
 		<Button variant="secondary" on:click={() => goBack()}>
 			<X class="icon-sm" />
 		</Button>
@@ -120,9 +114,8 @@
 			{@render properties()}
 		</div>
 	</div>
-	<div>
-		<AddPropertyPopover />
-	</div>
+
+	{@render bottomMenu()}
 {:else}
 	<PageContainer>
 		<PageHeader class="flex items-center justify-between">
@@ -145,17 +138,13 @@
 
 			{@render properties()}
 		</PageContent>
-		<div class="p-2">
-			<AddPropertyPopover />
-		</div>
+		{@render bottomMenu()}
 	</PageContainer>
 {/if}
 
 {#snippet properties()}
 	{#each propertyState.properties as property}
-		<PropertyInputWrapper {property}>
-			<PropertyInput {property} itemId={item.id} />
-		</PropertyInputWrapper>
+		<PropertyInput {property} itemId={item.id} />
 	{/each}
 {/snippet}
 
@@ -202,4 +191,19 @@
 			</Drawer.Content>
 		</Drawer.Root>
 	{/if}
+{/snippet}
+
+{#snippet bottomMenu()}
+	<hr />
+	<div class="flex items-center justify-end gap-x-1.5">
+		<Button variant="secondary" on:click={() => duplicateItem()}>
+			<Copy class="icon-xs" />
+			<span> Duplicate</span>
+		</Button>
+
+		<Button variant="secondary" class="hover:text-primary" on:click={() => deleteItem()}>
+			<Trash class="icon-xs" />
+			<span> Delete</span>
+		</Button>
+	</div>
 {/snippet}

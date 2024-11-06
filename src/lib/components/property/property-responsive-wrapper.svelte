@@ -18,6 +18,7 @@
 		portal?: boolean;
 		alignCenter?: boolean;
 		sameWidth?: boolean;
+		onOpenChange?: (open: boolean) => void;
 	};
 
 	let {
@@ -31,14 +32,15 @@
 		desktopClass,
 		portal = false,
 		alignCenter = true,
-		sameWidth = false
+		sameWidth = false,
+		onOpenChange
 	}: Props = $props();
 
 	const isDesktop = getScreenState();
 </script>
 
 {#if $isDesktop}
-	<Popover.Root bind:open portal={portal ? 'HTMLElement' : undefined}>
+	<Popover.Root bind:open portal={portal ? 'HTMLElement' : undefined} {onOpenChange}>
 		<Popover.Trigger asChild let:builder>
 			<Button builders={[builder]} variant="secondary" class={btnClass}>
 				{@render header()}
