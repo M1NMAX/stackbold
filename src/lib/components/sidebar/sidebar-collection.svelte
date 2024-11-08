@@ -95,7 +95,12 @@
 			fun: async () => {
 				await collectionState.deleteCollection(collection.id);
 				if (active) {
-					await goto('/collections');
+					if (history.length === 1) {
+						// FIXME: maybe use replace state
+						await goto('/collections');
+					} else {
+						history.back();
+					}
 				}
 			}
 		});

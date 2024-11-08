@@ -22,6 +22,7 @@
 	import { getCollectionState } from '.';
 	import { getGroupState } from '$lib/components/group';
 	import { getScreenState } from '$lib/components/screen';
+	import { goto } from '$app/navigation';
 
 	type Props = {
 		collection: Collection;
@@ -61,8 +62,14 @@
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
-			fun: () => {
-				collectionState.deleteCollection(collection.id);
+			fun: async () => {
+				await collectionState.deleteCollection(collection.id);
+				if (history.length === 1) {
+					// FIXME: maybe use replace state
+					await goto('/collections');
+				} else {
+					history.back();
+				}
 			}
 		});
 	}
