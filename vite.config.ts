@@ -20,5 +20,5 @@ export default defineConfig({
 		rollupOptions: {
 			external: ['@node-rs/argon2']
 		}
-	},
+	}
 });
