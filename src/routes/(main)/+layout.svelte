@@ -33,6 +33,7 @@
 	import { nameSchema } from '$lib/schema';
 	import { setGroupState } from '$lib/components/group';
 	import { setCollectionState } from '$lib/components/collection';
+	import { MAX_COLLECTION_NAME_LENGTH, MAX_GROUP_NAME_LENGTH } from '$lib/constant/index.js';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -107,7 +108,7 @@
 	}
 
 	function activeCollection(id: string) {
-		return `/collections/${id}` === activeUrl;
+		return activeUrl.includes(`/collections/${id}`);
 	}
 
 	$effect(() => {
@@ -260,7 +261,7 @@
 
 <!-- Create collection dialog -->
 <Dialog.Root bind:open={crtCollectionModal.isOpen}>
-	<Dialog.Content class="sm:max-w-[425px] md:top-auto md:bottom-0">
+	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>New collection</Dialog.Title>
 		</Dialog.Header>
@@ -273,6 +274,7 @@
 				placeholder="Tasks"
 				class="input"
 				autocomplete="off"
+				maxlength={MAX_COLLECTION_NAME_LENGTH}
 			/>
 			{#if error.type === 'new-collection-name'}
 				<span class="text-error"> {error.msg}</span>
@@ -307,6 +309,7 @@
 				name="name"
 				placeholder="Personal, Work, ..."
 				class="input"
+				maxlength={MAX_GROUP_NAME_LENGTH}
 			/>
 
 			{#if error.type === 'new-group-rename'}

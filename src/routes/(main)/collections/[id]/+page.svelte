@@ -30,6 +30,8 @@
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
 		ITEM_PANEL_CTX_KEY,
+		MAX_COLLECTION_NAME_LENGTH,
+		MAX_ITEM_NAME_LENGTH,
 		PROPERTIES_PANEL_CTX_KEY,
 		PROPERTY_COLORS
 	} from '$lib/constant';
@@ -131,9 +133,10 @@
 	async function handleOnInputCollectionName(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 
-		const parseResult = getNameSchema({ label: 'Collection name', max: 50 }).safeParse(
-			targetEl.value
-		);
+		const parseResult = getNameSchema({
+			label: 'Collection name',
+			max: MAX_COLLECTION_NAME_LENGTH
+		}).safeParse(targetEl.value);
 
 		if (!parseResult.success) {
 			renameCollectionError = parseResult.error.issues[0].message;
@@ -154,7 +157,9 @@
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
-		const parseResult = getNameSchema({ label: 'Item name', max: 50 }).safeParse(itemName);
+		const parseResult = getNameSchema({ label: 'Item name', max: MAX_ITEM_NAME_LENGTH }).safeParse(
+			itemName
+		);
 		if (!parseResult.success) {
 			itemNameError = parseResult.error.issues[0].message;
 			return;
@@ -347,6 +352,8 @@
 				role="heading"
 				aria-level="1"
 				value={collection.name}
+				type="text"
+				maxlength={MAX_COLLECTION_NAME_LENGTH}
 				oninput={handleOnInputCollectionName}
 				class="grow font-semibold text-2xl md:text-3xl focus:outline-none bg-transparent"
 			/>
@@ -498,6 +505,8 @@
 			name="name"
 			autocomplete="off"
 			class="input"
+			type="text"
+			maxlength={MAX_ITEM_NAME_LENGTH}
 		/>
 
 		<Button type="submit" class="w-full">Create</Button>

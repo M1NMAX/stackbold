@@ -4,13 +4,15 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { getPropertyState, PropertyInput } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';
-	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY } from '$lib/constant';
+	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import { cn } from '$lib/utils';
 	import debounce from 'debounce';
 	import { ChevronLeft, Copy, X, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 	import * as Drawer from '$lib/components/ui/drawer';
+	import { textareaAutoSize } from '$lib/actions/textareaAutosize.js';
+	import { getNameSchema } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -52,17 +54,19 @@
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 
-	async function handleOnInputItemName(e: Event) {
-		const targetEl = e.currentTarget as HTMLInputElement;
-		const name = targetEl.value;
+	async function handleUpdItemName(e: Event) {
+		const targetEl = e.currentTarget as HTMLTextAreaElement;
 
-		if (name.length > 50) {
-			renameItemError = 'Item name must be at most 50 characters';
+		const parseResult = getNameSchema({ label: 'Item name', max: MAX_ITEM_NAME_LENGTH }).safeParse(
+			targetEl.value
+		);
+		if (!parseResult.success) {
+			renameItemError = parseResult.error.issues[0].message;
 			return;
 		}
 
 		renameItemError = null;
-		updItemDebounced({ name });
+		updItemDebounced({ name: targetEl.value });
 	}
 
 	function duplicateItem() {
@@ -101,11 +105,14 @@
 		</Button>
 	</div>
 	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
-		<input
+		<textarea
+			use:textareaAutoSize
+			class="textarea textarea-ghost textarea-xl"
 			value={item.name}
-			oninput={handleOnInputItemName}
-			class="pt-1 pb-2 text-xl font-semibold break-words focus:outline-none bg-inherit"
-		/>
+			oninput={handleUpdItemName}
+			maxlength={MAX_ITEM_NAME_LENGTH}
+			spellcheck={false}
+		></textarea>
 
 		<div class="space-y-2">
 			{@render properties()}
@@ -127,11 +134,14 @@
 		</PageHeader>
 
 		<PageContent class="grow" onScroll={handleScroll}>
-			<input
+			<textarea
+				use:textareaAutoSize
+				class="textarea textarea-ghost textarea-xl"
 				value={item.name}
-				oninput={handleOnInputItemName}
-				class="w-full pb-2 text-2xl font-semibold break-words focus:outline-none bg-inherit"
-			/>
+				oninput={handleUpdItemName}
+				maxlength={MAX_ITEM_NAME_LENGTH}
+				spellcheck={false}
+			></textarea>
 
 			{@render properties()}
 		</PageContent>
@@ -168,7 +178,7 @@
 {/snippet}
 
 {#snippet bottomMenu()}
-	<div class="hidden md:block">
+	<div class="hidden md:block px-0.5 pb-0.5">
 		<hr class="mb-1.5" />
 		<div class="flex items-center justify-end gap-x-1.5">
 			<Button variant="secondary" on:click={() => duplicateItem()}>

@@ -7,8 +7,13 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
-	import { cn } from '$lib/utils';
+	import {
+		DEBOUNCE_INTERVAL,
+		MAX_PROPERTY_NUMERIC_LENGTH,
+		MAX_PROPERTY_TEXT_LENGTH,
+		PROPERTY_COLORS
+	} from '$lib/constant';
+	import { cn, sanitizeNumberInput } from '$lib/utils';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
@@ -41,13 +46,23 @@
 		await itemState.updPropertyRef(itemId, ref);
 	}
 
+	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
+		target.value = value;
+	}, DEBOUNCE_INTERVAL);
+
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		const currValue = targetEl.type === 'checkbox' ? targetEl.checked.toString() : targetEl.value;
-		if (!targetEl.validity.badInput) {
-			updPropertyRefDebounced({ id: property.id, value: currValue });
+		let value = targetEl.value;
+
+		if (property.type === 'NUMBER') {
+			value = sanitizeNumberInput(targetEl.value);
+			updTargetElValue(targetEl, value);
+		} else if (targetEl.type === 'checkbox') {
+			value = targetEl.checked.toString();
 		}
+
+		updPropertyRefDebounced({ id: property.id, value });
 	}
 
 	function onClickClear() {
@@ -189,6 +204,7 @@
 			id={property.id}
 			name={property.name}
 			{value}
+			maxlength={MAX_PROPERTY_TEXT_LENGTH}
 			oninput={handleOnInput}
 			onfocusin={handleFocusIn}
 			onfocusout={handleFocusOut}
@@ -197,9 +213,10 @@
 	{:else if property.type === 'NUMBER'}
 		<input
 			id={property.id}
-			type="number"
+			type="text"
+			inputmode="numeric"
 			{value}
-			step="any"
+			maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 			oninput={handleOnInput}
 			onfocusin={handleFocusIn}
 			onfocusout={handleFocusOut}
@@ -213,6 +230,7 @@
 			oninput={handleOnInput}
 			onfocusin={handleFocusIn}
 			onfocusout={handleFocusOut}
+			maxlength={MAX_PROPERTY_TEXT_LENGTH}
 			class="ghost-input"
 		/>
 	{/if}

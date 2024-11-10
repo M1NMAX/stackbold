@@ -20,7 +20,7 @@
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/screen';
-	import { DEBOUNCE_INTERVAL } from '$lib/constant';
+	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
 
@@ -141,6 +141,7 @@
 								data-id={item.id}
 								value={item.name}
 								oninput={handleOnInput}
+								maxlength={MAX_ITEM_NAME_LENGTH}
 								class="grow py-2 px-1 focus:outline-none bg-inherit"
 							/>
 

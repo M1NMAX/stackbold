@@ -26,6 +26,7 @@
 	} from '$lib/components/modal';
 	import { getGroupState } from '$lib/components/group';
 	import { getCollectionState } from '$lib/components/collection';
+	import { MAX_COLLECTION_NAME_LENGTH } from '$lib/constant/index.js';
 
 	type Props = {
 		active: boolean;
@@ -143,6 +144,7 @@
 				autocomplete="off"
 				value={collection.name}
 				class="input"
+				maxlength={MAX_COLLECTION_NAME_LENGTH}
 			/>
 
 			{#if renameError}

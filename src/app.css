@@ -141,6 +141,10 @@ input[type='number'] {
 			box-shadow: none;
 		}
 	}
+
+	&-xl {
+		@apply text-xl font-semibold  mt-0.5 mb-1.5;
+	}
 }
 
 .checkbox {

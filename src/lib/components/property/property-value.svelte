@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { createTooltip, melt } from '@melt-ui/svelte';
-	import { DEBOUNCE_INTERVAL, PROPERTY_COLORS } from '$lib/constant';
+	import {
+		DEBOUNCE_INTERVAL,
+		MAX_PROPERTY_NUMERIC_LENGTH,
+		MAX_PROPERTY_TEXT_LENGTH,
+		PROPERTY_COLORS
+	} from '$lib/constant';
 	import type { Property } from '@prisma/client';
 	import { Check } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { cn } from '$lib/utils';
+	import { cn, sanitizeNumberInput } from '$lib/utils';
 	import { Calendar } from '$lib/components/ui/calendar';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import {
@@ -46,11 +51,23 @@
 		await itemState.updPropertyRef(itemId, { id: property.id, value });
 	}
 
+	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
+		target.value = value;
+	}, DEBOUNCE_INTERVAL);
+
 	function handleOnInput(e: Event) {
 		// TODO: add validation
-		const input = e.target as HTMLInputElement;
-		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-		updPropertyRefDebounced(currValue);
+		const targetEl = e.target as HTMLInputElement;
+
+		let value = targetEl.value;
+		if (property.type === 'NUMBER') {
+			value = sanitizeNumberInput(targetEl.value);
+			updTargetElValue(targetEl, value);
+		} else if (targetEl.type === 'checkbox') {
+			value = targetEl.checked.toString();
+		}
+
+		updPropertyRefDebounced(value);
 	}
 
 	async function handleEnterKeypress(e: KeyboardEvent) {
@@ -58,8 +75,10 @@
 		if (e.key !== 'Enter') return;
 		e.preventDefault();
 		const targetEl = e.target as HTMLInputElement;
+		const value = property.type !== 'NUMBER' ? targetEl.value : sanitizeNumberInput(targetEl.value);
+
 		wrapperState.close();
-		await updPropertyRef(targetEl.value);
+		await updPropertyRef(value);
 	}
 
 	const buttonClass = $derived(
@@ -224,6 +243,7 @@
 				placeholder="Empty"
 				class="textarea textarea-ghost"
 				{value}
+				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
 				onkeypress={handleEnterKeypress}
 			></textarea>
@@ -250,9 +270,10 @@
 				name={property.name}
 				placeholder="Empty"
 				class="w-full input input-ghost input-sm px-1 font-semibold text-sm"
-				type="number"
-				step="any"
+				type="text"
+				inputmode="numeric"
 				{value}
+				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 				oninput={handleOnInput}
 				onkeypress={handleEnterKeypress}
 			/>

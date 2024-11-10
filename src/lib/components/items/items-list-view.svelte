@@ -14,7 +14,7 @@
 	import { type Item, View } from '@prisma/client';
 	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { DEBOUNCE_INTERVAL } from '$lib/constant';
+	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import debounce from 'debounce';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Check, Pencil } from 'lucide-svelte';
@@ -125,6 +125,7 @@
 					value={item.name}
 					oninput={handleOnInput}
 					onfocusout={handleFocusOut}
+					maxlength={MAX_ITEM_NAME_LENGTH}
 					class="w-full p-1 pr-4 text-lg font-semibold focus:outline-none rounded-md"
 				/>
 
