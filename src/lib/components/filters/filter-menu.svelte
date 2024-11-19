@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { getOption, getPropertyState, PropertyIcon } from '$lib/components/property';
-	import { Check, Filter as FilterIcon, X, Minus } from 'lucide-svelte';
+	import { Check, Filter as FilterIcon, X, Minus, ChevronLeft, Eraser } from 'lucide-svelte';
 	import { cn } from '$lib/utils';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import type { Filter, PropertyType } from '@prisma/client';
@@ -60,83 +60,84 @@
 		if (value) detailViewState.close();
 	}}
 >
-	<Popover.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" class="hidden md:block">Filters</Button>
+	<Popover.Trigger class={buttonVariants({ variant: 'secondary', className: 'hidden md:block' })}>
+		Filters
 	</Popover.Trigger>
-	<Popover.Content
-		class="w-auto min-w-60 max-w-lg flex flex-col items-center justify-start space-y-1"
-	>
+	<Popover.Content class="w-auto max-w-xs flex flex-col items-center justify-start space-y-1 p-0">
 		{#if !detailViewState.isOpen}
-			<p class="w-full px-2 py-1.5 text-sm font-semibold">Filters</p>
+			<div class="w-full p-1">
+				<div class="w-full px-1.5 py-1 text-sm font-semibold">Filters</div>
+			</div>
 			<Separator />
 
 			{@render activeFilters()}
 
-			<p class="w-full text-xs font-semibold px-2 py-0.5">Add filter</p>
-			{#each propertyState.properties as property}
-				{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
-					<Button
-						variant="ghost"
-						class="h-8 w-full justify-start"
-						on:click={() => {
-							selectedProperty = property;
-							detailViewState.open();
-						}}
-					>
-						<PropertyIcon key={property.type} />
-						{property.name}
-					</Button>
-				{/if}
-			{/each}
+			<div class="min-w-84 p-1">
+				{#each propertyState.properties as property}
+					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
+						<Button
+							variant="ghost"
+							class="h-8 w-full justify-start gap-0"
+							onclick={() => {
+								selectedProperty = property;
+								detailViewState.open();
+							}}
+						>
+							<PropertyIcon key={property.type} />
+							{property.name}
+						</Button>
+					{/if}
+				{/each}
+			</div>
 		{:else}
 			{@render header()}
-			{@render content()}
+			<div class="w-full px-1 pb-1">
+				{@render content()}
+			</div>
 			{@render clearBtn(selectedProperty.id)}
 		{/if}
 	</Popover.Content>
 </Popover.Root>
 <Drawer.Root>
-	<Drawer.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" class="md:hidden">
-			<FilterIcon class="icon-xs" />
-		</Button>
+	<Drawer.Trigger
+		class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'md:hidden' })}
+	>
+		<FilterIcon />
 	</Drawer.Trigger>
 	<Drawer.Content>
-		<Drawer.Header class="py-1">
-			<div class="flex items-center space-x-2">
-				<div class="p-2.5 rounded bg-secondary">
+		<Drawer.Header class="pt-2 pb-0">
+			<span class="flex items-center gap-x-2">
+				<span class="p-1.5 rounded-md bg-secondary">
 					<FilterIcon class="icon-sm" />
-				</div>
-				<div class="text-base font-semibold">Filters</div>
-			</div>
+				</span>
+				<Drawer.Title class="text-left">Filters</Drawer.Title>
+			</span>
 		</Drawer.Header>
-		<Drawer.Footer class="pt-2 px-1 ">
+		<Drawer.Footer class="pt-2 pb-0 px-0">
 			{@render activeFilters()}
 			<Accordion.Root
+				type="single"
 				class="w-full sm:max-w-[70%]"
 				onValueChange={(value) => {
-					if (value && typeof value === 'string') {
-						const property = propertyState.getProperty(value);
-						if (!property) return;
-						selectedProperty = property;
-						detailViewState.open();
-					}
+					const property = propertyState.getProperty(value);
+					if (!property) return;
+					selectedProperty = property;
+					detailViewState.open();
 				}}
 			>
 				{#each propertyState.properties as property}
 					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
 						<Accordion.Item value={property.id}>
 							<Accordion.Trigger
+								class="justify-start space-x-2 px-4 py-1 font-semibold rounded-sm hover:no-underline hover:bg-muted"
 								showArrow={false}
-								class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold rounded-sm hover:no-underline hover:bg-muted"
 							>
-								<PropertyIcon key={property.type} class="icon-sm mr-2 rotate-0" />
-
+								<PropertyIcon key={property.type} />
 								{property.name}
 							</Accordion.Trigger>
 							<Accordion.Content>
-								<div class="px-2">
-									{@render content()}
+								<div class="px-0">
+									{@render content(true)}
 								</div>
 							</Accordion.Content>
 						</Accordion.Item>
@@ -148,23 +149,27 @@
 </Drawer.Root>
 
 {#snippet header()}
-	<div class="w-full flex items-center space-x-2 px-2 py-0.5">
-		<span class="font-semibold text-sm">
+	<div class="w-full flex items-center gap-x-0.5 px-1 pt-1">
+		<Button variant="ghost" size="xs" onclick={() => detailViewState.close()}>
+			<ChevronLeft />
+		</Button>
+		<span class="pl-0.5 pr-2.5 py-1 font-semibold text-sm">
 			{selectedProperty.name}
 			<strong> is </strong>
 		</span>
 	</div>
+	<Separator />
 {/snippet}
 
-{#snippet content()}
+{#snippet content(insideDrawer: boolean = false)}
+	{@const baseStyle =
+		'w-full flex items-center gap-x-1.5 rounded-sm cursor-pointer hover:bg-secondary hover:text-secondary-accent'}
+	{@const padding = insideDrawer ? 'py-1 px-5' : 'py-1.5 px-2'}
 	{#if selectedProperty.type === 'CHECKBOX'}
 		<RadioGroup.Root class="w-full gap-y-0">
-			<Label
-				for={`${selectedProperty.id}-filter-true`}
-				class="w-full flex items-center space-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-			>
+			<Label for={`${selectedProperty.id}-filter-true`} class={cn(baseStyle, padding)}>
 				{@render mockCheckbox(true)}
-				<span class="grow text-sm font-semibold"> Checked </span>
+				<span class="grow text-sm font-semibold pr-10"> Checked </span>
 
 				<Check
 					class={cn('icon-xs', !isSelected(selectedProperty.id, 'true') && 'text-transparent')}
@@ -173,15 +178,12 @@
 					value="true"
 					id={`${selectedProperty.id}-filter-true`}
 					class="sr-only"
-					on:click={() => onClickFilterOption(selectedProperty.id, 'true', selectedProperty.type)}
+					onclick={() => onClickFilterOption(selectedProperty.id, 'true', selectedProperty.type)}
 				/>
 			</Label>
-			<Label
-				for={`${selectedProperty.id}-filter-false`}
-				class="w-full flex items-center space-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-			>
+			<Label for={`${selectedProperty.id}-filter-false`} class={cn(baseStyle, padding)}>
 				{@render mockCheckbox(false)}
-				<span class="grow text-sm font-semibold"> Unchecked </span>
+				<span class="grow text-sm font-semibold pr-10"> Unchecked </span>
 
 				<Check
 					class={cn('icon-xs', !isSelected(selectedProperty.id, 'false') && 'text-transparent')}
@@ -191,20 +193,17 @@
 					value="false"
 					id={`${selectedProperty.id}-filter-false`}
 					class="sr-only"
-					on:click={() => onClickFilterOption(selectedProperty.id, 'false', selectedProperty.type)}
+					onclick={() => onClickFilterOption(selectedProperty.id, 'false', selectedProperty.type)}
 				/>
 			</Label>
 		</RadioGroup.Root>
 	{:else if selectedProperty.type === 'SELECT'}
 		<RadioGroup.Root class="w-full gap-y-0">
 			{#each selectedProperty.options as option}
-				<Label
-					for={`${selectedProperty.id}-filter-${option.id}`}
-					class="w-full flex items-center space-x-1.5 py-1 px-1.5 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-				>
-					<span class={cn('size-3.5 rounded-full', PROPERTY_COLORS[option.color])}></span>
+				<Label for={`${selectedProperty.id}-filter-${option.id}`} class={cn(baseStyle, padding)}>
+					<span class={cn('size-3.5 rounded-sm', PROPERTY_COLORS[option.color])}></span>
 
-					<span class="grow text-sm font-semibold">
+					<span class="grow text-sm font-semibold pr-10">
 						{option.value}
 					</span>
 
@@ -215,7 +214,7 @@
 						value="false"
 						id={`${selectedProperty.id}-filter-${option.id}`}
 						class="sr-only"
-						on:click={() =>
+						onclick={() =>
 							onClickFilterOption(selectedProperty.id, option.id, selectedProperty.type)}
 					/>
 				</Label>
@@ -225,20 +224,19 @@
 {/snippet}
 
 {#snippet clearBtn(id: string)}
-	<Separator />
-	<Button variant="ghost" class="h-8 w-full justify-start" on:click={() => detailViewState.close()}>
-		Previous
-	</Button>
-
 	{#if hasValues(id)}
-		<Button variant="ghost" class="h-8 w-full justify-start" on:click={() => clearFilter(id)}>
-			Clear
-		</Button>
+		<Separator />
+		<div class="w-full px-1 pb-1">
+			<Button variant="ghost" class="h-8 w-full justify-start" onclick={() => clearFilter(id)}>
+				<Eraser />
+				Clear
+			</Button>
+		</div>
 	{/if}
 {/snippet}
 
 {#snippet activeFilters()}
-	{@const bg = 'h-6 flex items-center space-x-1 py-0.5 px-1 rounded-sm'}
+	{@const bg = 'h-7 flex items-center gap-x-1 py-0.5 px-1 rounded-sm'}
 	{#if filters.length > 0}
 		<p class="w-full text-xs font-semibold px-2 py-0.5">Active filters</p>
 		<div class="w-full flex flex-wrap gap-1 px-2 pb-0.5">
@@ -248,7 +246,7 @@
 				{#if property}
 					{#if property.type === 'CHECKBOX'}
 						{@const value = filter.values[0]}
-						<Button class={cn(bg, PROPERTY_COLORS['GRAY'])} on:click={() => clearFilter(filter.id)}>
+						<Button class={cn(bg, PROPERTY_COLORS['GRAY'])} onclick={() => clearFilter(filter.id)}>
 							{@render mockCheckbox(value === 'true')}
 							<span class="text-sm font-semibold"> {property.name} </span>
 							<X class="icon-xs" />
@@ -259,11 +257,11 @@
 							{#if option}
 								<Button
 									class={cn(bg, PROPERTY_COLORS['GRAY'])}
-									on:click={() => {
+									onclick={() => {
 										onClickFilterOption(filter.id, option.id, property.type);
 									}}
 								>
-									<span class={cn('size-3 rounded-full', PROPERTY_COLORS[option.color])}></span>
+									<span class={cn('size-3.5 rounded-sm', PROPERTY_COLORS[option.color])}></span>
 									<span class="text-sm font-semibold">
 										{option?.value}
 									</span>
@@ -275,7 +273,9 @@
 				{/if}
 			{/each}
 
-			<Button class={cn(bg, PROPERTY_COLORS['GRAY'])} on:click={() => clearAll()}>Clear all</Button>
+			<Button class={cn('font-semibold', bg, PROPERTY_COLORS['GRAY'])} onclick={() => clearAll()}>
+				Clear all
+			</Button>
 		</div>
 
 		<Separator />

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mode, setMode } from 'mode-watcher';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Separator } from '$lib/components/ui/separator';
@@ -46,7 +46,7 @@
 
 <PageContainer>
 	<PageHeader class="justify-between md:justify-end">
-		<Button variant="secondary" class="md:hidden" on:click={() => goBack()}><ChevronLeft /></Button>
+		<Button variant="secondary" class="md:hidden" onclick={() => goBack()}><ChevronLeft /></Button>
 
 		<h1 class="md:hidden grow font-semibold text-2xl">Settings</h1>
 
@@ -118,7 +118,7 @@
 						</p>
 					</div>
 					<!-- TODO: finish account deletion -->
-					<Button variant="destructive" class="w-full" disabled on:click={() => (open = true)}>
+					<Button variant="destructive" class="w-full" disabled onclick={() => (open = true)}>
 						Delete account
 					</Button>
 				</div>
@@ -138,7 +138,7 @@
 									id="light"
 									value="light"
 									class="sr-only"
-									on:click={() => setMode('light')}
+									onclick={() => setMode('light')}
 								/>
 								<div class="items-center rounded-md border-2 border-muted p-1 hover:border-accent">
 									<div class="space-y-2 rounded-sm bg-gray-200 p-2">
@@ -163,7 +163,7 @@
 									id="dark"
 									value="dark"
 									class="sr-only"
-									on:click={() => setMode('dark')}
+									onclick={() => setMode('dark')}
 								/>
 								<div
 									class="items-center rounded-md border-2 border-muted bg-popover p-1 hover:bg-accent hover:text-accent-foreground"
@@ -192,7 +192,7 @@
 									id="system"
 									value="system"
 									class="sr-only"
-									on:click={() => setMode('system')}
+									onclick={() => setMode('system')}
 								/>
 								<div
 									class="items-center rounded-md border-2 border-muted bg-popover p-1 hover:border-accent"
@@ -219,55 +219,59 @@
 
 				<div class="visible md:hidden mt-4">
 					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder class="bg-primary">
-							<Button builders={[builder]} variant="secondary" class="w-full justify-start">
-								<Palette class="icon-sm" />
-								<span class="grow text-start"> Theme </span>
-								<span class="font-light"> {capitalizeFirstLetter($mode ?? 'system')}</span>
-							</Button>
+						<Drawer.Trigger
+							class={buttonVariants({
+								variant: 'secondary',
+								className: 'w-full justify-start'
+							})}
+						>
+							<Palette class="icon-sm" />
+							<span class="grow text-start"> Theme </span>
+							<span class="font-light"> {capitalizeFirstLetter($mode ?? 'system')}</span>
 						</Drawer.Trigger>
 						<Drawer.Content>
-							<Drawer.Header class="py-1">
-								<div class="flex items-center space-x-2">
-									<div class="p-2.5 rounded bg-secondary">
+							<Drawer.Header class="pt-2 pb-0">
+								<span class="flex items-center gap-x-2">
+									<span class="p-1.5 rounded bg-secondary">
 										<Palette class="icon-sm" />
-									</div>
-									<div class="text-base font-semibold">Theme</div>
-								</div>
+									</span>
+									<Drawer.Title class="text-left">Theme</Drawer.Title>
+								</span>
 							</Drawer.Header>
-							<Drawer.Footer class="pt-2 space-y-2">
-								<RadioGroup.Root
-									id="theme"
-									value={$mode}
-									class="px-2 py-1 rounded-md bg-secondary/40"
-								>
+							<Drawer.Footer class="pt-2 pb-0 px-0">
+								<RadioGroup.Root id="theme" value={$mode ?? 'system'} class="px-0 py-1 gap-y-0">
 									<div class="flex items-center justify-between">
-										<Label for="light" class="grow flex items-center font-semibold text-base">
+										<Label
+											for="light"
+											class="grow flex items-center px-4 py-1 hover:bg-secondary/40"
+										>
 											<Sun class="icon-sm mr-2" />
 											Light
 										</Label>
-										<RadioGroup.Item id="light" value="light" on:click={() => setMode('light')} />
+										<RadioGroup.Item id="light" value="light" onclick={() => setMode('light')} />
 									</div>
 									<div class="flex items-center justify-between">
-										<Label for="dark" class="grow flex items-center font-semibold text-base">
+										<Label
+											for="dark"
+											class="grow flex items-center px-4 py-1 hover:bg-secondary/40"
+										>
 											<Moon class="icon-sm mr-2" />
 											Dark
 										</Label>
 
-										<RadioGroup.Item id="dark" value="dark" on:click={() => setMode('dark')} />
+										<RadioGroup.Item id="dark" value="dark" onclick={() => setMode('dark')} />
 									</div>
 
 									<div class="flex items-center justify-between">
-										<Label for="system" class="grow flex items-center font-semibold text-base">
+										<Label
+											for="system"
+											class="grow flex items-center px-4 py-1 hover:bg-secondary/40"
+										>
 											<SunMoon class="icon-sm mr-2" />
 											System
 										</Label>
 
-										<RadioGroup.Item
-											id="system"
-											value="system"
-											on:click={() => setMode('system')}
-										/>
+										<RadioGroup.Item id="system" value="system" onclick={() => setMode('system')} />
 									</div>
 								</RadioGroup.Root>
 							</Drawer.Footer>
@@ -295,13 +299,12 @@
 		</label>
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="destructive"
-					disabled={!confirmed}
-					on:click={handleClickDeleteAccount}>Delete</Button
-				>
+			<AlertDialog.Action
+				class={buttonVariants({ variant: 'destructive' })}
+				disabled={!confirmed}
+				onclick={handleClickDeleteAccount}
+			>
+				Delete
 			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

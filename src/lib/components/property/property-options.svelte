@@ -39,7 +39,7 @@
 <div class=" flex flex-col space-y-1.5 pt-1">
 	<div class="flex justify-between space-x-1">
 		<span class="text-sm font-semibold">Options</span>
-		<Button variant="secondary" size="xs" on:click={() => (show = !show)}>
+		<Button variant="secondary" size="xs" onclick={() => (show = !show)}>
 			{#if show}
 				<X class="icon-xs" />
 			{:else}

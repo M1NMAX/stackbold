@@ -1,17 +1,8 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import {
-		Copy,
-		CornerUpRight,
-		Eye,
-		EyeOff,
-		MoreHorizontal,
-		Pin,
-		PinOff,
-		Trash
-	} from 'lucide-svelte';
+	import { Copy, CornerUpRight, Eye, EyeOff, MoreHorizontal, Trash } from 'lucide-svelte';
 	import type { Collection } from '@prisma/client';
 	import { icons } from '$lib/components/icon';
 	import {
@@ -89,14 +80,14 @@
 
 {#if $isDesktop}
 	<DropdownMenu.Root>
-		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="hidden md:block">
-				<MoreHorizontal class="icon-sm" />
-			</Button>
+		<DropdownMenu.Trigger
+			class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'hidden md:flex' })}
+		>
+			<MoreHorizontal />
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => toggleDescState()}>
+				<DropdownMenu.Item onclick={() => toggleDescState()}>
 					{#if collection.isDescHidden}
 						<Eye class="icon-xs" />
 						<span> Show description </span>
@@ -105,28 +96,26 @@
 						<span> Hide description </span>
 					{/if}
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => moveCollection()}>
+				<DropdownMenu.Item onclick={() => moveCollection()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => duplicateCollection()}>
+				<DropdownMenu.Item onclick={() => duplicateCollection()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item on:click={() => deleteCollection()} class="group">
-					<Trash class="icon-xs group-hover:text-primary " />
-					<span class="group-hover:text-primary">Delete</span>
+				<DropdownMenu.Item onclick={() => deleteCollection()}>
+					<Trash class="icon-xs text-red-500" />
+					<span class="text-red-500">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
 {:else}
 	<Drawer.Root bind:open={wrapper.isOpen}>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="md:hidden">
-				<MoreHorizontal class="icon-sm" />
-			</Button>
+		<Drawer.Trigger class={buttonVariants({ variant: 'secondary', className: 'md:hidden' })}>
+			<MoreHorizontal class="icon-sm" />
 		</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Header class="py-2">
@@ -144,7 +133,7 @@
 				</div>
 			</Drawer.Header>
 			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" on:click={() => toggleDescState()}>
+				<Button variant="secondary" onclick={() => toggleDescState()}>
 					{#if collection.isDescHidden}
 						<Eye class="icon-xs" />
 						<span> Show description </span>
@@ -153,15 +142,15 @@
 						<span> Hide description </span>
 					{/if}
 				</Button>
-				<Button variant="secondary" on:click={() => moveCollection()}>
+				<Button variant="secondary" onclick={() => moveCollection()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</Button>
-				<Button variant="secondary" on:click={() => duplicateCollection()}>
+				<Button variant="secondary" onclick={() => duplicateCollection()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="destructive" on:click={() => deleteCollection()}>
+				<Button variant="destructive" onclick={() => deleteCollection()}>
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>

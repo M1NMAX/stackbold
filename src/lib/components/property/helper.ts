@@ -4,6 +4,7 @@ export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
 
+//TODO: ref it can be better
 export function getPropertyValue(property: Property, refValue: string, actual: boolean = true) {
 	if (property.type !== 'SELECT') return refValue;
 	const option = property.options.find((opt) => opt.id === refValue);

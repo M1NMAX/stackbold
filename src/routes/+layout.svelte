@@ -5,7 +5,7 @@
 	import { mediaQuery, setScreenState } from '$lib/components/screen';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { setDeleteModalState } from '$lib/components/modal';
-	import { Button } from '$lib/components/ui/button';
+	import { buttonVariants } from '$lib/components/ui/button';
 
 	let { children } = $props();
 
@@ -58,10 +58,11 @@
 			</AlertDialog.Header>
 			<AlertDialog.Footer>
 				<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-				<AlertDialog.Action asChild let:builder>
-					<Button builders={[builder]} variant="destructive" on:click={handleDelete}>
-						Continue
-					</Button>
+				<AlertDialog.Action
+					class={buttonVariants({ variant: 'destructive' })}
+					onclick={handleDelete}
+				>
+					Continue
 				</AlertDialog.Action>
 			</AlertDialog.Footer>
 		</AlertDialog.Content>

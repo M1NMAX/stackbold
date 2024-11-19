@@ -3,7 +3,7 @@
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { getPropertyState, PropertyInput } from '$lib/components/property';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import { cn } from '$lib/utils';
@@ -100,8 +100,8 @@
 			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
 		</p>
 
-		<Button variant="secondary" on:click={() => goBack()}>
-			<X class="icon-sm" />
+		<Button variant="secondary" size="icon" onclick={() => goBack()}>
+			<X />
 		</Button>
 	</div>
 	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
@@ -123,8 +123,8 @@
 {:else}
 	<PageContainer>
 		<PageHeader class="flex items-center justify-between">
-			<Button variant="secondary" on:click={() => goBack()}>
-				<ChevronLeft class="icon-sm" />
+			<Button variant="secondary" size="icon" onclick={() => goBack()}>
+				<ChevronLeft />
 			</Button>
 			<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
 				{item.name}
@@ -157,18 +157,18 @@
 
 {#snippet topMenu()}
 	<Drawer.Root bind:open={menuState.isOpen}>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="md:hidden">
-				<MoreHorizontal class="icon-sm" />
-			</Button>
+		<Drawer.Trigger
+			class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'md:hidden' })}
+		>
+			<MoreHorizontal />
 		</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" on:click={() => duplicateItem()}>
+				<Button variant="secondary" onclick={() => duplicateItem()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button variant="destructive" on:click={() => deleteItem()}>
+				<Button variant="destructive" onclick={() => deleteItem()}>
 					<Trash class="icon-xs" />
 					<span>Delete</span>
 				</Button>
@@ -181,12 +181,12 @@
 	<div class="hidden md:block px-0.5 pb-0.5">
 		<hr class="mb-1.5" />
 		<div class="flex items-center justify-end gap-x-1.5">
-			<Button variant="secondary" on:click={() => duplicateItem()}>
+			<Button variant="secondary" onclick={() => duplicateItem()}>
 				<Copy class="icon-xs" />
 				<span> Duplicate</span>
 			</Button>
 
-			<Button variant="secondary" class="hover:text-primary" on:click={() => deleteItem()}>
+			<Button variant="secondary" class="hover:text-red-500" onclick={() => deleteItem()}>
 				<Trash class="icon-xs" />
 				<span> Delete</span>
 			</Button>

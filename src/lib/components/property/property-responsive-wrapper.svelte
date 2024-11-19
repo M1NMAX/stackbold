@@ -3,7 +3,7 @@
 	import { getScreenState } from '$lib/components/screen';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { Button } from '$lib/components/ui/button';
+	import { buttonVariants } from '$lib/components/ui/button';
 
 	type Props = {
 		children: Snippet;
@@ -15,9 +15,7 @@
 
 		// popover props
 		desktopClass?: string;
-		portal?: boolean;
 		alignCenter?: boolean;
-		sameWidth?: boolean;
 		onOpenChange?: (open: boolean) => void;
 	};
 
@@ -30,9 +28,7 @@
 
 		// popover props
 		desktopClass,
-		portal = false,
 		alignCenter = true,
-		sameWidth = false,
 		onOpenChange
 	}: Props = $props();
 
@@ -40,23 +36,19 @@
 </script>
 
 {#if $isDesktop}
-	<Popover.Root bind:open portal={portal ? 'HTMLElement' : undefined} {onOpenChange}>
-		<Popover.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class={btnClass}>
-				{@render header()}
-			</Button>
+	<Popover.Root bind:open {onOpenChange}>
+		<Popover.Trigger class={buttonVariants({ variant: 'secondary', className: btnClass })}>
+			{@render header()}
 		</Popover.Trigger>
 
-		<Popover.Content align={alignCenter ? 'center' : 'start'} {sameWidth} class={desktopClass}>
+		<Popover.Content align={alignCenter ? 'center' : 'start'} class={desktopClass}>
 			{@render children()}
 		</Popover.Content>
 	</Popover.Root>
 {:else}
 	<Drawer.Root bind:open>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class={btnClass}>
-				{@render header()}
-			</Button>
+		<Drawer.Trigger class={buttonVariants({ variant: 'secondary', className: btnClass })}>
+			{@render header()}
 		</Drawer.Trigger>
 
 		<Drawer.Content class={mobileClass}>

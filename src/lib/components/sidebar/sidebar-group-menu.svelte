@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
 	import { getScreenState } from '$lib/components/screen';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -55,8 +55,8 @@
 			type: 'group',
 			id,
 			name: group.name,
-			fun: () => {
-				groupState.deleteGroup(id);
+			fun: async () => {
+				await groupState.deleteGroup(id);
 			}
 		});
 	}
@@ -65,28 +65,27 @@
 <div>
 	{#if $isDesktop}
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="ghost"
-					size="xs"
-					class="invisible group-hover:visible transition-opacity"
-				>
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+			<DropdownMenu.Trigger
+				class={buttonVariants({
+					variant: 'ghost',
+					size: 'xs',
+					className: 'invisible group-hover:visible transition-opacity'
+				})}
+			>
+				<MoreHorizontal class="icon-xs" />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={() => crtCollectionModal.open(id)}>
+				<DropdownMenu.Item onclick={() => crtCollectionModal.open(id)}>
 					<Plus class="icon-xs" />
 					<span>New collection</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => renameGroupModal.open()}>
+				<DropdownMenu.Item onclick={() => renameGroupModal.open()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => deleteGroup()} class="group">
+				<DropdownMenu.Item onclick={() => deleteGroup()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -94,10 +93,8 @@
 		</DropdownMenu.Root>
 	{:else}
 		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="icon">
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+				<MoreHorizontal class="icon-xs" />
 			</Drawer.Trigger>
 			<Drawer.Content>
 				<Drawer.Header class="py-2">
@@ -112,7 +109,7 @@
 				<Drawer.Footer class="pt-2">
 					<Button
 						variant="secondary"
-						on:click={() => {
+						onclick={() => {
 							renameGroupModal.open();
 							smallScreenDrawer.close();
 						}}
@@ -121,7 +118,7 @@
 						<span> Rename </span>
 					</Button>
 
-					<Button variant="destructive" on:click={() => deleteGroup()}>
+					<Button variant="destructive" onclick={() => deleteGroup()}>
 						<Trash class="icon-xs" />
 						<span>Delete</span>
 					</Button>

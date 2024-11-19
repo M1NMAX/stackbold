@@ -98,29 +98,21 @@
 				oninput={handleOnInput}
 			/>
 		</div>
-		<Button variant="secondary" on:click={() => openChange(isOpen ? null : property.id)}>
-			<Settings class="icon-xs" />
+		<Button variant="secondary" size="icon" onclick={() => openChange(isOpen ? null : property.id)}>
+			<Settings />
 		</Button>
 	</div>
 	{#if isOpen}
 		<div class="pt-2 px-1" transition:slide>
 			<Select.Root
-				portal={null}
-				selected={{ value: property.type, label: property.type.toLowerCase() }}
-				onSelectedChange={(opt) => {
-					const type = opt ? opt.value : PropertyType.TEXT;
-					updProperty({ id: property.id, type: type });
-				}}
+				type="single"
+				value={property.type.toString()}
+				onValueChange={(value) => updProperty({ id: property.id, type: value as PropertyType })}
 			>
 				<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
 					<p class="text-sm">Type</p>
 
 					<!-- TODO: enhance selected value to include icon, maybe -->
-					<Select.Value
-						slot="value"
-						class="text-sm font-semibold"
-						placeholder="Select property type"
-					/>
 				</Select.Trigger>
 				<Select.Content>
 					<Select.Group>
@@ -137,24 +129,12 @@
 			</Select.Root>
 
 			<Select.Root
-				portal={null}
-				selected={{
-					value: property.aggregator,
-					label: capitalizeFirstLetter(aggregatorLabel[property.aggregator.toLowerCase()])
-				}}
-				onSelectedChange={(opt) => {
-					const aggregator = opt ? opt.value : Aggregator.NONE;
-					updProperty({ id: property.id, aggregator });
-				}}
+				type="single"
+				value={property.aggregator}
+				onValueChange={(value) => updProperty({ id: property.id, aggregator: value as Aggregator })}
 			>
 				<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
 					<p class="text-sm">Aggregador</p>
-
-					<Select.Value
-						slot="value"
-						class="text-sm font-semibold"
-						placeholder="Select property type"
-					/>
 				</Select.Trigger>
 				<Select.Content>
 					<Select.Group>
@@ -173,24 +153,12 @@
 			{#if property.type === 'SELECT'}
 				{@const selectedOpt = getOption(property.options, property.defaultValue)}
 				<Select.Root
-					portal={null}
-					selected={{
-						value: property.defaultValue,
-						label: selectedOpt ? selectedOpt.value : PROPERTY_DEFAULT_VALUE_NOT_DEFINED
-					}}
-					onSelectedChange={(opt) => {
-						const value = opt ? opt.value : '';
-						updProperty({ id: property.id, defaultValue: value });
-					}}
+					type="single"
+					value={property.defaultValue}
+					onValueChange={(value) => updProperty({ id: property.id, defaultValue: value })}
 				>
 					<Select.Trigger class="w-full bg-secondary focus:ring-0 focus:ring-offset-0 mb-2">
 						<p class="text-sm">Default value</p>
-
-						<Select.Value
-							slot="value"
-							class="text-sm font-semibold"
-							placeholder="Select property type"
-						/>
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Group>
@@ -244,12 +212,12 @@
 
 			<Separator />
 			<div class="flex justify-end items-center space-x-1.5 pt-1">
-				<Button variant="ghost" on:click={() => duplicateProperty()}>
+				<Button variant="ghost" onclick={() => duplicateProperty()}>
 					<Copy class="icon-xs" />
 					<span> Duplicate</span>
 				</Button>
 
-				<Button variant="ghost" class="hover:text-primary" on:click={() => deleteProperty()}>
+				<Button variant="ghost" class="hover:text-primary" onclick={() => deleteProperty()}>
 					<Trash class="icon-xs" />
 					<span> Delete</span>
 				</Button>

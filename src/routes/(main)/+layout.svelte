@@ -139,9 +139,9 @@
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-background">
 	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1.5">
 		<Button
+			variant="outline"
 			size="icon"
-			variant="ghost"
-			on:click={() => (sidebarState.isOpen = !sidebarState.isOpen)}
+			onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 		>
 			<PanelLeftInactive />
 		</Button>
@@ -149,7 +149,7 @@
 		<Button
 			variant="secondary"
 			class="grow h-9 max-w-sm flex justify-between items-center space-x-1"
-			on:click={() => globalSearchModal.open()}
+			onclick={() => globalSearchModal.open()}
 		>
 			<span class="flex items-center space-x-0.5">
 				<Search class="icon-sm" />
@@ -185,7 +185,7 @@
 
 			<Accordion.Root
 				class="grow space-y-1.5 overflow-y-auto"
-				multiple
+				type="multiple"
 				value={['item-0'].concat(groupState.groups.map((_group, idx) => `item-${idx + 1}`))}
 			>
 				<div class="space-y-0">
@@ -201,15 +201,16 @@
 						(collection) =>
 							collection.groupId && collection.groupId === group.id && collection.isPinned
 					)}
+
+					{#snippet extra()}
+						<SidebarGroupMenu id={group.id} />
+					{/snippet}
 					<Accordion.Item value={`item-${idx + 1}`}>
 						<Accordion.Trigger
-							class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold  hover:no-underline hover:bg-muted"
+							class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold hover:bg-muted"
+							{extra}
 						>
 							{group.name}
-
-							<svelte:fragment slot="extra">
-								<SidebarGroupMenu id={group.id} />
-							</svelte:fragment>
 						</Accordion.Trigger>
 
 						<Accordion.Content>
@@ -222,11 +223,11 @@
 			</Accordion.Root>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
-				<Button variant="secondary" class="grow h-9" on:click={() => crtCollectionModal.open()}>
+				<Button variant="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
 					<FolderPlus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" on:click={() => createGroupModal.open()}>
+				<Button variant="secondary" size="icon" onclick={() => createGroupModal.open()}>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>

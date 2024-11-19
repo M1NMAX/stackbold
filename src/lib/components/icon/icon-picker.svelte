@@ -66,7 +66,7 @@
 <script lang="ts">
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { getScreenState } from '../screen';
 	import { cn } from '$lib/utils';
 
@@ -85,10 +85,10 @@
 
 {#if $isDesktop}
 	<Popover.Root bind:open>
-		<Popover.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="ghost" size="icon">
-				<SelectedIcon class="icon icon-lg" />
-			</Button>
+		<Popover.Trigger
+			class={buttonVariants({ variant: 'ghost', size: 'icon', className: '[&_svg]:size-7' })}
+		>
+			<SelectedIcon />
 		</Popover.Trigger>
 		<Popover.Content align="start">
 			<p class="pb-2 font-semibold">Icons</p>
@@ -98,11 +98,11 @@
 					<Button
 						variant="ghost"
 						size="icon"
-						on:click={() => {
+						onclick={() => {
 							onIconChange(key);
 							open = false;
 						}}
-						class={cn(key === name && 'bg-primary')}
+						class={cn('[&_svg]:size-5 p-1', key === name && 'bg-secondary')}
 						aria-label={key}
 					>
 						<Icon class="icon-md" />
@@ -113,10 +113,10 @@
 	</Popover.Root>
 {:else}
 	<Drawer.Root>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="ghost" size="icon">
-				<SelectedIcon class="icon icon-lg" />
-			</Button>
+		<Drawer.Trigger
+			class={buttonVariants({ variant: 'ghost', size: 'icon', className: '[&_svg]:size-7' })}
+		>
+			<SelectedIcon />
 		</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Header>
@@ -128,11 +128,12 @@
 						{@const Icon = icons[key]}
 						<Button
 							variant="ghost"
-							on:click={() => {
+							size="icon"
+							onclick={() => {
 								onIconChange(key);
 								open = false;
 							}}
-							class={cn('h-10 w-10 p-1.5', key === name && 'bg-primary')}
+							class={cn('[&_svg]:size-5 p-1', key === name && 'bg-secondary')}
 						>
 							<Icon class="icon-lg" />
 						</Button>

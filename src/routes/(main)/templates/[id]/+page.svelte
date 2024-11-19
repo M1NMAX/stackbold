@@ -68,7 +68,7 @@
 			</h1>
 		</div>
 
-		<Button variant="secondary" size="icon" on:click={() => goBack()}>
+		<Button variant="secondary" size="icon" onclick={() => goBack()}>
 			<X class="icon-sm" />
 		</Button>
 	</div>
@@ -81,7 +81,7 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button variant="secondary" size="icon" on:click={() => history.back()}>
+			<Button variant="secondary" size="icon" onclick={() => history.back()}>
 				<ChevronLeft />
 			</Button>
 			{#if isSmHeadingVisible}
@@ -145,7 +145,7 @@
 
 {#snippet useTemplateBtn()}
 	<div class="grid justify-items-start">
-		<Button class="w-full" on:click={() => createCollectionBasedOnTemplate()}>
+		<Button class="w-full" onclick={() => createCollectionBasedOnTemplate()}>
 			Use this template
 		</Button>
 	</div>

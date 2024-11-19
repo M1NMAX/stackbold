@@ -1,12 +1,13 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Lock, LogOut, Settings, SunMoon } from 'lucide-svelte';
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
 	import { type User } from 'lucia';
 	import { getScreenState } from '$lib/components/screen';
+	import { goto } from '$app/navigation';
 	type Props = {
 		user: User;
 	};
@@ -20,10 +21,13 @@
 
 {#if $isDesktop}
 	<DropdownMenu.Root>
-		<DropdownMenu.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="hidden md:flex p-0.5 rounded-full">
-				<img src={avatarUrl} class="icon-lg object-contain rounded-full" alt="avatar" />
-			</Button>
+		<DropdownMenu.Trigger
+			class={buttonVariants({
+				variant: 'secondary',
+				className: 'hidden md:flex p-0.5 rounded-sm'
+			})}
+		>
+			<img src={avatarUrl} class="icon-lg object-contain rounded-sm" alt="avatar" />
 		</DropdownMenu.Trigger>
 
 		<DropdownMenu.Content class="w-56">
@@ -31,7 +35,7 @@
 
 			{#if user.role === 'ADMIN'}
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item href="/admin" class="space-x-2">
+				<DropdownMenu.Item onclick={() => goto('/admin')} class="space-x-2">
 					<Lock class="icon-xs" />
 					<span>Admin</span>
 				</DropdownMenu.Item>
@@ -45,20 +49,20 @@
 					</DropdownMenu.SubTrigger>
 					<DropdownMenu.SubContent class="w-46">
 						<DropdownMenu.RadioGroup value={$mode}>
-							<DropdownMenu.RadioItem value="light" on:click={() => setMode('light')}>
+							<DropdownMenu.RadioItem value="light" onclick={() => setMode('light')}>
 								Light
 							</DropdownMenu.RadioItem>
-							<DropdownMenu.RadioItem value="dark" on:click={() => setMode('dark')}>
+							<DropdownMenu.RadioItem value="dark" onclick={() => setMode('dark')}>
 								Dark
 							</DropdownMenu.RadioItem>
-							<DropdownMenu.RadioItem value="system" on:click={() => setMode('system')}>
+							<DropdownMenu.RadioItem value="system" onclick={() => setMode('system')}>
 								System
 							</DropdownMenu.RadioItem>
 						</DropdownMenu.RadioGroup>
 					</DropdownMenu.SubContent>
 				</DropdownMenu.Sub>
 
-				<DropdownMenu.Item href="/settings" class="space-x-2">
+				<DropdownMenu.Item onclick={() => goto('/settings')} class="space-x-2">
 					<Settings class="icon-xs" />
 					<span>Settings</span>
 				</DropdownMenu.Item>
@@ -80,10 +84,10 @@
 	</DropdownMenu.Root>
 {:else}
 	<Drawer.Root>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="md:hidden p-0.5 rounded-full">
-				<img src={avatarUrl} class="icon-lg object-contain rounded-full" alt="avatar" />
-			</Button>
+		<Drawer.Trigger
+			class={buttonVariants({ variant: 'secondary', className: 'md:hidden p-0.5 rounded-sm' })}
+		>
+			<img src={avatarUrl} class="icon-lg object-contain rounded-sm" alt="avatar" />
 		</Drawer.Trigger>
 
 		<Drawer.Content>

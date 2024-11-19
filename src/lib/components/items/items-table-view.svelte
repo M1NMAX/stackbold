@@ -18,7 +18,7 @@
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/screen';
 	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router';
@@ -129,7 +129,7 @@
 								<Button
 									variant="secondary"
 									size="sm"
-									on:click={() => clickOpenItem(item.id)}
+									onclick={() => clickOpenItem(item.id)}
 									class={cn(!$isDesktop ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
 								>
 									Open
@@ -148,10 +148,10 @@
 							<Button
 								variant="secondary"
 								size="sm"
-								on:click={() => clickOpenItem(item.id)}
+								onclick={() => clickOpenItem(item.id)}
 								class={cn(
 									$isDesktop
-										? 'items-center space-x-2 py-0.5 px-1 rounded invisible group-hover:visible'
+										? 'items-center py-0.5 px-1 gap-x-1 invisible group-hover:visible'
 										: 'hidden'
 								)}
 							>
@@ -196,10 +196,8 @@
 {#snippet viewVisibilityMenu()}
 	{#if $isDesktop}
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button variant="ghost" size="xs" builders={[builder]}>
-					<Settings2 class="icon-xs" />
-				</Button>
+			<DropdownMenu.Trigger class={buttonVariants({ variant: 'ghost', size: 'xs' })}>
+				<Settings2 class="icon-xs" />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="start" class="w-56">
 				<DropdownMenu.Label>Toggle properties visibility</DropdownMenu.Label>
@@ -229,10 +227,8 @@
 		</DropdownMenu.Root>
 	{:else}
 		<Drawer.Root>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="xs">
-					<Settings2 class="icon-xs" />
-				</Button>
+			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'xs' })}>
+				<Settings2 class="icon-xs" />
 			</Drawer.Trigger>
 			<Drawer.Content>
 				<Drawer.Header class="py-1">

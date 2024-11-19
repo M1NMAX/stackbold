@@ -72,7 +72,7 @@
 					<p class="text-xl font-medium">Wow, such empty</p>
 				</div>
 
-				<Button on:click={() => crtCollectionModal.open()} class="h-12 w-full">
+				<Button onclick={() => crtCollectionModal.open()} class="h-12 w-full">
 					<FolderPlus />
 					<span> Create Collection</span>
 				</Button>

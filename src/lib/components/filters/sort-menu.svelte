@@ -5,6 +5,7 @@
 		ArrowUpDown,
 		CalendarArrowDown,
 		CalendarArrowUp,
+		Check,
 		ClockArrowDown,
 		ClockArrowUp
 	} from 'lucide-svelte';
@@ -20,12 +21,14 @@
 </script>
 
 <script lang="ts" generics="T">
-	import { Button } from '$lib/components/ui/button';
+	import { buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Label } from '$lib/components/ui/label';
 	import type { SortOption } from '$lib/utils/sort';
+	import { ModalState } from '$lib/components/modal';
+	import { cn } from '$lib/utils';
 
 	type Props = {
 		options: SortOption<T>[];
@@ -34,17 +37,17 @@
 
 	let { value = $bindable(), options }: Props = $props();
 
-	let isOpen = $state(false);
-
 	const CurrentIcon = $derived(icons[`${value.field.toString()}-${value.order}`]);
+
+	const menuState = new ModalState();
 </script>
 
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" size="sm" class="hidden md:flex">
-			<CurrentIcon class="icon-xs mr-2" />
-			{value.label}
-		</Button>
+	<DropdownMenu.Trigger
+		class={buttonVariants({ variant: 'secondary', size: 'sm', className: 'hidden md:flex' })}
+	>
+		<CurrentIcon class="icon-xs" />
+		{value.label}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content class="w-56">
 		<DropdownMenu.Label>Sort by</DropdownMenu.Label>
@@ -55,7 +58,7 @@
 				{@const Icon = icons[`${option.field.toString()}-${option.order}`]}
 				<DropdownMenu.CheckboxItem
 					checked={value.field === option.field && value.order === option.order}
-					on:click={() => (value = { ...option })}
+					onclick={() => (value = { ...option })}
 				>
 					<Icon class="icon-xs mr-2" />
 					{option.label}
@@ -64,42 +67,49 @@
 		</DropdownMenu.Group>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
-<Drawer.Root bind:open={isOpen}>
-	<Drawer.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="secondary" class="md:hidden">
-			<CurrentIcon class="icon-xs" />
-		</Button>
+<Drawer.Root bind:open={menuState.isOpen}>
+	<Drawer.Trigger
+		class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'md:hidden' })}
+	>
+		<CurrentIcon />
 	</Drawer.Trigger>
 	<Drawer.Content>
-		<Drawer.Header class="py-1">
-			<div class="flex items-center space-x-2">
-				<div class="p-2.5 rounded bg-secondary">
+		<Drawer.Header class="pt-2 pb-0">
+			<span class="flex items-center gap-x-2">
+				<span class="p-1.5 rounded-md bg-secondary">
 					<ArrowUpDown class="icon-sm" />
-				</div>
-				<div class="text-base font-semibold">Sort By</div>
-			</div>
+				</span>
+				<Drawer.Title class="text-left">Sort By</Drawer.Title>
+			</span>
 		</Drawer.Header>
-		<Drawer.Footer class="pt-2 space-y-2">
-			<RadioGroup.Root
-				id="sort"
-				value={`${value.field.toString()}-${value.order}`}
-				class="px-2 py-1 rounded-md bg-secondary/40"
-			>
+		<Drawer.Footer class="pt-2 pb-0 px-0">
+			<RadioGroup.Root value={`${value.field.toString()}-${value.order}`} class="px-0 py-1 gap-y-0">
 				{#each options as option}
-					{@const Icon = icons[`${option.field.toString()}-${option.order}`]}
-					<Label class="flex items-center justify-between space-x-2">
-						<span class="flex items-center font-semibold text-lg">
-							<Icon class="icon-xs mr-2" />
-
+					{@const optValue = `${option.field.toString()}-${option.order}`}
+					{@const Icon = icons[optValue]}
+					<Label
+						for={optValue}
+						class="w-full flex items-center justify-between px-4 py-1 hover:bg-secondary/40"
+					>
+						<Icon class="icon-xs mr-2" />
+						<!-- TODO: Consider altenative labels -->
+						<span class="grow font-semibold text-base">
 							{option.label}
 						</span>
 						<RadioGroup.Item
-							value={`${option.field.toString()}-${option.order}`}
-							id={option.label}
-							on:click={() => {
-								isOpen = false;
+							class="sr-only"
+							id={optValue}
+							value={optValue}
+							onclick={() => {
 								value = { ...option };
+								menuState.close();
 							}}
+						/>
+						<Check
+							class={cn(
+								'size-5',
+								optValue !== `${value.field.toString()}-${value.order}` && 'text-transparent'
+							)}
 						/>
 					</Label>
 				{/each}

@@ -7,7 +7,7 @@
 		PROPERTY_COLORS
 	} from '$lib/constant';
 	import type { Property } from '@prisma/client';
-	import { Check } from 'lucide-svelte';
+	import { Check, Eraser } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { cn, sanitizeNumberInput } from '$lib/utils';
@@ -144,7 +144,7 @@
 		alignCenter={false}
 		btnClass={buttonClass}
 		mobileClass="p-2"
-		desktopClass="w-full max-w-48 p-1"
+		desktopClass="w-full p-1"
 	>
 		{#snippet header()}
 			{@render miniWrapper(selected, !!value && isTableView)}
@@ -158,8 +158,8 @@
 						for={option.id}
 						class="w-full flex items-center space-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
 					>
-						<span class={cn('size-4 rounded-sm', PROPERTY_COLORS[option.color])}></span>
-						<span class="grow text-sm font-semibold">
+						<span class={cn('size-3.5 rounded-sm', PROPERTY_COLORS[option.color])}></span>
+						<span class="grow text-sm font-semibold pr-10">
 							{option.value}
 						</span>
 
@@ -168,7 +168,7 @@
 							value={option.id}
 							id={option.id}
 							class="sr-only"
-							on:click={() => updPropertyRef(option.id)}
+							onclick={() => updPropertyRef(option.id)}
 						/>
 					</Label>
 				{/each}
@@ -194,7 +194,8 @@
 		bind:open={wrapperState.isOpen}
 		alignCenter={false}
 		btnClass={buttonClass}
-		desktopClass="w-auto p-0"
+		desktopClass="w-auto p-1"
+		mobileClass="p-2"
 	>
 		{#snippet header()}
 			{#if value}
@@ -203,8 +204,9 @@
 		{/snippet}
 
 		<p class={cn(labelClass, 'text-center py-1')}>{property.name}</p>
-		<div class="w-full max-w-xs mx-auto px-6 md:px-4 pb-2">
+		<div class="w-full p-0.5">
 			<Calendar
+				type="single"
 				value={new CalendarDate(
 					valueAsDate.getFullYear(),
 					valueAsDate.getMonth() + plus,
@@ -227,7 +229,7 @@
 		alignCenter={false}
 		btnClass={buttonClass}
 		mobileClass="p-2"
-		desktopClass={cn('w-full max-w-lg', value && value?.length < MAX_LENGTH && 'max-w-xs')}
+		desktopClass={cn('w-full max-w-xl p-1', value && value?.length < MAX_LENGTH && 'max-w-xs')}
 	>
 		{#snippet header()}
 			{@render miniWrapper(content)}
@@ -255,6 +257,7 @@
 		alignCenter={false}
 		btnClass={buttonClass}
 		mobileClass="p-2"
+		desktopClass="p-1"
 	>
 		{#snippet header()}
 			{@render miniWrapper(value)}
@@ -284,6 +287,7 @@
 		bind:open={wrapperState.isOpen}
 		btnClass={buttonClass}
 		alignCenter={false}
+		desktopClass="p-1"
 	>
 		{#snippet header()}
 			{@render miniWrapper(value)}
@@ -339,13 +343,14 @@
 	<Separator class="my-0.5" />
 	<Button
 		variant="ghost"
-		class="h-7 w-full font-semibold"
+		class="h-8 w-full font-semibold justify-start"
 		disabled={value === ''}
-		on:click={() => {
+		onclick={() => {
 			updPropertyRef('');
 			wrapperState.close();
 		}}
 	>
+		<Eraser />
 		Clear
 	</Button>
 {/snippet}

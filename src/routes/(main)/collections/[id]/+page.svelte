@@ -318,8 +318,8 @@
 	<PageHeader
 		class={cn('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
 	>
-		<Button variant="secondary" class="md:hidden" on:click={() => history.back()}>
-			<ChevronLeft class="icon-md" />
+		<Button variant="secondary" size="icon" class="md:hidden" onclick={() => history.back()}>
+			<ChevronLeft />
 		</Button>
 		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
 			<Icon class="icon-md" />
@@ -335,7 +335,7 @@
 				{dayjs(collection.updatedAt).fromNow()}
 			</span>
 
-			<Button variant="secondary" size="icon" on:click={() => onClickOpenProperties()}>
+			<Button variant="secondary" size="icon" onclick={() => onClickOpenProperties()}>
 				<Settings2 class="icon-sm" />
 			</Button>
 
@@ -394,7 +394,7 @@
 
 			<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
 
-			<Button on:click={() => (isCreateItemDialogOpen = true)}>New item</Button>
+			<Button onclick={() => (isCreateItemDialogOpen = true)}>New item</Button>
 		</div>
 		<div class="flex flex-col md:hidden space-y-1">
 			<SearchInput placeholder="Find Item" bind:value={search} />
@@ -402,14 +402,17 @@
 			<div class="flex items-center justify-between space-x-1">
 				<div class="flex items-center gap-x-1">
 					<SortMenu options={sortOptions} bind:value={sort} />
-					<FilterMenu
-						filters={getFilters(collection.filterConfigs, view)}
-						updFilters={updFilterConfig}
-					/>
-					<GroupByMenu
-						value={findGroupByConfig(view) || 'none'}
-						updValue={(value) => updCollection({ groupByConfigs: updGroupByConfig(view, value) })}
-					/>
+
+					{#if includesGroupableProperties()}
+						<FilterMenu
+							filters={getFilters(collection.filterConfigs, view)}
+							updFilters={updFilterConfig}
+						/>
+						<GroupByMenu
+							value={findGroupByConfig(view) || 'none'}
+							updValue={(value) => updCollection({ groupByConfigs: updGroupByConfig(view, value) })}
+						/>
+					{/if}
 				</div>
 
 				<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
@@ -419,7 +422,7 @@
 			<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
 			<Accordion.Root
-				multiple
+				type="multiple"
 				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
 				class="w-full"
 			>
@@ -466,15 +469,15 @@
 						name="name"
 						placeholder="New item"
 						autocomplete="off"
-						class="h-10 w-full pl-10 text-base font-semibold rounded bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+						class="h-10 w-full pl-10 text-base font-semibold rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 					/>
 				</form>
 			</div>
 		{:else}
 			<Button
 				size="icon"
-				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
-				on:click={() => (isCreateItemDialogOpen = true)}
+				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-sm"
+				onclick={() => (isCreateItemDialogOpen = true)}
 			>
 				<Plus />
 			</Button>

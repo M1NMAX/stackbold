@@ -9,7 +9,7 @@
 		PinOff,
 		Trash
 	} from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -159,25 +159,24 @@
 {#snippet menu()}
 	{#if $isDesktop}
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="ghost"
-					size="xs"
-					class="invisible group-hover:visible transition-opacity"
-				>
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+			<DropdownMenu.Trigger
+				class={buttonVariants({
+					variant: 'ghost',
+					size: 'xs',
+					className: 'invisible group-hover:visible transition-opacity'
+				})}
+			>
+				<MoreHorizontal class="icon-xs" />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={() => renameCollectionModal.open()}>
+				<DropdownMenu.Item onclick={() => renameCollectionModal.open()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
 				{#if collection.isPinned}
 					<DropdownMenu.Item
-						on:click={() => {
+						onclick={() => {
 							collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
 						}}
 					>
@@ -186,17 +185,17 @@
 					</DropdownMenu.Item>
 				{/if}
 
-				<DropdownMenu.Item on:click={() => moveCollection()}>
+				<DropdownMenu.Item onclick={() => moveCollection()}>
 					<CornerUpRight class="icon-xs" />
 					<span>Move to</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => collectionState.duplicateCollection(collection.id)}>
+				<DropdownMenu.Item onclick={() => collectionState.duplicateCollection(collection.id)}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => deleteCollection()} class="group">
+				<DropdownMenu.Item onclick={() => deleteCollection()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -204,10 +203,8 @@
 		</DropdownMenu.Root>
 	{:else}
 		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} size="icon" variant="ghost">
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+				<MoreHorizontal class="icon-xs" />
 			</Drawer.Trigger>
 
 			<Drawer.Content>
@@ -230,7 +227,7 @@
 					{#if collection.isPinned}
 						<Button
 							variant="secondary"
-							on:click={() => {
+							onclick={() => {
 								collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
 								smallScreenDrawer.close();
 							}}
@@ -240,13 +237,13 @@
 						</Button>
 					{/if}
 
-					<Button variant="secondary" on:click={() => moveCollection()}>
+					<Button variant="secondary" onclick={() => moveCollection()}>
 						<CornerUpRight class="icon-xs" />
 						<span>Move to</span>
 					</Button>
 					<Button
 						variant="secondary"
-						on:click={() => {
+						onclick={() => {
 							collectionState.duplicateCollection(collection.id);
 							smallScreenDrawer.close();
 						}}
@@ -256,7 +253,7 @@
 					</Button>
 					<Button
 						variant="destructive"
-						on:click={() => {
+						onclick={() => {
 							smallScreenDrawer.close();
 							deleteCollection();
 						}}

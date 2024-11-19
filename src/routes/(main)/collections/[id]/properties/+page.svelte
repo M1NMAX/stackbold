@@ -44,8 +44,8 @@
 {#if data.insidePanel}
 	<div class="flex items-center justify-between">
 		<h2 class="text-xl font-semibold text-center">Properties</h2>
-		<Button variant="secondary" size="icon" on:click={() => goBack()}>
-			<X class="icon-sm" />
+		<Button variant="secondary" size="icon" onclick={() => goBack()}>
+			<X />
 		</Button>
 	</div>
 
@@ -59,7 +59,7 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button variant="secondary" size="icon" on:click={() => goBack()}>
+			<Button variant="secondary" size="icon" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
 

@@ -68,7 +68,7 @@
 	class={cn('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
 >
 	<PageHeader>
-		<Button variant="secondary" size="icon" class="md:hidden" on:click={() => history.back()}>
+		<Button variant="secondary" size="icon" class="md:hidden" onclick={() => history.back()}>
 			<ChevronLeft class="icon-md" />
 		</Button>
 

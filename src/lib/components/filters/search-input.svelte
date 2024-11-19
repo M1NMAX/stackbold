@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { CircleX, Search } from 'lucide-svelte';
+	import { Search, SquareX } from 'lucide-svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	type Props = {
 		value?: string;
@@ -21,8 +22,12 @@
 	/>
 
 	{#if value && value.length > 0}
-		<button class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick={() => (value = '')}>
-			<CircleX class="text-primary icon-sm" />
-		</button>
+		<Button
+			variant="ghost"
+			class="absolute inset-y-0 right-0 flex items-center [&_svg]:size-6"
+			onclick={() => (value = '')}
+		>
+			<SquareX class="text-primary" />
+		</Button>
 	{/if}
 </div>

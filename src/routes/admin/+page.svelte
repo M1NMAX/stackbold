@@ -8,7 +8,7 @@
 	import { SearchInput, SortArrow, SortMenu } from '$lib/components/filters';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
-	import { invalidate, invalidateAll } from '$app/navigation';
+	import { goto, invalidate, invalidateAll } from '$app/navigation';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -91,17 +91,17 @@
 			<h1 class="font-semibold text-3xl">Admin Dashboard</h1>
 
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5 rounded-sm">
-						<img
-							src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
-							class="icon-lg object-contain rounded-md"
-							alt="avatar"
-						/>
-					</Button>
+				<DropdownMenu.Trigger
+					class={buttonVariants({ variant: 'secondary', className: 'icon-lg p-0.5 rounded-sm' })}
+				>
+					<img
+						src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
+						class="icon-lg object-contain rounded-md"
+						alt="avatar"
+					/>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
-					<DropdownMenu.Item href="/" class="space-x-2">
+					<DropdownMenu.Item onclick={() => goto('/')} class="space-x-2">
 						<AppWindow class="icon-xs" />
 						<span> App </span>
 					</DropdownMenu.Item>
@@ -126,7 +126,7 @@
 			<SearchInput placeholder="Find User" bind:value={search} />
 
 			<SortMenu options={sortOptions} bind:value={sort} />
-			<Button class="hidden md:flex" on:click={() => addUserModal.open()}>New user</Button>
+			<Button class="hidden md:flex" onclick={() => addUserModal.open()}>New user</Button>
 		</div>
 
 		<div class=" overflow-x-auto">
@@ -179,8 +179,8 @@
 											type: 'user',
 											id: user.id,
 											name: user.name,
-											fun: () => {
-												deleteUser(user.id, user.name);
+											fun: async () => {
+												await deleteUser(user.id, user.name);
 											}
 										});
 									}}
@@ -204,7 +204,7 @@
 			</table>
 		</div>
 		<Button
-			on:click={() => addUserModal.open()}
+			onclick={() => addUserModal.open()}
 			class="fixed md:hidden bottom-4 right-4 z-10 h-12 w-12 rounded-full"
 		>
 			<UserPlus />

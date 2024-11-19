@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Check } from 'lucide-svelte';
+	import { Check, Eraser } from 'lucide-svelte';
 	import type { Property } from '@prisma/client';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
 	import { Separator } from '$lib/components/ui/separator';
@@ -111,9 +111,7 @@
 			bind:open={wrapperState.isOpen}
 			btnClass="w-full justify-start p-0.5 bg-transparent"
 			mobileClass="p-2"
-			desktopClass="p-1"
-			sameWidth
-			portal
+			desktopClass="w-[var(--bits-popover-anchor-width)] min-w-[var(--bits-popover-anchor-width)] p-1"
 			{onOpenChange}
 		>
 			{#snippet header()}
@@ -135,12 +133,12 @@
 								{option.value}
 							</span>
 
-							<Check class={cn('icon-xs', value !== option.id && 'text-transparent')} />
+							<Check class={cn('size-5', value !== option.id && 'text-transparent')} />
 							<RadioGroup.Item
 								value={option.id}
 								id={option.id}
 								class="sr-only"
-								on:click={() => {
+								onclick={() => {
 									updPropertyRef({ id: property.id, value: option.id });
 									wrapperState.close();
 								}}
@@ -182,6 +180,7 @@
 			</p>
 			<div class="w-full max-w-xs mx-auto px-6 md:px-4 pb-2 md:mt-2">
 				<Calendar
+					type="single"
 					value={new CalendarDate(
 						valueAsDate.getFullYear(),
 						valueAsDate.getMonth() + plus,
@@ -252,9 +251,13 @@
 	<Button
 		variant="ghost"
 		disabled={value === ''}
-		on:click={onClickClear}
-		class="h-7 w-full font-semibold">Clear</Button
+		onclick={onClickClear}
+		class="h-8 w-full font-semibold justify-start"
 	>
+		<Eraser />
+
+		Clear
+	</Button>
 {/snippet}
 
 <style>

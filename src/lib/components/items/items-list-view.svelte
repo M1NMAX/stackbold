@@ -126,13 +126,13 @@
 					oninput={handleOnInput}
 					onfocusout={handleFocusOut}
 					maxlength={MAX_ITEM_NAME_LENGTH}
-					class="w-full p-1 pr-4 text-lg font-semibold focus:outline-none rounded-md"
+					class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-sm"
 				/>
 
 				<Button
 					size="xs"
 					variant="ghost"
-					on:click={() => {
+					onclick={() => {
 						const target = document.getElementById(item.id) as HTMLInputElement;
 						saveAndClose(target);
 					}}
@@ -147,7 +147,7 @@
 				<div
 					class="absolute right-2 top-0 flex items-center gap-x-0.5 invisible md:group-hover:visible"
 				>
-					<Button size="xs" variant="ghost" on:click={() => startEditing(item.id)}>
+					<Button size="xs" variant="ghost" onclick={() => startEditing(item.id)}>
 						<Pencil class="icon-xs" />
 					</Button>
 					<ItemMenu id={item.id} name={item.name} {clickOpenItem} />

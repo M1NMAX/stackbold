@@ -6,7 +6,7 @@
 	import { capitalizeFirstLetter, cn } from '$lib/utils';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { getScreenState } from '$lib/components/screen';
 	import { getDeleteModalState } from '$lib/components/modal';
 	import debounce from 'debounce';
@@ -51,6 +51,7 @@
 		// so users can navigating using the keyboard
 
 		if (!$isDesktop && isSmallScreenDrawerOpen) closeSmallScreenDrawer();
+		//FIXME:
 		if (!triggerId) return;
 		tick().then(() => {
 			document.getElementById(triggerId)?.focus();
@@ -77,20 +78,19 @@
 </script>
 
 {#if $isDesktop}
-	<DropdownMenu.Root let:ids>
-		<DropdownMenu.Trigger asChild let:builder>
-			<Button
-				builders={[builder]}
-				variant="ghost"
-				size="sm"
-				class="h-7 w-full justify-between px-0.5"
-			>
-				<span class="flex gap-2">
-					<span class={`h-5 w-5 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
-					<span>{option.value}</span>
-				</span>
-				<ChevronRight class="icon-xs" />
-			</Button>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger
+			class={buttonVariants({
+				variant: 'ghost',
+				size: 'sm',
+				className: 'h-7 w-full justify-between px-0.5'
+			})}
+		>
+			<span class="flex items-center gap-2">
+				<span class={`size-3.5 rounded-sm ${PROPERTY_COLORS[selectedKey]}`}></span>
+				<span>{option.value}</span>
+			</span>
+			<ChevronRight class="icon-xs" />
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end" class="w-56 p-1">
 			<input
@@ -107,7 +107,7 @@
 					{value}
 					onValueChange={(value) => {
 						if (!value) return;
-						handleSelectColor(value, ids.trigger);
+						handleSelectColor(value, '');
 					}}
 				>
 					{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
@@ -121,7 +121,7 @@
 			</DropdownMenu.Group>
 
 			<DropdownMenu.Separator />
-			<DropdownMenu.Item class="space-x-2 " on:click={() => deleteOption()}>
+			<DropdownMenu.Item class="space-x-2 " onclick={() => deleteOption()}>
 				<Trash class="icon-xs" />
 				<span>Delete option </span>
 			</DropdownMenu.Item>
@@ -131,21 +131,19 @@
 	<div class="w-full flex justify-between items-center space-x-1">
 		<div class="w-full relative">
 			<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
-				<span class={`h-6 w-6 rounded ${PROPERTY_COLORS[selectedKey]}`}></span>
+				<span class={`size-3.5 rounded-sm ${PROPERTY_COLORS[selectedKey]}`}></span>
 			</div>
 
 			<input
 				name="option"
 				value={option.value}
 				oninput={handleOnInput}
-				class={`h-7 w-full pl-8 px-1.5 text-base font-semibold rounded bg-secondary focus:outline-none `}
+				class={`h-7 w-full pl-8 px-1.5 text-base font-semibold rounded-sm bg-secondary focus:outline-none `}
 			/>
 		</div>
 		<Drawer.Root bind:open={isSmallScreenDrawerOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" size="xs">
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+			<Drawer.Trigger class={buttonVariants({ variant: 'secondary', size: 'xs' })}>
+				<MoreHorizontal class="icon-xs" />
 			</Drawer.Trigger>
 			<Drawer.Content>
 				<Drawer.Header class="py-2">
@@ -164,9 +162,7 @@
 									variant="outline"
 									size="xs"
 									class={`relative h-8 w-8 rounded ${colorClasses} `}
-									on:click={() => {
-										handleSelectColor(colorName);
-									}}
+									onclick={() => handleSelectColor(colorName)}
 								>
 									<Check
 										class={cn(
@@ -181,7 +177,7 @@
 					</div>
 					<hr />
 
-					<Button variant="destructive" on:click={() => deleteOption()}>
+					<Button variant="destructive" onclick={() => deleteOption()}>
 						<Trash class="icon-xs" />
 						<span>Delete option </span>
 					</Button>

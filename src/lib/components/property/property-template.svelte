@@ -45,11 +45,16 @@
 		<span class="font-semibold">{property.name} </span>
 	</div>
 {:else}
+	{@const result = getPropertyValue(property, value)}
 	<span
 		use:melt={$trigger}
 		class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
-		{getPropertyValue(property, value)}
+		{#if property.type !== 'TEXT'}
+			{result}
+		{:else}
+			{result.substring(0, 55)}
+		{/if}
 	</span>
 
 	{#if $open}
