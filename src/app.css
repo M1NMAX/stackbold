@@ -219,7 +219,7 @@ input[type='number'] {
 		--border: 240 5.9% 90%;
 		--input: 240 5.9% 90%;
 		--ring: 346.8 77.2% 49.8%;
-		--radius: 0.5rem;
+		--radius: 0.35rem;
 	}
 
 	.dark {
@@ -249,7 +249,6 @@ input[type='number'] {
 	* {
 		@apply border-border;
 	}
-
 	body {
 		@apply bg-background text-foreground;
 	}
