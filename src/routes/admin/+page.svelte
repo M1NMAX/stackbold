@@ -14,7 +14,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import { onError } from '$lib/components/ui/sonner';
+	import { onError } from '$lib/components/feedback';
 	import { toast } from 'svelte-sonner';
 	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 

@@ -7,7 +7,7 @@ import {
 	type FilterConfig,
 	type Property
 } from '@prisma/client';
-import { onError, redirectToast } from '$lib/components/ui/sonner';
+import { onError, redirectToast } from '$lib/components/feedback';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';

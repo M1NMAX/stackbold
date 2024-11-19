@@ -1,5 +1,5 @@
 import { Aggregator, Color, View, type Property, type PropertyType } from '@prisma/client';
-import { onError } from '$lib/components/ui/sonner';
+import { onError } from '$lib/components/feedback';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter } from '$lib/utils';
 import { toast } from 'svelte-sonner';

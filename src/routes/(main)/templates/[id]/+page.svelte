@@ -8,7 +8,7 @@
 	import { icons } from '$lib/components/icon';
 	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { trpc } from '$lib/trpc/client';
-	import { onError, redirectToast } from '$lib/components/ui/sonner';
+	import { onError, redirectToast } from '$lib/components/feedback';
 	import { getCollectionState } from '$lib/components/collection/collectionState.svelte.js';
 
 	let { data } = $props();
