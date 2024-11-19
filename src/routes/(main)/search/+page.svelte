@@ -11,13 +11,13 @@
 	let searchableItems = $derived.by(() => {
 		const collections = data.collections.map(
 			(collection) =>
-				<Searchable>{
+				({
 					id: collection.id,
 					name: collection.name,
 					type: 'collection',
 					updatedAt: collection.updatedAt,
 					icon: collection.icon
-				}
+				}) as Searchable
 		);
 
 		return collections.concat(data.items);
