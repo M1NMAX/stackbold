@@ -6,7 +6,7 @@
 		MAX_PROPERTY_TEXT_LENGTH,
 		PROPERTY_COLORS
 	} from '$lib/constant';
-	import type { Property } from '@prisma/client';
+	import { type Property, View } from '@prisma/client';
 	import { Check, Eraser } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
@@ -32,10 +32,10 @@
 	type Props = {
 		itemId: string;
 		property: Property;
-		isTableView?: boolean;
+		view?: View;
 	};
 
-	let { itemId, property, isTableView = false }: Props = $props();
+	let { itemId, property, view = View.LIST }: Props = $props();
 
 	const itemState = getItemState();
 	const isDesktop = getScreenState();
@@ -84,13 +84,16 @@
 	const buttonClass = $derived(
 		cn(
 			'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
-			property.type === 'NUMBER' && 'justify-end',
-			!isTableView && 'h-6 w-fit rounded outline-none  py-1 px-1.5 font-semibold',
-			!isTableView && PROPERTY_COLORS[color]
+			!isTableView() && 'h-6 w-fit rounded-sm py-1 px-1.5 font-semibold hover:opacity-90',
+			!isTableView() && PROPERTY_COLORS[color],
+			property.type === 'NUMBER' && 'justify-end'
 		)
 	);
 
-	const labelClass = cn('font-semibold text-sm px-0 pb-0.5 ', $isDesktop && 'sr-only');
+	const labelClass = cn(
+		'font-semibold text-sm text-center px-0 pb-0.5 pt-1',
+		$isDesktop && 'sr-only'
+	);
 
 	//uitls
 	function getPropertyValue() {
@@ -108,6 +111,10 @@
 
 	function shouldClose() {
 		return wrapperState.isOpen && (property.type === 'SELECT' || property.type === 'DATE');
+	}
+
+	function isTableView() {
+		return view === View.TABLE;
 	}
 
 	// tooltip
@@ -128,16 +135,16 @@
 	<label
 		class={cn(
 			'flex justify-center',
-			!isTableView &&
+			!isTableView() &&
 				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-sm text-sm font-semibold',
-			!isTableView && PROPERTY_COLORS[color]
+			!isTableView() && PROPERTY_COLORS[color]
 		)}
 	>
 		<input type="checkbox" checked={value === 'true'} oninput={handleOnInput} class="checkbox" />
 
-		<span class={cn('font-semibold', isTableView && 'sr-only')}>{property.name} </span>
+		<span class={cn('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
-{:else if property.type === 'SELECT' && (value || isTableView)}
+{:else if property.type === 'SELECT' && (value || isTableView())}
 	{@const selected = getOption(property.options, value)?.value ?? ''}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
@@ -147,7 +154,7 @@
 		desktopClass="w-full p-1"
 	>
 		{#snippet header()}
-			{@render miniWrapper(selected, !!value && isTableView)}
+			{@render miniWrapper(selected, !!value && isTableView())}
 		{/snippet}
 
 		<div>
@@ -177,7 +184,7 @@
 
 		{@render clearBtn()}
 	</PropertyResponsiveWrapper>
-{:else if property.type === 'DATE' && (value || isTableView)}
+{:else if property.type === 'DATE' && (value || isTableView())}
 	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
 	{@const plus = value ? 0 : 1}
 	{@const valueAsDate = value ? new Date(value) : new Date()}
@@ -199,7 +206,7 @@
 	>
 		{#snippet header()}
 			{#if value}
-				{@render miniWrapper(content, !!value && isTableView)}
+				{@render miniWrapper(content, !!value && isTableView())}
 			{/if}
 		{/snippet}
 
@@ -221,7 +228,7 @@
 		</div>
 		{@render clearBtn()}
 	</PropertyResponsiveWrapper>
-{:else if property.type === 'TEXT' && (value || isTableView)}
+{:else if property.type === 'TEXT' && (value || isTableView())}
 	{@const MAX_LENGTH = $isDesktop ? 50 : 20}
 	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
 	<PropertyResponsiveWrapper
@@ -251,7 +258,7 @@
 			></textarea>
 		</form>
 	</PropertyResponsiveWrapper>
-{:else if property.type === 'NUMBER' && (value || isTableView)}
+{:else if property.type === 'NUMBER' && (value || isTableView())}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
 		alignCenter={false}
@@ -282,7 +289,7 @@
 			/>
 		</form>
 	</PropertyResponsiveWrapper>
-{:else if value || isTableView}
+{:else if value || isTableView()}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
 		btnClass={buttonClass}
@@ -314,7 +321,7 @@
 {#snippet miniWrapper(content: string, isWrappered: boolean = false)}
 	{@const wrapperClass = cn(
 		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
-		PROPERTY_COLORS[color]
+		isWrappered && PROPERTY_COLORS[color]
 	)}
 	<span use:melt={$trigger} class={wrapperClass}>
 		{content}
@@ -324,7 +331,7 @@
 {/snippet}
 
 {#snippet tooltipContent()}
-	{#if $open && !isTableView}
+	{#if $open && !isTableView()}
 		<div
 			use:melt={$content}
 			transition:fade={{ duration: 100 }}

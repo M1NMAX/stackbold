@@ -164,7 +164,7 @@
 						{#each propertyState.properties as property (property.id)}
 							{#if containsView(property.visibleInViews, View.TABLE)}
 								<td class="border last:border-r-0">
-									<PropertyValue isTableView {property} itemId={item.id} />
+									<PropertyValue view={View.TABLE} {property} itemId={item.id} />
 								</td>
 							{/if}
 						{/each}
