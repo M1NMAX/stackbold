@@ -20,11 +20,10 @@
 	)}
 >
 	<div class="flex justify-between items-center space-x-1">
-		{#if property.type === 'CHECKBOX'}
-			{@render children()}
-		{/if}
 		{#if property.type !== 'CHECKBOX'}
 			<PropertyIcon key={property.type} class="icon-xs mr-0" />
+		{:else}
+			{@render children()}
 		{/if}
 
 		<label
