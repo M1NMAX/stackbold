@@ -5,9 +5,9 @@
 	import { Lock, LogOut, Settings, SunMoon } from 'lucide-svelte';
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
-	import { type User } from 'lucia';
 	import { getScreenState } from '$lib/components/screen';
 	import { goto } from '$app/navigation';
+	import type { User } from '$lib/server/user';
 	type Props = {
 		user: User;
 	};

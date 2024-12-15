@@ -25,6 +25,22 @@
 	{/if}
 	<form method="post" use:enhance class="space-y-4">
 		<div>
+			<label for="name" class="label">Full name</label>
+			<input
+				id="name"
+				type="text"
+				name="name"
+				required
+				bind:value={$form.name}
+				class="input input-bordered"
+			/>
+
+			{#if $errors.name}
+				<span class="mt-2 text-error"> {$errors.name} </span>
+			{/if}
+		</div>
+
+		<div>
 			<label for="email" class="label"> Email </label>
 			<input
 				id="email"

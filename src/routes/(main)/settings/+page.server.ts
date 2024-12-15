@@ -1,10 +1,10 @@
-import { lucia } from '$lib/server/auth';
 import { prisma } from '$lib/server/prisma';
 import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
+import { deleteSessionTokenCookie, invalidateSession } from '$lib/server/session';
 
 const updUserSchema = z.object({
 	name: z.string().min(4).max(31),
@@ -25,12 +25,9 @@ export const actions: Actions = {
 		if (!event.locals.session) {
 			return fail(401);
 		}
-		await lucia.invalidateSession(event.locals.session.id);
-		const sessionCookie = lucia.createBlankSessionCookie();
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
+
+		await invalidateSession(event.locals.session.id);
+		deleteSessionTokenCookie(event);
 
 		redirect(302, '/signin');
 	},

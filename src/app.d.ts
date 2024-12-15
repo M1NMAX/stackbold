@@ -1,6 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
 
-import type { Template } from '@prisma/client';
+import type { Session, Template } from '@prisma/client';
+import type { User } from '$lib/server/user.js';
 
 // for information about these interfaces
 declare global {
@@ -9,8 +10,8 @@ declare global {
 
 		// interface Platform {}
 		interface Locals {
-			user: import('lucia').User | null;
-			session: import('lucia').Session | null;
+			user: User | null;
+			session: Session | null;
 		}
 		// interface PageData {}
 		interface PageState {

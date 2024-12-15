@@ -3,9 +3,8 @@ import { z } from 'zod';
 import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
-import { hashPassword } from '$lib/server/password';
-import { generateIdFromEntropySize } from 'lucia';
 import { zod } from 'sveltekit-superforms/adapters';
+import { createUser, getUserByEmail } from '$lib/server/user';
 
 const signUpSchema = z.object({
 	name: z.string().min(4).max(31),
@@ -46,20 +45,10 @@ export const actions: Actions = {
 
 		const { name, email, password, role } = form.data;
 
-		const passwordHash = await hashPassword(password);
-
-		const storedUser = await prisma.user.findUnique({ where: { email } });
+		const storedUser = await getUserByEmail(email);
 		if (storedUser) return setError(form, 'email', 'E-mail already exists.');
 
-		await prisma.user.create({
-			data: {
-				id: generateIdFromEntropySize(10),
-				name,
-				email,
-				role,
-				password: passwordHash
-			}
-		});
+		await createUser(name, email, password, role);
 
 		return message(form, 'Feature under revision');
 	}

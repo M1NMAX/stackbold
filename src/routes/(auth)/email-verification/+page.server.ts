@@ -3,13 +3,18 @@ import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { z } from 'zod';
 import { prisma } from '$lib/server/prisma';
-import { lucia } from '$lib/server/auth';
 import {
 	generateEmailVerificationCode,
 	sendEmailVerificationCode,
 	verifyVerificationCode
 } from '$lib/server/email';
 import { zod } from 'sveltekit-superforms/adapters';
+import {
+	createSession,
+	generateSessionToken,
+	invalidateUserSessions,
+	setSessionTokenCookie
+} from '$lib/server/session';
 
 const codeSchema = z.object({
 	code: z.string().length(8)
@@ -26,11 +31,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	validate: async ({ request, locals, cookies }) => {
-		const user = locals.user;
+	validate: async (event) => {
+		const user = event.locals.user;
 		if (!user) redirect(302, '/');
 
-		const form = await superValidate(request, zod(codeSchema));
+		const form = await superValidate(event.request, zod(codeSchema));
 		if (!form.valid) return fail(400, { form });
 
 		const { code } = form.data;
@@ -38,21 +43,20 @@ export const actions: Actions = {
 		const isValid = await verifyVerificationCode(user, code);
 		if (!isValid) return message(form, 'Invalid code');
 
-		await lucia.invalidateUserSessions(user.id);
+		await invalidateUserSessions(user.id);
+
 		await prisma.user.update({
 			where: { id: user.id },
 			data: { emailVerified: true }
 		});
 
-		const session = await lucia.createSession(user.id, {
+		const sessionToken = generateSessionToken();
+		const session = await createSession(sessionToken, {
+			userId: user.id,
 			role: user.role
 		});
 
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: '.',
-			...sessionCookie.attributes
-		});
+		setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
 		redirect(302, '/');
 	},
