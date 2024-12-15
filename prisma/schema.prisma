@@ -21,7 +21,7 @@ enum Role {
 }
 
 model User {
-  id                 String               @id @map("_id")
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
   name               String
   email              String               @unique
   emailVerified      Boolean              @default(false)
@@ -39,7 +39,7 @@ model User {
 model EmailVerication {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   code      String
-  userId    String
+  userId    String   @db.ObjectId
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   email     String   @unique
   expiredAt DateTime
@@ -48,14 +48,14 @@ model EmailVerication {
 model PasswordResetToken {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   token     String   @unique
-  userId    String
+  userId    String   @db.ObjectId
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   expiredAt DateTime
 }
 
 model Session {
   id        String   @id @map("_id")
-  userId    String
+  userId    String   @db.ObjectId
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   expiresAt DateTime
   role      Role
@@ -136,7 +136,7 @@ model Group {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId    String
+  ownerId    String       @db.ObjectId
   Collection Collection[]
 }
 
@@ -149,7 +149,7 @@ model Collection {
   description    String          @default("")
   isDescHidden   Boolean         @default(true)
   owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId        String
+  ownerId        String          @db.ObjectId
   items          Item[]
   groupByConfigs GroupByConfig[]
   properties     Property[]
