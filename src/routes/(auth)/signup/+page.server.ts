@@ -28,9 +28,7 @@ export const actions: Actions = {
 
 		if (!form.valid) return fail(400, { form });
 
-		const { email, password } = form.data;
-
-		const name = email.split('@')[0];
+		const { name, email, password } = form.data;
 
 		//TODO: check password strength
 		//TODO: check if username is already used
