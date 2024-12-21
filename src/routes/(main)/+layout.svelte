@@ -40,7 +40,6 @@
 	let collections = $state(data.collections);
 	let items = $state(data.items);
 
-	let innerWidth = $state<number>(0);
 	let activeUrl = $state<string>('');
 
 	const collectionState = setCollectionState(data.collections);
@@ -125,16 +124,12 @@
 		};
 	});
 
-	// $effect(() => {
-	// 	if (innerWidth < 700) sidebarState.close();
-	// });
-
 	$effect(() => {
 		activeUrl = page.url.pathname;
 	});
 </script>
 
-<svelte:window bind:innerWidth />
+<svelte:window />
 
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-background">
 	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1.5">
