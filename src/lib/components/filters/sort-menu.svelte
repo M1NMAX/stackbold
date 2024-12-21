@@ -7,10 +7,11 @@
 		CalendarArrowUp,
 		Check,
 		ClockArrowDown,
-		ClockArrowUp
+		ClockArrowUp,
+		type Icon as IconType
 	} from 'lucide-svelte';
 
-	const icons: { [idx: string]: any } = {
+	const icons: { [idx: string]: typeof IconType } = {
 		'name-asc': ArrowDownAZ,
 		'name-desc': ArrowDownZA,
 		'updatedAt-asc': ClockArrowDown,
