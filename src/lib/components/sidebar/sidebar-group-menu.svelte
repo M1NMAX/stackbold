@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
@@ -31,7 +31,7 @@
 	const crtCollectionModal = getCrtCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 
 	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
@@ -63,7 +63,7 @@
 </script>
 
 <div>
-	{#if $isDesktop}
+	{#if isLargeScreen.current}
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger
 				class={buttonVariants({

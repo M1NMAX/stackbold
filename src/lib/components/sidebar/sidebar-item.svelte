@@ -2,7 +2,7 @@
 	import { cn } from '$lib/utils';
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -15,10 +15,10 @@
 	let { children, href, active = false, label, ...rest }: Props = $props();
 
 	const sidebarState = getSidebarState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
-		if (e.metaKey || e.ctrlKey || $isDesktop) return;
+		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;
 
 		const { href } = e.currentTarget;
 		sidebarState.close();

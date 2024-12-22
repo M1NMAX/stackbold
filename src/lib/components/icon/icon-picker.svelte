@@ -67,7 +67,7 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { getScreenState } from '../screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { cn } from '$lib/utils';
 
 	type Props = {
@@ -79,11 +79,11 @@
 
 	let open = $state(false);
 
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 	const SelectedIcon = $derived(icons[name]);
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<Popover.Root bind:open>
 		<Popover.Trigger
 			class={buttonVariants({ variant: 'ghost', size: 'icon', className: '[&_svg]:size-7' })}

@@ -4,7 +4,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { cn } from '$lib/utils';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { getDeleteModalState } from '$lib/components/modal';
 	import { getItemState } from '.';
 
@@ -20,7 +20,8 @@
 	let open = $state(false);
 
 	const itemState = getItemState();
-	const isDesktop = getScreenState();
+
+	const isLargeScreen = getScreenSizeState();
 	const deleteModal = getDeleteModalState();
 
 	function deleteItem() {
@@ -46,7 +47,7 @@
 	}
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<DropdownMenu.Root bind:open>
 		<DropdownMenu.Trigger
 			class={buttonVariants({

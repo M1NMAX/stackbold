@@ -19,7 +19,7 @@
 	import { fade } from 'svelte/transition';
 	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
@@ -33,7 +33,7 @@
 
 	const activeItem = getActiveItemState();
 
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
@@ -130,7 +130,7 @@
 									variant="secondary"
 									size="sm"
 									onclick={() => clickOpenItem(item.id)}
-									class={cn(!$isDesktop ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
+									class={cn(!isLargeScreen.current ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
 								>
 									Open
 								</Button>
@@ -150,7 +150,7 @@
 								size="sm"
 								onclick={() => clickOpenItem(item.id)}
 								class={cn(
-									$isDesktop
+									isLargeScreen.current
 										? 'items-center py-0.5 px-1 gap-x-1 invisible group-hover:visible'
 										: 'hidden'
 								)}
@@ -194,7 +194,7 @@
 </div>
 
 {#snippet viewVisibilityMenu()}
-	{#if $isDesktop}
+	{#if isLargeScreen.current}
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger class={buttonVariants({ variant: 'ghost', size: 'xs' })}>
 				<Settings2 class="icon-xs" />

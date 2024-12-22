@@ -12,7 +12,7 @@
 	} from '$lib/components/modal';
 	import { getCollectionState } from '.';
 	import { getGroupState } from '$lib/components/group';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { goto } from '$app/navigation';
 
 	type Props = {
@@ -29,7 +29,7 @@
 	const groupState = getGroupState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 
 	const groupName = $derived.by(() => {
 		return groupState.groups.find((group) => group.id === collection.id)?.name ?? 'without group';
@@ -78,7 +78,7 @@
 	}
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
 			class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'hidden md:flex' })}

@@ -39,7 +39,6 @@
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 	} from '$lib/constant';
 	import { Separator } from '$lib/components/ui/separator';
-	import * as Select from '$lib/components/ui/select';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
@@ -48,7 +47,6 @@
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
 	import { slide } from 'svelte/transition';
-	import { getScreenState } from '$lib/components/screen';
 
 	type Props = {
 		property: Property;

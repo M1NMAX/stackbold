@@ -7,7 +7,7 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { getDeleteModalState } from '$lib/components/modal';
 	import debounce from 'debounce';
 	import { getPropertyState } from './propertyState.svelte';
@@ -29,7 +29,7 @@
 	});
 
 	const propertyState = getPropertyState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 	const deleteModal = getDeleteModalState();
 
 	const updOptionDebounded = debounce(updOption, 1000);
@@ -49,8 +49,7 @@
 
 		// Refocus the trigger btn when user selects and item from the list,
 		// so users can navigating using the keyboard
-
-		if (!$isDesktop && isSmallScreenDrawerOpen) closeSmallScreenDrawer();
+		if (!isLargeScreen.current && isSmallScreenDrawerOpen) closeSmallScreenDrawer();
 		//FIXME:
 		if (!triggerId) return;
 		tick().then(() => {
@@ -77,7 +76,7 @@
 	}
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
 			class={buttonVariants({

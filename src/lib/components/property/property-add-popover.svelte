@@ -7,11 +7,11 @@
 	import { PropertyType } from '@prisma/client';
 	import { Plus } from 'lucide-svelte';
 	import { ModalState } from '$lib/components/modal';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { getItemState } from '$lib/components/items';
 
 	const wrapper = new ModalState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
@@ -29,7 +29,7 @@
 	}
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<Popover.Root bind:open={wrapper.isOpen}>
 		<Popover.Trigger class={buttonVariants({ variant: 'default', className: 'w-full' })}>
 			<Plus class="icon-sm" />

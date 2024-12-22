@@ -5,7 +5,7 @@
 	import { Lock, LogOut, Settings, SunMoon } from 'lucide-svelte';
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { goto } from '$app/navigation';
 	import type { User } from '$lib/server/user';
 	type Props = {
@@ -16,10 +16,10 @@
 	let avatarUrl = $derived(
 		`https://api.dicebear.com/7.x/shapes/svg?seed=${user.email?.split('@')[0]}`
 	);
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
 			class={buttonVariants({

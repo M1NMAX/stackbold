@@ -20,7 +20,7 @@
 		PropertyIcon,
 		PropertyResponsiveWrapper
 	} from '.';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
@@ -38,7 +38,7 @@
 	let { itemId, property, view = View.LIST }: Props = $props();
 
 	const itemState = getItemState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 
 	let wrapperState = new ModalState();
 
@@ -92,7 +92,7 @@
 
 	const labelClass = cn(
 		'font-semibold text-sm text-center px-0 pb-0.5 pt-1',
-		$isDesktop && 'sr-only'
+		isLargeScreen.current && 'sr-only'
 	);
 
 	//uitls
@@ -229,7 +229,7 @@
 		{@render clearBtn()}
 	</PropertyResponsiveWrapper>
 {:else if property.type === 'TEXT' && (value || isTableView())}
-	{@const MAX_LENGTH = $isDesktop ? 50 : 20}
+	{@const MAX_LENGTH = isLargeScreen.current ? 50 : 20}
 	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}

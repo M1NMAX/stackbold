@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import type { Snippet } from 'svelte';
@@ -10,10 +10,10 @@
 	};
 	let { children, isOpen = $bindable(false) }: Props = $props();
 
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<Dialog.Root bind:open={isOpen}>
 		<Dialog.Content class="sm:max-w-[425px]">
 			<Dialog.Header>

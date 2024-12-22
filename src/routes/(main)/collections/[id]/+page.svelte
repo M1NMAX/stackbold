@@ -23,8 +23,8 @@
 	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
-	import { page } from '$app/stores';
-	import { getScreenState } from '$lib/components/screen';
+	import { page } from '$app/state';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import * as Accordion from '$lib/components/ui/accordion';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -121,7 +121,7 @@
 	let isSmHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
 
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 	const activeItemState = getActiveItemState();
 
 	async function updCollection(data: RouterInputs['collections']['update']['data']) {
@@ -269,7 +269,7 @@
 
 	async function onClickOpenProperties() {
 		const url = `/collections/${collection.id}/properties`;
-		if (!$isDesktop) {
+		if (!isLargeScreen.current) {
 			goto(url);
 			return;
 		}
@@ -289,7 +289,7 @@
 	async function clickItem(id: string) {
 		activeItemState.update(id);
 		const url = `/collections/${collection.id}/item/${id}`;
-		if (!$isDesktop) {
+		if (!isLargeScreen.current) {
 			goto(url);
 			return;
 		}
@@ -324,7 +324,7 @@
 		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
 			<Icon class="icon-md" />
 			<h1 class="grow font-semibold text-xl text-nowrap">
-				{collection.name.length > 18 && !$isDesktop
+				{collection.name.length > 18 && !isLargeScreen.current
 					? collection.name.substring(0, 18) + '...'
 					: collection.name}
 			</h1>
@@ -447,7 +447,7 @@
 				{/each}
 			</Accordion.Root>
 		{/if}
-		{#if $isDesktop}
+		{#if isLargeScreen.current}
 			<div class="sticky inset-x-0 bottom-0">
 				{#if itemNameError}
 					<span
@@ -485,16 +485,16 @@
 	</PageContent>
 </PageContainer>
 
-{#if $page.state.id}
+{#if page.state.id}
 	<!-- Item sliding-panel -->
 	<SlidingPanel open={itemPanel.isOpen} class="w-full md:w-2/6">
-		<ItemPage data={noCheck($page.state)} />
+		<ItemPage data={noCheck(page.state)} />
 	</SlidingPanel>
 {/if}
-{#if $page.state.showPanel}
+{#if page.state.showPanel}
 	<!-- Properties Sliding panel -->
 	<SlidingPanel open={propertiesPanel.isOpen} class="w-full md:w-2/6 ">
-		<PropertiesPage data={noCheck($page.state)} />
+		<PropertiesPage data={noCheck(page.state)} />
 	</SlidingPanel>
 {/if}
 <ItemNew bind:isOpen={isCreateItemDialogOpen}>

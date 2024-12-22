@@ -2,14 +2,14 @@
 	import '../app.css';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
-	import { mediaQuery, setScreenState } from '$lib/components/screen';
+	import { setScreenSizeState } from '$lib/components/screen';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { setDeleteModalState } from '$lib/components/modal';
 	import { buttonVariants } from '$lib/components/ui/button';
 
 	let { children } = $props();
 
-	const isDesktop = setScreenState(mediaQuery(true, '(min-width: 768px)'));
+	const isLargeScreen = setScreenSizeState();
 
 	const deleteModal = setDeleteModalState();
 
@@ -43,7 +43,7 @@
 </script>
 
 <ModeWatcher />
-<Toaster position={$isDesktop ? 'top-center' : 'bottom-center'} richColors />
+<Toaster position={isLargeScreen.current ? 'top-center' : 'bottom-center'} richColors />
 
 {@render children()}
 

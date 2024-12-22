@@ -6,14 +6,14 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
 	import { DEFAULT_SORT_OPTIONS, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import { cn, noCheck } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
 	import { SlidingPanel } from '$lib/components/sliding-panel';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/components/modal';
 	import TemplatePage from './[id]/+page.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 	let active = $state('');
@@ -34,11 +34,11 @@
 	});
 
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 
 	async function clickTemplate(e: MouseEvent, id: string) {
 		active = id;
-		if (!isDesktop) return;
+		if (!isLargeScreen.current) return;
 		e.preventDefault();
 
 		const { href } = e.currentTarget as HTMLAnchorElement;
@@ -120,8 +120,8 @@
 	</PageContent>
 </PageContainer>
 
-{#if $page.state.template}
+{#if page.state.template}
 	<SlidingPanel open={templatePanel.isOpen} class="w-full md:w-2/6">
-		<TemplatePage data={noCheck($page.state)} />
+		<TemplatePage data={noCheck(page.state)} />
 	</SlidingPanel>
 {/if}

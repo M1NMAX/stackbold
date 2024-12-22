@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { getScreenState } from '$lib/components/screen';
+	import { getScreenSizeState } from '$lib/components/screen';
 	import * as Popover from '$lib/components/ui/popover';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { buttonVariants } from '$lib/components/ui/button';
@@ -32,10 +32,10 @@
 		onOpenChange
 	}: Props = $props();
 
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<Popover.Root bind:open {onOpenChange}>
 		<Popover.Trigger class={buttonVariants({ variant: 'secondary', className: btnClass })}>
 			{@render header()}

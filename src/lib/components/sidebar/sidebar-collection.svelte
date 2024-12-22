@@ -18,7 +18,7 @@
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
-	import { getScreenState } from '$lib/components/screen/index.js';
+	import { getScreenSizeState } from '$lib/components/screen/index.js';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
@@ -49,7 +49,7 @@
 	const smallScreenDrawer = new ModalState();
 
 	const sidebarState = getSidebarState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
@@ -73,7 +73,7 @@
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
-		if (e.metaKey || e.ctrlKey || $isDesktop) return;
+		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;
 
 		const { href } = e.currentTarget;
 		sidebarState.close();
@@ -122,7 +122,7 @@
 	>
 		<Icon class={cn('icon-sm', active && 'text-primary')} />
 		<span class={cn('font-semibold text-base text-nowrap', active && 'text-primary')}>
-			{collection.name.length > 25 && $isDesktop
+			{collection.name.length > 25 && isLargeScreen.current
 				? collection.name.substring(0, 22) + ' ...'
 				: collection.name}
 		</span>
@@ -157,7 +157,7 @@
 </Dialog.Root>
 
 {#snippet menu()}
-	{#if $isDesktop}
+	{#if isLargeScreen.current}
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger
 				class={buttonVariants({
