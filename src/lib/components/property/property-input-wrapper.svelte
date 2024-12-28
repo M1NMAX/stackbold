@@ -15,11 +15,11 @@
 
 <div
 	class={cn(
-		'py-1 px-2 rounded bg-secondary/40 text-secondary-foreground',
+		'p-1 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 text-secondary-foreground',
 		isFocus && 'bg-secondary/80'
 	)}
 >
-	<div class="flex justify-between items-center space-x-1">
+	<div class="flex justify-between items-center gap-x-1 px-1">
 		{#if property.type !== 'CHECKBOX'}
 			<PropertyIcon key={property.type} class="icon-xs mr-0" />
 		{:else}

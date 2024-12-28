@@ -131,8 +131,8 @@
 
 <svelte:window />
 
-<div class="h-dvh w-screen flex flex-col overflow-hidden bg-background">
-	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1.5">
+<div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">
+	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1">
 		<Button
 			variant="outline"
 			size="icon"
@@ -142,8 +142,8 @@
 		</Button>
 
 		<Button
-			variant="secondary"
-			class="grow h-9 max-w-sm flex justify-between items-center space-x-1"
+			variant="outline"
+			class="grow h-9 max-w-sm flex justify-between items-center space-x-1  dark:bg-background"
 			onclick={() => globalSearchModal.open()}
 		>
 			<span class="flex items-center space-x-0.5">
@@ -151,7 +151,7 @@
 				<span> Search</span>
 			</span>
 			<kbd
-				class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-0.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+				class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-sm border bg-muted px-1 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
 			>
 				<span class="text-xs">Ctrl</span>
 				<span>K</span>
@@ -161,12 +161,13 @@
 		<UserMenu {user} />
 	</div>
 	<div
-		class="w-full h-full md:grow flex flex-col md:flex-row space-0 md:space-x-1.5 p-0 md:p-1 overflow-hidden bg-background"
+		class="w-full h-full md:grow flex flex-col md:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background"
 	>
+		<!-- SIDEBAR -->
 		<aside
 			class={cn(
 				'hidden md:flex h-full flex-col space-y-2 overflow-hidden rounded-md px-0 py-1.5 bg-card text-card-foreground transition-all',
-				sidebarState.isOpen ? 'w-1/6' : 'w-0'
+				sidebarState.isOpen ? 'w-1/6 mr-1.5' : 'w-0'
 			)}
 		>
 			<div class="space-y-0.5 px-0">
@@ -228,6 +229,7 @@
 				</Button>
 			</div>
 		</aside>
+		<!-- SIDEBAR -->
 
 		{@render children()}
 

@@ -83,9 +83,9 @@
 
 	const buttonClass = $derived(
 		cn(
-			'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
-			!isTableView() && 'h-6 w-fit rounded-sm py-1 px-1.5 font-semibold hover:opacity-90',
-			!isTableView() && PROPERTY_COLORS[color],
+			isTableView()
+				? 'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit'
+				: `w-fit h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
 			property.type === 'NUMBER' && 'justify-end'
 		)
 	);
@@ -145,7 +145,7 @@
 		<span class={cn('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
 {:else if property.type === 'SELECT' && (value || isTableView())}
-	{@const selected = getOption(property.options, value)?.value ?? ''}
+	{@const selectedOption = getOption(property.options, value)?.value ?? ''}
 	<PropertyResponsiveWrapper
 		bind:open={wrapperState.isOpen}
 		alignCenter={false}
@@ -154,7 +154,7 @@
 		desktopClass="w-full p-1"
 	>
 		{#snippet header()}
-			{@render miniWrapper(selected, !!value && isTableView())}
+			{@render tooltipWrapper(selectedOption)}
 		{/snippet}
 
 		<div>
@@ -206,7 +206,7 @@
 	>
 		{#snippet header()}
 			{#if value}
-				{@render miniWrapper(content, !!value && isTableView())}
+				{@render tooltipWrapper(content)}
 			{/if}
 		{/snippet}
 
@@ -239,7 +239,7 @@
 		desktopClass={cn('w-full max-w-xl p-1', value && value?.length < MAX_LENGTH && 'max-w-xs')}
 	>
 		{#snippet header()}
-			{@render miniWrapper(content)}
+			{@render tooltipWrapper(content)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -267,7 +267,7 @@
 		desktopClass="p-1"
 	>
 		{#snippet header()}
-			{@render miniWrapper(value)}
+			{@render tooltipWrapper(value)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -297,7 +297,7 @@
 		desktopClass="p-1"
 	>
 		{#snippet header()}
-			{@render miniWrapper(value)}
+			{@render tooltipWrapper(value)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -318,12 +318,8 @@
 	</PropertyResponsiveWrapper>
 {/if}
 
-{#snippet miniWrapper(content: string, isWrappered: boolean = false)}
-	{@const wrapperClass = cn(
-		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
-		isWrappered && PROPERTY_COLORS[color]
-	)}
-	<span use:melt={$trigger} class={wrapperClass}>
+{#snippet tooltipWrapper(content: string)}
+	<span use:melt={$trigger}>
 		{content}
 	</span>
 
@@ -335,7 +331,7 @@
 		<div
 			use:melt={$content}
 			transition:fade={{ duration: 100 }}
-			class="z-10 rounded-lg bg-secondary shadow"
+			class="z-10 rounded-sm bg-white dark:bg-gray-900 shadow-xl"
 		>
 			<div use:melt={$arrow}></div>
 			<div class="flex items-center p-1">

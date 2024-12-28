@@ -37,7 +37,7 @@
 
 {#if isLargeScreen.current}
 	<Popover.Root bind:open {onOpenChange}>
-		<Popover.Trigger class={buttonVariants({ variant: 'secondary', className: btnClass })}>
+		<Popover.Trigger class={buttonVariants({ variant: 'ghost', className: btnClass })}>
 			{@render header()}
 		</Popover.Trigger>
 
@@ -47,7 +47,7 @@
 	</Popover.Root>
 {:else}
 	<Drawer.Root bind:open>
-		<Drawer.Trigger class={buttonVariants({ variant: 'secondary', className: btnClass })}>
+		<Drawer.Trigger class={buttonVariants({ variant: 'ghost', className: btnClass })}>
 			{@render header()}
 		</Drawer.Trigger>
 

@@ -16,7 +16,7 @@
 {#if open}
 	<div
 		class={cn(
-			'w-80 h-full flex flex-col space-y-1.5 p-1.5 overflow-hidden rounded-md bg-card',
+			'w-80 h-full flex flex-col space-y-1.5 p-1.5 ml-1.5 overflow-hidden rounded-md bg-card',
 			className
 		)}
 		transition:fly={{ x: 320, duration: 300, easing: sineIn }}
