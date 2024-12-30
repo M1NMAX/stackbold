@@ -27,7 +27,7 @@ export const ITEM_PANEL_CTX_KEY = Symbol('ITEM_PANEL_CTX_KEY');
 export const TEMPLATE_PANEL_CTX_KEY = Symbol('TEMPLATE_PANEL_CTX_KEY');
 
 export const MAX_COLLECTION_NAME_LENGTH = 50;
-export const MAX_ITEM_NAME_LENGTH = 80;
+export const MAX_ITEM_NAME_LENGTH = 200;
 export const MAX_GROUP_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NUMERIC_LENGTH = 10;
-export const MAX_PROPERTY_TEXT_LENGTH = 80;
+export const MAX_PROPERTY_TEXT_LENGTH = 255;
