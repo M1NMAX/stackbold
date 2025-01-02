@@ -16,7 +16,7 @@
 	import { cn, sanitizeNumberInput } from '$lib/utils';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
-	import { textareaAutoSize } from '$lib/actions';
+	import { clickOutside, textareaAutoSize } from '$lib/actions';
 	import { ModalState } from '$lib/components/modal';
 	import {
 		getOption,
@@ -25,6 +25,7 @@
 		PropertyInputWrapper,
 		PropertyResponsiveWrapper
 	} from '.';
+	import { Select, Label as OwnLabel } from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
@@ -95,6 +96,31 @@
 		isFocus = open;
 	}
 </script>
+
+{#if property.type === 'SELECT'}
+	<div class="rounded bg-secondary text-secondary-foreground pb-1">
+		<OwnLabel id={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Select
+			id={property.id}
+			options={[
+				...property.options.map((option) => ({
+					lead: {
+						// TODO: remove this obvious tmp fix, I know right
+						type: 'color' as 'color',
+						color: PROPERTY_COLORS[option.color] as string
+					},
+					id: option.id,
+					label: option.value,
+					isSelected: option.id === value,
+					theme: PROPERTY_COLORS[option.color]
+				}))
+			]}
+			onselect={(opt) => {
+				updPropertyRef({ id: property.id, value: opt.id });
+			}}
+		/>
+	</div>
+{/if}
 
 <PropertyInputWrapper {property} {isFocus}>
 	{#if property.type === 'CHECKBOX'}
@@ -258,6 +284,12 @@
 
 		Clear
 	</Button>
+{/snippet}
+
+{#snippet optionLead(b: string)}
+	<!-- <span class={['size-3.5 rounded-sm', color ? PROPERTY_COLORS[color] : 'bg-red-500']}> </span> -->
+
+	<span class={['size-3.5 rounded-sm', 'bg-red-500']}> </span>
 {/snippet}
 
 <style>

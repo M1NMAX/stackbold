@@ -6,7 +6,7 @@
 		value?: string;
 		placeholder?: string;
 	};
-	let { value = $bindable(), placeholder, ...rest }: Props = $props();
+	let { value = $bindable(), placeholder = 'Search', ...rest }: Props = $props();
 </script>
 
 <!-- TODO: turn responsive -->
