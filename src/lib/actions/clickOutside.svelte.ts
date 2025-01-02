@@ -11,16 +11,15 @@ export const clickOutside: ClickOutsideAction = (element) => {
 		const targetEl = event.target as HTMLElement;
 
 		if (element && !element.contains(targetEl)) {
-			const clickOutsideEvent = new CustomEvent('onclickoutside');
-			element.dispatchEvent(clickOutsideEvent);
+			element.dispatchEvent(new CustomEvent('clickoutside'));
 		}
 	}
 
-	document.addEventListener('click', handleClick, true);
+	$effect(() => {
+		document.addEventListener('click', handleClick, true);
 
-	return {
-		destroy() {
+		return () => {
 			document.removeEventListener('click', handleClick, true);
-		}
-	};
+		};
+	});
 };
