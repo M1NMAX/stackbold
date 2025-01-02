@@ -154,7 +154,7 @@
 		desktopClass="w-full p-1"
 	>
 		{#snippet header()}
-			{@render tooltipWrapper(selectedOption)}
+			{@render tooltipWrapper(selectedOption, !!value && isTableView())}
 		{/snippet}
 
 		<div>
@@ -206,7 +206,7 @@
 	>
 		{#snippet header()}
 			{#if value}
-				{@render tooltipWrapper(content)}
+				{@render tooltipWrapper(content, !!value && isTableView())}
 			{/if}
 		{/snippet}
 
@@ -318,8 +318,12 @@
 	</PropertyResponsiveWrapper>
 {/if}
 
-{#snippet tooltipWrapper(content: string)}
-	<span use:melt={$trigger}>
+{#snippet tooltipWrapper(content: string, isWrappered: boolean = false)}
+	{@const wrapperClass = cn(
+		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
+		isWrappered && PROPERTY_COLORS[color]
+	)}
+	<span use:melt={$trigger} class={wrapperClass}>
 		{content}
 	</span>
 
