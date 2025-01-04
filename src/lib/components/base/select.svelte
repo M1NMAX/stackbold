@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Check } from 'lucide-svelte';
-	import { SearchInput } from '$lib/components/filters/index.js';
+	import Check from 'lucide-svelte/icons/check';
+	import Search from 'lucide-svelte/icons/search';
+	import SquareX from 'lucide-svelte/icons/square-x';
 	import { ModalState } from '$lib/components/modal';
 	import { INPUT_ICONS } from '$lib/constant';
 	import { cn } from '$lib/utils';
@@ -42,6 +43,13 @@
 		return options.filter((option) => option.isSelected);
 	});
 
+	let search = $state('');
+	let filteredOptions = $derived.by(() => {
+		const searchTerm = search.toLowerCase();
+
+		return options.filter((option) => option.label.toLowerCase().includes(searchTerm));
+	});
+
 	let menuState = new ModalState();
 
 	const isLargeScreen = new MediaQuery('min-width: 768px', false);
@@ -53,7 +61,7 @@
 
 	function onLabelClick(e: Event) {
 		e.preventDefault();
-		if (!disabled) toggle();
+		if (!disabled) menuState.open();
 	}
 
 	function selectOption(e: MouseEvent, option: Option) {
@@ -76,7 +84,9 @@
 		};
 	});
 
-	//TODO: manager active option
+	function resetSearch() {
+		search = '';
+	}
 </script>
 
 <div class="relative block outline-none">
@@ -86,7 +96,7 @@
 		tabindex={disabled ? -1 : 0}
 		role="button"
 		class={['select-container', menuState.isOpen && 'open']}
-		onclick={toggle}
+		onclick={() => toggle()}
 	>
 		{#each selected as option}
 			<span
@@ -106,13 +116,29 @@
 				class="w-full absolute z-50 right-0 left-auto top-[100%] p-1 rounded bg-secondary"
 			>
 				<div>
-					<!-- TODO: turn options searchable -->
 					{#if searchable}
-						<SearchInput placeholder="Search for an option..." />
+						<div class="relative w-full mb-0.5">
+							<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+								<Search class="size-4" />
+							</div>
+							<input
+								class="w-full h-9 px-10 text-base font-semibold rounded-sm bg-popover focus:outline-none"
+								placeholder="Search for an option"
+								bind:value={search}
+							/>
+
+							{#if search && search.length > 0}
+								<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+									<button class="[&_svg]:size-6" onclick={resetSearch}>
+										<SquareX />
+									</button>
+								</div>
+							{/if}
+						</div>
 					{/if}
 
 					<div class="p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground">
-						{#each options as option}
+						{#each filteredOptions as option}
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<div
 								tabindex="0"
@@ -123,7 +149,7 @@
 								{#if option.lead}
 									{@render lead(option.lead)}
 								{/if}
-								<span class="grow">
+								<span class="grow text-sm font-semibold">
 									{option.label}
 								</span>
 
@@ -141,7 +167,7 @@
 			<Drawer bind:open={menuState.isOpen}>
 				<div class="p-1 rounded-md shadow-md outline-none">
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					{#each options as option}
+					{#each filteredOptions as option}
 						<div
 							tabindex="0"
 							role="menuitem"
@@ -151,7 +177,7 @@
 							{#if option.lead}
 								{@render lead(option.lead)}
 							{/if}
-							<span class="grow">
+							<span class="grow text-sm font-semibold">
 								{option.label}
 							</span>
 
