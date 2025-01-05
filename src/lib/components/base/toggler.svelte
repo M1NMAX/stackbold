@@ -14,6 +14,15 @@
 	function close() {
 		open = false;
 	}
+
+	function handleClickOutside(e: CustomEvent) {
+		const clickTarget = e.detail.target as HTMLElement;
+		const menuParent = (e.target as HTMLElement).parentElement?.parentElement;
+
+		if (menuParent && !menuParent.contains(clickTarget)) {
+			close();
+		}
+	}
 </script>
 
 <div
@@ -21,7 +30,7 @@
 	role="menu"
 	class="outline-0"
 	use:clickOutside
-	onclickoutside={close}
+	onclickoutside={handleClickOutside}
 	use:escapeKeydown
 	onescapekey={close}
 >
