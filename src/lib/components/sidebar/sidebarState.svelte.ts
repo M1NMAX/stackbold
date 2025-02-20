@@ -1,5 +1,5 @@
 import { getContext, setContext } from 'svelte';
-import { ModalState } from '$lib/components/modal';
+import { ModalState } from '$lib/states/index.js';
 
 const SIDEBAR_CTX = Symbol('SIDEBAR_CTX');
 export function setSidebarState() {

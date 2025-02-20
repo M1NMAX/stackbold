@@ -1,11 +1,12 @@
 import type { RouterInputs } from '$lib/trpc/router';
 import type { Group } from '@prisma/client';
-import { onError } from '$lib/components/feedback';
 import { trpc } from '$lib/trpc/client';
 import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
+import { getToastState } from '$lib/states';
 
 export class GroupState {
+	#toastState = getToastState();
 	groups = $state<Group[]>([]);
 
 	constructor(groups: Group[]) {
@@ -37,9 +38,9 @@ export class GroupState {
 
 			const result = await trpc().groups.create.mutate({ ...args });
 			this.#updGroup(tmpId, result);
-			toast.success('New group created successfully');
+			this.#toastState.addSuccessToast('New group created successfully');
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#removeGroup(tmpId);
 		}
 	}
@@ -48,26 +49,33 @@ export class GroupState {
 		const { id, data } = args;
 
 		let target = this.getGroup(id);
-		if (target == null) return;
+		if (target == null) {
+			this.#toastState.addErrorToast();
+			return;
+		}
+
 		try {
 			this.#updGroup(id, { ...target, ...data });
 			await trpc().groups.update.mutate({ ...args });
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#updGroup(id, target);
 		}
 	}
 
 	async deleteGroup(id: string) {
 		let target = this.getGroup(id);
-		if (target == null) return;
+		if (target == null) {
+			this.#toastState.addErrorToast();
+			return;
+		}
 
 		try {
 			this.#removeGroup(id);
 			await trpc().groups.delete.mutate(id);
 			toast.success(`Group [${target.name}] deleted successfully`);
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.groups.push({ ...target });
 		}
 	}
@@ -77,7 +85,7 @@ export class GroupState {
 			const result = await trpc().groups.list.query();
 			this.groups = result;
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 		}
 	}
 }

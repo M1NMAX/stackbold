@@ -1,11 +1,11 @@
 import type { RouterInputs } from '$lib/trpc/router';
 import type { Item, PropertyRef } from '@prisma/client';
-import { onError } from '$lib/components/feedback';
 import { trpc } from '$lib/trpc/client';
-import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
+import { getToastState } from '$lib/states';
 
 export class ItemState {
+	#toastState = getToastState();
 	items = $state<Item[]>([]);
 
 	constructor(items: Item[]) {
@@ -49,7 +49,7 @@ export class ItemState {
 			const createdItem = await trpc().items.create.mutate({ ...args });
 			this.#updItem(tmpId, createdItem);
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#removeItem(tmpId);
 		}
 	}
@@ -62,7 +62,7 @@ export class ItemState {
 			this.#updItem(id, { ...target, ...data });
 			await trpc().items.update.mutate(args);
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#updItem(id, target);
 		}
 	}
@@ -70,7 +70,7 @@ export class ItemState {
 	async duplicateItem(id: string) {
 		const target = this.getItem(id);
 		if (target == null) {
-			onError({ msg: 'Invalid item' });
+			this.#toastState.addErrorToast();
 			return;
 		}
 		const tmpId = crypto.randomUUID();
@@ -91,9 +91,9 @@ export class ItemState {
 
 			this.#updItem(tmpId, createdItem);
 
-			toast.success(`Item [${name}] duplicated successfully `);
+			this.#toastState.addSuccessToast(`Item [${name}] duplicated successfully `);
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#removeItem(tmpId);
 		}
 	}
@@ -106,9 +106,9 @@ export class ItemState {
 			this.#removeItem(id);
 			await trpc().items.delete.mutate(id);
 
-			toast.success('Item deleted successfully');
+			this.#toastState.addSuccessToast('Item deleted successfully');
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.items.push({ ...target });
 		}
 	}
@@ -128,14 +128,14 @@ export class ItemState {
 				ids: this.items.map(({ id }) => id)
 			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 		}
 	}
 
 	async updPropertyRef(id: string, propertyRef: { id: string; value: string }) {
 		const target = this.getItem(id);
 		if (!target) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 
@@ -148,7 +148,7 @@ export class ItemState {
 
 			await trpc().items.updateProperty.mutate({ id, property: propertyRef });
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#updItem(target.id, target);
 		}
 	}
@@ -166,7 +166,7 @@ export class ItemState {
 				ids: this.items.map(({ id }) => id)
 			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 		}
 	}
 
@@ -175,7 +175,7 @@ export class ItemState {
 			const storedItems = await trpc().items.list.query(id);
 			this.items = storedItems;
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 		}
 	}
 }
