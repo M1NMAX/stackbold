@@ -15,6 +15,10 @@ export class ModalState {
 	close() {
 		this.isOpen = false;
 	}
+
+	toggle() {
+		this.isOpen = !this.isOpen;
+	}
 }
 
 export class CreateCollectionModal extends ModalState {
