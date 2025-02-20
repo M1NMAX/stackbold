@@ -9,9 +9,9 @@
 	import { getScreenSizeState } from '$lib/components/screen';
 	import { cn, noCheck } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
-	import { SlidingPanel } from '$lib/components/sliding-panel';
+	import { SlidingPanel } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/state';
 

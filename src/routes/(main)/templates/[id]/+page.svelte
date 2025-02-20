@@ -1,21 +1,22 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { ModalState } from '$lib/components/modal';
+	import { getToastState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
+	import { DEFAULT_FEEDBACK_ERR_MESSAGE, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
 	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 	import { icons } from '$lib/components/icon';
 	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { trpc } from '$lib/trpc/client';
-	import { onError, redirectToast } from '$lib/components/feedback';
 	import { getCollectionState } from '$lib/components/collection/collectionState.svelte.js';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 	let template = $derived(data.template);
 	const Icon = $derived(icons[template.icon]);
 	let isSmHeadingVisible = $state(false);
 
+	const toastState = getToastState();
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
 	const collectionState = getCollectionState();
 
@@ -45,9 +46,17 @@
 			await trpc().items.createMany.mutate(itemsCopy);
 
 			await collectionState.refresh();
-			redirectToast('New collection created', `/collections/${createdCollection.id}`);
+
+			toastState.addActionToast({
+				message: 'New collection created',
+				action: {
+					label: 'Go',
+					onclick: () => goto(`/collections/${createdCollection.id}`)
+				}
+			});
 		} catch (error) {
-			onError(error);
+			console.log(error);
+			toastState.addErrorToast(DEFAULT_FEEDBACK_ERR_MESSAGE);
 		}
 	}
 
