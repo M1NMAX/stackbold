@@ -1,22 +1,23 @@
-<script lang="ts">
-	import Check from 'lucide-svelte/icons/check';
-	import Search from 'lucide-svelte/icons/search';
-	import SquareX from 'lucide-svelte/icons/square-x';
-	import { ModalState } from '$lib/components/modal';
-	import { INPUT_ICONS } from '$lib/constant';
-	import { cn } from '$lib/utils';
-	import { MediaQuery } from 'svelte/reactivity';
-	import { Drawer, Toggler } from '.';
-
-	type Lead = { type: 'color'; color: string } | { type: 'icon'; key: string };
-
-	type Option = {
+<script lang="ts" module>
+	export type Lead = { type: 'color'; color: string } | { type: 'icon'; key: string };
+	export type Option = {
 		lead?: Lead;
 		id: string;
 		label: string;
 		isSelected: boolean;
 		theme?: string;
 	};
+</script>
+
+<script lang="ts">
+	import Check from 'lucide-svelte/icons/check';
+	import Search from 'lucide-svelte/icons/search';
+	import SquareX from 'lucide-svelte/icons/square-x';
+	import { ModalState } from '$lib/states/index.js';
+	import { INPUT_ICONS } from '$lib/constant/index.js';
+	import { cn } from '$lib/utils';
+	import { MediaQuery } from 'svelte/reactivity';
+	import { Drawer, Dropdown } from './index.js';
 
 	type Props = {
 		id: string;
@@ -45,23 +46,20 @@
 
 	let search = $state('');
 	let filteredOptions = $derived.by(() => {
-		const searchTerm = search.toLowerCase();
+		const searchTerm = search.replace(/\s+/g, '').toLowerCase();
 
-		return options.filter((option) => option.label.toLowerCase().includes(searchTerm));
+		return options.filter((option) =>
+			option.label.replace(/\s+/g, '').toLowerCase().includes(searchTerm)
+		);
 	});
 
 	let menuState = new ModalState();
 
 	const isLargeScreen = new MediaQuery('min-width: 768px', false);
 
-	function toggle() {
-		if (menuState.isOpen) menuState.close();
-		else menuState.open();
-	}
-
 	function onLabelClick(e: Event) {
 		e.preventDefault();
-		if (!disabled) menuState.open();
+		if (!disabled) menuState.toggle();
 	}
 
 	function selectOption(e: MouseEvent, option: Option) {
@@ -96,22 +94,32 @@
 		tabindex={disabled ? -1 : 0}
 		role="button"
 		class={['select-container', menuState.isOpen && 'open']}
-		onclick={() => toggle()}
+		onclick={() => menuState.toggle()}
 	>
 		{#each selected as option}
 			<span
-				class={['h-6 py-1 px-1.5 flex items-center rounded-sm font-semibold text-sm', option.theme]}
+				class={[
+					'h-6 flex items-center gap-x-1.5 py-1 px-1.5 rounded-sm font-semibold text-sm',
+					option.theme
+				]}
 			>
-				{option.label}
+				{#if option.lead && option.lead.type === 'icon'}
+					{@render optionLead(option.lead)}
+				{/if}
+				<span>
+					{option.label}
+				</span>
 			</span>
 		{:else}
-			<div>{placeholder}</div>
+			<div class="h-5 px-1.5 pb-1 text-sm font-semibold text-gray-400 dark:text-gray-500">
+				{placeholder}
+			</div>
 		{/each}
 	</div>
 
 	{#if !disabled}
 		{#if isLargeScreen.current}
-			<Toggler
+			<Dropdown
 				bind:open={menuState.isOpen}
 				class="w-full absolute z-50 right-0 left-auto top-[100%] p-1 rounded bg-secondary"
 			>
@@ -147,7 +155,7 @@
 								onclick={(e) => selectOption(e, option)}
 							>
 								{#if option.lead}
-									{@render lead(option.lead)}
+									{@render optionLead(option.lead)}
 								{/if}
 								<span class="grow text-sm font-semibold">
 									{option.label}
@@ -162,7 +170,7 @@
 						{/each}
 					</div>
 				</div>
-			</Toggler>
+			</Dropdown>
 		{:else}
 			<Drawer bind:open={menuState.isOpen}>
 				<div class="p-1 rounded-md shadow-md outline-none">
@@ -175,7 +183,7 @@
 							onclick={(e) => selectOption(e, option)}
 						>
 							{#if option.lead}
-								{@render lead(option.lead)}
+								{@render optionLead(option.lead)}
 							{/if}
 							<span class="grow text-sm font-semibold">
 								{option.label}
@@ -194,18 +202,18 @@
 	{/if}
 </div>
 
-{#snippet lead(args: Lead)}
+{#snippet optionLead(args: Lead)}
 	{#if args.type === 'color'}
 		<span class={['size-3.5 rounded-sm', args.color]}> </span>
 	{:else if args.type === 'icon'}
-		{@const Icon = INPUT_ICONS[args.key]}
+		{@const Icon = INPUT_ICONS[args.key.toLowerCase()]}
 		<Icon class="icon-xs" />
 	{/if}
 {/snippet}
 
 <style>
 	.select-container {
-		@apply w-full flex flex-wrap gap-x-1 px-2 pb-1.5 select-none relative;
+		@apply w-full flex flex-wrap gap-x-1 px-1.5 pb-1 select-none relative;
 
 		&::after {
 			@apply absolute content-[""] top-[50%] right-2 h-0 w-0 border-4 border-t-gray-600 border-r-transparent border-b-transparent border-l-transparent;
