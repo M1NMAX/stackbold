@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { AddPropertyPopover, getPropertyState, PropertyEditor } from '$lib/components/property';
 	import { Button } from '$lib/components/ui/button';

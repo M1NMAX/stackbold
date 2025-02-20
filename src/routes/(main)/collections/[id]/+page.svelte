@@ -20,7 +20,7 @@
 	import { cn, noCheck, sortFun, type SortOption } from '$lib/utils';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button } from '$lib/components/ui/button';
-	import { SlidingPanel } from '$lib/components/sliding-panel';
+	import { SlidingPanel } from '$lib/components/base/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/state';
@@ -37,7 +37,7 @@
 	} from '$lib/constant';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { setPropertyState } from '$lib/components/property';
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext } from 'svelte';

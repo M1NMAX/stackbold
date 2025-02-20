@@ -5,11 +5,11 @@
 	import { SearchInput, SortMenu } from '$lib/components/filters';
 	import type { Collection } from '@prisma/client';
 	import { cn } from '$lib/utils';
-	import { Button } from '$lib/components/ui/button';
-	import { getCrtCollectionModalState } from '$lib/components/modal';
+	import { getCrtCollectionModalState } from '$lib/states/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { UserMenu } from '$lib/components/user';
+	import { Button } from '$lib/components/base/index.js';
 
 	let { data } = $props();
 
@@ -37,6 +37,7 @@
 	$effect(() => {
 		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
 	});
+
 	let isSmHeadingVisible = $state(false);
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
@@ -58,7 +59,7 @@
 		</div>
 
 		<div class=" flex md:hidden items-center space-x-2">
-			<Button size="icon" variant="ghost" onclick={() => crtCollectionModal.open()}>
+			<Button theme="ghost" variant="icon" onclick={() => crtCollectionModal.open()}>
 				<Plus />
 			</Button>
 			<UserMenu user={data.user} />
