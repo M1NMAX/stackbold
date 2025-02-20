@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
 	import { getScreenSizeState } from '$lib/components/screen';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Drawer from '$lib/components/ui/drawer';
+	import { Button, buttonVariants } from '$lib/components/base/index.js';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import {
 		getCrtCollectionModalState,
 		getDeleteModalState,
 		ModalState
-	} from '$lib/components/modal';
+	} from '$lib/states/index.js';
 	import { nameSchema } from '$lib/schema';
 	import { getGroupState } from '$lib/components/group';
+	import Menu from '../base/menu.svelte';
 
 	type Props = {
 		id: string;
@@ -62,71 +61,40 @@
 	}
 </script>
 
-<div>
-	{#if isLargeScreen.current}
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger
-				class={buttonVariants({
-					variant: 'ghost',
-					size: 'xs',
-					className: 'invisible group-hover:visible transition-opacity'
-				})}
-			>
-				<MoreHorizontal class="icon-xs" />
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item onclick={() => crtCollectionModal.open(id)}>
-					<Plus class="icon-xs" />
-					<span>New collection</span>
-				</DropdownMenu.Item>
+<Menu
+	align="start"
+	bind:open={smallScreenDrawer.isOpen}
+	triggerClass={buttonVariants({
+		theme: 'ghost',
+		variant: 'compact',
+		className: 'invisible group-hover:visible transition-opacity'
+	})}
+>
+	{#snippet trigger()}
+		<MoreHorizontal />
+	{/snippet}
+	<Button theme="ghost" variant="menu" onclick={() => crtCollectionModal.open(id)}>
+		<Plus />
+		<span>New collection</span>
+	</Button>
 
-				<DropdownMenu.Item onclick={() => renameGroupModal.open()}>
-					<Pencil class="icon-xs" />
-					<span> Rename </span>
-				</DropdownMenu.Item>
+	<Button
+		theme="ghost"
+		variant="menu"
+		onclick={() => {
+			renameGroupModal.open();
+			smallScreenDrawer.close();
+		}}
+	>
+		<Pencil />
+		<span> Rename </span>
+	</Button>
 
-				<DropdownMenu.Item onclick={() => deleteGroup()} class="group">
-					<Trash class="icon-xs group-hover:text-primary" />
-					<span class="group-hover:text-primary">Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
-		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
-			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-				<MoreHorizontal class="icon-xs" />
-			</Drawer.Trigger>
-			<Drawer.Content>
-				<Drawer.Header class="py-2">
-					<div class="flex items-center space-x-2">
-						<div class="p-2.5 rounded bg-secondary">
-							<ChevronRight class="icon-sm" />
-						</div>
-
-						<div class=" text-base font-semibold truncate">{group.name}</div>
-					</div>
-				</Drawer.Header>
-				<Drawer.Footer class="pt-2">
-					<Button
-						variant="secondary"
-						onclick={() => {
-							renameGroupModal.open();
-							smallScreenDrawer.close();
-						}}
-					>
-						<Pencil class="icon-xs" />
-						<span> Rename </span>
-					</Button>
-
-					<Button variant="destructive" onclick={() => deleteGroup()}>
-						<Trash class="icon-xs" />
-						<span>Delete</span>
-					</Button>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
-</div>
+	<Button theme="danger" variant="menu" onclick={() => deleteGroup()}>
+		<Trash />
+		<span>Delete</span>
+	</Button>
+</Menu>
 
 <Dialog.Root bind:open={renameGroupModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">

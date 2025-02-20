@@ -1,31 +1,28 @@
 <script lang="ts">
-	import { Copy, MoreHorizontal, PanelLeftOpen, Trash } from 'lucide-svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import { cn } from '$lib/utils';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import { getDeleteModalState } from '$lib/components/modal';
+	import Copy from 'lucide-svelte/icons/copy';
+	import Ellipsis from 'lucide-svelte/icons/ellipsis';
+	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
+	import Trash from 'lucide-svelte/icons/trash';
+	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { getItemState } from '.';
+	import { Button, buttonVariants, HSeparator, Menu } from '$lib/components/base/index.js';
+	import type { Align } from '$lib/types';
 
 	type Props = {
 		id: string;
 		name: string;
-		class?: string;
+		align: Align;
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { id, name, class: className, clickOpenItem }: Props = $props();
-
-	let open = $state(false);
+	let { id, name, align, clickOpenItem }: Props = $props();
+	const menuState = new ModalState();
 
 	const itemState = getItemState();
-
-	const isLargeScreen = getScreenSizeState();
 	const deleteModal = getDeleteModalState();
 
 	function deleteItem() {
-		if (open) open = false;
+		menuState.close();
 		deleteModal.open({
 			type: 'item',
 			id,
@@ -37,73 +34,43 @@
 	}
 
 	async function duplicateItem() {
-		if (open) open = false;
+		menuState.close();
 		await itemState.duplicateItem(id);
 	}
 
 	function openItem() {
-		if (open) open = false;
+		menuState.close();
 		clickOpenItem(id);
 	}
 </script>
 
-{#if isLargeScreen.current}
-	<DropdownMenu.Root bind:open>
-		<DropdownMenu.Trigger
-			class={buttonVariants({
-				variant: 'ghost',
-				size: 'xs',
-				className: cn(className, open && 'visible bg-accent')
-			})}
-		>
-			<MoreHorizontal class="icon-sm" />
-		</DropdownMenu.Trigger>
-		<DropdownMenu.Content class="w-56">
-			<DropdownMenu.Group>
-				<DropdownMenu.Item onclick={() => openItem()}>
-					<PanelLeftOpen class="icon-xs" />
-					<span> Open in side </span>
-				</DropdownMenu.Item>
+<Menu
+	bind:open={menuState.isOpen}
+	{align}
+	triggerClass={buttonVariants({
+		theme: 'ghost',
+		variant: 'compact',
+		class: [menuState.isOpen && 'visible bg-accent']
+	})}
+>
+	{#snippet trigger()}
+		<Ellipsis />
+	{/snippet}
 
-				<DropdownMenu.Item onclick={() => duplicateItem()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</DropdownMenu.Item>
+	<Button theme="ghost" variant="menu" onclick={() => openItem()}>
+		<PanelLeftOpen />
+		<span> Open </span>
+	</Button>
 
-				<DropdownMenu.Item onclick={() => deleteItem()} class="group">
-					<Trash class="icon-xs group-hover:text-primary" />
-					<span class="group-hover:text-primary">Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Group>
-		</DropdownMenu.Content>
-	</DropdownMenu.Root>
-{:else}
-	<Drawer.Root bind:open>
-		<Drawer.Trigger
-			class={buttonVariants({
-				variant: 'ghost',
-				size: 'xs',
-				className: cn(className, open && 'visible bg-accent')
-			})}
-		>
-			<MoreHorizontal />
-		</Drawer.Trigger>
-		<Drawer.Content>
-			<Drawer.Footer>
-				<Button variant="secondary" onclick={() => openItem()}>
-					<PanelLeftOpen class="icon-xs" />
-					<span> Open </span>
-				</Button>
+	<Button theme="ghost" variant="menu" onclick={() => duplicateItem()}>
+		<Copy />
+		<span>Duplicate</span>
+	</Button>
 
-				<Button variant="secondary" onclick={() => duplicateItem()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</Button>
-				<Button variant="destructive" onclick={() => deleteItem()} class="group">
-					<Trash class="icon-xs group-hover:text-primary" />
-					<span>Delete</span>
-				</Button>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
-{/if}
+	<HSeparator />
+
+	<Button theme="danger" variant="menu" onclick={() => deleteItem()}>
+		<Trash />
+		<span>Delete</span>
+	</Button>
+</Menu>
