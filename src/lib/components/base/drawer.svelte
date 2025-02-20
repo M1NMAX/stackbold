@@ -6,9 +6,10 @@
 	type Props = {
 		children: Snippet;
 		open: boolean;
+		class?: string;
 	};
 
-	let { children, open = $bindable(false) }: Props = $props();
+	let { children, open = $bindable(false), class: className }: Props = $props();
 </script>
 
 {#if open}
@@ -16,13 +17,16 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		role="presentation"
-		class="fixed top-0 start-0 z-50 w-full h-full"
+		class="fixed top-0 start-0 z-50 w-full h-full bg-black/80"
 		onclick={() => (open = false)}
 	></div>
 	<div
-		class="w-full fixed inset-x-0 bottom-0 z-50 p-1 rounded-t-[10px] overflow-y-auto bg-background"
+		class={['w-full fixed inset-x-0 bottom-0 z-50 p-2 ', className]}
 		transition:fly={{ y: 320, duration: 200, easing: sineIn }}
 	>
-		{@render children()}
+		<div class="flex flex-col p-1 rounded-lg overflow-y-auto bg-background">
+			<div class="bg-muted mx-auto my-1 h-1 w-[50px] rounded-full"></div>
+			{@render children()}
+		</div>
 	</div>
 {/if}
