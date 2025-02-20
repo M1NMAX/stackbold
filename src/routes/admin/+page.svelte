@@ -14,9 +14,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import { onError } from '$lib/components/feedback';
-	import { toast } from 'svelte-sonner';
-	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import { getDeleteModalState, getToastState, ModalState } from '$lib/states/index.js';
 
 	let { data } = $props();
 
@@ -25,6 +23,7 @@
 	type UserWithoutPassword = Omit<User, 'password'>;
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 	let sort = $state(sortOptions[0]);
+	const toastState = getToastState();
 
 	let search = $state('');
 	let users = $derived.by(() => {
@@ -48,13 +47,13 @@
 			switch (result.type) {
 				case 'success':
 					addUserModal.close();
-					toast.success('User added successfully');
+					toastState.addSuccessToast('User added successfully');
 
 					invalidate('/admin');
 					break;
 
 				case 'error':
-					toast.error('Unable to add user');
+					toastState.addErrorToast('Unable to add user');
 					break;
 			}
 		}
@@ -66,9 +65,9 @@
 
 			await invalidateAll();
 
-			toast.success(`User [${name}] deleted successfully`);
+			toastState.addSuccessToast(`User [${name}] deleted successfully`);
 		} catch (error) {
-			onError(error);
+			toastState.addErrorToast();
 		}
 	}
 
