@@ -21,11 +21,17 @@
 				sm: 'h-9 px-3',
 				xs: 'h-7 w-7',
 				icon: 'h-9 w-9'
+			},
+			align: {
+				default: 'justify-center',
+				start: 'justify-start'
 			}
 		},
 		defaultVariants: {
 			variant: 'default',
-			size: 'default'
+			size: 'default',
+
+			align: 'default'
 		}
 	});
 

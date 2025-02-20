@@ -11,7 +11,7 @@
 
 <main
 	class={cn(
-		'grow h-full flex flex-col space-y-1 rounded-md bg-card text-secondary-foreground overflow-hidden',
+		'grow h-full flex flex-col gap-y-1 rounded-md bg-card text-secondary-foreground overflow-hidden',
 		className
 	)}
 >

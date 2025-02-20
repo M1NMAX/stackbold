@@ -33,3 +33,17 @@ export const MAX_ITEM_NAME_LENGTH = 200;
 export const MAX_GROUP_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NUMERIC_LENGTH = 10;
 export const MAX_PROPERTY_TEXT_LENGTH = 255;
+
+export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
+
+export const LOCALE = 'en-US';
+
+export const WEEK_DAYS: { [key: number]: string } = {
+	0: 'Sunday',
+	1: 'Monday',
+	2: 'Tuesday',
+	3: 'Wednesday',
+	4: 'Thursday',
+	5: 'Friday',
+	6: 'Saturday'
+};

@@ -11,7 +11,7 @@
 
 <div
 	onscroll={onScroll}
-	class={cn('h-max w-full mx-auto pt-0.5 pb-2 px-2  space-y-2 overflow-y-auto', className)}
+	class={cn('h-full w-full mx-auto pt-0.5 pb-2 px-2  gap-y-2 overflow-y-auto', className)}
 >
 	{@render children()}
 </div>
