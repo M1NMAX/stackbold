@@ -6,7 +6,7 @@
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
 	import { Plus } from 'lucide-svelte';
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import { getScreenSizeState } from '$lib/components/screen';
 	import { getItemState } from '$lib/components/items';
 

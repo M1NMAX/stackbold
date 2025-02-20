@@ -3,7 +3,7 @@
 	import type { PropertyType } from '@prisma/client';
 
 	type Props = {
-		key: PropertyType;
+		key: PropertyType | 'none';
 		class?: string;
 	};
 

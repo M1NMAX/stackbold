@@ -16,8 +16,8 @@
 	import { cn, sanitizeNumberInput } from '$lib/utils';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
-	import { clickOutside, textareaAutoSize } from '$lib/actions';
-	import { ModalState } from '$lib/components/modal';
+	import { textareaAutoSize } from '$lib/actions';
+	import { ModalState } from '$lib/states/index.js';
 	import {
 		getOption,
 		getPropertyColor,
@@ -26,6 +26,7 @@
 		PropertyResponsiveWrapper
 	} from '.';
 	import { Select, Label as OwnLabel } from '$lib/components/base/index.js';
+	import type { Lead } from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
@@ -105,19 +106,17 @@
 			options={[
 				...property.options.map((option) => ({
 					lead: {
-						// TODO: remove this obvious tmp fix, I know right
-						type: 'color' as 'color',
-						color: PROPERTY_COLORS[option.color] as string
-					},
+						type: 'color',
+						color: PROPERTY_COLORS[option.color]
+					} as Lead,
 					id: option.id,
 					label: option.value,
 					isSelected: option.id === value,
 					theme: PROPERTY_COLORS[option.color]
 				}))
 			]}
-			onselect={(opt) => {
-				updPropertyRef({ id: property.id, value: opt.id });
-			}}
+			onselect={(opt) => updPropertyRef({ id: property.id, value: opt.id })}
+			placeholder="Empty"
 		/>
 	</div>
 {/if}

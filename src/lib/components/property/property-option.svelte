@@ -8,7 +8,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { getScreenSizeState } from '$lib/components/screen';
-	import { getDeleteModalState } from '$lib/components/modal';
+	import { getDeleteModalState } from '$lib/states/index.js';
 	import debounce from 'debounce';
 	import { getPropertyState } from './propertyState.svelte';
 	import type { UpdOption } from '$lib/types';

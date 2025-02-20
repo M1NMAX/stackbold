@@ -23,8 +23,8 @@
 	import { getScreenSizeState } from '$lib/components/screen';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
-	import { textareaAutoSize } from '$lib/actions';
-	import { ModalState } from '$lib/components/modal';
+	import { textareaAutoSize } from '$lib/actions/index.js';
+	import { ModalState } from '$lib/states/index.js';
 	import { fade } from 'svelte/transition';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Button } from '$lib/components/ui/button';
