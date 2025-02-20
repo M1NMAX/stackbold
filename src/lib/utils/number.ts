@@ -12,3 +12,13 @@ export function sanitizeNumberInput(value: string) {
 
 	return parseFloat(sanitizedValue).toString();
 }
+
+globalThis.baseIdCounter ??= { current: 0 };
+
+/**
+ * Generates a unique ID based on a global counter.
+ */
+export function useId(prefix = 'sb-id') {
+	globalThis.baseIdCounter.current++;
+	return `${prefix}-${globalThis.baseIdCounter.current}`;
+}
