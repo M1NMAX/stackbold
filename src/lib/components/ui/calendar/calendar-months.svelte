@@ -1,19 +1,20 @@
 <script lang="ts">
-	import { cn } from "$lib/utils";
+	import type { WithElementRef } from "bits-ui";
 	import type { HTMLAttributes } from "svelte/elements";
+	import { cn } from "$lib/utils/shadcn.js";
 
-	type $$Props = HTMLAttributes<HTMLDivElement>;
-
-	let className: $$Props["class"] = undefined;
-	export { className as class };
+	let {
+		ref = $bindable(null),
+		class: className,
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
 </script>
 
 <div
-	class={cn(
-		"flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 mt-4",
-		className
-	)}
-	{...$$restProps}
+	bind:this={ref}
+	class={cn("mt-4 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0", className)}
+	{...restProps}
 >
-	<slot />
+	{@render children?.()}
 </div>

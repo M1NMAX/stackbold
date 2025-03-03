@@ -1,4 +1,5 @@
 import type { Color } from '@prisma/client';
+import type { RouterInputs } from '$lib/trpc/router';
 
 export type Colors = { [key in Color]?: string };
 
@@ -9,7 +10,39 @@ export type Sizes = {
 
 export type DeleteDetail =
 	| { type: null }
-	| { type: 'item' | 'property'; id: string }
-	| { type: 'option'; id: string; option: string }
-	| { type: 'collection' | 'user'; id: string; name: string }
-	| { type: 'group'; id: string; name: string; includeCollections: boolean };
+	| { type: 'option'; id: string; option: string; name: string; fun: () => void }
+	| {
+			type: 'user' | 'group' | 'collection' | 'item' | 'property' | 'option';
+			id: string;
+			name: string;
+			fun: () => Promise<void>;
+	  };
+
+export type MoveCollectionDetail = {
+	collectionId: string;
+	currentGroupId: string | null;
+};
+export type UpdOption = RouterInputs['collections']['updatePropertyOption']['property']['option'];
+
+export type UpdProperty = RouterInputs['collections']['updateProperty']['property'];
+
+export type Filter = { id: string; values: string[] };
+
+export type Searchable =
+	| {
+			id: string;
+			name: string;
+			type: 'collection';
+			updatedAt: Date;
+			icon: string;
+	  }
+	| {
+			id: string;
+			name: string;
+			type: 'item';
+			updatedAt: Date;
+			collection: {
+				id: string;
+				name: string;
+			};
+	  };

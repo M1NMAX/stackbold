@@ -2,64 +2,49 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { signUpSchema } from '$lib/schema';
-import { generateIdFromEntropySize } from 'lucia';
-import { prisma } from '$lib/server/prisma';
-import { hash } from "@node-rs/argon2"
-import { lucia } from '$lib/server/auth';
-import { generateEmailVerificationCode, sendEmailVerificationCode } from "$lib/server/email";
+import { generateEmailVerificationCode, sendEmailVerificationCode } from '$lib/server/email';
+import { zod } from 'sveltekit-superforms/adapters';
+import { dev } from '$app/environment';
+import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
+import { createUser } from '$lib/server/user';
 
 export const load: PageServerLoad = async ({ locals }) => {
-
 	const user = locals.user;
 	if (user) {
 		redirect(302, '/');
 	}
 
-	const form = await superValidate(signUpSchema);
+	if (!dev) {
+		redirect(302, '/signin');
+	}
+
+	const form = await superValidate(zod(signUpSchema));
 	return { form };
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
-		const form = await superValidate(request, signUpSchema);
+	default: async (event) => {
+		const form = await superValidate(event.request, zod(signUpSchema));
 
 		if (!form.valid) return fail(400, { form });
 
-		const { email, password } = form.data;
+		const { name, email, password } = form.data;
 
-
-		// recommended minimum parameters
-		const passwordHash = await hash(password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
-
+		//TODO: check password strength
 		//TODO: check if username is already used
-		const createdUser = await prisma.user.create({
-			data: {
-				id: generateIdFromEntropySize(10), // 16 characters long
-				name: email.split("@")[0],
-				email: email,
-				password: passwordHash
-			}
-		})
+		const user = await createUser(name, email, password);
 
-
-		const verficationCode = await generateEmailVerificationCode(createdUser.id, email);
+		const verficationCode = await generateEmailVerificationCode(user.id, email);
 		await sendEmailVerificationCode(email, verficationCode);
-		const session = await lucia.createSession(createdUser.id, {
-			role: createdUser.role
-		});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
+
+		const sessionToken = generateSessionToken();
+		const session = await createSession(sessionToken, {
+			userId: user.id,
+			role: user.role
 		});
 
-		redirect(302, "/email-verification");
+		setSessionTokenCookie(event, sessionToken, session.expiresAt);
+
+		redirect(302, '/email-verification');
 	}
 };
-
-

@@ -7,9 +7,13 @@
 	import { cn } from '$lib/utils';
 	import { getPropertyValue, PropertyIcon } from '.';
 
-	export let property: Property;
-	export let color: Color;
-	export let value: string;
+	type Props = {
+		property: Property;
+		color: Color;
+		value: string;
+	};
+
+	let { property, color, value }: Props = $props();
 
 	const {
 		elements: { trigger, content, arrow },
@@ -41,11 +45,16 @@
 		<span class="font-semibold">{property.name} </span>
 	</div>
 {:else}
+	{@const result = getPropertyValue(property, value)}
 	<span
 		use:melt={$trigger}
 		class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
-		{getPropertyValue(property, value)}
+		{#if property.type !== 'TEXT'}
+			{result}
+		{:else}
+			{result.substring(0, 55)}
+		{/if}
 	</span>
 
 	{#if $open}
@@ -54,7 +63,7 @@
 			transition:fade={{ duration: 100 }}
 			class="z-10 rounded-lg bg-secondary shadow"
 		>
-			<div use:melt={$arrow} />
+			<div use:melt={$arrow}></div>
 			<div class="flex items-center p-1">
 				<PropertyIcon key={property.type} class="icon-xs mr-1" />
 				<span class="text-sm font-semibold">{property.name}</span>

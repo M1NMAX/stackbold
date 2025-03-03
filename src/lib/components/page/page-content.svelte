@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-
-	let className: string | undefined = undefined;
-	export { className as class };
+	import type { Snippet } from 'svelte';
+	type Props = {
+		children: Snippet;
+		class?: string;
+		onScroll?: (e: Event) => void;
+	};
+	let { children, class: className, onScroll }: Props = $props();
 </script>
 
 <div
-	on:scroll
-	class={cn('h-full w-full mx-auto p-2 pb-10 lg:p-4 space-y-2 overflow-y-auto', className)}
+	onscroll={onScroll}
+	class={cn('h-max w-full mx-auto pt-0.5 pb-2 px-2  space-y-2 overflow-y-auto', className)}
 >
-	<slot />
+	{@render children()}
 </div>

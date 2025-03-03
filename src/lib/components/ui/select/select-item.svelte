@@ -1,36 +1,37 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
-	import { Select as SelectPrimitive } from 'bits-ui';
-	import { Check } from 'lucide-svelte';
+	import Check from 'lucide-svelte/icons/check';
+	import { Select as SelectPrimitive, type WithoutChild } from 'bits-ui';
+	import { cn } from '$lib/utils/shadcn.js';
 
-	type $$Props = SelectPrimitive.ItemProps;
-	type $$Events = SelectPrimitive.ItemEvents;
-
-	let className: $$Props['class'] = undefined;
-	export let value: $$Props['value'];
-	export let label: $$Props['label'] = undefined;
-	export let disabled: $$Props['disabled'] = undefined;
-	export { className as class };
+	let {
+		ref = $bindable(null),
+		class: className,
+		value,
+		label,
+		children: childrenProp,
+		...restProps
+	}: WithoutChild<SelectPrimitive.ItemProps> = $props();
 </script>
 
 <SelectPrimitive.Item
+	bind:ref
 	{value}
-	{disabled}
-	{label}
 	class={cn(
-		'flex w-full cursor-default select-none justify-between items-center rounded-sm py-1.5 px-2 text-sm outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+		'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
 		className
 	)}
-	{...$$restProps}
-	on:click
-	on:keydown
-	on:focusin
-	on:focusout
-	on:pointerleave
-	on:pointermove
+	{...restProps}
 >
-	<slot />
-	<SelectPrimitive.ItemIndicator>
-		<Check class="icon-xs " />
-	</SelectPrimitive.ItemIndicator>
+	{#snippet children({ selected, highlighted })}
+		<span class="absolute right-2 flex size-3.5 items-center justify-center">
+			{#if selected}
+				<Check class="size-5" />
+			{/if}
+		</span>
+		{#if childrenProp}
+			{@render childrenProp({ selected, highlighted })}
+		{:else}
+			{label || value}
+		{/if}
+	{/snippet}
 </SelectPrimitive.Item>

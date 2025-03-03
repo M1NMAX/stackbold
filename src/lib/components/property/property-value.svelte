@@ -1,438 +1,363 @@
 <script lang="ts">
-	import { PROPERTY_COLORS } from '$lib/constant';
-	import { createEventDispatcher } from 'svelte';
-	import type { Property, Color } from '@prisma/client';
-	import { CalendarIcon, CheckCheck } from 'lucide-svelte';
-	import * as Command from '$lib/components/ui/command';
-	import * as Popover from '$lib/components/ui/popover';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Button } from '$lib/components/ui/button';
-	import { cn } from '$lib/utils';
+	import { createTooltip, melt } from '@melt-ui/svelte';
+	import {
+		DEBOUNCE_INTERVAL,
+		MAX_PROPERTY_NUMERIC_LENGTH,
+		MAX_PROPERTY_TEXT_LENGTH,
+		PROPERTY_COLORS
+	} from '$lib/constant';
+	import { type Property, View } from '@prisma/client';
+	import { Check, Eraser } from 'lucide-svelte';
+	import { Label } from '$lib/components/ui/label';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import { cn, sanitizeNumberInput } from '$lib/utils';
 	import { Calendar } from '$lib/components/ui/calendar';
 	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
-	import { PropertyValueWrapper } from '.';
-	import { getScreenState } from '$lib/components/view';
-	import { textareaAutosizeAction } from 'svelte-legos';
+	import {
+		getOption,
+		getPropertyColor,
+		getPropertyRef,
+		PropertyIcon,
+		PropertyResponsiveWrapper
+	} from '.';
+	import { getScreenSizeState } from '$lib/components/screen';
+	import { getItemState } from '$lib/components/items';
+	import debounce from 'debounce';
+	import { textareaAutoSize } from '$lib/actions';
+	import { ModalState } from '$lib/components/modal';
+	import { fade } from 'svelte/transition';
+	import { Separator } from '$lib/components/ui/separator';
+	import { Button } from '$lib/components/ui/button';
 
-	export let itemId: string;
-	export let property: Property;
-	export let color: Color = 'GRAY';
-	export let value: string | null;
-	export let isTableView: boolean = false;
-	let open = false;
+	type Props = {
+		itemId: string;
+		property: Property;
+		view?: View;
+	};
 
-	const isDesktop = getScreenState();
+	let { itemId, property, view = View.LIST }: Props = $props();
 
-	const dispatch = createEventDispatcher<{
-		updPropertyValue: { itemId: string; property: { id: string; value: string } };
-	}>();
+	const itemState = getItemState();
+	const isLargeScreen = getScreenSizeState();
 
-	function handleOnInput(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const currValue = input.type === 'checkbox' ? input.checked.toString() : input.value;
-		dispatch('updPropertyValue', { itemId, property: { id: property.id, value: currValue } });
+	let wrapperState = new ModalState();
+
+	let value = $derived(getPropertyValue());
+	let color = $derived(getPropertyColor(property, value));
+
+	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
+	async function updPropertyRef(value: string) {
+		if (shouldClose()) wrapperState.close();
+		await itemState.updPropertyRef(itemId, { id: property.id, value });
 	}
 
-	const buttonClass = cn(
-		'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit hover:bg-inherit',
-		property.type === 'NUMBER' && 'justify-end',
-		!isTableView && 'h-6 w-fit rounded outline-none  py-1 px-1.5 font-semibold',
-		!isTableView && PROPERTY_COLORS[color]
+	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
+		target.value = value;
+	}, DEBOUNCE_INTERVAL);
+
+	function handleOnInput(e: Event) {
+		// TODO: add validation
+		const targetEl = e.target as HTMLInputElement;
+
+		let value = targetEl.value;
+		if (property.type === 'NUMBER') {
+			value = sanitizeNumberInput(targetEl.value);
+			updTargetElValue(targetEl, value);
+		} else if (targetEl.type === 'checkbox') {
+			value = targetEl.checked.toString();
+		}
+
+		updPropertyRefDebounced(value);
+	}
+
+	async function handleEnterKeypress(e: KeyboardEvent) {
+		//TODO: verify what whould happen on mobile if the user press the Enter key
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
+		const targetEl = e.target as HTMLInputElement;
+		const value = property.type !== 'NUMBER' ? targetEl.value : sanitizeNumberInput(targetEl.value);
+
+		wrapperState.close();
+		await updPropertyRef(value);
+	}
+
+	const buttonClass = $derived(
+		cn(
+			isTableView()
+				? 'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit'
+				: `w-fit h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
+			property.type === 'NUMBER' && 'justify-end'
+		)
 	);
 
-	$: selectedValue = property.options.find((opt) => opt.id === value)?.value ?? '';
-	// TODO: ref: most of property types are inside same components consider create a wrapper
+	const labelClass = cn(
+		'font-semibold text-sm text-center px-0 pb-0.5 pt-1',
+		isLargeScreen.current && 'sr-only'
+	);
+
+	//uitls
+	function getPropertyValue() {
+		const item = itemState.getItem(itemId);
+		if (!item) return '';
+
+		const propertyRef = getPropertyRef(item.properties, property.id);
+
+		if (!propertyRef) return '';
+		if (property.type !== 'SELECT') return propertyRef.value;
+
+		const option = getOption(property.options, propertyRef.value);
+		return option ? option.id : '';
+	}
+
+	function shouldClose() {
+		return wrapperState.isOpen && (property.type === 'SELECT' || property.type === 'DATE');
+	}
+
+	function isTableView() {
+		return view === View.TABLE;
+	}
+
+	// tooltip
+	const {
+		elements: { trigger, content, arrow },
+		states: { open }
+	} = createTooltip({
+		positioning: {
+			placement: 'top'
+		},
+		openDelay: 0,
+		closeDelay: 0,
+		closeOnPointerDown: false
+	});
 </script>
 
 {#if property.type === 'CHECKBOX'}
 	<label
 		class={cn(
 			'flex justify-center',
-			!isTableView &&
-				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded text-sm font-semibold ',
-			!isTableView && PROPERTY_COLORS[color]
+			!isTableView() &&
+				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-sm text-sm font-semibold',
+			!isTableView() && PROPERTY_COLORS[color]
 		)}
 	>
-		<input type="checkbox" checked={value === 'true'} on:input={handleOnInput} class="checkbox" />
+		<input type="checkbox" checked={value === 'true'} oninput={handleOnInput} class="checkbox" />
 
-		<span class={cn('font-semibold', isTableView && 'sr-only')}>{property.name} </span>
+		<span class={cn('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
-{:else if property.type === 'SELECT' && (value || isTableView)}
-	{#if $isDesktop}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="outline"
-					role="combobox"
-					aria-expanded={open}
-					class={cn(buttonClass, !isTableView && PROPERTY_COLORS[color])}
-				>
-					<PropertyValueWrapper isWrappered={!!value && isTableView} class={PROPERTY_COLORS[color]}>
-						{selectedValue}
-					</PropertyValueWrapper>
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content align="start" class="w-[200px] p-0">
-				<Command.Root>
-					<Command.Input
-						placeholder={property.options.length > 0 ? 'Search for an options...' : undefined}
-					/>
+{:else if property.type === 'SELECT' && (value || isTableView())}
+	{@const selectedOption = getOption(property.options, value)?.value ?? ''}
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		alignCenter={false}
+		btnClass={buttonClass}
+		mobileClass="p-2"
+		desktopClass="w-full p-1"
+	>
+		{#snippet header()}
+			{@render tooltipWrapper(selectedOption, !!value && isTableView())}
+		{/snippet}
 
-					<Command.Group heading="Select an option">
-						{#each property.options as option}
-							<Command.Item
-								value={option.value}
-								onSelect={() => {
-									// value = option.id;
-									dispatch('updPropertyValue', {
-										itemId,
-										property: { id: property.id, value: option.id }
-									});
-									open = false;
-								}}
-								class="justify-between"
-							>
-								<span
-									class={cn(
-										'h-6 flex items-center py-1 px-1.5 rounded',
-										PROPERTY_COLORS[option.color]
-									)}
-								>
-									{option.value}
-								</span>
-								<CheckCheck
-									class={cn('icon-xs text-primary', value !== option.id && 'text-transparent')}
-								/>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-					<Command.Empty>No option found.</Command.Empty>
-				</Command.Root>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Dialog.Root bind:open>
-			<Dialog.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="outline"
-					role="combobox"
-					aria-expanded={open}
-					class={cn(buttonClass, !isTableView && PROPERTY_COLORS[color])}
-				>
-					<PropertyValueWrapper isWrappered={!!value && isTableView} class={PROPERTY_COLORS[color]}>
-						{selectedValue}
-					</PropertyValueWrapper>
-				</Button>
-			</Dialog.Trigger>
-			<Dialog.Content class="p-0 pt-2">
-				<Dialog.Header class="pb-0">
-					<Dialog.Title class="text-center">{property.name}</Dialog.Title>
-				</Dialog.Header>
+		<div>
+			<p class={labelClass}>{property.name}</p>
+			<RadioGroup.Root value={value || undefined} class="gap-y-0">
+				{#each property.options as option}
+					<Label
+						for={option.id}
+						class="w-full flex items-center space-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+					>
+						<span class={cn('size-3.5 rounded-sm', PROPERTY_COLORS[option.color])}></span>
+						<span class="grow text-sm font-semibold pr-10">
+							{option.value}
+						</span>
 
-				<Command.Root class="bg-inherit">
-					<Command.Input
-						placeholder={property.options.length > 0 ? 'Search for an options...' : undefined}
-					/>
+						<Check class={cn('icon-xs', value !== option.id && 'text-transparent')} />
+						<RadioGroup.Item
+							value={option.id}
+							id={option.id}
+							class="sr-only"
+							onclick={() => updPropertyRef(option.id)}
+						/>
+					</Label>
+				{/each}
+			</RadioGroup.Root>
+		</div>
 
-					<Command.Group heading="Select an option">
-						{#each property.options as option}
-							<Command.Item
-								value={option.value}
-								onSelect={() => {
-									// value = option.id;
-									dispatch('updPropertyValue', {
-										itemId,
-										property: { id: property.id, value: option.id }
-									});
-									open = false;
-								}}
-								class="justify-between"
-							>
-								<span
-									class={cn(
-										'h-6 flex items-center py-1 px-1.5 rounded',
-										PROPERTY_COLORS[option.color]
-									)}
-								>
-									{option.value}
-								</span>
-								<CheckCheck
-									class={cn('icon-xs text-primary', value !== option.id && 'text-transparent')}
-								/>
-							</Command.Item>
-						{/each}
-					</Command.Group>
-					<Command.Empty>No option found.</Command.Empty>
-				</Command.Root>
-			</Dialog.Content>
-		</Dialog.Root>
-	{/if}
-{:else if property.type === 'DATE' && (value || isTableView)}
+		{@render clearBtn()}
+	</PropertyResponsiveWrapper>
+{:else if property.type === 'DATE' && (value || isTableView())}
 	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
 	{@const plus = value ? 0 : 1}
 	{@const valueAsDate = value ? new Date(value) : new Date()}
 	{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
+	{@const content = df.format(
+		new CalendarDate(
+			valueAsDate.getFullYear(),
+			valueAsDate.getMonth(),
+			valueAsDate.getDate()
+		).toDate(getLocalTimeZone())
+	)}
 
-	{#if $isDesktop}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{#if value}
-						<PropertyValueWrapper
-							isWrappered={!!value && isTableView}
-							class={PROPERTY_COLORS[color]}
-						>
-							<CalendarIcon class="icon-xs mr-2" />
-							{df.format(
-								new CalendarDate(
-									valueAsDate.getFullYear(),
-									valueAsDate.getMonth(),
-									valueAsDate.getDate()
-								).toDate(getLocalTimeZone())
-							)}
-						</PropertyValueWrapper>
-					{/if}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content class="w-auto p-0" align="start">
-				<Calendar
-					value={new CalendarDate(
-						valueAsDate.getFullYear(),
-						valueAsDate.getMonth() + plus,
-						valueAsDate.getDate()
-					)}
-					onValueChange={(dt) => {
-						if (!dt) return;
-						value = dt.toString();
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		alignCenter={false}
+		btnClass={buttonClass}
+		desktopClass="w-auto p-1"
+		mobileClass="p-2"
+	>
+		{#snippet header()}
+			{#if value}
+				{@render tooltipWrapper(content, !!value && isTableView())}
+			{/if}
+		{/snippet}
 
-						dispatch('updPropertyValue', {
-							itemId,
-							property: { id: property.id, value }
-						});
-						open = false;
-					}}
-				/>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Drawer.Root>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{#if value}
-						<PropertyValueWrapper
-							isWrappered={!!value && isTableView}
-							class={PROPERTY_COLORS[color]}
-						>
-							<CalendarIcon class="icon-xs mr-2" />
-							{df.format(
-								new CalendarDate(
-									valueAsDate.getFullYear(),
-									valueAsDate.getMonth(),
-									valueAsDate.getDate()
-								).toDate(getLocalTimeZone())
-							)}
-						</PropertyValueWrapper>
-					{/if}
-				</Button>
-			</Drawer.Trigger>
-			<Drawer.Content>
-				<div class="mx-auto w-full max-w-xs">
-					<Drawer.Header>
-						<Drawer.Description>{property.name}</Drawer.Description>
-					</Drawer.Header>
-					<div class="p-4 pb-0">
-						<Calendar
-							value={new CalendarDate(
-								valueAsDate.getFullYear(),
-								valueAsDate.getMonth() + plus,
-								valueAsDate.getDate()
-							)}
-							onValueChange={(dt) => {
-								if (!dt) return;
-								value = dt.toString();
+		<p class={cn(labelClass, 'text-center py-1')}>{property.name}</p>
+		<div class="w-full p-0.5">
+			<Calendar
+				type="single"
+				value={new CalendarDate(
+					valueAsDate.getFullYear(),
+					valueAsDate.getMonth() + plus,
+					valueAsDate.getDate()
+				)}
+				onValueChange={(dt) => {
+					if (!dt) return;
+					updPropertyRef(dt.toString());
+				}}
+				class="p-0"
+			/>
+		</div>
+		{@render clearBtn()}
+	</PropertyResponsiveWrapper>
+{:else if property.type === 'TEXT' && (value || isTableView())}
+	{@const MAX_LENGTH = isLargeScreen.current ? 50 : 20}
+	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		alignCenter={false}
+		btnClass={buttonClass}
+		mobileClass="p-2"
+		desktopClass={cn('w-full max-w-xl p-1', value && value?.length < MAX_LENGTH && 'max-w-xs')}
+	>
+		{#snippet header()}
+			{@render tooltipWrapper(content)}
+		{/snippet}
 
-								dispatch('updPropertyValue', {
-									itemId,
-									property: { id: property.id, value }
-								});
-								open = false;
-							}}
-						/>
-					</div>
-				</div>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
-{:else if property.type === 'TEXT' && (value || isTableView)}
-	{@const MAX_STR_LENGTH = 50}
-	{#if $isDesktop}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value?.substring(0, MAX_STR_LENGTH)}
-					{value && value.length > MAX_STR_LENGTH ? '...' : ''}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content
-				class={cn('w-full max-w-lg', value && value?.length < MAX_STR_LENGTH && 'max-w-xs')}
-			>
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
+		<form class="space-y-0.5">
+			<label for={property.id} class={labelClass}> {property.name} </label>
 
-					<textarea
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="textarea textarea-ghost"
-						{value}
-						use:textareaAutosizeAction
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Dialog.Root bind:open>
-			<Dialog.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value?.substring(0, MAX_STR_LENGTH)}
-					{value && value.length > MAX_STR_LENGTH ? '...' : ''}
-				</Button>
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Description>
-						{property.name}
-					</Dialog.Description>
-				</Dialog.Header>
+			<textarea
+				use:textareaAutoSize
+				id={property.id}
+				name={property.name}
+				placeholder="Empty"
+				class="textarea textarea-ghost"
+				{value}
+				maxlength={MAX_PROPERTY_TEXT_LENGTH}
+				oninput={handleOnInput}
+				onkeypress={handleEnterKeypress}
+			></textarea>
+		</form>
+	</PropertyResponsiveWrapper>
+{:else if property.type === 'NUMBER' && (value || isTableView())}
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		alignCenter={false}
+		btnClass={buttonClass}
+		mobileClass="p-2"
+		desktopClass="p-1"
+	>
+		{#snippet header()}
+			{@render tooltipWrapper(value)}
+		{/snippet}
 
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
+		<form class="space-y-0.5">
+			<label for={property.id} class={labelClass}>
+				{property.name}
+			</label>
 
-					<textarea
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="textarea textarea-ghost"
-						{value}
-						use:textareaAutosizeAction
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
-	{/if}
-{:else if property.type === 'NUMBER' && (value || isTableView)}
-	{#if $isDesktop}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content>
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
+			<input
+				id={property.id}
+				name={property.name}
+				placeholder="Empty"
+				class="w-full input input-ghost input-sm px-1 font-semibold text-sm"
+				type="text"
+				inputmode="numeric"
+				{value}
+				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
+				oninput={handleOnInput}
+				onkeypress={handleEnterKeypress}
+			/>
+		</form>
+	</PropertyResponsiveWrapper>
+{:else if value || isTableView()}
+	<PropertyResponsiveWrapper
+		bind:open={wrapperState.isOpen}
+		btnClass={buttonClass}
+		alignCenter={false}
+		desktopClass="p-1"
+	>
+		{#snippet header()}
+			{@render tooltipWrapper(value)}
+		{/snippet}
 
-					<input
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="w-full input input-ghost px-1 font-semibold text-sm"
-						type="number"
-						step="any"
-						{value}
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Dialog.Root bind:open>
-			<Dialog.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value}
-				</Button>
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Description>
-						{property.name}
-					</Dialog.Description>
-				</Dialog.Header>
+		<form class="space-y-0.5">
+			<label for={property.id} class={labelClass}>
+				{property.name}
+			</label>
 
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
-
-					<input
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="w-full input input-ghost px-1 font-semibold text-sm"
-						type="number"
-						step="any"
-						{value}
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
-	{/if}
-{:else if value || isTableView}
-	{#if $isDesktop}
-		<Popover.Root bind:open>
-			<Popover.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value}
-				</Button>
-			</Popover.Trigger>
-			<Popover.Content>
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
-
-					<input
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="w-full input input-ghost px-1 font-semibold text-sm"
-						type={property.type.toLowerCase()}
-						{value}
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Popover.Content>
-		</Popover.Root>
-	{:else}
-		<Dialog.Root bind:open>
-			<Dialog.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="secondary" class={buttonClass}>
-					{value}
-				</Button>
-			</Dialog.Trigger>
-			<Dialog.Content>
-				<Dialog.Header>
-					<Dialog.Description>
-						{property.name}
-					</Dialog.Description>
-				</Dialog.Header>
-
-				<form>
-					<label for={property.id} class="sr-only"> {property.name} </label>
-
-					<input
-						id={property.id}
-						name={property.name}
-						placeholder="Empty"
-						class="w-full input input-ghost px-1 font-semibold text-sm"
-						type={property.type.toLowerCase()}
-						{value}
-						on:input={handleOnInput}
-					/>
-				</form>
-			</Dialog.Content>
-		</Dialog.Root>
-	{/if}
+			<input
+				id={property.id}
+				name={property.name}
+				placeholder="Empty"
+				class="w-full input input-ghost px-1 font-semibold text-sm"
+				type={property.type.toLowerCase()}
+				{value}
+				oninput={handleOnInput}
+			/>
+		</form>
+	</PropertyResponsiveWrapper>
 {/if}
+
+{#snippet tooltipWrapper(content: string, isWrappered: boolean = false)}
+	{@const wrapperClass = cn(
+		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
+		isWrappered && PROPERTY_COLORS[color]
+	)}
+	<span use:melt={$trigger} class={wrapperClass}>
+		{content}
+	</span>
+
+	{@render tooltipContent()}
+{/snippet}
+
+{#snippet tooltipContent()}
+	{#if $open && !isTableView()}
+		<div
+			use:melt={$content}
+			transition:fade={{ duration: 100 }}
+			class="z-10 rounded-sm bg-white dark:bg-gray-900 shadow-xl"
+		>
+			<div use:melt={$arrow}></div>
+			<div class="flex items-center p-1">
+				<PropertyIcon key={property.type} class="icon-xs mr-1" />
+				<span class="text-sm font-semibold">{property.name}</span>
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet clearBtn()}
+	<Separator class="my-0.5" />
+	<Button
+		variant="ghost"
+		class="h-8 w-full font-semibold justify-start"
+		disabled={value === ''}
+		onclick={() => {
+			updPropertyRef('');
+			wrapperState.close();
+		}}
+	>
+		<Eraser />
+		Clear
+	</Button>
+{/snippet}

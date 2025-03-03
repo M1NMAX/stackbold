@@ -1,35 +1,23 @@
 <script lang="ts">
-	import { type Property, type Item, View } from '@prisma/client';
+	import { type Item, View } from '@prisma/client';
 	import { ItemsListView, ItemsTableView } from '.';
 
-	export let items: Item[];
-	export let properties: Property[];
-	export let view: View;
+	type Props = {
+		items: Item[];
+		view: View;
+
+		clickOpenItem: (id: string) => void;
+	};
+
+	let { items, view, ...rest }: Props = $props();
 </script>
 
 {#if items.length > 0}
 	<div class="grow space-y-2">
 		{#if view === View.TABLE}
-			<ItemsTableView
-				{items}
-				{properties}
-				on:clickOpenItem
-				on:clickDuplicateItem
-				on:clickDeleteItem
-				on:renameItem
-				on:updPropertyValue
-				on:updPropertyVisibility
-			/>
+			<ItemsTableView {items} {...rest} />
 		{:else}
-			<ItemsListView
-				{items}
-				{properties}
-				on:clickOpenItem
-				on:clickDuplicateItem
-				on:clickDeleteItem
-				on:renameItem
-				on:updPropertyValue
-			/>
+			<ItemsListView {items} {...rest} />
 		{/if}
 	</div>
 {/if}

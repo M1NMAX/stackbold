@@ -1,51 +1,60 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
 	import {
-		Boxes,
 		Copy,
 		CornerUpRight,
-		Database,
 		HeartOff,
 		MoreHorizontal,
 		Pencil,
 		PinOff,
 		Trash
 	} from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Command from '$lib/components/ui/command';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
 	import { icons } from '$lib/components/icon';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenSizeState } from '$lib/components/screen/index.js';
+	import {
+		getDeleteModalState,
+		getMoveCollectionModalState,
+		ModalState
+	} from '$lib/components/modal';
+	import { getGroupState } from '$lib/components/group';
+	import { getCollectionState } from '$lib/components/collection';
+	import { MAX_COLLECTION_NAME_LENGTH } from '$lib/constant/index.js';
 
-	export let active: boolean;
-	export let asChild: boolean = false;
-	export let collection: Collection;
-	export let groups: { id: string; name: string }[];
-	$: ({ id, name, icon } = collection);
+	type Props = {
+		active: boolean;
+		asChild?: boolean;
+		collection: Collection;
+	};
 
-	let isMoveDialogOpen = false;
-	let isRenameDialogOpen = false;
-	let isSmallScrenDrawerOpen = false;
+	let { active, asChild = false, collection }: Props = $props();
 
-	let renameError: string | null = null;
+	let renameError = $state<string | null>(null);
+
+	const groupState = getGroupState();
+	const collectionState = getCollectionState();
+	const currentGroup = $derived.by(() => {
+		return groupState.groups.find((group) => group.id === collection.groupId) ?? 'Without group';
+	});
+	const Icon = $derived(icons[collection.icon]);
+
+	const renameCollectionModal = new ModalState();
+	const smallScreenDrawer = new ModalState();
 
 	const sidebarState = getSidebarState();
-	const isDesktop = getScreenState();
+	const isLargeScreen = getScreenSizeState();
+	const moveCollectionModal = getMoveCollectionModalState();
+	const deleteModal = getDeleteModalState();
 
-	const dispatch = createEventDispatcher<{
-		updCollection: { id: string; field: keyof Collection; value: string | boolean | null };
-		duplicateCollection: { id: string };
-		deleteCollection: { id: string; name: string };
-	}>();
-
-	function handleSubmitRename(e: { currentTarget: HTMLFormElement }) {
+	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 
 		const name = formData.get('name') as string;
@@ -58,37 +67,44 @@
 		}
 
 		renameError = null;
-		dispatch('updCollection', { id, field: 'name', value: name });
 
-		closeRenameDialog();
+		collectionState.updCollection({ id: collection.id, data: { name } });
+		renameCollectionModal.close();
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
-		if (e.metaKey || e.ctrlKey || $isDesktop) return;
+		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;
 
 		const { href } = e.currentTarget;
-		$sidebarState = false;
+		sidebarState.close();
 		goto(href);
 	}
 
-	function openMoveDialog() {
-		isMoveDialogOpen = true;
+	function moveCollection() {
+		if (smallScreenDrawer.isOpen) smallScreenDrawer.close();
+		moveCollectionModal.open({
+			collectionId: collection.id,
+			currentGroupId: collection.groupId || null
+		});
 	}
 
-	function closeMoveDialog() {
-		isMoveDialogOpen = false;
-	}
-
-	function closeSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = false;
-	}
-
-	function openRenameDialog() {
-		isRenameDialogOpen = true;
-	}
-
-	function closeRenameDialog() {
-		isRenameDialogOpen = false;
+	function deleteCollection() {
+		deleteModal.open({
+			type: 'collection',
+			id: collection.id,
+			name: collection.name,
+			fun: async () => {
+				await collectionState.deleteCollection(collection.id);
+				if (active) {
+					if (history.length === 1) {
+						// FIXME: maybe use replace state
+						await goto('/collections');
+					} else {
+						history.back();
+					}
+				}
+			}
+		});
 	}
 </script>
 
@@ -100,156 +116,35 @@
 	)}
 >
 	<a
-		href="/collections/{id}"
+		href="/collections/{collection.id}"
 		class="grow flex items-center space-x-1.5"
-		on:click={onClickSidebarItem}
+		onclick={onClickSidebarItem}
 	>
-		<svelte:component this={icons[icon]} class={cn('icon-sm', active && 'text-primary')} />
+		<Icon class={cn('icon-sm', active && 'text-primary')} />
 		<span class={cn('font-semibold text-base text-nowrap', active && 'text-primary')}>
-			{name.length > 25 && $isDesktop ? name.substring(0, 22) + ' ...' : name}
+			{collection.name.length > 25 && isLargeScreen.current
+				? collection.name.substring(0, 22) + ' ...'
+				: collection.name}
 		</span>
 	</a>
-
-	{#if $isDesktop}
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="ghost"
-					size="xs"
-					class="invisible group-hover:visible transition-opacity"
-				>
-					<MoreHorizontal class="icon-xs" />
-				</Button>
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={openRenameDialog}>
-					<Pencil class="icon-xs" />
-					<span> Rename </span>
-				</DropdownMenu.Item>
-
-				{#if collection.isPinned}
-					<DropdownMenu.Item
-						on:click={() => {
-							dispatch('updCollection', { id, field: 'isPinned', value: false });
-						}}
-					>
-						<PinOff class="icon-xs" />
-						<span> Remove from Sidebar </span>
-					</DropdownMenu.Item>
-				{/if}
-
-				<DropdownMenu.Item on:click={openMoveDialog}>
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</DropdownMenu.Item>
-
-				<DropdownMenu.Item on:click={() => dispatch('duplicateCollection', { id })}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</DropdownMenu.Item>
-
-				<DropdownMenu.Item
-					on:click={() => dispatch('deleteCollection', { id, name })}
-					class="group"
-				>
-					<Trash class="icon-xs group-hover:text-primary" />
-					<span class="group-hover:text-primary">Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
-		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} size="icon" variant="ghost">
-					<MoreHorizontal class="icon-xs" />
-				</Button>
-			</Drawer.Trigger>
-
-			<Drawer.Content>
-				<Drawer.Header class="py-2">
-					<div class="flex items-center space-x-2">
-						<div class="p-2.5 rounded bg-secondary">
-							<svelte:component this={icons[icon]} class="icon-sm" />
-						</div>
-
-						<div class="flex flex-col items-start justify-start">
-							<div class=" text-base font-semibold truncate">{name}</div>
-							<div class="text-sm">
-								{groups.find((group) => group.id === collection.groupId)?.name ?? 'Without group'}
-							</div>
-						</div>
-					</div>
-				</Drawer.Header>
-
-				<Drawer.Footer class="pt-2">
-					{#if collection.isPinned}
-						<Button
-							variant="secondary"
-							on:click={() => {
-								dispatch('updCollection', {
-									id,
-									field: 'isPinned',
-									value: false
-								});
-								closeSmallScreenDrawer();
-							}}
-						>
-							<HeartOff class="icon-xs" />
-							<span> Remove from Sidebar </span>
-						</Button>
-					{/if}
-
-					<Button
-						variant="secondary"
-						on:click={() => {
-							closeSmallScreenDrawer();
-							openMoveDialog();
-						}}
-					>
-						<CornerUpRight class="icon-xs" />
-						<span>Move to</span>
-					</Button>
-					<Button
-						variant="secondary"
-						on:click={() => {
-							dispatch('duplicateCollection', { id });
-							closeSmallScreenDrawer();
-						}}
-					>
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</Button>
-					<Button
-						variant="destructive"
-						on:click={() => {
-							closeSmallScreenDrawer();
-							dispatch('deleteCollection', { id, name });
-						}}
-					>
-						<Trash class="icon-xs" />
-						<span>Delete</span>
-					</Button>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+	{@render menu()}
 </span>
 
-<Dialog.Root bind:open={isRenameDialogOpen}>
+<Dialog.Root bind:open={renameCollectionModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>Rename collection</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmitRename} class="flex flex-col space-y-2">
+		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
 			<label for="collection-name"> Name </label>
 			<input
 				id="collection-name"
 				type="text"
 				name="name"
 				autocomplete="off"
-				value={name}
+				value={collection.name}
 				class="input"
+				maxlength={MAX_COLLECTION_NAME_LENGTH}
 			/>
 
 			{#if renameError}
@@ -261,39 +156,113 @@
 	</Dialog.Content>
 </Dialog.Root>
 
-<Command.Dialog bind:open={isMoveDialogOpen}>
-	<Command.Input placeholder="Move collection to..." />
-	<Command.List>
-		<Command.Empty>No group found.</Command.Empty>
-		<Command.Group>
-			{#if collection.groupId}
-				<Command.Item
-					value="collection"
-					onSelect={() => {
-						dispatch('updCollection', { id, field: 'groupId', value: null });
-						closeMoveDialog();
-						closeSmallScreenDrawer();
-					}}
-				>
-					<Database class="icon-sm" />
-					<span> Collection</span>
-				</Command.Item>
-			{/if}
-			{#each groups as group (group.id)}
-				{#if group.id != collection.groupId}
-					<Command.Item
-						value={group.name}
-						onSelect={() => {
-							dispatch('updCollection', { id, field: 'groupId', value: group.id });
-							closeMoveDialog();
-							closeSmallScreenDrawer();
+{#snippet menu()}
+	{#if isLargeScreen.current}
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger
+				class={buttonVariants({
+					variant: 'ghost',
+					size: 'xs',
+					className: 'invisible group-hover:visible transition-opacity'
+				})}
+			>
+				<MoreHorizontal class="icon-xs" />
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content class="w-56">
+				<DropdownMenu.Item onclick={() => renameCollectionModal.open()}>
+					<Pencil class="icon-xs" />
+					<span> Rename </span>
+				</DropdownMenu.Item>
+
+				{#if collection.isPinned}
+					<DropdownMenu.Item
+						onclick={() => {
+							collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
 						}}
 					>
-						<Boxes class="icon-sm" />
-						<span> {group.name} </span>
-					</Command.Item>
+						<PinOff class="icon-xs" />
+						<span> Remove from Sidebar </span>
+					</DropdownMenu.Item>
 				{/if}
-			{/each}
-		</Command.Group>
-	</Command.List>
-</Command.Dialog>
+
+				<DropdownMenu.Item onclick={() => moveCollection()}>
+					<CornerUpRight class="icon-xs" />
+					<span>Move to</span>
+				</DropdownMenu.Item>
+
+				<DropdownMenu.Item onclick={() => collectionState.duplicateCollection(collection.id)}>
+					<Copy class="icon-xs" />
+					<span>Duplicate</span>
+				</DropdownMenu.Item>
+
+				<DropdownMenu.Item onclick={() => deleteCollection()} class="group">
+					<Trash class="icon-xs group-hover:text-primary" />
+					<span class="group-hover:text-primary">Delete</span>
+				</DropdownMenu.Item>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+	{:else}
+		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
+			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+				<MoreHorizontal class="icon-xs" />
+			</Drawer.Trigger>
+
+			<Drawer.Content>
+				<Drawer.Header class="py-2">
+					<div class="flex items-center space-x-2">
+						<div class="p-2.5 rounded bg-secondary">
+							<Icon class="icon-sm" />
+						</div>
+
+						<div class="flex flex-col items-start justify-start">
+							<div class=" text-base font-semibold truncate">{collection.name}</div>
+							<div class="text-sm">
+								{currentGroup}
+							</div>
+						</div>
+					</div>
+				</Drawer.Header>
+
+				<Drawer.Footer class="pt-2">
+					{#if collection.isPinned}
+						<Button
+							variant="secondary"
+							onclick={() => {
+								collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
+								smallScreenDrawer.close();
+							}}
+						>
+							<HeartOff class="icon-xs" />
+							<span> Remove from Sidebar </span>
+						</Button>
+					{/if}
+
+					<Button variant="secondary" onclick={() => moveCollection()}>
+						<CornerUpRight class="icon-xs" />
+						<span>Move to</span>
+					</Button>
+					<Button
+						variant="secondary"
+						onclick={() => {
+							collectionState.duplicateCollection(collection.id);
+							smallScreenDrawer.close();
+						}}
+					>
+						<Copy class="icon-xs" />
+						<span>Duplicate</span>
+					</Button>
+					<Button
+						variant="destructive"
+						onclick={() => {
+							smallScreenDrawer.close();
+							deleteCollection();
+						}}
+					>
+						<Trash class="icon-xs" />
+						<span>Delete</span>
+					</Button>
+				</Drawer.Footer>
+			</Drawer.Content>
+		</Drawer.Root>
+	{/if}
+{/snippet}

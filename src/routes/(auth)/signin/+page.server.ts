@@ -2,54 +2,48 @@ import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { message, superValidate } from 'sveltekit-superforms/server';
 import { signInSchema } from '$lib/schema';
-import { prisma } from '$lib/server/prisma';
-import { verify } from "@node-rs/argon2"
-import { lucia } from '$lib/server/auth';
-import { Role } from '@prisma/client';
+import { zod } from 'sveltekit-superforms/adapters';
+import { verifyPasswordHash } from '$lib/server/password';
+import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
+import { getUserByEmail } from '$lib/server/user';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 
-	if (user) redirect(302, '/')
+	if (user) redirect(302, '/');
 
-	const form = await superValidate(signInSchema);
+	const form = await superValidate(zod(signInSchema));
 	return { form };
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
-		const form = await superValidate(request, signInSchema);
+	default: async (event) => {
+		const form = await superValidate(event.request, zod(signInSchema));
 
 		if (!form.valid) return fail(400, { form });
 
 		const { email, password } = form.data;
 
 		//TODO: Think about brute-force attack
-		const storedUser = await prisma.user.findFirst({ where: { email } })
-		if (!storedUser) return message(form, "Invalid Credentials")
 
+		const user = await getUserByEmail(email);
 
-		const validPassword = await verify(storedUser.password, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
+		if (!user) return message(form, 'Invalid Credentials');
+
+		const validPassword = await verifyPasswordHash(user.password, password);
+
+		if (!validPassword) return message(form, 'Invalid Credentials');
+
+		const sessionToken = generateSessionToken();
+		const session = await createSession(sessionToken, {
+			userId: user.id,
+			role: user.role
 		});
 
-		if (!validPassword) return message(form, "Invalid Credentials")
+		setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-		const session = await lucia.createSession(storedUser.id, {
-			role: Role.MEMBER,
-		});
+		if (!user.emailVerified) return redirect(302, '/email-verification');
 
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
-		});
-
-		if (!storedUser.emailVerified) return redirect(302, "/email-verification")
-
-		return redirect(302, "/");
-	},
+		return redirect(302, '/');
+	}
 };

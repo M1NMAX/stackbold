@@ -1,33 +1,40 @@
 <script lang="ts">
 	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
-	import { getScreenState } from '$lib/components/view';
-	import { Button } from '$lib/components/ui/button';
+	import { getScreenSizeState } from '$lib/components/screen';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { getCrtCollectionDialogState } from '$lib/components/modal';
+	import {
+		getCrtCollectionModalState,
+		getDeleteModalState,
+		ModalState
+	} from '$lib/components/modal';
 	import { nameSchema } from '$lib/schema';
+	import { getGroupState } from '$lib/components/group';
 
-	export let id: string;
-	export let name: string;
+	type Props = {
+		id: string;
+	};
 
-	let isSmallScrenDrawerOpen = false;
-	let isRenameGroupDialogOpen = false;
+	let { id }: Props = $props();
 
-	let renameError: string | null = null;
+	const groupState = getGroupState();
+	const group = $derived.by(() => {
+		return groupState.getGroup(id)!;
+	});
 
-	const crtCollectionDialog = getCrtCollectionDialogState();
+	let renameError = $state<string | null>(null);
+	const renameGroupModal = new ModalState();
+	const smallScreenDrawer = new ModalState();
 
-	const isDesktop = getScreenState();
+	const crtCollectionModal = getCrtCollectionModalState();
+	const deleteModal = getDeleteModalState();
 
-	const dispatch = createEventDispatcher<{
-		addNewCollection: { name: string; groupId: string };
-		renameGroup: { name: string; groupId: string };
-		clickDeleteGroup: { id: string; name: string };
-	}>();
+	const isLargeScreen = getScreenSizeState();
 
-	function handleSubmitRename(e: { currentTarget: HTMLFormElement }) {
+	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const name = formData.get('name') as string;
 
@@ -39,69 +46,55 @@
 		}
 
 		renameError = null;
-		dispatch('renameGroup', { groupId: id, name });
-		closeRenameDialog();
+		groupState.updGroup({ id, data: { name } });
+		renameGroupModal.close();
 	}
 
-	function clickCreateCollection() {
-		$crtCollectionDialog.defaultGroup = id;
-		$crtCollectionDialog.open = true;
-	}
-
-	function openRenameGroupDialog() {
-		isRenameGroupDialogOpen = true;
-	}
-	function closeRenameDialog() {
-		isRenameGroupDialogOpen = false;
-	}
-
-	function openSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = true;
-	}
-	function closeSmallScreenDrawer() {
-		isSmallScrenDrawerOpen = false;
+	function deleteGroup() {
+		deleteModal.open({
+			type: 'group',
+			id,
+			name: group.name,
+			fun: async () => {
+				await groupState.deleteGroup(id);
+			}
+		});
 	}
 </script>
 
 <div>
-	{#if $isDesktop}
+	{#if isLargeScreen.current}
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger asChild let:builder>
-				<Button
-					builders={[builder]}
-					variant="ghost"
-					size="xs"
-					class="invisible group-hover:visible transition-opacity"
-				>
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+			<DropdownMenu.Trigger
+				class={buttonVariants({
+					variant: 'ghost',
+					size: 'xs',
+					className: 'invisible group-hover:visible transition-opacity'
+				})}
+			>
+				<MoreHorizontal class="icon-xs" />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item on:click={clickCreateCollection}>
+				<DropdownMenu.Item onclick={() => crtCollectionModal.open(id)}>
 					<Plus class="icon-xs" />
 					<span>New collection</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={openRenameGroupDialog}>
+				<DropdownMenu.Item onclick={() => renameGroupModal.open()}>
 					<Pencil class="icon-xs" />
 					<span> Rename </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item
-					on:click={() => dispatch('clickDeleteGroup', { id, name })}
-					class="group"
-				>
+				<DropdownMenu.Item onclick={() => deleteGroup()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	{:else}
-		<Drawer.Root bind:open={isSmallScrenDrawerOpen}>
-			<Drawer.Trigger asChild let:builder>
-				<Button builders={[builder]} variant="ghost" size="icon">
-					<MoreHorizontal class="icon-xs" />
-				</Button>
+		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
+			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+				<MoreHorizontal class="icon-xs" />
 			</Drawer.Trigger>
 			<Drawer.Content>
 				<Drawer.Header class="py-2">
@@ -110,22 +103,22 @@
 							<ChevronRight class="icon-sm" />
 						</div>
 
-						<div class=" text-base font-semibold truncate">{name}</div>
+						<div class=" text-base font-semibold truncate">{group.name}</div>
 					</div>
 				</Drawer.Header>
 				<Drawer.Footer class="pt-2">
 					<Button
 						variant="secondary"
-						on:click={() => {
-							openRenameGroupDialog();
-							closeSmallScreenDrawer();
+						onclick={() => {
+							renameGroupModal.open();
+							smallScreenDrawer.close();
 						}}
 					>
 						<Pencil class="icon-xs" />
 						<span> Rename </span>
 					</Button>
 
-					<Button variant="destructive" on:click={() => dispatch('clickDeleteGroup', { id, name })}>
+					<Button variant="destructive" onclick={() => deleteGroup()}>
 						<Trash class="icon-xs" />
 						<span>Delete</span>
 					</Button>
@@ -135,19 +128,19 @@
 	{/if}
 </div>
 
-<Dialog.Root bind:open={isRenameGroupDialogOpen}>
+<Dialog.Root bind:open={renameGroupModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>Rename group</Dialog.Title>
 		</Dialog.Header>
-		<form on:submit|preventDefault={handleSubmitRename} class="flex flex-col space-y-2">
+		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
 			<label for="group-name"> Name </label>
 			<input
 				id="group-name"
 				type="text"
 				name="name"
 				autocomplete="off"
-				value={name}
+				value={group.name}
 				class="input"
 			/>
 

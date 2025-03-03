@@ -1,54 +1,49 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { onDestroy } from 'svelte';
-	import { ArrowUpDown, Database, FolderPlus } from 'lucide-svelte';
+	import { Plus, LibraryBig } from 'lucide-svelte';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
-	import { SortDropdown } from '$lib/components/sort';
+	import { SearchInput, SortMenu } from '$lib/components/filters';
 	import type { Collection } from '@prisma/client';
 	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
-	import { getCrtCollectionDialogState } from '$lib/components/modal';
-	import { CollectionOverview } from '$lib/components/collection';
-	import { storage } from '$lib/storage';
+	import { getCrtCollectionModalState } from '$lib/components/modal';
+	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { getScreenState } from '$lib/components/view';
-	import { Label } from '$lib/components/ui/label';
+	import { UserMenu } from '$lib/components/user';
 
-	export let data: PageData;
+	let { data } = $props();
 
-	const crtCollectionDialog = getCrtCollectionDialogState();
-
+	const collectionState = getCollectionState();
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
-	const sort = storage('collections-sort', sortOptions[0]);
-	const isDesktop = getScreenState();
+	let sort = $state(sortOptions[0]);
 
-	function openCrtCollectionDialog() {
-		$crtCollectionDialog = { defaultGroup: undefined, open: true };
-	}
+	let search = $state('');
+	let collections = $derived.by(() => {
+		const searchTerm = search.toLowerCase() || '';
 
-	// SEARCH
-	function addSearchTerms() {
-		return data.collections.map((collection) => ({
-			...collection,
-			searchTerms: collection.name
-		}));
-	}
-	const searchCollections = addSearchTerms();
-
-	const searchStore = createSearchStore(searchCollections);
-
-	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
-
-	onDestroy(() => {
-		unsubscribe();
+		return collectionState.collections
+			.filter((collection) => collection.name.toLowerCase().includes(searchTerm))
+			.sort(sortFun(sort.field, sort.order));
 	});
 
-	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
-	$: data, ($searchStore.data = addSearchTerms().sort(sortFun($sort.field, $sort.order)));
+	const crtCollectionModal = getCrtCollectionModalState();
+
+	const SORT_STORAGE_KEY = 'collection-sort';
+	$effect(() => {
+		const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
+		if (savedSort) sort = JSON.parse(savedSort);
+	});
+
+	$effect(() => {
+		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
+	});
+	let isSmHeadingVisible = $state(false);
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
 </script>
 
 <svelte:head>
@@ -56,67 +51,38 @@
 </svelte:head>
 
 <PageContainer>
-	<PageHeader />
-	<PageContent>
-		<div class="flex items-center space-x-2">
-			<Database class="icon-lg" />
+	<PageHeader>
+		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
+			<LibraryBig class="icon-md" />
+			<h1 class="text-xl font-semibold">Collections</h1>
+		</div>
+
+		<div class=" flex md:hidden items-center space-x-2">
+			<Button size="icon" variant="ghost" onclick={() => crtCollectionModal.open()}>
+				<Plus />
+			</Button>
+			<UserMenu user={data.user} />
+		</div>
+	</PageHeader>
+	<PageContent onScroll={handleScroll}>
+		<div class=" hidden md:flex items-center space-x-2">
+			<LibraryBig class="icon-lg" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
 		</div>
 
 		<div class="space-y-2">
-			{#if $isDesktop}
-				<div class="flex justify-between space-x-2">
-					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
+			<div class="w-full flex justify-between space-x-1 md:space-x-2">
+				<SearchInput placeholder="Find Collection" bind:value={search} />
 
-					<SortDropdown {sortOptions} bind:currentSort={$sort} />
-					<Button on:click={openCrtCollectionDialog}>New Collection</Button>
-				</div>
-			{:else}
-				<div class="flex space-x-1">
-					<SearchInput placeholder="Find Collection" bind:value={$searchStore.search} />
-					<Drawer.Root>
-						<Drawer.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="secondary">
-								<ArrowUpDown class="icon-sm" />
-							</Button>
-						</Drawer.Trigger>
-						<Drawer.Content>
-							<Drawer.Header class="py-1">
-								<div class="flex items-center space-x-2">
-									<div class="p-2.5 rounded bg-secondary">
-										<ArrowUpDown class="icon-sm" />
-									</div>
-									<div class="text-base font-semibold">Sort By</div>
-								</div>
-							</Drawer.Header>
-							<Drawer.Footer>
-								<RadioGroup.Root
-									id="sort"
-									value={$sort.field + '-' + $sort.order}
-									class="px-2 py-1 rounded-md bg-secondary"
-								>
-									{#each sortOptions as sortOpt}
-										<Label class="flex items-center justify-between space-x-2">
-											<span class="font-semibold text-lg"> {sortOpt.label} </span>
-											<RadioGroup.Item
-												value={sortOpt.field + '-' + sortOpt.order}
-												id={sortOpt.label}
-												on:click={() => {
-													$sort = { ...sortOpt };
-												}}
-											/>
-										</Label>
-									{/each}
-								</RadioGroup.Root></Drawer.Footer
-							>
-						</Drawer.Content>
-					</Drawer.Root>
-				</div>
-			{/if}
+				<SortMenu options={sortOptions} bind:value={sort} />
+				<Button class="hidden md:flex" onclick={() => crtCollectionModal.open()}>
+					New Collection
+				</Button>
+			</div>
 
-			{#if $searchStore.filtered.length > 0}
+			{#if collections.length > 0}
 				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
-					{#each $searchStore.filtered as collection (collection.id)}
+					{#each collections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}
 				</div>
@@ -124,15 +90,5 @@
 				<p class="py-10 text-center text-lg font-semibold">No collection found</p>
 			{/if}
 		</div>
-
-		{#if !$isDesktop}
-			<Button
-				size="icon"
-				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-md"
-				on:click={openCrtCollectionDialog}
-			>
-				<FolderPlus />
-			</Button>
-		{/if}
 	</PageContent>
 </PageContainer>

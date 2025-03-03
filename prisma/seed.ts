@@ -224,10 +224,7 @@ const templatesData = [
 			{
 				name: 'Financial Year',
 				type: 'SELECT' as PropertyType,
-				options: [
-					{ value: '01.01.2024-31.12.2024' },
-					{ value: '01.01.2025-31.12.2025' }
-				],
+				options: [{ value: '01.01.2024-31.12.2024' }, { value: '01.01.2025-31.12.2025' }]
 			},
 
 			{
@@ -272,8 +269,7 @@ const templatesData = [
 				name: 'Tags',
 				type: 'SELECT' as PropertyType,
 				options: [{ value: 'Recurring Expense' }, { value: 'One Time Expense' }]
-			},
-			
+			}
 		],
 		items: [
 			{
@@ -315,7 +311,7 @@ const templatesData = [
 					{ value: 'Transport' },
 					{ value: 'Recurring Expense' }
 				]
-			},
+			}
 		]
 	}
 ];

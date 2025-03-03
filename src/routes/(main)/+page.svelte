@@ -1,51 +1,46 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { ArrowRight, Dna, Egg, FolderPlus } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { CollectionOverview } from '$lib/components/collection';
-	import type { RouterOutputs } from '$lib/trpc/router';
-	import { getCrtCollectionDialogState } from '$lib/components/modal';
+	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
+	import { getCrtCollectionModalState } from '$lib/components/modal';
+	import { UserMenu } from '$lib/components/user';
 
-	export let data: PageData;
-	$: ({ collections } = data);
+	let { data } = $props();
 
-	$: pinnedCollections = getPinnedCollections(collections);
-	$: updCollections = getUpdCollections(collections);
+	const collectionState = getCollectionState();
+	let pinnedCollections = $derived.by(() => {
+		return collectionState.collections.filter((collection) => collection.isPinned);
+	});
 
-	const crtCollectionDialog = getCrtCollectionDialogState();
+	let updCollections = $derived.by(() => {
+		// return the 8 most recently updated collections
+		return [...collectionState.collections]
+			.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+			.slice(0, 8);
+	});
 
-	function openCrtCollectionDialog() {
-		$crtCollectionDialog = { defaultGroup: undefined, open: true };
-	}
-
-	type CollectionArray = RouterOutputs['collections']['list'];
-	function getPinnedCollections(collections: CollectionArray) {
-		return collections.filter((collection) => collection.isPinned);
-	}
-
-	function getUpdCollections(collections: CollectionArray) {
-		const sorted = collections.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-
-		// return the 12 most recently updated collections
-		return sorted.slice(0, 12);
-	}
+	const crtCollectionModal = getCrtCollectionModalState();
 </script>
 
 <svelte:head>
-	<title>Home - Stackbold</title>
+	<title>Dashboard - Stackbold</title>
 </svelte:head>
 
 <PageContainer>
-	<PageHeader />
-	<PageContent class="space-y-5">
-		<h1 class="font-semibold text-2xl">Welcome!</h1>
+	<PageHeader class="flex justify-between">
+		<h1 class="font-semibold text-xl">Dashboard</h1>
+		<div class="block md:hidden">
+			<UserMenu user={data.user} />
+		</div>
+	</PageHeader>
 
+	<PageContent class="space-y-5">
 		{#if pinnedCollections.length > 0}
 			<section class="space-y-1.5">
 				<h2 class="text-xl">Pinned Collections</h2>
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+				<div class="grid grid-cols-2 md:grid-cols-3 gap-2">
 					{#each pinnedCollections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}
@@ -58,10 +53,12 @@
 				<div class="flex items-centers justify-between">
 					<h2 class="text-xl">Recently updated collections</h2>
 
-					<Button href="/collections" variant="ghost" size="icon"><ArrowRight /></Button>
+					<Button href="/collections" variant="ghost" size="icon">
+						<ArrowRight />
+					</Button>
 				</div>
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+				<div class="grid grid-cols-2 md:grid-cols-3 gap-2">
 					{#each updCollections as collection}
 						<CollectionOverview {collection} />
 					{/each}
@@ -75,7 +72,7 @@
 					<p class="text-xl font-medium">Wow, such empty</p>
 				</div>
 
-				<Button on:click={openCrtCollectionDialog} class="h-12 w-full">
+				<Button onclick={() => crtCollectionModal.open()} class="h-12 w-full">
 					<FolderPlus />
 					<span> Create Collection</span>
 				</Button>

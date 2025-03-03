@@ -17,8 +17,9 @@ export const users = createTRPCRouter({
 		.mutation(async ({ input: id, ctx: { userId, session } }) => {
 			const user = await prisma.user.findUniqueOrThrow({ where: { id } });
 
-			if (session.role !== 'ADMIN' && user.id !== userId)
+			if (session.role !== 'ADMIN' && user.id !== userId) {
 				throw new TRPCError({ code: 'UNAUTHORIZED' });
+			}
 
 			await prisma.user.delete({ where: { id } });
 		})

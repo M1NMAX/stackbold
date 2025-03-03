@@ -1,57 +1,76 @@
 <script lang="ts">
 	import { Copy, MoreHorizontal, PanelLeftOpen, Trash } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { createEventDispatcher } from 'svelte';
 	import { cn } from '$lib/utils';
-	import { getScreenState } from '$lib/components/view';
+	import { getScreenSizeState } from '$lib/components/screen';
+	import { getDeleteModalState } from '$lib/components/modal';
+	import { getItemState } from '.';
 
-	export let itemId: string;
-	let className: string | undefined = undefined;
-	export { className as class };
+	type Props = {
+		id: string;
+		name: string;
+		class?: string;
+		clickOpenItem: (id: string) => void;
+	};
 
-	let open: boolean;
+	let { id, name, class: className, clickOpenItem }: Props = $props();
 
-	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		clickOpenItem: string;
-		clickDuplicateItem: string;
-		clickDeleteItem: string;
-	}>();
+	let open = $state(false);
 
-	type Ev = 'clickOpenItem' | 'clickDuplicateItem' | 'clickDeleteItem';
-	function clickDrawerBtn(ev: Ev) {
-		open = false;
-		dispatch(ev, itemId);
+	const itemState = getItemState();
+
+	const isLargeScreen = getScreenSizeState();
+	const deleteModal = getDeleteModalState();
+
+	function deleteItem() {
+		if (open) open = false;
+		deleteModal.open({
+			type: 'item',
+			id,
+			name,
+			fun: async () => {
+				await itemState.deleteItem(id);
+			}
+		});
+	}
+
+	async function duplicateItem() {
+		if (open) open = false;
+		await itemState.duplicateItem(id);
+	}
+
+	function openItem() {
+		if (open) open = false;
+		clickOpenItem(id);
 	}
 </script>
 
-{#if $isDesktop}
+{#if isLargeScreen.current}
 	<DropdownMenu.Root bind:open>
-		<DropdownMenu.Trigger asChild let:builder>
-			<Button
-				builders={[builder]}
-				variant="ghost"
-				size="xs"
-				class={cn(className, open && 'visible bg-accent')}
-			>
-				<MoreHorizontal />
-			</Button>
+		<DropdownMenu.Trigger
+			class={buttonVariants({
+				variant: 'ghost',
+				size: 'xs',
+				className: cn(className, open && 'visible bg-accent')
+			})}
+		>
+			<MoreHorizontal class="icon-sm" />
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-56">
 			<DropdownMenu.Group>
-				<DropdownMenu.Item on:click={() => dispatch('clickOpenItem', itemId)}>
+				<DropdownMenu.Item onclick={() => openItem()}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open in side </span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDuplicateItem', itemId)}>
+				<DropdownMenu.Item onclick={() => duplicateItem()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</DropdownMenu.Item>
 
-				<DropdownMenu.Item on:click={() => dispatch('clickDeleteItem', itemId)} class="group">
+				<DropdownMenu.Item onclick={() => deleteItem()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span class="group-hover:text-primary">Delete</span>
 				</DropdownMenu.Item>
@@ -60,32 +79,27 @@
 	</DropdownMenu.Root>
 {:else}
 	<Drawer.Root bind:open>
-		<Drawer.Trigger asChild let:builder>
-			<Button
-				builders={[builder]}
-				variant="ghost"
-				size="xs"
-				class={cn(className, open && 'visible bg-accent')}
-			>
-				<MoreHorizontal />
-			</Button>
+		<Drawer.Trigger
+			class={buttonVariants({
+				variant: 'ghost',
+				size: 'xs',
+				className: cn(className, open && 'visible bg-accent')
+			})}
+		>
+			<MoreHorizontal />
 		</Drawer.Trigger>
 		<Drawer.Content>
 			<Drawer.Footer>
-				<Button variant="secondary" on:click={() => clickDrawerBtn('clickOpenItem')}>
+				<Button variant="secondary" onclick={() => openItem()}>
 					<PanelLeftOpen class="icon-xs" />
 					<span> Open </span>
 				</Button>
 
-				<Button variant="secondary" on:click={() => clickDrawerBtn('clickDuplicateItem')}>
+				<Button variant="secondary" onclick={() => duplicateItem()}>
 					<Copy class="icon-xs" />
 					<span>Duplicate</span>
 				</Button>
-				<Button
-					variant="destructive"
-					on:click={() => clickDrawerBtn('clickDeleteItem')}
-					class="group"
-				>
+				<Button variant="destructive" onclick={() => deleteItem()} class="group">
 					<Trash class="icon-xs group-hover:text-primary" />
 					<span>Delete</span>
 				</Button>

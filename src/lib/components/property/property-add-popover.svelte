@@ -1,41 +1,46 @@
 <script lang="ts">
-	import { PropertyIcon } from '.';
-	import { Button } from '$lib/components/ui/button';
+	import { getPropertyState, PropertyIcon } from '.';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import * as Popover from '$lib/components/ui/popover';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
-	import { createEventDispatcher } from 'svelte';
-	import { getScreenState } from '$lib/components/view';
 	import { Plus } from 'lucide-svelte';
+	import { ModalState } from '$lib/components/modal';
+	import { getScreenSizeState } from '$lib/components/screen';
+	import { getItemState } from '$lib/components/items';
 
-	let isOpen = false;
+	const wrapper = new ModalState();
+	const isLargeScreen = getScreenSizeState();
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
 
-	const isDesktop = getScreenState();
-	const dispatch = createEventDispatcher<{
-		clickPropType: PropertyType;
-	}>();
+	async function addProperty(propType: PropertyType) {
+		if (wrapper.isOpen) wrapper.close();
 
-	function handleClickPropertyType(propertyType: PropertyType) {
-		dispatch('clickPropType', propertyType);
-		isOpen = false;
+		console.log('Before properties', propertyState.properties);
+		console.log('Before refs', itemState.items[0].properties);
+		await propertyState.addProperty(propType);
+		const property = propertyState.getMostRecentProperty(propertyState.properties);
+		await itemState.addPropertyRef(property.id);
+
+		console.log('After properties', propertyState.properties);
+		console.log('After refs', itemState.items[0].properties);
 	}
 </script>
 
-{#if $isDesktop}
-	<Popover.Root portal="HTMLElement">
-		<Popover.Trigger asChild let:builder>
-			<Button variant="secondary" class="w-full" builders={[builder]}>
-				<Plus class="icon-sm" />
-				<span> New property </span>
-			</Button>
+{#if isLargeScreen.current}
+	<Popover.Root bind:open={wrapper.isOpen}>
+		<Popover.Trigger class={buttonVariants({ variant: 'default', className: 'w-full' })}>
+			<Plus class="icon-sm" />
+			<span> New property </span>
 		</Popover.Trigger>
-		<Popover.Content sameWidth={true} class="p-1 bg-secondary/40">
+		<Popover.Content class="w-full p-1 bg-secondary/40">
 			<div class="grid grid-cols-3 gap-1">
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
-						on:click={() => handleClickPropertyType(propertyType)}
+						onclick={() => addProperty(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm"
 					>
 						<PropertyIcon key={propertyType} />
@@ -49,21 +54,19 @@
 		</Popover.Content>
 	</Popover.Root>
 {:else}
-	<Drawer.Root bind:open={isOpen}>
-		<Drawer.Trigger asChild let:builder>
-			<Button builders={[builder]} variant="secondary" class="w-full">
-				<Plus class="icon-sm" />
-				<span> Add a property </span>
-			</Button>
+	<Drawer.Root bind:open={wrapper.isOpen}>
+		<Drawer.Trigger class={buttonVariants({ variant: 'default', className: 'w-full' })}>
+			<Plus class="icon-sm" />
+			<span> New property </span>
 		</Drawer.Trigger>
 		<Drawer.Content>
-			<Drawer.Header class="py-2 font-semibold">Type</Drawer.Header>
+			<Drawer.Header class="py-2 font-semibold">New property</Drawer.Header>
 
 			<Drawer.Footer class="pt-2">
 				{#each Object.values(PropertyType) as propertyType}
 					<Button
 						variant="secondary"
-						on:click={() => handleClickPropertyType(propertyType)}
+						onclick={() => addProperty(propertyType)}
 						class="h-8 w-full justify-start space-x-1.5 rounded-sm "
 					>
 						<PropertyIcon key={propertyType} />

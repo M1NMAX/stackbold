@@ -1,10 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import logoSrc from '$lib/assets/logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { Button } from '$lib/components/ui/button';
 
-	export let data: PageData;
+	let { data } = $props();
 	const { form, message, errors, enhance } = superForm(data.form);
 </script>
 
@@ -25,6 +24,22 @@
 		</div>
 	{/if}
 	<form method="post" use:enhance class="space-y-4">
+		<div>
+			<label for="name" class="label">Full name</label>
+			<input
+				id="name"
+				type="text"
+				name="name"
+				required
+				bind:value={$form.name}
+				class="input input-bordered"
+			/>
+
+			{#if $errors.name}
+				<span class="mt-2 text-error"> {$errors.name} </span>
+			{/if}
+		</div>
+
 		<div>
 			<label for="email" class="label"> Email </label>
 			<input

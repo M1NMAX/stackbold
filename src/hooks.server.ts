@@ -3,33 +3,27 @@ import { router } from '$lib/trpc/router';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { createTRPCHandle } from 'trpc-sveltekit';
-import { lucia } from '$lib/server/auth';
+import {
+	deleteSessionTokenCookie,
+	setSessionTokenCookie,
+	validateSessionToken
+} from '$lib/server/session';
 
 const authHandle: Handle = async ({ event, resolve }) => {
-	const sessionId = event.cookies.get(lucia.sessionCookieName)
+	const token = event.cookies.get('session') ?? null;
 
-	if (!sessionId) {
+	if (!token) {
 		event.locals.user = null;
 		event.locals.session = null;
 		return resolve(event);
 	}
 
-	const { session, user } = await lucia.validateSession(sessionId)
-	if (session && session.fresh) {
-		const sessionCookie = lucia.createSessionCookie(session.id);
+	const { session, user } = await validateSessionToken(token);
 
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
-		});
-	}
-
-	if (!session) {
-		const sessionCookie = lucia.createBlankSessionCookie();
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes
-		})
+	if (session !== null) {
+		setSessionTokenCookie(event, token, session.expiresAt);
+	} else {
+		deleteSessionTokenCookie(event);
 	}
 
 	event.locals.user = user;

@@ -7,17 +7,35 @@ import {
 	ColorSchema,
 	PropertyTypeSchema,
 	AggregatorSchema,
-	ViewSchema,
+	ViewSchema
 } from '$prisma-zod';
 import { View } from '@prisma/client';
-
 
 const groupByConfigSchema = z.object({
 	view: ViewSchema,
 	propertyId: z.string()
-})
+});
 
-const defaultGroupByConfigs = ([{ view: View.LIST, propertyId: '' }, { view: View.TABLE, propertyId: '' }]);
+const filterConfigsSchema = z.object({
+	view: ViewSchema,
+	filters: z.array(
+		z.object({
+			id: z.string(),
+			values: z.array(z.string())
+		})
+	)
+});
+
+const defaultGroupByConfigs = [
+	{ view: View.LIST, propertyId: '' },
+	{ view: View.TABLE, propertyId: '' }
+];
+
+const defaultFilterConfigs = [
+	{ view: View.LIST, filters: [] },
+	{ view: View.TABLE, filters: [] }
+];
+
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
 	name: z.string(),
@@ -26,12 +44,27 @@ const collectionCreateSchema = z.object({
 	isDescHidden: z.boolean().optional(),
 	groupId: z.string().nullable().optional(),
 	groupByConfigs: z.array(groupByConfigSchema).optional().default(defaultGroupByConfigs),
-	groupItemsBy: z.string().nullable().optional(),
+	filterConfigs: z.array(filterConfigsSchema).optional().default(defaultFilterConfigs),
 	properties: z
-		.union([
-			z.lazy(() => PropertyCreateInputSchema),
-			z.lazy(() => PropertyCreateInputSchema).array()
-		])
+		.array(
+			z.object({
+				id: z.string().optional(),
+				name: z.string(),
+				type: PropertyTypeSchema.optional(),
+				aggregator: AggregatorSchema.optional(),
+				defaultValue: z.string().optional(),
+				visibleInViews: z.array(ViewSchema).optional(),
+				options: z
+					.array(
+						z.object({
+							id: z.string().optional(),
+							value: z.string(),
+							color: z.lazy(() => ColorSchema).optional()
+						})
+					)
+					.optional()
+			})
+		)
 		.optional()
 });
 
@@ -45,7 +78,7 @@ const collectionUpdateSchema = z.object({
 		isDescHidden: z.boolean().optional(),
 		groupId: z.string().nullable().optional(),
 		groupByConfigs: z.array(groupByConfigSchema).optional(),
-		groupItemsBy: z.string().nullable().optional()
+		filterConfigs: z.array(filterConfigsSchema).optional()
 	})
 });
 
@@ -58,14 +91,12 @@ const collectionUpdatePropertySchema = z.object({
 		aggregator: AggregatorSchema.optional(),
 		defaultValue: z.string().optional(),
 		visibleInViews: z.array(ViewSchema).optional(),
-		isVisibleOnListView: z.boolean().optional(),
-		isVisibleOnTableView: z.boolean().optional(),
 		options: z
 			.array(
 				z.object({
-					id: z.string().optional(),
+					id: z.string(),
 					value: z.string(),
-					color: z.lazy(() => ColorSchema).optional()
+					color: z.lazy(() => ColorSchema)
 				})
 			)
 			.optional()
@@ -96,8 +127,8 @@ export const collections = createTRPCRouter({
 	),
 	update: protectedProcedure
 		.input(collectionUpdateSchema)
-		.mutation(async ({ input: { id, data } }) =>
-			await prisma.collection.update({ data, where: { id } })
+		.mutation(
+			async ({ input: { id, data } }) => await prisma.collection.update({ data, where: { id } })
 		),
 
 	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {

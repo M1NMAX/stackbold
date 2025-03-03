@@ -1,55 +1,56 @@
 <script lang="ts">
 	import { AppWindow, LayoutDashboard, LogOut, UserPlus } from 'lucide-svelte';
-	import { onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import type { ActionData, PageData } from './$types';
-	import type { DeleteDetail } from '$lib/types';
 	import type { User } from '@prisma/client';
 	import { capitalizeFirstLetter, cn, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent } from '$lib/components/page';
 	import { MoreVertical, Trash2 } from 'lucide-svelte';
-	import { SortArrow, SortDropdown, setSortState } from '$lib/components/sort';
-	import { superForm, type FormResult } from 'sveltekit-superforms/client';
+	import { SearchInput, SortArrow, SortMenu } from '$lib/components/filters';
+	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
-	import { invalidateAll } from '$app/navigation';
-	import { SearchInput, createSearchStore, searchHandler } from '$lib/components/search';
+	import { goto, invalidate, invalidateAll } from '$app/navigation';
 	import dayjs from '$lib/utils/dayjs';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import { mediaQuery } from 'svelte-legos';
-	import { onError } from '$lib/components/ui/sonner';
+	import { onError } from '$lib/components/feedback';
 	import { toast } from 'svelte-sonner';
+	import { getDeleteModalState, ModalState } from '$lib/components/modal';
 
-	export let data: PageData;
+	let { data } = $props();
 
-	$: ({ users, user } = data);
-
-	let open = false;
-
-	let isDeleteModalOpen = false;
-	let deleteDetail: DeleteDetail = { type: null };
+	let user = $state(data.user);
 
 	type UserWithoutPassword = Omit<User, 'password'>;
+	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
+	let sort = $state(sortOptions[0]);
 
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<UserWithoutPassword>[])];
+	let search = $state('');
+	let users = $derived.by(() => {
+		const searchTerm = search.toLowerCase() || '';
 
-	const sort = setSortState<Omit<UserWithoutPassword, 'password'>>(sortOptions[0]);
+		return data.users
+			.filter((user) => {
+				const searchableTerms = `${user.name} ${user.email} ${user.role}`;
 
-	const isDesktop = mediaQuery('(min-width: 768px)');
+				return searchableTerms.toLowerCase().includes(searchTerm);
+			})
+			.sort(sortFun(sort.field, sort.order));
+	});
+
+	const deleteModal = getDeleteModalState();
+
+	const addUserModal = new ModalState();
 
 	const { form, message, errors, enhance } = superForm(data.form, {
-		onResult(event) {
-			const result = event.result as FormResult<ActionData>;
-
+		onResult({ result }) {
 			switch (result.type) {
 				case 'success':
-					open = false;
+					addUserModal.close();
 					toast.success('User added successfully');
 
-					invalidateAll();
+					invalidate('/admin');
 					break;
 
 				case 'error':
@@ -63,68 +64,44 @@
 		try {
 			await trpc().users.delete.mutate(id);
 
-			users = users.filter((user) => user.id !== id);
+			await invalidateAll();
 
 			toast.success(`User [${name}] deleted successfully`);
 		} catch (error) {
 			onError(error);
 		}
 	}
-	async function handleDelete() {
-		if (deleteDetail.type !== 'user') return;
-
-		await deleteUser(deleteDetail.id, deleteDetail.name);
-
-		isDeleteModalOpen = false;
-	}
 
 	function clickHead(head: string) {
-		const field = head as keyof UserWithoutPassword;
-		const order = $sort.order === 'asc' ? 'desc' : 'asc';
-		$sort = { ...$sort, field, order };
+		const field = head as keyof UserWithoutPassword | string;
+		const order = sort.order === 'asc' ? 'desc' : 'asc';
+		// @ts-ignore
+		sort = { ...sort, field, order };
 	}
-
-	function removeSearchTerms(data: typeof searchUsers) {
-		return data.map(({ searchTerms, ...rest }) => ({ ...rest }));
-	}
-
-	const searchUsers = data.users.map((user) => ({
-		...user,
-		searchTerms: `${user.name} ${user.email} ${user.role}`
-	}));
-	const searchStore = createSearchStore(searchUsers);
-
-	const unsubscribe = searchStore.subscribe((model) => searchHandler(model));
-
-	onDestroy(() => {
-		unsubscribe();
-	});
-
-	$: $sort, ($searchStore.filtered = $searchStore.data.sort(sortFun($sort.field, $sort.order)));
 </script>
 
 <svelte:head>
 	<title>Admin - Stackbold</title>
 </svelte:head>
 
-<PageContainer>
-	<PageContent class="relative ">
+<PageContainer class="h-screen ">
+	<PageContent class="h-full relative ">
 		<div class="w-full flex items-center justify-between">
 			<LayoutDashboard class="icon-lg" />
 			<h1 class="font-semibold text-3xl">Admin Dashboard</h1>
 
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="secondary" class="icon-lg p-0.5 rounded-sm">
-						<img
-							src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
-							class="icon-lg object-contain rounded-md"
-							alt="avatar"
-						/>
-					</Button>
+				<DropdownMenu.Trigger
+					class={buttonVariants({ variant: 'secondary', className: 'icon-lg p-0.5 rounded-sm' })}
+				>
+					<img
+						src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
+						class="icon-lg object-contain rounded-md"
+						alt="avatar"
+					/>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
-					<DropdownMenu.Item href="/" class="space-x-2">
+					<DropdownMenu.Item onclick={() => goto('/')} class="space-x-2">
 						<AppWindow class="icon-xs" />
 						<span> App </span>
 					</DropdownMenu.Item>
@@ -144,21 +121,13 @@
 			</DropdownMenu.Root>
 		</div>
 
-		{#if $isDesktop}
-			<div class="flex justify-between space-x-2">
-				<SearchInput placeholder="Find User" bind:value={$searchStore.search} />
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="flex justify-between space-x-2">
+			<SearchInput placeholder="Find User" bind:value={search} />
 
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
-				<Button on:click={() => (open = true)}>New user</Button>
-			</div>
-		{:else}
-			<SearchInput placeholder="Find User" bind:value={$searchStore.search} />
-
-			<div class="flex justify-between items-center">
-				<div>{users.length} Users</div>
-				<SortDropdown {sortOptions} bind:currentSort={$sort} />
-			</div>
-		{/if}
+			<SortMenu options={sortOptions} bind:value={sort} />
+			<Button class="hidden md:flex" onclick={() => addUserModal.open()}>New user</Button>
+		</div>
 
 		<div class=" overflow-x-auto">
 			<table class="w-full table-auto">
@@ -169,11 +138,11 @@
 								scope="col"
 								class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer"
 							>
-								<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-								<div class="flex justify-between items-center" on:click={() => clickHead(item)}>
+								<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+								<div class="flex justify-between items-center" onclick={() => clickHead(item)}>
 									<span>{capitalizeFirstLetter(item)}</span>
 
-									<SortArrow bind:order={$sort.order} />
+									<SortArrow bind:order={sort.order} />
 								</div>
 							</th>
 						{/each}
@@ -184,7 +153,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each removeSearchTerms($searchStore.filtered) as user (user.id)}
+					{#each users as user (user.id)}
 						<tr
 							class={cn(
 								'text-nowrap font-medium text-base border-y border-secondary hover:bg-muted',
@@ -202,12 +171,18 @@
 							{/each}
 
 							<td>
-								<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+								<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 								<div
 									title="Delete"
-									on:click={() => {
-										deleteDetail = { type: 'user', id: user.id, name: user.email };
-										isDeleteModalOpen = true;
+									onclick={() => {
+										deleteModal.open({
+											type: 'user',
+											id: user.id,
+											name: user.name,
+											fun: async () => {
+												await deleteUser(user.id, user.name);
+											}
+										});
 									}}
 									class={cn(
 										buttonVariants({ variant: 'ghost' }),
@@ -228,18 +203,16 @@
 				</tbody>
 			</table>
 		</div>
-		{#if !$isDesktop}
-			<Button
-				on:click={() => (open = true)}
-				class="fixed bottom-4 right-4 z-10 h-12 w-12 rounded-full"
-			>
-				<UserPlus />
-			</Button>
-		{/if}
+		<Button
+			onclick={() => addUserModal.open()}
+			class="fixed md:hidden bottom-4 right-4 z-10 h-12 w-12 rounded-full"
+		>
+			<UserPlus />
+		</Button>
 	</PageContent>
 </PageContainer>
 
-<Dialog.Root bind:open>
+<Dialog.Root bind:open={addUserModal.isOpen}>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title class="text-center">New user</Dialog.Title>
@@ -319,20 +292,3 @@
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
-
-<AlertDialog.Root bind:open={isDeleteModalOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Delete</AlertDialog.Title>
-			<AlertDialog.Description class="text-lg">
-				Are you sure you want to delete this {deleteDetail.type} ?
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button builders={[builder]} variant="destructive" on:click={handleDelete}>Continue</Button>
-			</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
