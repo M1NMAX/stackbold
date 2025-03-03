@@ -4,7 +4,7 @@
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, SortMenu } from '$lib/components/filters';
 	import type { Collection } from '@prisma/client';
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils';
 	import { getCrtCollectionModalState } from '$lib/states/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
@@ -53,7 +53,7 @@
 
 <PageContainer>
 	<PageHeader>
-		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
+		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
 			<LibraryBig class="icon-md" />
 			<h1 class="text-xl font-semibold">Collections</h1>
 		</div>
@@ -82,7 +82,7 @@
 			</div>
 
 			{#if collections.length > 0}
-				<div class={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
+				<div class={tm('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
 					{#each collections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}

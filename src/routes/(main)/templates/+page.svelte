@@ -7,9 +7,8 @@
 	import { icons } from '$lib/components/icon';
 	import { DEFAULT_SORT_OPTIONS, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
 	import { getScreenSizeState } from '$lib/components/screen';
-	import { cn, noCheck } from '$lib/utils';
-	import { Button } from '$lib/components/ui/button';
-	import { SlidingPanel } from '$lib/components/base/index.js';
+	import { tm, noCheck } from '$lib/utils';
+	import { Button, SlidingPanel } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
@@ -65,10 +64,10 @@
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <PageContainer
-	class={cn('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
+	class={tm('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
 >
 	<PageHeader>
-		<Button variant="secondary" size="icon" class="md:hidden" onclick={() => history.back()}>
+		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
 			<ChevronLeft class="icon-md" />
 		</Button>
 
@@ -98,7 +97,7 @@
 					<a
 						href={`/templates/${template.id}`}
 						onclick={(e) => clickTemplate(e, template.id)}
-						class={cn(
+						class={tm(
 							'w-full flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/50 dark:hover:bg-secondary/80 truncate',
 							template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 						)}

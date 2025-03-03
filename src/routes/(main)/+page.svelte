@@ -1,10 +1,13 @@
 <script lang="ts">
+	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import Dna from 'lucide-svelte/icons/dna';
+	import Egg from 'lucide-svelte/icons/egg';
+	import FolderPlus from 'lucide-svelte/icons/folder-plus';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { ArrowRight, Dna, Egg, FolderPlus } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
-	import { getCrtCollectionModalState } from '$lib/components/modal';
 	import { UserMenu } from '$lib/components/user';
+	import { Button } from '$lib/components/base/index.js';
+	import { getCrtCollectionModalState } from '$lib/states/index.js';
 
 	let { data } = $props();
 
@@ -35,7 +38,7 @@
 		</div>
 	</PageHeader>
 
-	<PageContent class="space-y-5">
+	<PageContent class="gap-y-5">
 		{#if pinnedCollections.length > 0}
 			<section class="space-y-1.5">
 				<h2 class="text-xl">Pinned Collections</h2>
@@ -53,7 +56,7 @@
 				<div class="flex items-centers justify-between">
 					<h2 class="text-xl">Recently updated collections</h2>
 
-					<Button href="/collections" variant="ghost" size="icon">
+					<Button href="/collections" theme="ghost" variant="icon">
 						<ArrowRight />
 					</Button>
 				</div>
@@ -77,7 +80,7 @@
 					<span> Create Collection</span>
 				</Button>
 
-				<Button href="/templates" variant="secondary" class="h-12 w-full">
+				<Button href="/templates" theme="secondary" class="h-12 w-full">
 					<Dna />
 					<span> Browser Templates</span>
 				</Button>

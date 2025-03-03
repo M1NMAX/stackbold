@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/base/index.js';
 	import { getToastState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
@@ -77,8 +77,8 @@
 			</h1>
 		</div>
 
-		<Button variant="secondary" size="icon" onclick={() => goBack()}>
-			<X class="icon-sm" />
+		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+			<X />
 		</Button>
 	</div>
 
@@ -90,7 +90,7 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button variant="secondary" size="icon" onclick={() => history.back()}>
+			<Button theme="secondary" variant="icon" onclick={() => history.back()}>
 				<ChevronLeft />
 			</Button>
 			{#if isSmHeadingVisible}
