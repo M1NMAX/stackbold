@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Search, SquareX } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/base/index.js';
 
 	type Props = {
 		value?: string;
 		placeholder?: string;
 	};
-	let { value = $bindable(), placeholder, ...rest }: Props = $props();
+	let { value = $bindable(), placeholder = 'Search', ...rest }: Props = $props();
 </script>
 
 <!-- TODO: turn responsive -->
@@ -23,7 +23,7 @@
 
 	{#if value && value.length > 0}
 		<Button
-			variant="ghost"
+			theme="ghost"
 			class="absolute inset-y-0 right-0 flex items-center [&_svg]:size-6"
 			onclick={() => (value = '')}
 		>

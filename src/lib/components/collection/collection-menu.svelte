@@ -1,19 +1,24 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import { Copy, CornerUpRight, Eye, EyeOff, MoreHorizontal, Trash } from 'lucide-svelte';
+	import Copy from 'lucide-svelte/icons/copy';
+	import Ellipsis from 'lucide-svelte/icons/ellipsis';
+	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
+	import Eye from 'lucide-svelte/icons/eye';
+	import EyeOff from 'lucide-svelte/icons/eye-off';
+	import Trash from 'lucide-svelte/icons/trash';
 	import type { Collection } from '@prisma/client';
-	import { icons } from '$lib/components/icon';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
 		ModalState
-	} from '$lib/components/modal';
+	} from '$lib/states/index.js';
 	import { getCollectionState } from '.';
-	import { getGroupState } from '$lib/components/group';
-	import { getScreenSizeState } from '$lib/components/screen';
 	import { goto } from '$app/navigation';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		HSeparator
+	} from '$lib/components/base/index.js';
 
 	type Props = {
 		collection: Collection;
@@ -23,17 +28,9 @@
 
 	let wrapper = new ModalState();
 
-	const Icon = $derived(icons[collection.icon]);
-
 	const collectionState = getCollectionState();
-	const groupState = getGroupState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
-	const isLargeScreen = getScreenSizeState();
-
-	const groupName = $derived.by(() => {
-		return groupState.groups.find((group) => group.id === collection.id)?.name ?? 'without group';
-	});
 
 	function duplicateCollection() {
 		closeIfOpen();
@@ -78,83 +75,38 @@
 	}
 </script>
 
-{#if isLargeScreen.current}
-	<DropdownMenu.Root>
-		<DropdownMenu.Trigger
-			class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'hidden md:flex' })}
-		>
-			<MoreHorizontal />
-		</DropdownMenu.Trigger>
-		<DropdownMenu.Content align="end" class="w-56">
-			<DropdownMenu.Group>
-				<DropdownMenu.Item onclick={() => toggleDescState()}>
-					{#if collection.isDescHidden}
-						<Eye class="icon-xs" />
-						<span> Show description </span>
-					{:else}
-						<EyeOff class="icon-xs" />
-						<span> Hide description </span>
-					{/if}
-				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => moveCollection()}>
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</DropdownMenu.Item>
+<AdaptiveWrapper
+	floatingAlign="end"
+	triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
+>
+	{#snippet trigger()}
+		<Ellipsis />
+	{/snippet}
 
-				<DropdownMenu.Item onclick={() => duplicateCollection()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => deleteCollection()}>
-					<Trash class="icon-xs text-red-500" />
-					<span class="text-red-500">Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Group>
-		</DropdownMenu.Content>
-	</DropdownMenu.Root>
-{:else}
-	<Drawer.Root bind:open={wrapper.isOpen}>
-		<Drawer.Trigger class={buttonVariants({ variant: 'secondary', className: 'md:hidden' })}>
-			<MoreHorizontal class="icon-sm" />
-		</Drawer.Trigger>
-		<Drawer.Content>
-			<Drawer.Header class="py-2">
-				<div class="flex items-center space-x-2">
-					<div class="p-2.5 rounded bg-secondary">
-						<Icon class="icon-sm" />
-					</div>
+	<Button theme="ghost" variant="menu" onclick={() => toggleDescState()}>
+		{#if collection.isDescHidden}
+			<Eye />
+			<span> Show description </span>
+		{:else}
+			<EyeOff />
+			<span> Hide description </span>
+		{/if}
+	</Button>
 
-					<div class="flex flex-col items-start justify-start">
-						<div class=" text-base font-semibold truncate">{collection.name}</div>
-						<div class="text-sm">
-							{groupName ?? 'Without group'}
-						</div>
-					</div>
-				</div>
-			</Drawer.Header>
-			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" onclick={() => toggleDescState()}>
-					{#if collection.isDescHidden}
-						<Eye class="icon-xs" />
-						<span> Show description </span>
-					{:else}
-						<EyeOff class="icon-xs" />
-						<span> Hide description </span>
-					{/if}
-				</Button>
-				<Button variant="secondary" onclick={() => moveCollection()}>
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</Button>
-				<Button variant="secondary" onclick={() => duplicateCollection()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</Button>
-				<Button variant="destructive" onclick={() => deleteCollection()}>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
-				</Button>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
-{/if}
+	<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
+		<CornerUpRight />
+		<span>Move to</span>
+	</Button>
+
+	<Button theme="ghost" variant="menu" onclick={() => duplicateCollection()}>
+		<Copy />
+		<span>Duplicate</span>
+	</Button>
+
+	<HSeparator />
+
+	<Button theme="danger" variant="menu" onclick={() => deleteCollection()}>
+		<Trash />
+		<span>Delete</span>
+	</Button>
+</AdaptiveWrapper>

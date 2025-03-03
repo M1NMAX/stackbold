@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getCollectionState } from '$lib/components/collection';
 	import { setActiveItemState, setItemState } from '$lib/components/items';
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import { setPropertyState } from '$lib/components/property';
 	import { ITEM_PANEL_CTX_KEY, PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
 	import { setContext } from 'svelte';

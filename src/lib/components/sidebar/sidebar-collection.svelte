@@ -1,19 +1,17 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
+	import Copy from 'lucide-svelte/icons/copy';
+	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
+	import Ellipsis from 'lucide-svelte/icons/ellipsis';
+	import Pencil from 'lucide-svelte/icons/pencil';
+	import Trash from 'lucide-svelte/icons/trash';
 	import {
-		Copy,
-		CornerUpRight,
-		HeartOff,
-		MoreHorizontal,
-		Pencil,
-		PinOff,
-		Trash
-	} from 'lucide-svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { cn } from '$lib/utils';
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		Dialog,
+		HSeparator
+	} from '$lib/components/base/index.js';
 	import { icons } from '$lib/components/icon';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
@@ -23,8 +21,7 @@
 		getDeleteModalState,
 		getMoveCollectionModalState,
 		ModalState
-	} from '$lib/components/modal';
-	import { getGroupState } from '$lib/components/group';
+	} from '$lib/states/index.js';
 	import { getCollectionState } from '$lib/components/collection';
 	import { MAX_COLLECTION_NAME_LENGTH } from '$lib/constant/index.js';
 
@@ -38,15 +35,11 @@
 
 	let renameError = $state<string | null>(null);
 
-	const groupState = getGroupState();
 	const collectionState = getCollectionState();
-	const currentGroup = $derived.by(() => {
-		return groupState.groups.find((group) => group.id === collection.groupId) ?? 'Without group';
-	});
 	const Icon = $derived(icons[collection.icon]);
 
-	const renameCollectionModal = new ModalState();
-	const smallScreenDrawer = new ModalState();
+	const renameModalState = new ModalState();
+	const menuState = new ModalState();
 
 	const sidebarState = getSidebarState();
 	const isLargeScreen = getScreenSizeState();
@@ -69,7 +62,7 @@
 		renameError = null;
 
 		collectionState.updCollection({ id: collection.id, data: { name } });
-		renameCollectionModal.close();
+		renameModalState.close();
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -81,7 +74,7 @@
 	}
 
 	function moveCollection() {
-		if (smallScreenDrawer.isOpen) smallScreenDrawer.close();
+		menuState.close();
 		moveCollectionModal.open({
 			collectionId: collection.id,
 			currentGroupId: collection.groupId || null
@@ -109,19 +102,19 @@
 </script>
 
 <span
-	class={cn(
+	class={[
 		'group flex items-center py-0.5 pl-3.5 pr-0.5  hover:bg-secondary/90  transition duration-75 text-secondary-foreground',
 		active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
 		asChild && 'pl-5'
-	)}
+	]}
 >
 	<a
 		href="/collections/{collection.id}"
 		class="grow flex items-center space-x-1.5"
 		onclick={onClickSidebarItem}
 	>
-		<Icon class={cn('icon-sm', active && 'text-primary')} />
-		<span class={cn('font-semibold text-base text-nowrap', active && 'text-primary')}>
+		<Icon class={['icon-sm', active && 'text-primary']} />
+		<span class={['font-semibold text-base text-nowrap', active && 'text-primary']}>
 			{collection.name.length > 25 && isLargeScreen.current
 				? collection.name.substring(0, 22) + ' ...'
 				: collection.name}
@@ -130,139 +123,75 @@
 	{@render menu()}
 </span>
 
-<Dialog.Root bind:open={renameCollectionModal.isOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Rename collection</Dialog.Title>
-		</Dialog.Header>
-		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
-			<label for="collection-name"> Name </label>
-			<input
-				id="collection-name"
-				type="text"
-				name="name"
-				autocomplete="off"
-				value={collection.name}
-				class="input"
-				maxlength={MAX_COLLECTION_NAME_LENGTH}
-			/>
+<Dialog bind:open={renameModalState.isOpen} title="Rename collection">
+	<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
+		<label for="collection-name"> Name </label>
+		<input
+			id="collection-name"
+			type="text"
+			name="name"
+			autocomplete="off"
+			value={collection.name}
+			class="input"
+			maxlength={MAX_COLLECTION_NAME_LENGTH}
+		/>
 
-			{#if renameError}
-				<span class="text-error"> {renameError}</span>
-			{/if}
+		{#if renameError}
+			<span class="text-error"> {renameError}</span>
+		{/if}
 
-			<Button type="submit" class="w-full">Save</Button>
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
+		<Button type="submit" class="w-full">Save</Button>
+	</form>
+</Dialog>
 
 {#snippet menu()}
-	{#if isLargeScreen.current}
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger
-				class={buttonVariants({
-					variant: 'ghost',
-					size: 'xs',
-					className: 'invisible group-hover:visible transition-opacity'
-				})}
-			>
-				<MoreHorizontal class="icon-xs" />
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content class="w-56">
-				<DropdownMenu.Item onclick={() => renameCollectionModal.open()}>
-					<Pencil class="icon-xs" />
-					<span> Rename </span>
-				</DropdownMenu.Item>
+	<AdaptiveWrapper
+		bind:open={menuState.isOpen}
+		floatingAlign="start"
+		triggerClass={buttonVariants({
+			theme: 'ghost',
+			variant: 'compact',
+			className: 'invisible group-hover:visible transition-opacity'
+		})}
+	>
+		{#snippet trigger()}
+			<Ellipsis />
+		{/snippet}
 
-				{#if collection.isPinned}
-					<DropdownMenu.Item
-						onclick={() => {
-							collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
-						}}
-					>
-						<PinOff class="icon-xs" />
-						<span> Remove from Sidebar </span>
-					</DropdownMenu.Item>
-				{/if}
+		<Button theme="ghost" variant="menu" onclick={() => renameModalState.open()}>
+			<Pencil />
+			<span> Rename </span>
+		</Button>
 
-				<DropdownMenu.Item onclick={() => moveCollection()}>
-					<CornerUpRight class="icon-xs" />
-					<span>Move to</span>
-				</DropdownMenu.Item>
+		<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
+			<CornerUpRight />
+			<span>Move to</span>
+		</Button>
 
-				<DropdownMenu.Item onclick={() => collectionState.duplicateCollection(collection.id)}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</DropdownMenu.Item>
+		<Button
+			theme="ghost"
+			variant="menu"
+			onclick={() => {
+				collectionState.duplicateCollection(collection.id);
+				menuState.close();
+			}}
+		>
+			<Copy />
+			<span>Duplicate</span>
+		</Button>
 
-				<DropdownMenu.Item onclick={() => deleteCollection()} class="group">
-					<Trash class="icon-xs group-hover:text-primary" />
-					<span class="group-hover:text-primary">Delete</span>
-				</DropdownMenu.Item>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
-		<Drawer.Root bind:open={smallScreenDrawer.isOpen}>
-			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-				<MoreHorizontal class="icon-xs" />
-			</Drawer.Trigger>
+		<HSeparator />
 
-			<Drawer.Content>
-				<Drawer.Header class="py-2">
-					<div class="flex items-center space-x-2">
-						<div class="p-2.5 rounded bg-secondary">
-							<Icon class="icon-sm" />
-						</div>
-
-						<div class="flex flex-col items-start justify-start">
-							<div class=" text-base font-semibold truncate">{collection.name}</div>
-							<div class="text-sm">
-								{currentGroup}
-							</div>
-						</div>
-					</div>
-				</Drawer.Header>
-
-				<Drawer.Footer class="pt-2">
-					{#if collection.isPinned}
-						<Button
-							variant="secondary"
-							onclick={() => {
-								collectionState.updCollection({ id: collection.id, data: { isPinned: false } });
-								smallScreenDrawer.close();
-							}}
-						>
-							<HeartOff class="icon-xs" />
-							<span> Remove from Sidebar </span>
-						</Button>
-					{/if}
-
-					<Button variant="secondary" onclick={() => moveCollection()}>
-						<CornerUpRight class="icon-xs" />
-						<span>Move to</span>
-					</Button>
-					<Button
-						variant="secondary"
-						onclick={() => {
-							collectionState.duplicateCollection(collection.id);
-							smallScreenDrawer.close();
-						}}
-					>
-						<Copy class="icon-xs" />
-						<span>Duplicate</span>
-					</Button>
-					<Button
-						variant="destructive"
-						onclick={() => {
-							smallScreenDrawer.close();
-							deleteCollection();
-						}}
-					>
-						<Trash class="icon-xs" />
-						<span>Delete</span>
-					</Button>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+		<Button
+			theme="danger"
+			variant="menu"
+			onclick={() => {
+				menuState.close();
+				deleteCollection();
+			}}
+		>
+			<Trash />
+			<span>Delete</span>
+		</Button>
+	</AdaptiveWrapper>
 {/snippet}

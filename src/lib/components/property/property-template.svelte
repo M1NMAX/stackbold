@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { createTooltip, melt } from '@melt-ui/svelte';
-	import { fade } from 'svelte/transition';
 	import { CheckSquare2, Square } from 'lucide-svelte';
 	import type { Color, Property } from '@prisma/client';
 	import { PROPERTY_COLORS } from '$lib/constant';
-	import { cn } from '$lib/utils';
+	import { tm, useId } from '$lib/utils';
 	import { getPropertyValue, PropertyIcon } from '.';
+	import { Tooltip } from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
@@ -14,24 +13,11 @@
 	};
 
 	let { property, color, value }: Props = $props();
-
-	const {
-		elements: { trigger, content, arrow },
-		states: { open }
-	} = createTooltip({
-		positioning: {
-			placement: 'top'
-		},
-		portal: 'HTMLElement',
-		openDelay: 0,
-		closeDelay: 0,
-		closeOnPointerDown: false
-	});
 </script>
 
 {#if property.type == 'CHECKBOX'}
 	<div
-		class={cn(
+		class={tm(
 			'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold',
 			PROPERTY_COLORS[color]
 		)}
@@ -45,10 +31,11 @@
 		<span class="font-semibold">{property.name} </span>
 	</div>
 {:else}
+	{@const tooltipId = useId(`template-prop-tooltip-${property.id}`)}
 	{@const result = getPropertyValue(property, value)}
 	<span
-		use:melt={$trigger}
-		class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+		id={tooltipId}
+		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
 		{#if property.type !== 'TEXT'}
 			{result}
@@ -57,17 +44,10 @@
 		{/if}
 	</span>
 
-	{#if $open}
-		<div
-			use:melt={$content}
-			transition:fade={{ duration: 100 }}
-			class="z-10 rounded-lg bg-secondary shadow"
-		>
-			<div use:melt={$arrow}></div>
-			<div class="flex items-center p-1">
-				<PropertyIcon key={property.type} class="icon-xs mr-1" />
-				<span class="text-sm font-semibold">{property.name}</span>
-			</div>
+	<Tooltip triggerBy={tooltipId}>
+		<div class="flex items-center p-1">
+			<PropertyIcon key={property.type} class="icon-xs mr-1" />
+			<span class="text-sm font-semibold">{property.name}</span>
 		</div>
-	{/if}
+	</Tooltip>
 {/if}

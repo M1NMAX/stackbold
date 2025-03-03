@@ -2,7 +2,7 @@
 	import { PropertyIcon } from '.';
 	import type { Property } from '@prisma/client';
 	import type { Snippet } from 'svelte';
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils';
 
 	type Props = {
 		children: Snippet;
@@ -14,7 +14,7 @@
 </script>
 
 <div
-	class={cn(
+	class={tm(
 		'p-1 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 text-secondary-foreground',
 		isFocus && 'bg-secondary/80'
 	)}

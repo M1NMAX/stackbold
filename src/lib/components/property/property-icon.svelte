@@ -1,27 +1,15 @@
-<script module lang="ts">
-	import { Calendar, CheckSquare2, Hash, Link, List, Text } from 'lucide-svelte';
-
-	// TODO: find better icons
-	const icons: { [idx: string]: any } = {
-		text: Text,
-		select: List,
-		checkbox: CheckSquare2,
-		date: Calendar,
-		number: Hash,
-		url: Link
-	};
-</script>
-
 <script lang="ts">
+	import { INPUT_ICONS } from '$lib/constant/index.js';
+	import { tm } from '$lib/utils/index.js';
 	import type { PropertyType } from '@prisma/client';
 
 	type Props = {
-		key: PropertyType;
+		key: PropertyType | 'none';
 		class?: string;
 	};
 
 	let { key, class: className }: Props = $props();
-	const Icon = $derived(icons[key.toLowerCase()]);
+	const Icon = $derived(INPUT_ICONS[key.toLowerCase()]);
 </script>
 
-<Icon class={className ?? 'icon-sm mr-2'} aria-level="Property type icon" />
+<Icon class={tm('size-5', className)} aria-level="Property type icon" />

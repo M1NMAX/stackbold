@@ -193,9 +193,8 @@ input[type='number'] {
 	@apply w-14 h-14 focus:outline-none;
 }
 
-/* Settings page */
-.tab-content {
-	@apply w-full p-4 rounded-sm border bg-background;
+.menu-header {
+	@apply md:sr-only py-1 px-2 text-sm text-center font-semibold;
 }
 
 @layer base {

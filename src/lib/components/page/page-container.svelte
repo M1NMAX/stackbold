@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils';
 
 	type Props = {
 		children: Snippet;
@@ -10,8 +10,8 @@
 </script>
 
 <main
-	class={cn(
-		'grow h-full flex flex-col space-y-1 rounded-md bg-card text-secondary-foreground overflow-hidden',
+	class={tm(
+		'grow h-full flex flex-col gap-y-1 rounded-md bg-card text-secondary-foreground overflow-hidden',
 		className
 	)}
 >

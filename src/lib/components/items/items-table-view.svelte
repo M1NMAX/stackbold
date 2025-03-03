@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import { Label } from '$lib/components/ui/label';
-	import { Switch } from '$lib/components/ui/switch';
+	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
+	import Settings from 'lucide-svelte/icons/settings-2';
+	import { tm } from '$lib/utils';
 	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
 	import { getActiveItemState, getItemState, ItemMenu } from '.';
 	import {
@@ -17,8 +15,14 @@
 		getPropertyState
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
-	import { PanelLeftOpen, Settings2 } from 'lucide-svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		HSeparator,
+		Label,
+		Switch
+	} from '$lib/components/base/index.js';
 	import { getScreenSizeState } from '$lib/components/screen';
 	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router';
@@ -86,7 +90,7 @@
 				<th scope="col" class="text-left w-10" title="Row actions">
 					{@render viewVisibilityMenu()}
 				</th>
-				<th scope="col" class=" text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
+				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 					<span class="flex items-center">
 						<PropertyIcon key={PropertyType.TEXT} class="icon-xs mr-2" />
 						Name
@@ -96,7 +100,7 @@
 					{#if containsView(property.visibleInViews, View.TABLE)}
 						<th
 							scope="col"
-							class=" text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
+							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
 						>
 							<span class="flex items-center">
 								<PropertyIcon key={property.type} class="icon-xs mr-2" />
@@ -118,19 +122,19 @@
 			{#if items.length > 0}
 				{#each items as item (item.id)}
 					<tr
-						class={cn(
-							'font-medium text-base whitespace-nowrap w-96 border-y border-secondary hover:bg-muted/40 group',
+						class={tm(
+							'font-medium text-base whitespace-nowrap  border-y border-secondary hover:bg-muted/40 group',
 							item.id === activeItem.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
 						<td class="min-w-10 px-1 border border-l-0">
 							<div class="flex justify-between items-center space-x-2">
-								<ItemMenu id={item.id} name={item.name} {clickOpenItem} />
+								<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="start" />
 								<Button
-									variant="secondary"
-									size="sm"
+									theme="secondary"
+									variant="icon"
 									onclick={() => clickOpenItem(item.id)}
-									class={cn(!isLargeScreen.current ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
+									class={tm(!isLargeScreen.current ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
 								>
 									Open
 								</Button>
@@ -146,18 +150,13 @@
 							/>
 
 							<Button
-								variant="secondary"
-								size="sm"
+								theme="secondary"
 								onclick={() => clickOpenItem(item.id)}
-								class={cn(
-									isLargeScreen.current
-										? 'items-center py-0.5 px-1 gap-x-1 invisible group-hover:visible'
-										: 'hidden'
-								)}
+								class="hidden md:flex items-center py-0.5 px-1 gap-x-1 invisible group-hover:visible "
 							>
 								<span> Open </span>
 
-								<PanelLeftOpen class="icon-xs" />
+								<PanelLeftOpen />
 							</Button>
 						</td>
 
@@ -173,6 +172,7 @@
 				<tr>
 					<td></td>
 					<td></td>
+
 					{#each propertyState.properties as property (property.id)}
 						{#if property.visibleInViews.some((v) => v === View.LIST)}
 							{#if property.aggregator === 'NONE'}
@@ -194,74 +194,29 @@
 </div>
 
 {#snippet viewVisibilityMenu()}
-	{#if isLargeScreen.current}
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class={buttonVariants({ variant: 'ghost', size: 'xs' })}>
-				<Settings2 class="icon-xs" />
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="start" class="w-56">
-				<DropdownMenu.Label>Toggle properties visibility</DropdownMenu.Label>
-				<DropdownMenu.Separator />
+	<AdaptiveWrapper triggerClass={buttonVariants({ theme: 'ghost' })} floatingAlign="start">
+		{#snippet trigger()}
+			<Settings />
+		{/snippet}
 
-				<div class="p-1 space-y-2">
-					{#each propertyState.properties as property (property.id)}
-						<div class="flex justify-between items-center">
-							<Label for={property.id} class="flex items-center text-sm font-semibold">
-								<PropertyIcon key={property.type} />
-								{property.name}
-							</Label>
-							<Switch
-								id={property.id}
-								checked={containsView(property.visibleInViews, View.TABLE)}
-								onCheckedChange={() => {
-									propertyState.updProperty({
-										id: property.id,
-										visibleInViews: toggleView(property.visibleInViews, View.TABLE)
-									});
-								}}
-							/>
-						</div>
-					{/each}
-				</div>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
-	{:else}
-		<Drawer.Root>
-			<Drawer.Trigger class={buttonVariants({ variant: 'ghost', size: 'xs' })}>
-				<Settings2 class="icon-xs" />
-			</Drawer.Trigger>
-			<Drawer.Content>
-				<Drawer.Header class="py-1">
-					<div class="flex items-center space-x-2">
-						<div class="p-2.5 rounded bg-secondary">
-							<Settings2 class="icon-sm" />
-						</div>
-						<div class="text-base font-semibold">Toggle properties visibility</div>
-					</div>
-				</Drawer.Header>
-				<Drawer.Footer>
-					<div class="p-1 space-y-2.5">
-						{#each propertyState.properties as property (property.id)}
-							<div class="flex justify-between items-center">
-								<Label for={property.id} class="flex items-center text-base ">
-									<PropertyIcon key={property.type} class="icon-md mr-2" />
-									{property.name}
-								</Label>
-								<Switch
-									id={property.id}
-									checked={containsView(property.visibleInViews, View.TABLE)}
-									onCheckedChange={() => {
-										propertyState.updProperty({
-											id: property.id,
-											visibleInViews: toggleView(property.visibleInViews, View.TABLE)
-										});
-									}}
-								/>
-							</div>
-						{/each}
-					</div>
-				</Drawer.Footer>
-			</Drawer.Content>
-		</Drawer.Root>
-	{/if}
+		<p class="py-1.5 px-2 text-sm font-semibold">Toggle properties visibility</p>
+
+		<HSeparator />
+
+		{#each propertyState.properties as property (property.id)}
+			<div class="flex justify-between items-center">
+				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+				<Switch
+					id={property.id}
+					checked={containsView(property.visibleInViews, View.TABLE)}
+					onchange={() => {
+						propertyState.updProperty({
+							id: property.id,
+							visibleInViews: toggleView(property.visibleInViews, View.TABLE)
+						});
+					}}
+				/>
+			</div>
+		{/each}
+	</AdaptiveWrapper>
 {/snippet}

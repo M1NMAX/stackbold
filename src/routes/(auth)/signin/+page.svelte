@@ -1,7 +1,7 @@
 <script lang="ts">
 	import logoSrc from '$lib/assets/logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/base/index.js';
 	import { dev } from '$app/environment';
 
 	let { data } = $props();

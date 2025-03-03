@@ -11,7 +11,7 @@ export const clickOutside: ClickOutsideAction = (element) => {
 		const targetEl = event.target as HTMLElement;
 
 		if (element && !element.contains(targetEl)) {
-			element.dispatchEvent(new CustomEvent('clickoutside'));
+			element.dispatchEvent(new CustomEvent('clickoutside', { detail: event }));
 		}
 	}
 

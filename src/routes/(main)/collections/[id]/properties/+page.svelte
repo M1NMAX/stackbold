@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { AddPropertyPopover, getPropertyState, PropertyEditor } from '$lib/components/property';
-	import { Button } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/base/index.js';
 	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
-	import { cn } from '$lib/utils/index.js';
+	import { tm } from '$lib/utils/index.js';
 	import { ArrowDown, ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 
@@ -44,7 +44,7 @@
 {#if data.insidePanel}
 	<div class="flex items-center justify-between">
 		<h2 class="text-xl font-semibold text-center">Properties</h2>
-		<Button variant="secondary" size="icon" onclick={() => goBack()}>
+		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 			<X />
 		</Button>
 	</div>
@@ -59,16 +59,16 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button variant="secondary" size="icon" onclick={() => goBack()}>
+			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
 
-			<h1 class={cn('font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+			<h1 class={tm('font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
 				Properties
 			</h1>
 		</PageHeader>
-		<PageContent class="grow" onScroll={handleScroll}>
-			<h1 class={cn('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+		<PageContent class="grow gap-y-0" onScroll={handleScroll}>
+			<h1 class={tm('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
 				Properties
 			</h1>
 
@@ -90,8 +90,7 @@
 	{:else}
 		<div class="h-full flex flex-col items-center justify-center space-y-2">
 			<p class="text-center text-lg">This collection has no properties. <br /> Please add one</p>
-
-			<ArrowDown class=" icon-lg" />
+			<ArrowDown class="size-9" />
 		</div>
 	{/each}
 {/snippet}

@@ -1,12 +1,12 @@
 import { Aggregator, Color, View, type Property, type PropertyType } from '@prisma/client';
-import { onError } from '$lib/components/feedback';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter } from '$lib/utils';
-import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
 import type { UpdProperty } from '$lib/types';
+import { getToastState } from '$lib/states';
 
 export class PropertyState {
+	#toastState = getToastState();
 	properties = $state<Property[]>([]);
 	collectionId = $state<string>('');
 
@@ -54,7 +54,7 @@ export class PropertyState {
 			});
 			this.#updProperty(tmpId, this.getMostRecentProperty(properties));
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#removeProperty(tmpId);
 		}
 	}
@@ -63,7 +63,7 @@ export class PropertyState {
 		const target = this.getProperty(id);
 
 		if (target == null) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 		const tmpId = crypto.randomUUID();
@@ -85,7 +85,7 @@ export class PropertyState {
 
 			this.#updProperty(tmpId, this.getMostRecentProperty(properties));
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#removeProperty(tmpId);
 		}
 	}
@@ -94,7 +94,7 @@ export class PropertyState {
 		const target = this.getProperty(property.id);
 
 		if (!target) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 
@@ -106,7 +106,7 @@ export class PropertyState {
 				property
 			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#updProperty(property.id, target);
 		}
 	}
@@ -114,7 +114,7 @@ export class PropertyState {
 	async deleteProperty(id: string) {
 		const target = this.getProperty(id);
 		if (!target) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 
@@ -125,7 +125,7 @@ export class PropertyState {
 				propertyId: id
 			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.properties.push({ ...target });
 		}
 	}
@@ -133,7 +133,7 @@ export class PropertyState {
 	async addOptionToProperty(pid: string, value: string) {
 		const target = this.getProperty(pid);
 		if (!target) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 
@@ -153,7 +153,7 @@ export class PropertyState {
 				property: { id: pid, option }
 			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#updProperty(pid, target);
 		}
 	}
@@ -168,7 +168,7 @@ export class PropertyState {
 	) {
 		const target = this.getProperty(pid);
 		if (!target) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 
@@ -184,7 +184,7 @@ export class PropertyState {
 				property: { id: pid, option }
 			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast();
 			this.#updProperty(pid, target);
 		}
 	}
@@ -192,7 +192,7 @@ export class PropertyState {
 	async deletePropertyOption(pid: string, optionId: string) {
 		const target = this.getProperty(pid);
 		if (!target) {
-			onError({ msg: 'Invalid property' });
+			this.#toastState.addErrorToast('Invalid property');
 			return;
 		}
 
@@ -206,9 +206,9 @@ export class PropertyState {
 				property: { id: pid, optionId }
 			});
 
-			toast.success('Property option deleted successfully');
+			this.#toastState.addSuccessToast('Property option deleted successfully');
 		} catch (err) {
-			onError(err);
+			this.#toastState.addErrorToast('Invalid property');
 			this.#updProperty(pid, target);
 		}
 	}

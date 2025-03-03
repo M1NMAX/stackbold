@@ -19,21 +19,25 @@
 	} from '$lib/components/sidebar';
 	import { UserMenu } from '$lib/components/user';
 	import { goto } from '$app/navigation';
-	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Accordion from '$lib/components/ui/accordion';
-	import { cn } from '$lib/utils';
-	import * as Command from '$lib/components/ui/command';
+	import {
+		Accordion,
+		AccordionItem,
+		Button,
+		Command,
+		CommandItem,
+		Dialog
+	} from '$lib/components/base/index.js';
 	import {
 		ModalState,
 		setCtrCollectionModalState,
 		setMoveCollectionModalState
-	} from '$lib/components/modal';
+	} from '$lib/states/index.js';
 	import { icons } from '$lib/components/icon';
 	import { nameSchema } from '$lib/schema';
 	import { setGroupState } from '$lib/components/group';
 	import { setCollectionState } from '$lib/components/collection';
 	import { MAX_COLLECTION_NAME_LENGTH, MAX_GROUP_NAME_LENGTH } from '$lib/constant/index.js';
+	import { tm } from '$lib/utils/style.js';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -110,11 +114,15 @@
 		return activeUrl.includes(`/collections/${id}`);
 	}
 
+	function isBottomBarItemActive() {
+		return BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl);
+	}
+
 	$effect(() => {
 		function handleKeydown(e: KeyboardEvent) {
-			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+			if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.shiftKey && e.key === '/')) {
 				e.preventDefault();
-				globalSearchModal.isOpen = !globalSearchModal.isOpen;
+				globalSearchModal.open();
 			}
 		}
 
@@ -134,15 +142,15 @@
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">
 	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1">
 		<Button
-			variant="outline"
-			size="icon"
+			theme="outline"
+			variant="icon"
 			onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 		>
 			<PanelLeftInactive />
 		</Button>
 
 		<Button
-			variant="outline"
+			theme="outline"
 			class="grow h-9 max-w-sm flex justify-between items-center space-x-1  dark:bg-background"
 			onclick={() => globalSearchModal.open()}
 		>
@@ -165,25 +173,21 @@
 	>
 		<!-- SIDEBAR -->
 		<aside
-			class={cn(
-				'hidden md:flex h-full flex-col space-y-2 overflow-hidden rounded-md px-0 py-1.5 bg-card text-card-foreground transition-all',
+			class={[
+				'hidden md:flex h-full flex-col space-y-2 rounded-md px-0 py-1.5 overflow-hidden bg-card text-card-foreground transition-all',
 				sidebarState.isOpen ? 'w-1/6 mr-1.5' : 'w-0'
-			)}
+			]}
 		>
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					{@const Icon = item.icon}
 					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<Icon class={cn('icon-sm', activeUrl === item.url && 'text-primary')} />
+						<Icon class={`icon-sm ${activeUrl === item.url && 'text-primary'}`} />
 					</SidebarItem>
 				{/each}
 			</div>
 
-			<Accordion.Root
-				class="grow space-y-1.5 overflow-y-auto"
-				type="multiple"
-				value={['item-0'].concat(groupState.groups.map((_group, idx) => `item-${idx + 1}`))}
-			>
+			<div class="grow flex flex-col space-y-1.5">
 				<div class="space-y-0">
 					{#each collectionState.collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
@@ -192,38 +196,31 @@
 					{/each}
 				</div>
 
-				{#each groupState.groups as group, idx (group.id)}
-					{@const groupCollections = collectionState.collections.filter(
-						(collection) =>
-							collection.groupId && collection.groupId === group.id && collection.isPinned
-					)}
+				<Accordion type="multiple" value={groupState.groups.map((g) => g.id)}>
+					{#each groupState.groups as group, idx (group.id)}
+						{@const groupCollections = collectionState.collections.filter(
+							(collection) =>
+								collection.groupId && collection.groupId === group.id && collection.isPinned
+						)}
 
-					{#snippet extra()}
-						<SidebarGroupMenu id={group.id} />
-					{/snippet}
-					<Accordion.Item value={`item-${idx + 1}`}>
-						<Accordion.Trigger
-							class="justify-start space-x-2 py-0.5 px-2.5 text-sm font-semibold hover:bg-muted"
-							{extra}
-						>
-							{group.name}
-						</Accordion.Trigger>
-
-						<Accordion.Content>
+						<AccordionItem id={group.id} title={group.name} contentClass="overflow-visible px-0">
+							{#snippet extra()}
+								<SidebarGroupMenu id={group.id} />
+							{/snippet}
 							{#each groupCollections as collection}
 								<SidebarCollection asChild {collection} active={activeCollection(collection.id)} />
 							{/each}
-						</Accordion.Content>
-					</Accordion.Item>
-				{/each}
-			</Accordion.Root>
+						</AccordionItem>
+					{/each}
+				</Accordion>
+			</div>
 
 			<div class="flex items-center justify-between space-x-1 px-1">
-				<Button variant="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
+				<Button theme="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
 					<FolderPlus class="icon-sm" />
 					<span> New collection </span>
 				</Button>
-				<Button variant="secondary" size="icon" onclick={() => createGroupModal.open()}>
+				<Button theme="secondary" variant="icon" onclick={() => createGroupModal.open()}>
 					<PackagePlus class="icon-sm" />
 					<span class="sr-only">New group</span>
 				</Button>
@@ -234,20 +231,20 @@
 		{@render children()}
 
 		<aside
-			class={cn(
+			class={tm(
 				'flex md:hidden justify-around items-center bg-secondary',
-				!BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl) && 'hidden'
+				!isBottomBarItemActive() && 'hidden'
 			)}
 		>
 			{#each BOTTOM_BAR_ITEMS as item}
 				{@const Icon = item.icon}
 				<Button
 					href={item.url}
-					variant="ghost"
-					class={cn(
+					theme="ghost"
+					class={[
 						'grow h-16 flex flex-col items-center justify-center space-x-0 hover:text-primary hover:bg-transparent',
 						activeUrl === item.url && 'text-primary'
-					)}
+					]}
 				>
 					<Icon class="icon-sm" />
 					<span class="text-xs font-semibold">{item.label}</span>
@@ -257,176 +254,142 @@
 	</div>
 </div>
 
-<!-- Create collection dialog -->
-<Dialog.Root bind:open={crtCollectionModal.isOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>New collection</Dialog.Title>
-		</Dialog.Header>
-		<form onsubmit={handleSubmitCollection} class="flex flex-col space-y-2">
-			<label for="name"> Name </label>
-			<input
-				id="name"
-				type="text"
-				name="name"
-				placeholder="Tasks"
-				class="input"
-				autocomplete="off"
-				maxlength={MAX_COLLECTION_NAME_LENGTH}
-			/>
-			{#if error.type === 'new-collection-name'}
-				<span class="text-error"> {error.msg}</span>
-			{/if}
+<Dialog bind:open={crtCollectionModal.isOpen} title="New collection">
+	<form onsubmit={handleSubmitCollection} class="flex flex-col space-y-2">
+		<label for="name"> Name </label>
+		<input
+			id="name"
+			type="text"
+			name="name"
+			placeholder="Tasks"
+			class="input"
+			autocomplete="off"
+			maxlength={MAX_COLLECTION_NAME_LENGTH}
+		/>
+		{#if error.type === 'new-collection-name'}
+			<span class="text-error"> {error.msg}</span>
+		{/if}
 
-			<label class="label" for="group"> Group </label>
-			<select id="group" name="group" class="select" value={crtCollectionModal.group}>
-				<option value={undefined}> Without group </option>
-				{#each groupState.groups as group (group.id)}
-					<option value={group.id}>
-						{group.name}
-					</option>
-				{/each}
-			</select>
+		<label class="label" for="group"> Group </label>
+		<select id="group" name="group" class="select" value={crtCollectionModal.group}>
+			<option value={undefined}> Without group </option>
+			{#each groupState.groups as group (group.id)}
+				<option value={group.id}>
+					{group.name}
+				</option>
+			{/each}
+		</select>
 
-			<Button type="submit" class="w-full">Create</Button>
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
+		<Button type="submit" class="w-full">Create</Button>
+	</form>
+</Dialog>
 
 <!-- Create group dialog -->
-<Dialog.Root bind:open={createGroupModal.isOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>New group</Dialog.Title>
-		</Dialog.Header>
-		<form onsubmit={handleSubmitNewGroup} class="flex flex-col space-y-2">
-			<label for="group-name"> Name </label>
-			<input
-				id="group-name"
-				type="text"
-				name="name"
-				placeholder="Personal, Work, ..."
-				class="input"
-				maxlength={MAX_GROUP_NAME_LENGTH}
-			/>
+<Dialog bind:open={createGroupModal.isOpen} title="New group">
+	<form onsubmit={handleSubmitNewGroup} class="flex flex-col space-y-2">
+		<label for="group-name"> Name </label>
+		<input
+			id="group-name"
+			type="text"
+			name="name"
+			placeholder="Personal, Work, ..."
+			class="input"
+			maxlength={MAX_GROUP_NAME_LENGTH}
+		/>
 
-			{#if error.type === 'new-group-rename'}
-				<span class="text-error"> {error.msg} </span>
-			{/if}
+		{#if error.type === 'new-group-rename'}
+			<span class="text-error"> {error.msg} </span>
+		{/if}
 
-			<Button type="submit" class="w-full">Create</Button>
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
+		<Button type="submit" class="w-full">Create</Button>
+	</form>
+</Dialog>
 
 <!-- Search dialog -->
-<Command.Dialog bind:open={globalSearchModal.isOpen}>
-	<Command.Input placeholder="Type a command or search..." />
-	<Command.List>
-		<Command.Empty>No results found.</Command.Empty>
+<Command bind:open={globalSearchModal.isOpen}>
+	<CommandItem
+		value="new collection"
+		onselect={() => {
+			globalSearchModal.close();
+			crtCollectionModal.open();
+		}}
+	>
+		<FolderPlus />
+		<span> New collection </span>
+	</CommandItem>
 
-		<Command.Group heading="Shortcuts" class="hidden md:block">
-			<Command.Item
-				class="space-x-2"
-				value="new collection"
-				onSelect={() => {
+	<CommandItem
+		value="new group"
+		onselect={() => {
+			globalSearchModal.close();
+			createGroupModal.open();
+		}}
+	>
+		<PackagePlus />
+		<span> New group </span>
+	</CommandItem>
+	{#each collections as collection}
+		{@const Icon = icons[collection.icon]}
+		<CommandItem
+			value={collection.name}
+			onselect={() => {
+				goto(`/collections/${collection.id}`);
+				globalSearchModal.close();
+			}}
+		>
+			<Icon />
+			<span>{collection.name}</span>
+		</CommandItem>
+	{/each}
+	{#each items as item}
+		{#if item.type === 'item'}
+			<CommandItem
+				value={`${item.collection.name} ${item.name}`}
+				onselect={() => {
+					goto(`/collections/${item.collection.id}?id=${item.id}`);
 					globalSearchModal.close();
-					crtCollectionModal.open();
 				}}
 			>
-				<FolderPlus class="icon-xs" />
-				<span> New collection </span>
-			</Command.Item>
-
-			<Command.Item
-				class="space-x-2"
-				value="new group"
-				onSelect={() => {
-					globalSearchModal.close();
-					createGroupModal.open();
-				}}
-			>
-				<PackagePlus class="icon-xs" />
-				<span> New group </span>
-			</Command.Item>
-		</Command.Group>
-		<Command.Separator />
-		<Command.Group heading="Collections">
-			{#each collections as collection}
-				{@const Icon = icons[collection.icon]}
-				<Command.Item
-					class="space-x-2"
-					value={collection.name}
-					onSelect={() => {
-						goto(`/collections/${collection.id}`);
-						globalSearchModal.close();
-					}}
-				>
-					<Icon class="icon-xs" />
-					<span>{collection.name}</span>
-				</Command.Item>
-			{/each}
-		</Command.Group>
-		<Command.Separator />
-		<Command.Group heading="Items">
-			{#each items as item}
-				{#if item.type === 'item'}
-					<Command.Item
-						class="space-x-2"
-						value={`${item.collection.name} ${item.name}`}
-						onSelect={() => {
-							goto(`/collections/${item.collection.id}?id=${item.id}`);
-							globalSearchModal.close();
-						}}
-					>
-						<Hash class="icon-xs" />
-						<span>
-							{item.name}
-							<span class="text-xs font-light"> - {item.collection.name}</span>
-						</span>
-					</Command.Item>
-				{/if}
-			{/each}
-		</Command.Group>
-	</Command.List>
-</Command.Dialog>
+				<Hash />
+				<span>
+					{item.name}
+					<span class="text-xs font-light"> - {item.collection.name}</span>
+				</span>
+			</CommandItem>
+		{/if}
+	{/each}
+</Command>
 
 <!-- Move collection dialog -->
 {#if moveCollectionModal.detail}
 	{@const currentGroupId = moveCollectionModal.detail.currentGroupId}
 	{@const collectionId = moveCollectionModal.detail.collectionId}
-	<Command.Dialog bind:open={moveCollectionModal.isOpen}>
-		<Command.Input placeholder="Move collection to..." />
-		<Command.List>
-			<Command.Empty>No group found.</Command.Empty>
-			<Command.Group>
-				{#if currentGroupId}
-					<Command.Item
-						value="collection"
-						onSelect={() => {
-							collectionState.updCollection({ id: collectionId, data: { groupId: null } });
-							moveCollectionModal.close();
-						}}
-					>
-						<LibraryBig class="icon-sm" />
-						<span> Collection</span>
-					</Command.Item>
-				{/if}
-				{#each groupState.groups as group (group.id)}
-					{#if group.id != currentGroupId}
-						<Command.Item
-							value={group.name}
-							onSelect={() => {
-								collectionState.updCollection({ id: collectionId, data: { groupId: group.id } });
-								moveCollectionModal.close();
-							}}
-						>
-							<Boxes class="icon-sm" />
-							<span> {group.name} </span>
-						</Command.Item>
-					{/if}
-				{/each}
-			</Command.Group>
-		</Command.List>
-	</Command.Dialog>
+	<Command bind:open={moveCollectionModal.isOpen} placeholder="Move collection to...">
+		{#if currentGroupId}
+			<CommandItem
+				value="collection"
+				onselect={() => {
+					collectionState.updCollection({ id: collectionId, data: { groupId: null } });
+					moveCollectionModal.close();
+				}}
+			>
+				<LibraryBig />
+				<span> Collection</span>
+			</CommandItem>
+		{/if}
+		{#each groupState.groups as group (group.id)}
+			{#if group.id != currentGroupId}
+				<CommandItem
+					value={group.name}
+					onselect={() => {
+						collectionState.updCollection({ id: collectionId, data: { groupId: group.id } });
+						moveCollectionModal.close();
+					}}
+				>
+					<Boxes />
+					<span> {group.name} </span>
+				</CommandItem>
+			{/if}
+		{/each}
+	</Command>
 {/if}
