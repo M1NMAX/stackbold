@@ -68,17 +68,17 @@
 		</button>
 	</div>
 
-	{#if commandState.hasResult}
-		<div
-			bind:this={commandRef}
-			role="listbox"
-			tabindex="-1"
-			onkeydown={(e) => commandState.handleKeydown(e)}
-			class=" grow flex flex-col overflow-auto"
-		>
-			{@render children()}
-		</div>
-	{:else}
+	<!-- {#if commandState.hasResult} -->
+	<div
+		bind:this={commandRef}
+		role="listbox"
+		tabindex="-1"
+		onkeydown={(e) => commandState.handleKeydown(e)}
+		class=" grow flex flex-col overflow-auto"
+	>
+		{@render children()}
+	</div>
+	<!-- {:else}
 		<div class="py-6 text-center text-sm">Not found</div>
-	{/if}
+	{/if} -->
 </Dialog>

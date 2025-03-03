@@ -35,7 +35,11 @@ class Month {
 	}
 }
 
-export function fullMonthAndYear(date: Date) {
+export function fullDateFormat(date: Date) {
+	return new DateFormatter(LOCALE, { dateStyle: 'long' }).format(date);
+}
+
+export function fullMonthAndYearFormat(date: Date) {
 	return new DateFormatter(LOCALE, { month: 'long', year: 'numeric' }).format(date);
 }
 
@@ -57,5 +61,5 @@ export function createMonth(ref: CalendarDate, value: CalendarDate) {
 		current = current.add({ days: 1 });
 	}
 
-	return new Month(days, fullMonthAndYear(ref.toDate(getLocalTimeZone())));
+	return new Month(days, fullMonthAndYearFormat(ref.toDate(getLocalTimeZone())));
 }

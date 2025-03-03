@@ -5,6 +5,7 @@
 	import { buttonVariants } from './index.js';
 	import { createMonth } from '$lib/states/index.js';
 	import { WEEK_DAYS } from '$lib/constant/index.js';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
 		value?: CalendarDate;
@@ -30,13 +31,13 @@
 	}
 </script>
 
-<div class="max-w-xs flex flex-col gap-y-2 p-2 rounded-md bg-background">
-	<div class="flex items-center justify-between">
+<div class="flex flex-col gap-y-2 p-2 rounded-md bg-background">
+	<div class="grid grid-cols-7 grid-flow-rows gap-x-4 md:gap-x-2">
 		<button class={buttonVariants({ theme: 'outline', variant: 'icon' })} onclick={previousMonth}>
 			<ChevronLeft />
 		</button>
 
-		<span class="text-sm font-medium">
+		<span class="col-span-5 text-center text-sm font-medium">
 			{month.title}
 		</span>
 
@@ -45,11 +46,11 @@
 		</button>
 	</div>
 
-	<div class="flex items-center justify-between">
+	<div class="grid grid-cols-7 grid-flow-rows">
 		{#each Object.keys(WEEK_DAYS) as key (key)}
 			<span
 				class={[
-					'size-9 flex items-center justify-center',
+					' flex items-center justify-center',
 					'text-[0.8rem] font-normal text-muted-foreground'
 				]}
 			>
@@ -57,12 +58,12 @@
 			</span>
 		{/each}
 	</div>
-	<div class="grid grid-cols-7 grid-flow-rows">
+	<div class="grid grid-cols-7 grid-flow-rows gap-y-2 gap-x-4 md:gap-x-2">
 		{#each month.days as day}
 			<button
 				disabled={day.isDisabled}
 				onclick={() => onClickDay(day.date)}
-				class={[
+				class={tm(
 					buttonVariants({
 						theme: 'ghost',
 						variant: 'icon'
@@ -71,7 +72,7 @@
 					day.isSelected && 'bg-primary hover:bg-primary/90',
 					day.isSelected && day.isDisabled && 'bg-accent/70',
 					day.isToday && 'bg-accent'
-				]}
+				)}
 			>
 				{day.date.day}
 			</button>

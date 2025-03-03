@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import { sineIn } from 'svelte/easing';
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -15,7 +15,7 @@
 
 {#if open}
 	<div
-		class={cn(
+		class={tm(
 			'w-80 h-full flex flex-col space-y-1.5 p-1.5 ml-1.5 overflow-hidden rounded-md bg-card',
 			className
 		)}

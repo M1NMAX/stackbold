@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { type AccordionProps, setAccordionState } from '$lib/states/index.js';
 	import type { Snippet } from 'svelte';
+	import { type AccordionProps, setAccordionState } from '$lib/states/index.js';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = AccordionProps & {
 		children: Snippet;
@@ -16,6 +17,6 @@
 	}
 </script>
 
-<div class={[className]}>
+<div class={tm(className)}>
 	{@render children()}
 </div>

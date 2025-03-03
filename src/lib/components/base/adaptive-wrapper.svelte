@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { Drawer, Floating } from './index.js';
+	import { buttonVariants, Drawer, Floating } from './index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { useId } from '$lib/utils/index.js';
 	import type { Align } from '$lib/types';
@@ -10,10 +10,18 @@
 		trigger: Snippet;
 		children: Snippet;
 		triggerClass?: string;
-		align?: Align;
+		floatingAlign?: Align;
+		floatingClass?: string;
 	};
 
-	let { open = $bindable(false), trigger, children, triggerClass, align }: Props = $props();
+	let {
+		open = $bindable(false),
+		trigger,
+		children,
+		triggerClass,
+		floatingAlign,
+		floatingClass
+	}: Props = $props();
 
 	const id = useId();
 
@@ -26,12 +34,12 @@
 </script>
 
 <div>
-	<button {id} onclick={toggle} class={triggerClass}>
+	<button {id} onclick={toggle} class={buttonVariants({ theme: 'ghost', className: triggerClass })}>
 		{@render trigger()}
 	</button>
 
 	{#if isLargeScreen.current}
-		<Floating bind:visible={open} triggerBy={id} {align}>
+		<Floating bind:visible={open} triggerBy={id} align={floatingAlign} class={floatingClass}>
 			{@render children()}
 		</Floating>
 	{:else}

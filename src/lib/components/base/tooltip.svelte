@@ -4,6 +4,7 @@
 	import type { Snippet } from 'svelte';
 	import { linear } from 'svelte/easing';
 	import { fade } from 'svelte/transition';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		triggerBy: string;
@@ -150,11 +151,11 @@
 		role="tooltip"
 		bind:this={tooltipEl}
 		transition:fade={{ duration: 200, easing: linear }}
-		class={[
-			'absolute p-1 rounded-md bg-background transition-opacity',
+		class={tm(
+			'fixed p-0.5 rounded-md bg-background transition-opacity',
 			positioned ? 'visible opacity-100' : 'invisible opacity-0',
 			className
-		]}
+		)}
 		onmouseenter={onTooltipEnter}
 		onmouseleave={onTooltipLeave}
 		{...rest}

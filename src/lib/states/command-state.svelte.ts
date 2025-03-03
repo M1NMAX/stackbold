@@ -1,4 +1,5 @@
 import { getContext, setContext, tick } from 'svelte';
+import { SvelteMap } from 'svelte/reactivity';
 
 const COMMAND_VALUE_ATTR = 'aria-activedescendant';
 const COMMAND_ITEM_ATTR = '[role="option"]';
@@ -20,25 +21,20 @@ class CommandItem {
 class CommandState {
 	search = $state('');
 	ref = $state<Ref>(null);
-	hasResult = $state(true);
-	#items = new Map<string, CommandItem>();
+	hasResult = $derived.by(() => this.#items.values().some((v) => v.render));
+	#items = new SvelteMap<string, CommandItem>();
 	#selectedItemId = '';
 
 	constructor() {
 		$effect(() => {
 			this.#focusFirstItem();
-			this.hasResult = true;
 		});
 
 		$effect(() => {
 			const searchTerm = this.search.toLowerCase() || '';
-			this.#items.forEach((item) => {
-				item.render = item.value.toLowerCase().includes(searchTerm);
-			});
+			this.#items.forEach((item) => (item.render = item.value.toLowerCase().includes(searchTerm)));
 
 			tick().then(() => this.#focusFirstItem());
-
-			this.hasResult = this.#items.values().some((item) => item.render);
 		});
 	}
 

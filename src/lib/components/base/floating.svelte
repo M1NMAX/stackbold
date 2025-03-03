@@ -5,6 +5,7 @@
 	import { linear } from 'svelte/easing';
 	import { fade } from 'svelte/transition';
 	import { escapeKeydown } from '$lib/actions';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		triggerBy: string;
@@ -12,6 +13,7 @@
 		children: Snippet;
 		offset?: number;
 		align?: Align;
+		sameWidth?: boolean;
 		transition?: TransitionFun;
 		params?: ParamsType;
 	};
@@ -22,6 +24,7 @@
 		children,
 		offset = 0,
 		align = 'center',
+		sameWidth = false,
 		class: className,
 		transition = fade,
 		params,
@@ -84,6 +87,7 @@
 
 		contentEl.style.top = `${top}px`;
 		contentEl.style.left = `${left}px`;
+		if (sameWidth) contentEl.style.width = `${referenceRect.width}px`;
 	}
 
 	$effect(() => {
@@ -116,10 +120,10 @@
 		transition:transition={params || defaultParams}
 		use:escapeKeydown
 		onescapekey={hide}
-		class={[
-			'fixed z-50 flex flex-col p-1 rounded-md bg-background min-w-[15rem] text-secondary-foreground',
+		class={tm(
+			'fixed z-50 flex flex-col p-1 min-w-[15rem] rounded-md bg-background  text-secondary-foreground',
 			className
-		]}
+		)}
 		{...rest}
 	>
 		{@render children()}

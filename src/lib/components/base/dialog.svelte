@@ -5,7 +5,7 @@
 	import { fade } from 'svelte/transition';
 	import { sineIn } from 'svelte/easing';
 	import { clickOutside, escapeKeydown } from '$lib/actions/index.js';
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
 		title?: string;
@@ -35,7 +35,7 @@
 		tabindex="-1"
 	>
 		<div
-			class={cn(
+			class={tm(
 				'relative w-full max-w-md max-h-full z-50 p-4 border rounded-md shadow-lg bg-background',
 				className
 			)}

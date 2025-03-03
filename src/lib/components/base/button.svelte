@@ -32,6 +32,7 @@
 
 <script lang="ts">
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = HTMLButtonAttributes &
 		HTMLAnchorAttributes & {
@@ -52,11 +53,11 @@
 </script>
 
 {#if href}
-	<a class={[buttonVariants({ theme, variant }), className]} {href} {...restProps}>
+	<a class={tm(buttonVariants({ theme, variant }), className)} {href} {...restProps}>
 		{@render children?.()}
 	</a>
 {:else}
-	<button class={[buttonVariants({ theme, variant }), className]} {type} {...restProps}>
+	<button class={tm(buttonVariants({ theme, variant }), className)} {type} {...restProps}>
 		{@render children?.()}
 	</button>
 {/if}

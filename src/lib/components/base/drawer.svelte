@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { tm } from '$lib/utils/index.js';
 	import { sineIn } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 
@@ -21,11 +22,11 @@
 		onclick={() => (open = false)}
 	></div>
 	<div
-		class={['w-full fixed inset-x-0 bottom-0 z-50 p-2 ', className]}
+		class={tm('w-full fixed inset-x-0 bottom-0 z-50 p-2', className)}
 		transition:fly={{ y: 320, duration: 200, easing: sineIn }}
 	>
-		<div class="flex flex-col p-1 rounded-lg overflow-y-auto bg-background">
-			<div class="bg-muted mx-auto my-1 h-1 w-[50px] rounded-full"></div>
+		<div class="flex flex-col py-1 rounded-lg overflow-y-auto bg-background">
+			<div class="bg-muted mx-auto mt-1 h-1 w-[50px] rounded-full"></div>
 			{@render children()}
 		</div>
 	</div>

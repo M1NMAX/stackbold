@@ -3,7 +3,7 @@
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import { slide } from 'svelte/transition';
 	import { getAccordionState } from '$lib/states/index.js';
-	import { useId } from '$lib/utils/index.js';
+	import { tm, useId } from '$lib/utils/index.js';
 
 	type Props = {
 		id?: string;
@@ -38,14 +38,14 @@
 </script>
 
 <div>
-	<div class="flex items-center gap-x-2 group hover:bg-accent">
+	<div class="flex items-center gap-x-2 group hover:bg-secondary">
 		<button
 			onclick={handleClick}
 			aria-expanded={accordionState.isOpen(id)}
-			class={[
+			class={tm(
 				'grow flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
 				isOpen && arrow && '[&_svg]:rotate-90'
-			]}
+			)}
 		>
 			{#if arrow}
 				<ChevronRight class="size-4 shrink-0 transition-transform duration-200" />
@@ -63,7 +63,7 @@
 	{#if isOpen}
 		<div
 			transition:slide={{ delay: 10, duration: 150 }}
-			class={['p-1 overflow-hidden', contentClass]}
+			class={tm('p-1 overflow-hidden', contentClass)}
 		>
 			{@render children()}
 		</div>
