@@ -4,8 +4,8 @@
 	import PropertyOption from './property-option.svelte';
 	import { tick } from 'svelte';
 	import { Plus, X } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { cn } from '$lib/utils';
+	import { Button } from '$lib/components/base/index.js';
+	import { tm } from '$lib/utils';
 	import { getPropertyState } from '.';
 
 	type Props = {
@@ -39,11 +39,11 @@
 <div class=" flex flex-col space-y-1.5 pt-1">
 	<div class="flex justify-between space-x-1">
 		<span class="text-sm font-semibold">Options</span>
-		<Button variant="secondary" size="xs" onclick={() => (show = !show)}>
+		<Button theme="secondary" variant="compact" onclick={() => (show = !show)}>
 			{#if show}
-				<X class="icon-xs" />
+				<X />
 			{:else}
-				<Plus class="icon-xs" />
+				<Plus />
 			{/if}
 		</Button>
 	</div>
@@ -53,7 +53,7 @@
 		onkeypress={handleKeypress}
 		id="add-option"
 		placeholder="Enter option value"
-		class={cn(
+		class={tm(
 			'h-8 w-full p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 hidden',
 			show && 'block'
 		)}

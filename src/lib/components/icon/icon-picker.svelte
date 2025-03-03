@@ -64,11 +64,9 @@
 </script>
 
 <script lang="ts">
-	import * as Drawer from '$lib/components/ui/drawer';
-	import * as Popover from '$lib/components/ui/popover';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import { cn } from '$lib/utils';
+	import { AdaptiveWrapper, Button, buttonVariants } from '$lib/components/base/index.js';
+	import { tm } from '$lib/utils/index.js';
+	import { ModalState } from '$lib/states/index.js';
 
 	type Props = {
 		name: string;
@@ -76,70 +74,36 @@
 	};
 
 	let { name, onIconChange }: Props = $props();
+	const menuState = new ModalState();
 
-	let open = $state(false);
-
-	const isLargeScreen = getScreenSizeState();
 	const SelectedIcon = $derived(icons[name]);
 </script>
 
-{#if isLargeScreen.current}
-	<Popover.Root bind:open>
-		<Popover.Trigger
-			class={buttonVariants({ variant: 'ghost', size: 'icon', className: '[&_svg]:size-7' })}
-		>
-			<SelectedIcon />
-		</Popover.Trigger>
-		<Popover.Content align="start">
-			<p class="pb-2 font-semibold">Icons</p>
-			<div class="grid grid-cols-7 gap-2">
-				{#each Object.keys(icons) as key}
-					{@const Icon = icons[key]}
-					<Button
-						variant="ghost"
-						size="icon"
-						onclick={() => {
-							onIconChange(key);
-							open = false;
-						}}
-						class={cn('[&_svg]:size-5 p-1', key === name && 'bg-secondary')}
-						aria-label={key}
-					>
-						<Icon class="icon-md" />
-					</Button>
-				{/each}
-			</div>
-		</Popover.Content>
-	</Popover.Root>
-{:else}
-	<Drawer.Root>
-		<Drawer.Trigger
-			class={buttonVariants({ variant: 'ghost', size: 'icon', className: '[&_svg]:size-7' })}
-		>
-			<SelectedIcon />
-		</Drawer.Trigger>
-		<Drawer.Content>
-			<Drawer.Header>
-				<div class="text-center font-semibold">Collection Icon</div>
-			</Drawer.Header>
-			<Drawer.Footer>
-				<div class="grid grid-cols-7 gap-4 mx-auto">
-					{#each Object.keys(icons) as key}
-						{@const Icon = icons[key]}
-						<Button
-							variant="ghost"
-							size="icon"
-							onclick={() => {
-								onIconChange(key);
-								open = false;
-							}}
-							class={cn('[&_svg]:size-5 p-1', key === name && 'bg-secondary')}
-						>
-							<Icon class="icon-lg" />
-						</Button>
-					{/each}
-				</div>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
-{/if}
+<AdaptiveWrapper
+	floatingAlign="start"
+	bind:open={menuState.isOpen}
+	triggerClass={buttonVariants({ theme: 'ghost', variant: 'icon', className: '[&_svg]:size-7' })}
+>
+	{#snippet trigger()}
+		<SelectedIcon />
+	{/snippet}
+
+	<p class="menu-header">Icons</p>
+	<div class="grid grid-cols-7 gap-2 mx-auto">
+		{#each Object.keys(icons) as key}
+			{@const Icon = icons[key]}
+			<Button
+				theme="ghost"
+				variant="icon"
+				onclick={() => {
+					onIconChange(key);
+					menuState.close();
+				}}
+				class={tm('[&_svg]:size-6 md:[&_svg]:size-5 p-1', key === name && 'bg-secondary')}
+				aria-label={key}
+			>
+				<Icon />
+			</Button>
+		{/each}
+	</div>
+</AdaptiveWrapper>

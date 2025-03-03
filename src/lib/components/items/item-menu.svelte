@@ -5,7 +5,12 @@
 	import Trash from 'lucide-svelte/icons/trash';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { getItemState } from '.';
-	import { Button, buttonVariants, HSeparator, Menu } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		HSeparator
+	} from '$lib/components/base/index.js';
 	import type { Align } from '$lib/types';
 
 	type Props = {
@@ -44,9 +49,9 @@
 	}
 </script>
 
-<Menu
+<AdaptiveWrapper
 	bind:open={menuState.isOpen}
-	{align}
+	floatingAlign={align}
 	triggerClass={buttonVariants({
 		theme: 'ghost',
 		variant: 'compact',
@@ -73,4 +78,4 @@
 		<Trash />
 		<span>Delete</span>
 	</Button>
-</Menu>
+</AdaptiveWrapper>

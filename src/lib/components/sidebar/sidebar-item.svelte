@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils';
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
 	import { getScreenSizeState } from '$lib/components/screen';
@@ -30,14 +30,14 @@
 	{href}
 	onclick={onClickSidebarItem}
 	{...rest}
-	class={cn(
+	class={tm(
 		'w-full flex items-center space-x-1.5 py-0.5 px-1.5  hover:bg-secondary/95 	transition duration-75 text-secondary-foreground',
 		active && 'border-r-2 border-primary bg-secondary'
 	)}
 >
 	{@render children()}
 
-	<span class={cn('font-semibold', active && 'text-primary')}>
+	<span class={tm('font-semibold', active && 'text-primary')}>
 		{label}
 	</span>
 </a>

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import Settings from 'lucide-svelte/icons/settings-2';
-
-	import { cn } from '$lib/utils';
+	import { tm } from '$lib/utils';
 	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
 	import { getActiveItemState, getItemState, ItemMenu } from '.';
 	import {
@@ -17,11 +16,11 @@
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import {
+		AdaptiveWrapper,
 		Button,
 		buttonVariants,
 		HSeparator,
 		Label,
-		Menu,
 		Switch
 	} from '$lib/components/base/index.js';
 	import { getScreenSizeState } from '$lib/components/screen';
@@ -91,7 +90,7 @@
 				<th scope="col" class="text-left w-10" title="Row actions">
 					{@render viewVisibilityMenu()}
 				</th>
-				<th scope="col" class=" text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
+				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 					<span class="flex items-center">
 						<PropertyIcon key={PropertyType.TEXT} class="icon-xs mr-2" />
 						Name
@@ -101,7 +100,7 @@
 					{#if containsView(property.visibleInViews, View.TABLE)}
 						<th
 							scope="col"
-							class=" text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
+							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
 						>
 							<span class="flex items-center">
 								<PropertyIcon key={property.type} class="icon-xs mr-2" />
@@ -123,8 +122,8 @@
 			{#if items.length > 0}
 				{#each items as item (item.id)}
 					<tr
-						class={cn(
-							'font-medium text-base whitespace-nowrap w-96 border-y border-secondary hover:bg-muted/40 group',
+						class={tm(
+							'font-medium text-base whitespace-nowrap  border-y border-secondary hover:bg-muted/40 group',
 							item.id === activeItem.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
@@ -135,7 +134,7 @@
 									theme="secondary"
 									variant="icon"
 									onclick={() => clickOpenItem(item.id)}
-									class={cn(!isLargeScreen.current ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
+									class={tm(!isLargeScreen.current ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
 								>
 									Open
 								</Button>
@@ -173,6 +172,7 @@
 				<tr>
 					<td></td>
 					<td></td>
+
 					{#each propertyState.properties as property (property.id)}
 						{#if property.visibleInViews.some((v) => v === View.LIST)}
 							{#if property.aggregator === 'NONE'}
@@ -194,7 +194,7 @@
 </div>
 
 {#snippet viewVisibilityMenu()}
-	<Menu triggerClass={buttonVariants({ theme: 'ghost' })} align="start">
+	<AdaptiveWrapper triggerClass={buttonVariants({ theme: 'ghost' })} floatingAlign="start">
 		{#snippet trigger()}
 			<Settings />
 		{/snippet}
@@ -205,7 +205,7 @@
 
 		{#each propertyState.properties as property (property.id)}
 			<div class="flex justify-between items-center">
-				<Label id={property.id} name={property.name} icon={property.type.toLowerCase()}></Label>
+				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 				<Switch
 					id={property.id}
 					checked={containsView(property.visibleInViews, View.TABLE)}
@@ -218,5 +218,5 @@
 				/>
 			</div>
 		{/each}
-	</Menu>
+	</AdaptiveWrapper>
 {/snippet}

@@ -12,7 +12,7 @@
 		buttonVariants,
 		Checkbox,
 		Drawer,
-		Dropdown,
+		Floating,
 		HSeparator,
 		Radio
 	} from '$lib/components/base/index.js';
@@ -22,6 +22,7 @@
 	import { ModalState } from '$lib/states/index.js';
 	import { isFilterSeletect, toggleFilter } from './helpers';
 	import { MediaQuery } from 'svelte/reactivity';
+	import { useId } from '$lib/utils';
 
 	type Props = {
 		filters: Filter[];
@@ -30,6 +31,7 @@
 
 	let { filters, updFilters }: Props = $props();
 
+	const id = useId('collection-filters');
 	const propertyState = getPropertyState();
 	const detailViewState = new ModalState();
 	const menuState = new ModalState();
@@ -67,13 +69,13 @@
 </script>
 
 <div>
-	<button onclick={() => menuState.toggle()} class={buttonVariants({ theme: 'secondary' })}>
+	<button {id} onclick={() => menuState.toggle()} class={buttonVariants({ theme: 'secondary' })}>
 		<FilterIcon class="block md:hidden" />
 		<span class="hidden md:block"> Filters </span>
 	</button>
 
 	{#if isLargeScreen.current}
-		<Dropdown bind:open={menuState.isOpen} alignEnd={true} onClose={() => detailViewState.close()}>
+		<Floating triggerBy={id} bind:visible={menuState.isOpen} align="end">
 			{#if !detailViewState.isOpen}
 				<p class="py-1.5 px-2 text-sm font-semibold">Filters</p>
 
@@ -91,7 +93,7 @@
 								detailViewState.open();
 							}}
 						>
-							<PropertyIcon key={property.type} class="mr-0" />
+							<PropertyIcon key={property.type} />
 							{property.name}
 						</Button>
 					{/if}
@@ -103,19 +105,14 @@
 				</div>
 				{@render clearBtn(selectedProperty.id)}
 			{/if}
-		</Dropdown>
+		</Floating>
 	{:else}
 		<Drawer bind:open={menuState.isOpen}>
-			<span class="flex items-center gap-x-2">
-				<span class="p-1.5 rounded-md bg-secondary">
-					<FilterIcon class="size-5" />
-				</span>
-				<span class="text-left">Filters</span>
-			</span>
+			<p class="py-1.5 px-2 font-semibold text-sm text-center">Filters</p>
 
 			{@render activeFilters()}
 
-			<Accordion type="single" class="pt-2">
+			<Accordion type="single">
 				{#each propertyState.properties as property}
 					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
 						<AccordionItem arrow={false}>

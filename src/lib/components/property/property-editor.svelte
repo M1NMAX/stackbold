@@ -24,11 +24,11 @@
 	import {
 		// utils
 		containsView,
+		getPropertyState,
 		toggleView,
 		// components
 		PropertyOptions,
-		PropertyIcon,
-		getPropertyState
+		PropertyIcon
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -179,7 +179,7 @@
 	{#if isOpen}
 		<div class="flex flex-col gap-y-1 pt-2 px-1" transition:slide>
 			<div class="rounded bg-secondary text-secondary-foreground pb-1">
-				<Label id="property-type" name="Type" />
+				<Label for="property-type" name="Type" />
 				<Select
 					id="property-type"
 					options={setupPropertyTypeSelectOptions()}
@@ -189,7 +189,7 @@
 			</div>
 
 			<div class="rounded bg-secondary text-secondary-foreground pb-1">
-				<Label id="property-aggregator" name="Aggregator" />
+				<Label for="property-aggregator" name="Aggregator" />
 				<Select
 					id="property-aggregator"
 					options={setupAggregatorSelectOptions()}
@@ -199,7 +199,7 @@
 
 			{#if property.type === 'SELECT'}
 				<div class="rounded bg-secondary text-secondary-foreground pb-1">
-					<Label id="property-default-value" name="Default value" />
+					<Label for="property-default-value" name="Default value" />
 					<Select
 						id="property-default-value"
 						options={setupDefaultOptionSelectOptions()}
@@ -222,7 +222,7 @@
 								});
 							}}
 						/>
-						<Label id={view} name={`Visible in ${capitalizeFirstLetter(view.toString())} view`} />
+						<Label for={view} name={`Visible in ${capitalizeFirstLetter(view.toString())} view`} />
 					</div>
 				{/each}
 			</div>

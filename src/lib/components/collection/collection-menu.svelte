@@ -13,7 +13,12 @@
 	} from '$lib/states/index.js';
 	import { getCollectionState } from '.';
 	import { goto } from '$app/navigation';
-	import { Button, buttonVariants, HSeparator, Menu } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		HSeparator
+	} from '$lib/components/base/index.js';
 
 	type Props = {
 		collection: Collection;
@@ -70,7 +75,10 @@
 	}
 </script>
 
-<Menu align="end" triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}>
+<AdaptiveWrapper
+	floatingAlign="end"
+	triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
+>
 	{#snippet trigger()}
 		<Ellipsis />
 	{/snippet}
@@ -101,4 +109,4 @@
 		<Trash />
 		<span>Delete</span>
 	</Button>
-</Menu>
+</AdaptiveWrapper>

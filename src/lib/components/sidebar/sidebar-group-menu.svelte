@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { ChevronRight, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-svelte';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import { Button, buttonVariants } from '$lib/components/base/index.js';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import Pencil from 'lucide-svelte/icons/pencil';
+	import Plus from 'lucide-svelte/icons/plus';
+	import Trash from 'lucide-svelte/icons/trash';
+	import MoreHorizontal from 'lucide-svelte/icons/more-horizontal';
+	import { AdaptiveWrapper, Button, buttonVariants, Dialog } from '$lib/components/base/index.js';
 	import {
 		getCrtCollectionModalState,
 		getDeleteModalState,
@@ -10,7 +11,6 @@
 	} from '$lib/states/index.js';
 	import { nameSchema } from '$lib/schema';
 	import { getGroupState } from '$lib/components/group';
-	import Menu from '../base/menu.svelte';
 
 	type Props = {
 		id: string;
@@ -29,8 +29,6 @@
 
 	const crtCollectionModal = getCrtCollectionModalState();
 	const deleteModal = getDeleteModalState();
-
-	const isLargeScreen = getScreenSizeState();
 
 	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
@@ -61,8 +59,8 @@
 	}
 </script>
 
-<Menu
-	align="start"
+<AdaptiveWrapper
+	floatingAlign="start"
 	bind:open={smallScreenDrawer.isOpen}
 	triggerClass={buttonVariants({
 		theme: 'ghost',
@@ -94,29 +92,24 @@
 		<Trash />
 		<span>Delete</span>
 	</Button>
-</Menu>
+</AdaptiveWrapper>
 
-<Dialog.Root bind:open={renameGroupModal.isOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
-		<Dialog.Header>
-			<Dialog.Title>Rename group</Dialog.Title>
-		</Dialog.Header>
-		<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
-			<label for="group-name"> Name </label>
-			<input
-				id="group-name"
-				type="text"
-				name="name"
-				autocomplete="off"
-				value={group.name}
-				class="input"
-			/>
+<Dialog bind:open={renameGroupModal.isOpen} title="Rename group">
+	<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
+		<label for="group-name"> Name </label>
+		<input
+			id="group-name"
+			type="text"
+			name="name"
+			autocomplete="off"
+			value={group.name}
+			class="input"
+		/>
 
-			{#if renameError}
-				<span class="text-error"> {renameError}</span>
-			{/if}
+		{#if renameError}
+			<span class="text-error"> {renameError}</span>
+		{/if}
 
-			<Button type="submit" class="w-full">Save</Button>
-		</form>
-	</Dialog.Content>
-</Dialog.Root>
+		<Button type="submit" class="w-full">Save</Button>
+	</form>
+</Dialog>

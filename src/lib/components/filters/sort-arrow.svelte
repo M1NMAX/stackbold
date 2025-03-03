@@ -1,6 +1,7 @@
 <script lang="ts">
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
+	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 	import type { OrderType } from '$lib/utils/sort';
-	import { ArrowDown, ArrowUp } from 'lucide-svelte';
 
 	type Props = {
 		order: OrderType;
@@ -10,7 +11,7 @@
 </script>
 
 {#if order === 'asc'}
-	<ArrowDown class="icon-xxs" />
+	<ArrowDown class="size-3" />
 {:else}
-	<ArrowUp class="icon-xxs" />
+	<ArrowUp class="size-3" />
 {/if}

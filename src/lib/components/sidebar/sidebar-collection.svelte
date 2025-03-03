@@ -5,7 +5,13 @@
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { Button, buttonVariants, Dialog, HSeparator, Menu } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		Dialog,
+		HSeparator
+	} from '$lib/components/base/index.js';
 	import { icons } from '$lib/components/icon';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
@@ -139,9 +145,9 @@
 </Dialog>
 
 {#snippet menu()}
-	<Menu
+	<AdaptiveWrapper
 		bind:open={menuState.isOpen}
-		align="start"
+		floatingAlign="start"
 		triggerClass={buttonVariants({
 			theme: 'ghost',
 			variant: 'compact',
@@ -187,5 +193,5 @@
 			<Trash />
 			<span>Delete</span>
 		</Button>
-	</Menu>
+	</AdaptiveWrapper>
 {/snippet}

@@ -1,7 +1,6 @@
 import type { RouterInputs } from '$lib/trpc/router';
 import type { Group } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
-import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
 
@@ -73,7 +72,6 @@ export class GroupState {
 		try {
 			this.#removeGroup(id);
 			await trpc().groups.delete.mutate(id);
-			toast.success(`Group [${target.name}] deleted successfully`);
 		} catch (err) {
 			this.#toastState.addErrorToast();
 			this.groups.push({ ...target });

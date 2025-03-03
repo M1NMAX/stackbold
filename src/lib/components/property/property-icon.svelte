@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { INPUT_ICONS } from '$lib/constant/index.js';
+	import { tm } from '$lib/utils/index.js';
 	import type { PropertyType } from '@prisma/client';
 
 	type Props = {
@@ -11,4 +12,4 @@
 	const Icon = $derived(INPUT_ICONS[key.toLowerCase()]);
 </script>
 
-<Icon class={className ?? 'icon-sm mr-2'} aria-level="Property type icon" />
+<Icon class={tm('size-5', className)} aria-level="Property type icon" />

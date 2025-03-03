@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, SquareX } from 'lucide-svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/base/index.js';
 
 	type Props = {
 		value?: string;
@@ -23,7 +23,7 @@
 
 	{#if value && value.length > 0}
 		<Button
-			variant="ghost"
+			theme="ghost"
 			class="absolute inset-y-0 right-0 flex items-center [&_svg]:size-6"
 			onclick={() => (value = '')}
 		>
