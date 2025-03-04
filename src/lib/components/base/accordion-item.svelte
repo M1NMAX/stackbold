@@ -38,7 +38,7 @@
 </script>
 
 <div>
-	<div class="flex items-center gap-x-2 group hover:bg-secondary">
+	<div class="flex items-center gap-x-2 rounded-sm hover:bg-secondary group">
 		<button
 			onclick={handleClick}
 			aria-expanded={accordionState.isOpen(id)}

@@ -33,19 +33,19 @@
 	const deleteModal = getDeleteModalState();
 
 	function duplicateCollection() {
-		closeIfOpen();
+		wrapper.close();
 		collectionState.duplicateCollection(collection.id);
 	}
 
 	function toggleDescState() {
-		closeIfOpen();
+		wrapper.close();
 		collectionState.updCollection({
 			id: collection.id,
 			data: { isDescHidden: !collection.isDescHidden }
 		});
 	}
 	function deleteCollection() {
-		closeIfOpen();
+		wrapper.close();
 		deleteModal.open({
 			type: 'collection',
 			id: collection.id,
@@ -63,19 +63,16 @@
 	}
 
 	function moveCollection() {
-		closeIfOpen();
+		wrapper.close();
 		moveCollectionModal.open({
 			collectionId: collection.id,
 			currentGroupId: collection.groupId
 		});
 	}
-
-	function closeIfOpen() {
-		if (wrapper.isOpen) wrapper.close();
-	}
 </script>
 
 <AdaptiveWrapper
+	bind:open={wrapper.isOpen}
 	floatingAlign="end"
 	triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
 >

@@ -18,7 +18,6 @@
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils';
-	import dayjs from '$lib/utils/dayjs';
 	import { Accordion, AccordionItem, Button, SlidingPanel } from '$lib/components/base/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
@@ -328,13 +327,8 @@
 			</h1>
 		</div>
 		<div class="flex justify-end items-center space-x-1.5">
-			<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
-				Updated
-				{dayjs(collection.updatedAt).fromNow()}
-			</span>
-
 			<Button theme="secondary" variant="icon" onclick={() => onClickOpenProperties()}>
-				<Settings2 class="icon-sm" />
+				<Settings2 />
 			</Button>
 
 			<CollectionMenu {collection} />

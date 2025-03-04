@@ -1,26 +1,22 @@
 <script lang="ts">
-	import AppWindow from 'lucide-svelte/icons/app-window';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import LayoutDashboard from 'lucide-svelte/icons/layout-dashboard';
-	import LogOut from 'lucide-svelte/icons/log-out';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
+	import Trash from 'lucide-svelte/icons/trash-2';
 	import { fade } from 'svelte/transition';
 	import type { User } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { MoreVertical, Trash2 } from 'lucide-svelte';
 	import { SearchInput, SortArrow, SortMenu } from '$lib/components/filters';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
-	import { goto, invalidate, invalidateAll } from '$app/navigation';
-	import dayjs from '$lib/utils/dayjs';
-	import { AdaptiveWrapper, Button, buttonVariants, Dialog } from '$lib/components/base/index.js';
+	import { invalidate, invalidateAll } from '$app/navigation';
+	import { Button, buttonVariants, Dialog } from '$lib/components/base/index.js';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { getDeleteModalState, getToastState, ModalState } from '$lib/states/index.js';
 
 	let { data } = $props();
 
-	let user = $state(data.user);
+	const USER_FIELDS = ['name', 'email', 'emailVerified', 'role'];
 
 	type UserWithoutPassword = Omit<User, 'password'>;
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
@@ -83,14 +79,6 @@
 	function goBack() {
 		history.back();
 	}
-
-	let isSmHeadingVisible = $state(false);
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
-	}
 </script>
 
 <svelte:head>
@@ -102,12 +90,8 @@
 		<Button theme="secondary" variant="icon" onclick={() => goBack()}><ChevronLeft /></Button>
 
 		<h1 class="md:hidden grow font-semibold text-2xl">Admin</h1>
-
-		<form method="post" action="/?/logout" use:enhance>
-			<Button theme="secondary" type="submit">Logout</Button>
-		</form>
 	</PageHeader>
-	<PageContent class="h-full relative ">
+	<PageContent class="h-full relative">
 		<h1 class="hidden md:block font-semibold text-4xl pb-2">Admin</h1>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="flex justify-between space-x-2">
@@ -121,7 +105,7 @@
 			<table class="w-full table-auto">
 				<thead>
 					<tr class="text-sm text-muted-foreground">
-						{#each Object.keys(users[0]) as item}
+						{#each USER_FIELDS as item}
 							<th
 								scope="col"
 								class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer"
@@ -135,26 +119,19 @@
 							</th>
 						{/each}
 
-						<th scope="col" class="text-left" title="Row actions">
-							<MoreVertical class="icon-xs" />
-						</th>
+						<th scope="col" class="text-left" title="Row actions"> </th>
 					</tr>
 				</thead>
 				<tbody>
-					{#each users as user (user.id)}
+					{#each users as user (user.email)}
 						<tr
 							class={tm(
-								'text-nowrap font-medium text-base border-y border-secondary hover:bg-muted',
-								data.user.email === user.email && 'border-l-2 border-y-0  border-primary'
+								'text-nowrap font-medium text-base border-y border-secondary hover:bg-muted'
 							)}
 						>
-							{#each Object.values(user) as value}
+							{#each USER_FIELDS as field}
 								<td>
-									{#if typeof value !== 'string' && typeof value !== 'boolean'}
-										{dayjs(value).fromNow()}
-									{:else}
-										{value}
-									{/if}
+									{user[field as keyof UserWithoutPassword]}
 								</td>
 							{/each}
 
@@ -179,7 +156,7 @@
 										})
 									)}
 								>
-									<Trash2 />
+									<Trash />
 								</div>
 							</td>
 						</tr>

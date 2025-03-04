@@ -93,7 +93,7 @@
 		<SelectedIcon />
 	{/snippet}
 
-	<MenuTitle title="Icons" class="sr-only" divider={false} />
+	<MenuTitle title="Icons" class="md:sr-only   " divider={false} />
 	<div class="grid grid-cols-7 gap-2 mx-auto">
 		{#each Object.keys(icons) as key}
 			{@const Icon = icons[key]}

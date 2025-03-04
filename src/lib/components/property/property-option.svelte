@@ -81,7 +81,7 @@
 	{/snippet}
 
 	<div class="px-1 pb-1.5 md:px-0 md:pb-1.5">
-		<Label for={option.id} class="md:sr-only justify-center font-semibold text-sm  ">
+		<Label for={option.id} class="md:sr-only font-semibold text-sm  ">
 			{option.value}
 		</Label>
 		<input

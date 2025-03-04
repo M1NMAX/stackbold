@@ -177,7 +177,7 @@
 		</Button>
 	</div>
 	{#if isOpen}
-		<div class="flex flex-col gap-y-1 pt-2 px-1" transition:slide>
+		<div class=" flex flex-col gap-y-1 pt-2 px-1" transition:slide>
 			<div class="rounded bg-secondary text-secondary-foreground pb-1">
 				<Label for="property-type" name="Type" />
 				<Select
@@ -209,9 +209,11 @@
 				</div>
 			{/if}
 
-			<div class="grid grid-cols-2 grid-flow-row gap-1 py-2">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-1 py-2">
 				{#each Object.values(View) as view}
-					<div class="flex items-center gap-x-2">
+					<div class="w-full md:w-fit flex items-center gap-x-2">
+						<Label for={view} name={`Visible in ${capitalizeFirstLetter(view.toString())} view`} />
+
 						<Switch
 							id={view}
 							checked={containsView(property.visibleInViews, view)}
@@ -222,7 +224,6 @@
 								});
 							}}
 						/>
-						<Label for={view} name={`Visible in ${capitalizeFirstLetter(view.toString())} view`} />
 					</div>
 				{/each}
 			</div>
