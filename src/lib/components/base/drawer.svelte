@@ -22,11 +22,16 @@
 		onclick={() => (open = false)}
 	></div>
 	<div
-		class={tm('w-full fixed inset-x-0 bottom-0 z-50 p-2', className)}
+		class="w-full fixed inset-x-0 bottom-0 z-50 p-2"
 		transition:fly={{ y: 320, duration: 200, easing: sineIn }}
 	>
-		<div class="flex flex-col py-1 rounded-lg overflow-y-auto bg-background">
-			<div class="bg-muted mx-auto mt-1 h-1 w-[50px] rounded-full"></div>
+		<div
+			class={tm(
+				'flex flex-col py-1 rounded-lg overflow-y-auto bg-background border-[1.5px] border-muted',
+				className
+			)}
+		>
+			<div class="bg-muted mx-auto mt-1 mb-1.5 h-1 w-[50px] rounded-full"></div>
 			{@render children()}
 		</div>
 	</div>

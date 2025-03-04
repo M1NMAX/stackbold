@@ -14,7 +14,8 @@
 		Drawer,
 		Floating,
 		HSeparator,
-		Radio
+		Radio,
+		MenuTitle
 	} from '$lib/components/base/index.js';
 	import { getOption, getPropertyState, PropertyIcon } from '$lib/components/property';
 	import { PROPERTY_COLORS } from '$lib/constant';
@@ -77,9 +78,7 @@
 	{#if isLargeScreen.current}
 		<Floating triggerBy={id} bind:visible={menuState.isOpen} align="end">
 			{#if !detailViewState.isOpen}
-				<p class="py-1.5 px-2 text-sm font-semibold">Filters</p>
-
-				<HSeparator />
+				<MenuTitle title="Filters" />
 
 				{@render activeFilters()}
 
@@ -108,7 +107,7 @@
 		</Floating>
 	{:else}
 		<Drawer bind:open={menuState.isOpen}>
-			<p class="py-1.5 px-2 font-semibold text-sm text-center">Filters</p>
+			<MenuTitle title="Filters" />
 
 			{@render activeFilters()}
 

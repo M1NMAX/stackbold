@@ -1,12 +1,13 @@
 <script lang="ts">
 	import AppWindow from 'lucide-svelte/icons/app-window';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import LayoutDashboard from 'lucide-svelte/icons/layout-dashboard';
 	import LogOut from 'lucide-svelte/icons/log-out';
 	import UserPlus from 'lucide-svelte/icons/user-plus';
 	import { fade } from 'svelte/transition';
 	import type { User } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, sortFun, type SortOption } from '$lib/utils';
-	import { PageContainer, PageContent } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { MoreVertical, Trash2 } from 'lucide-svelte';
 	import { SearchInput, SortArrow, SortMenu } from '$lib/components/filters';
 	import { superForm } from 'sveltekit-superforms/client';
@@ -78,47 +79,36 @@
 		// @ts-ignore
 		sort = { ...sort, field, order };
 	}
+
+	function goBack() {
+		history.back();
+	}
+
+	let isSmHeadingVisible = $state(false);
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
 </script>
 
 <svelte:head>
 	<title>Admin - Stackbold</title>
 </svelte:head>
 
-<PageContainer class="h-screen ">
+<PageContainer class="h-dvh">
+	<PageHeader class="justify-between">
+		<Button theme="secondary" variant="icon" onclick={() => goBack()}><ChevronLeft /></Button>
+
+		<h1 class="md:hidden grow font-semibold text-2xl">Admin</h1>
+
+		<form method="post" action="/?/logout" use:enhance>
+			<Button theme="secondary" type="submit">Logout</Button>
+		</form>
+	</PageHeader>
 	<PageContent class="h-full relative ">
-		<div class="w-full flex items-center justify-between">
-			<LayoutDashboard class="icon-lg" />
-			<h1 class="font-semibold text-3xl">Admin Dashboard</h1>
-
-			<AdaptiveWrapper
-				triggerClass={buttonVariants({ theme: 'secondary', className: 'icon-lg p-0.5 rounded-sm' })}
-			>
-				{#snippet trigger()}
-					<img
-						src={`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`}
-						class="icon-lg object-contain rounded-md"
-						alt="avatar"
-					/>
-				{/snippet}
-
-				<Button onclick={() => goto('/')}>
-					<AppWindow />
-					<span> App </span>
-				</Button>
-
-				<form method="post" action="/?/logout" use:enhance>
-					<Button
-						theme="ghost"
-						type="submit"
-						class="w-full h-8 flex justify-start items-center space-x-2 py-1.5 px-2 text-sm rounded-sm"
-					>
-						<LogOut class="icon-xs" />
-						<span>Log out</span>
-					</Button>
-				</form>
-			</AdaptiveWrapper>
-		</div>
-
+		<h1 class="hidden md:block font-semibold text-4xl pb-2">Admin</h1>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="flex justify-between space-x-2">
 			<SearchInput placeholder="Find User" bind:value={search} />

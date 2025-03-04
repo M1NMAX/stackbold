@@ -23,6 +23,7 @@
 		buttonVariants,
 		HSeparator,
 		Label,
+		MenuTitle,
 		RadioGroup,
 		RadioGroupItem
 	} from '$lib/components/base/index.js';
@@ -74,9 +75,7 @@
 			{value.label}
 		</span>
 	{/snippet}
-	<p class="py-1.5 px-2 text-sm font-semibold">Sort by</p>
-
-	<HSeparator />
+	<MenuTitle title="Sort by" />
 
 	<RadioGroup value={valueStr} onchange={handleChange}>
 		{#each options as option}

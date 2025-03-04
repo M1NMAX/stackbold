@@ -86,27 +86,27 @@
 	<Button theme="ghost" variant="menu" onclick={() => toggleDescState()}>
 		{#if collection.isDescHidden}
 			<Eye />
-			<span> Show description </span>
+			<span> Show collection description </span>
 		{:else}
 			<EyeOff />
-			<span> Hide description </span>
+			<span> Hide collection description </span>
 		{/if}
 	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
 		<CornerUpRight />
-		<span>Move to</span>
+		<span>Move collection</span>
 	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => duplicateCollection()}>
 		<Copy />
-		<span>Duplicate</span>
+		<span>Duplicate collection </span>
 	</Button>
 
 	<HSeparator />
 
 	<Button theme="danger" variant="menu" onclick={() => deleteCollection()}>
 		<Trash />
-		<span>Delete</span>
+		<span>Delete collection</span>
 	</Button>
 </AdaptiveWrapper>

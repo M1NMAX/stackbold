@@ -170,15 +170,15 @@
 	</button>
 	<Drawer bind:open={menuState.isOpen}>
 		<Button theme="ghost" variant="menu" onclick={() => duplicateItem()}>
-			<Copy class="icon-xs" />
-			<span>Duplicate</span>
+			<Copy />
+			<span>Duplicate item </span>
 		</Button>
 
 		<HSeparator />
 
 		<Button theme="danger" variant="menu" onclick={() => deleteItem()}>
-			<Trash class="icon-xs" />
-			<span>Delete</span>
+			<Trash />
+			<span>Delete item</span>
 		</Button>
 	</Drawer>
 {/snippet}

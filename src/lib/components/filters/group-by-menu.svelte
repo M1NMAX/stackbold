@@ -6,7 +6,8 @@
 		HSeparator,
 		RadioGroup,
 		RadioGroupItem,
-		Label
+		Label,
+		MenuTitle
 	} from '$lib/components/base/index.js';
 	import { getPropertyState, PropertyIcon } from '$lib/components/property';
 	import { ModalState } from '$lib/states/index.js';
@@ -37,10 +38,7 @@
 		<Rows class="block md:hidden" />
 		<span class="hidden md:block"> Group by </span>
 	{/snippet}
-	<p class="py-1.5 px-2 text-sm font-semibold">Group by</p>
-
-	<HSeparator />
-
+	<MenuTitle title="Group by" />
 	<RadioGroup value={value ?? 'none'} onchange={handleChange}>
 		{#each propertyState.properties as property (property.id)}
 			{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}

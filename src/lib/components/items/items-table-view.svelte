@@ -21,6 +21,7 @@
 		buttonVariants,
 		HSeparator,
 		Label,
+		MenuTitle,
 		Switch
 	} from '$lib/components/base/index.js';
 	import { getScreenSizeState } from '$lib/components/screen';
@@ -199,12 +200,10 @@
 			<Settings />
 		{/snippet}
 
-		<p class="py-1.5 px-2 text-sm font-semibold">Toggle properties visibility</p>
-
-		<HSeparator />
+		<MenuTitle title="Toggle properties visibility" />
 
 		{#each propertyState.properties as property (property.id)}
-			<div class="flex justify-between items-center">
+			<div class="flex justify-between items-center pr-1">
 				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 				<Switch
 					id={property.id}

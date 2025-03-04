@@ -1,7 +1,12 @@
 <script lang="ts">
 	import Plus from 'lucide-svelte/icons/plus';
 	import { getPropertyState, PropertyIcon } from '.';
-	import { AdaptiveWrapper, Button, buttonVariants } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		MenuTitle
+	} from '$lib/components/base/index.js';
 	import { capitalizeFirstLetter } from '$lib/utils';
 	import { PropertyType } from '@prisma/client';
 	import { ModalState } from '$lib/states/index.js';
@@ -26,8 +31,8 @@
 		<span> New property </span>
 	{/snippet}
 
-	<p class="menu-header">Property type</p>
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-1">
+	<MenuTitle title="Property type" class="md:sr-only" divider={false} />
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-1">
 		{#each Object.values(PropertyType) as propertyType}
 			<Button theme="ghost" variant="menu" onclick={() => addProperty(propertyType)}>
 				<PropertyIcon key={propertyType} />

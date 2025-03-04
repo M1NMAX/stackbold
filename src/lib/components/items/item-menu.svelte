@@ -64,18 +64,18 @@
 
 	<Button theme="ghost" variant="menu" onclick={() => openItem()}>
 		<PanelLeftOpen />
-		<span> Open </span>
+		<span> Open item </span>
 	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => duplicateItem()}>
 		<Copy />
-		<span>Duplicate</span>
+		<span>Duplicate item</span>
 	</Button>
 
 	<HSeparator />
 
 	<Button theme="danger" variant="menu" onclick={() => deleteItem()}>
 		<Trash />
-		<span>Delete</span>
+		<span>Delete item</span>
 	</Button>
 </AdaptiveWrapper>

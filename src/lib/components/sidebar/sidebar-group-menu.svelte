@@ -85,12 +85,12 @@
 		}}
 	>
 		<Pencil />
-		<span> Rename </span>
+		<span> Rename group </span>
 	</Button>
 
 	<Button theme="danger" variant="menu" onclick={() => deleteGroup()}>
 		<Trash />
-		<span>Delete</span>
+		<span>Delete group </span>
 	</Button>
 </AdaptiveWrapper>
 

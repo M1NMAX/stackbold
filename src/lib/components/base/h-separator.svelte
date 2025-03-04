@@ -8,4 +8,4 @@
 	let { class: className }: Props = $props();
 </script>
 
-<hr class={tm('bg-muted my-1 h-px', className)} />
+<hr class={tm('bg-muted my-1 h-px mx-3 md:mx-0', className)} />

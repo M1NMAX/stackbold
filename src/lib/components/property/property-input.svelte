@@ -99,8 +99,7 @@
 {#if property.type === 'CHECKBOX'}
 	<div
 		class={[
-			'flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm text-secondary-foreground',
-			'bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:bg-secondary/60'
+			'flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm bg-secondary text-secondary-foreground'
 		]}
 	>
 		<input
@@ -113,12 +112,7 @@
 		<Label for={property.id} name={property.name} compact />
 	</div>
 {:else if property.type === 'SELECT'}
-	<div
-		class={[
-			'pb-1 rounded-sm text-secondary-foreground bg-secondary',
-			'bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:bg-secondary/60'
-		]}
-	>
+	<div class={['pb-1 rounded-sm text-secondary-foreground bg-secondary']}>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
 			id={property.id}
@@ -139,12 +133,7 @@
 		/>
 	</div>
 {:else if property.type === 'DATE'}
-	<div
-		class={[
-			'rounded-sm text-secondary-foreground bg-secondary',
-			'bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:bg-secondary/60'
-		]}
-	>
+	<div class={['rounded-sm text-secondary-foreground bg-secondary']}>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<AdaptiveWrapper
 			bind:open={wrapperState.isOpen}
@@ -172,12 +161,7 @@
 		</AdaptiveWrapper>
 	</div>
 {:else}
-	<div
-		class={[
-			'px-1 rounded-sm text-secondary-foreground bg-secondary',
-			'bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:bg-secondary/60'
-		]}
-	>
+	<div class={['px-1 rounded-sm text-secondary-foreground bg-secondary']}>
 		<Label
 			for={property.id}
 			name={property.name}

@@ -68,7 +68,7 @@
 >
 	<PageHeader>
 		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
-			<ChevronLeft class="icon-md" />
+			<ChevronLeft />
 		</Button>
 
 		{#if isSmHeadingVisible}

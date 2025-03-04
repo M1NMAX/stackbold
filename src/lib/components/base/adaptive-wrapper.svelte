@@ -43,7 +43,7 @@
 			{@render children()}
 		</Floating>
 	{:else}
-		<Drawer bind:open class="space-y-1">
+		<Drawer bind:open>
 			{@render children()}
 		</Drawer>
 	{/if}

@@ -160,12 +160,12 @@
 
 		<Button theme="ghost" variant="menu" onclick={() => renameModalState.open()}>
 			<Pencil />
-			<span> Rename </span>
+			<span> Rename collection </span>
 		</Button>
 
 		<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
 			<CornerUpRight />
-			<span>Move to</span>
+			<span>Move collection</span>
 		</Button>
 
 		<Button
@@ -177,7 +177,7 @@
 			}}
 		>
 			<Copy />
-			<span>Duplicate</span>
+			<span>Duplicate collection </span>
 		</Button>
 
 		<HSeparator />
@@ -191,7 +191,7 @@
 			}}
 		>
 			<Trash />
-			<span>Delete</span>
+			<span>Delete collection </span>
 		</Button>
 	</AdaptiveWrapper>
 {/snippet}
