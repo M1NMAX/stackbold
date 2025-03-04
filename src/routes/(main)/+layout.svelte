@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import {
-		Boxes,
-		Dna,
-		FolderPlus,
-		Hash,
-		Home,
-		PackagePlus,
-		PanelLeftInactive,
-		LibraryBig,
-		Search
-	} from 'lucide-svelte';
+	import Boxes from 'lucide-svelte/icons/boxes';
+	import Dna from 'lucide-svelte/icons/dna';
+	import FolderPlus from 'lucide-svelte/icons/folder-plus';
+	import Hash from 'lucide-svelte/icons/hash';
+	import Home from 'lucide-svelte/icons/home';
+	import PackagePlus from 'lucide-svelte/icons/package-plus';
+	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
+	import LibraryBig from 'lucide-svelte/icons/library-big';
+	import Search from 'lucide-svelte/icons/search';
 	import {
 		SidebarCollection,
 		SidebarGroupMenu,
