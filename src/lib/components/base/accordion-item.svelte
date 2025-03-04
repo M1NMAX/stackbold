@@ -43,7 +43,7 @@
 			onclick={handleClick}
 			aria-expanded={accordionState.isOpen(id)}
 			class={tm(
-				'grow flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
+				'grow h-9 md:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
 				isOpen && arrow && '[&_svg]:rotate-90'
 			)}
 		>

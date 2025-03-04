@@ -27,7 +27,7 @@
 <label
 	for={forProp}
 	class={tm(
-		'grow flex items-center gap-x-1.5 text-base select-none',
+		'grow flex items-center gap-x-1.5 text-sm font-medium select-none',
 		'[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
 		compact ? 'px-1.5 py-1' : 'px-2 py-1.5',
 		hoverEffect && 'hover:bg-secondary hover:text-secondary-foreground cursor-pointer',

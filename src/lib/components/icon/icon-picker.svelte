@@ -64,7 +64,12 @@
 </script>
 
 <script lang="ts">
-	import { AdaptiveWrapper, Button, buttonVariants } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		MenuTitle
+	} from '$lib/components/base/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { ModalState } from '$lib/states/index.js';
 
@@ -88,7 +93,7 @@
 		<SelectedIcon />
 	{/snippet}
 
-	<p class="menu-header">Icons</p>
+	<MenuTitle title="Icons" class="sr-only" divider={false} />
 	<div class="grid grid-cols-7 gap-2 mx-auto">
 		{#each Object.keys(icons) as key}
 			{@const Icon = icons[key]}
