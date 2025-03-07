@@ -30,12 +30,12 @@
 
 		function handlePointerMove(e: PointerEvent) {
 			if (!isDragging) return;
+			e.preventDefault();
 
 			const deltaY = e.clientY - startY;
 			currentY = deltaY;
 
 			if (deltaY > 0) node.style.transform = `translateY(${currentY}px)`;
-			e.preventDefault();
 		}
 
 		function handlePointerUp(e: PointerEvent) {
@@ -82,7 +82,7 @@
 	<div
 		use:draggableAction
 		transition:fly={{ y: 320, duration: 200, easing: sineIn }}
-		class="w-full fixed inset-x-0 bottom-0 z-50 p-2"
+		class="w-full fixed inset-x-0 bottom-0 z-50 p-2 overscroll-y-contain"
 	>
 		<div
 			class={tm(
