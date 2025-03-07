@@ -19,12 +19,10 @@
 		AdaptiveWrapper,
 		Button,
 		buttonVariants,
-		HSeparator,
 		Label,
 		MenuTitle,
 		Switch
 	} from '$lib/components/base/index.js';
-	import { getScreenSizeState } from '$lib/components/screen';
 	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
@@ -37,8 +35,6 @@
 	let { items, clickOpenItem }: Props = $props();
 
 	const activeItem = getActiveItemState();
-
-	const isLargeScreen = getScreenSizeState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
@@ -133,9 +129,8 @@
 								<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="start" />
 								<Button
 									theme="secondary"
-									variant="icon"
 									onclick={() => clickOpenItem(item.id)}
-									class={tm(!isLargeScreen.current ? 'h-7 py-0.5 px-1.5 rounded' : 'hidden')}
+									class="flex md:hidden h-7 py-0.5 px-1.5 rounded"
 								>
 									Open
 								</Button>

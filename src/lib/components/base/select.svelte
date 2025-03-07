@@ -173,30 +173,28 @@
 			</Floating>
 		{:else}
 			<Drawer bind:open={menuState.isOpen}>
-				<div class="p-1 rounded-md shadow-md outline-none">
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					{#each filteredOptions as option}
-						<div
-							tabindex="0"
-							role="menuitem"
-							class="w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-							onclick={(e) => selectOption(e, option)}
-						>
-							{#if option.lead}
-								{@render optionLead(option.lead)}
-							{/if}
-							<span class="grow text-sm font-semibold">
-								{option.label}
-							</span>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				{#each filteredOptions as option}
+					<div
+						tabindex="0"
+						role="menuitem"
+						class="w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+						onclick={(e) => selectOption(e, option)}
+					>
+						{#if option.lead}
+							{@render optionLead(option.lead)}
+						{/if}
+						<span class="grow text-sm font-semibold">
+							{option.label}
+						</span>
 
-							<Check class={tm('icon-xs', !option.isSelected && 'text-transparent')} />
-						</div>
-					{:else}
-						<div>
-							{noOptionText}
-						</div>
-					{/each}
-				</div>
+						<Check class={tm('icon-xs', !option.isSelected && 'text-transparent')} />
+					</div>
+				{:else}
+					<div>
+						{noOptionText}
+					</div>
+				{/each}
 			</Drawer>
 		{/if}
 	{/if}
