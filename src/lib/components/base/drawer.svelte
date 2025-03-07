@@ -82,7 +82,7 @@
 	<div
 		use:draggableAction
 		transition:fly={{ y: 320, duration: 200, easing: sineIn }}
-		class="w-full fixed inset-x-0 bottom-0 z-50 p-2 overscroll-y-contain"
+		class="w-full fixed inset-x-0 bottom-0 z-50 p-2"
 	>
 		<div
 			class={tm(
@@ -95,3 +95,9 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	html {
+		@apply overflow-hidden overscroll-y-none;
+	}
+</style>
