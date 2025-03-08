@@ -12,6 +12,10 @@
 
 	let { children, open = $bindable(false), class: className }: Props = $props();
 
+	function close() {
+		open = false;
+	}
+
 	function draggableAction<T extends HTMLElement>(node: T) {
 		let startY = 0;
 		let currentY = 0;
@@ -66,8 +70,37 @@
 		});
 	}
 
-	function close() {
-		open = false;
+	function preventScroll<T extends HTMLElement>(node: T) {
+		let touchStartY = 0;
+
+		function handleTouchStart(e: TouchEvent) {
+			if (e.touches.length === 1) {
+				touchStartY = e.touches[0].clientY;
+			}
+		}
+
+		function handleTouchMove(e: TouchEvent) {
+			if (e.touches.length !== 1) {
+				touchStartY = 0;
+				return;
+			}
+
+			const currentY = e.touches[0].clientY;
+			if (currentY > touchStartY) {
+				e.preventDefault();
+			}
+			touchStartY = currentY;
+		}
+
+		$effect(() => {
+			document.addEventListener('touchstart', handleTouchStart, { passive: false });
+			document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+			return () => {
+				document.removeEventListener('touchstart', handleTouchStart);
+				document.removeEventListener('touchmove', handleTouchMove);
+			};
+		});
 	}
 </script>
 
@@ -80,6 +113,7 @@
 		onclick={close}
 	></div>
 	<div
+		use:preventScroll
 		use:draggableAction
 		transition:fly={{ y: 320, duration: 200, easing: sineIn }}
 		class="w-full fixed inset-x-0 bottom-0 z-50 p-2"
@@ -95,9 +129,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	html {
-		@apply overflow-hidden overscroll-y-none;
-	}
-</style>
