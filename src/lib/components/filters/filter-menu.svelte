@@ -14,8 +14,10 @@
 		Drawer,
 		Floating,
 		HSeparator,
-		Radio,
-		MenuTitle
+		MenuTitle,
+		RadioGroup,
+		RadioGroupItem,
+		Label
 	} from '$lib/components/base/index.js';
 	import { getOption, getPropertyState, PropertyIcon } from '$lib/components/property';
 	import { PROPERTY_COLORS } from '$lib/constant';
@@ -42,6 +44,12 @@
 
 	function isSelected(id: string, value: string) {
 		return isFilterSeletect(filters, { id, value });
+	}
+
+	function getValue(id: string) {
+		const target = filters.find((f) => f.id == id);
+		if (!target) return undefined;
+		return target.values.length == 1 ? target.values[0] : undefined;
 	}
 
 	function onClickFilterOption(id: string, value: string, type: PropertyType) {
@@ -196,16 +204,23 @@
 
 {#snippet content(property: Property)}
 	{#if property.type === 'CHECKBOX'}
-		{#each [true, false] as value}
-			<Radio
-				name={property.name}
-				checked={isSelected(property.id, value.toString())}
-				onclick={() => onClickFilterOption(property.id, value.toString(), property.type)}
+		{@const currValue = getValue(property.id)}
+		{#key currValue}
+			<RadioGroup
+				value={currValue}
+				onchange={(value) => onClickFilterOption(property.id, value, property.type)}
 			>
-				{@render mockCheckbox(value)}
-				<span class="grow font-semibold"> {value ? 'Checked' : 'Unchecked'} </span>
-			</Radio>
-		{/each}
+				{#each [true, false] as value}
+					{@const filterMenuCheckboxId = useId('filter-menu-checkbox')}
+					<Label for={filterMenuCheckboxId} compact hoverEffect>
+						{@render mockCheckbox(value)}
+						<span class="grow font-semibold"> {value ? 'Checked' : 'Unchecked'} </span>
+
+						<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()}></RadioGroupItem>
+					</Label>
+				{/each}
+			</RadioGroup>
+		{/key}
 	{:else if property.type === 'SELECT'}
 		{#each property.options as option}
 			<Checkbox

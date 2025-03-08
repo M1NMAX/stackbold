@@ -15,7 +15,6 @@ export { default as Label } from './label.svelte';
 export { default as MenuTitle } from './menu-title.svelte';
 export { default as RadioGroup } from './radio-group.svelte';
 export { default as RadioGroupItem } from './radio-group-item.svelte';
-export { default as Radio } from './radio.svelte';
 export { default as SlidingPanel } from './sliding-panel.svelte';
 export { default as Select } from './select.svelte';
 export { default as Switch } from './swicth.svelte';
