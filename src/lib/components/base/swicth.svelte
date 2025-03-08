@@ -1,23 +1,62 @@
 <script lang="ts">
-	import type { HTMLInputAttributes } from 'svelte/elements';
-	type Props = HTMLInputAttributes & {
+	import { tm } from '$lib/utils';
+	import type { Snippet } from 'svelte';
+
+	type Props = {
 		id: string;
+		checked: boolean;
+		name?: string;
+		required?: boolean;
+		disabled?: boolean;
+		value?: string;
+		children?: Snippet;
+		onchange?: (value: boolean) => void;
 	};
 
-	let { id, checked = $bindable(false), ...rest }: Props = $props();
+	let { id, checked, value = 'on', name, required, disabled, children, onchange }: Props = $props();
+
+	function toggle() {
+		checked = !checked;
+		onchange?.(checked);
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (!(e.key === 'Enter' || e.key === 'Space') || disabled) return;
+		e.preventDefault();
+		toggle();
+	}
+
+	function handleClick() {
+		if (disabled) return;
+		toggle();
+	}
 </script>
 
-<label class="relative inline-block h-5 w-9">
-	<input {id} type="checkbox" bind:checked {...rest} class="h-0 w-0 opacity-0 peer" />
+<button
+	{id}
+	role="switch"
+	aria-checked={checked}
+	aria-required={required}
+	{disabled}
+	onclick={handleClick}
+	onkeydown={handleKeydown}
+	class={tm(
+		'peer inline-flex h-[20px] w-[36px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors',
+		'focus-visible:ring-ring focus-visible:ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+		'disabled:cursor-not-allowed disabled:opacity-50',
+		checked ? 'bg-primary' : 'bg-input'
+	)}
+>
 	<span
-		class={[
-			'absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full bg-gray-300 dark:bg-gray-800 transition duration-100',
-			'before:absolute before:content-[""] before:h-4 before:w-4 before:left-[2px] before:bottom-[2px]',
-			'before:rounded-full before:bg-white before:dark:bg-black before:transition duration-100',
-			'peer-checked:bg-primary',
-			'peer-focus:shadow-lg',
-			'peer-checked:before:translate-x-4 peer-checked:before:duration-100'
-		]}
+		class={tm(
+			'bg-background pointer-events-none block h-4 w-4 rounded-full shadow-lg ring-0 transition-transform',
+			checked ? 'translate-x-4' : 'translate-x-0'
+		)}
 	>
+		{@render children?.()}
 	</span>
-</label>
+</button>
+
+{#if name}
+	<input type="checkbox" {name} {value} {checked} {required} {disabled} aria-hidden="true" hidden />
+{/if}
