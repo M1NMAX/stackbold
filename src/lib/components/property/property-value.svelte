@@ -24,6 +24,7 @@
 		RadioGroupItem,
 		Tooltip
 	} from '$lib/components/base/index.js';
+	import { tick } from 'svelte';
 
 	type Props = {
 		itemId: string;
@@ -110,6 +111,17 @@
 	function isTableView() {
 		return view === View.TABLE;
 	}
+
+	function hasInput() {
+		return property.type === 'TEXT' || property.type === 'NUMBER' || property.type === 'URL';
+	}
+
+	$effect(() => {
+		if (wrapperState.isOpen && hasInput()) {
+			const inputEl = document.getElementById(property.id) as HTMLInputElement;
+			tick().then(() => inputEl.focus());
+		}
+	});
 </script>
 
 {#if property.type === 'CHECKBOX'}
