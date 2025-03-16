@@ -1,27 +1,7 @@
-<script module>
-	import ArrowDownAZ from 'lucide-svelte/icons/arrow-down-az';
-	import ArrowDownZA from 'lucide-svelte/icons/arrow-down-za';
-	import CalendarArrowDown from 'lucide-svelte/icons/calendar-arrow-down';
-	import CalendarArrowUp from 'lucide-svelte/icons/calendar-arrow-up';
-	import ClockArrowDown from 'lucide-svelte/icons/clock-arrow-down';
-	import ClockArrowUp from 'lucide-svelte/icons/clock-arrow-up';
-	import { type Icon as IconType } from 'lucide-svelte';
-
-	const icons: { [idx: string]: typeof IconType } = {
-		'name-asc': ArrowDownAZ,
-		'name-desc': ArrowDownZA,
-		'updatedAt-asc': ClockArrowDown,
-		'updatedAt-desc': ClockArrowUp,
-		'createdAt-asc': CalendarArrowDown,
-		'createdAt-desc': CalendarArrowUp
-	};
-</script>
-
 <script lang="ts" generics="T">
 	import {
 		AdaptiveWrapper,
 		buttonVariants,
-		HSeparator,
 		Label,
 		MenuTitle,
 		RadioGroup,
@@ -30,6 +10,7 @@
 	import type { OrderType, SortOption } from '$lib/utils/sort';
 	import { ModalState } from '$lib/states/index.js';
 	import { useId } from '$lib/utils';
+	import { SORT_ICONS } from '$lib/constant/index.js';
 
 	type Props = {
 		options: SortOption<T>[];
@@ -39,7 +20,7 @@
 	let { value = $bindable(), options }: Props = $props();
 
 	const valueStr = $derived(joinOptionProperties(value));
-	const CurrentIcon = $derived(icons[joinOptionProperties(value, 1)]);
+	const CurrentIcon = $derived(SORT_ICONS[joinOptionProperties(value, 1)]);
 
 	const menuState = new ModalState();
 
@@ -81,7 +62,7 @@
 		{#each options as option}
 			{@const optId = useId('sort-menu')}
 			{@const optValue = joinOptionProperties(option)}
-			{@const Icon = icons[joinOptionProperties(option, 1)]}
+			{@const Icon = SORT_ICONS[joinOptionProperties(option, 1)]}
 			<Label for={optId} compact hoverEffect>
 				<Icon />
 				<span class="grow">{option.label} </span>

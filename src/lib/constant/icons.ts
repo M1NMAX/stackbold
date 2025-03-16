@@ -1,3 +1,4 @@
+// Input
 import Calendar from 'lucide-svelte/icons/calendar';
 import SquareCheck from 'lucide-svelte/icons/square-check';
 import SquareSlash from 'lucide-svelte/icons/square-slash';
@@ -10,6 +11,14 @@ import Text from 'lucide-svelte/icons/text';
 import Moon from 'lucide-svelte/icons/moon';
 import SunDim from 'lucide-svelte/icons/sun-dim';
 import SunMoon from 'lucide-svelte/icons/sun-moon';
+
+// Sort
+import ArrowDownAZ from 'lucide-svelte/icons/arrow-down-az';
+import ArrowDownZA from 'lucide-svelte/icons/arrow-down-za';
+import CalendarArrowDown from 'lucide-svelte/icons/calendar-arrow-down';
+import CalendarArrowUp from 'lucide-svelte/icons/calendar-arrow-up';
+import ClockArrowDown from 'lucide-svelte/icons/clock-arrow-down';
+import ClockArrowUp from 'lucide-svelte/icons/clock-arrow-up';
 
 export const INPUT_ICONS: { [idx: string]: any } = {
 	none: SquareSlash,
@@ -27,4 +36,13 @@ export const THEME_ICONS: { [idx: string]: any } = {
 	system: SunMoon
 };
 
-export const APP_ICONS = { ...INPUT_ICONS, ...THEME_ICONS };
+export const SORT_ICONS: { [idx: string]: any } = {
+	'name-asc': ArrowDownAZ,
+	'name-desc': ArrowDownZA,
+	'updatedAt-asc': ClockArrowDown,
+	'updatedAt-desc': ClockArrowUp,
+	'createdAt-asc': CalendarArrowDown,
+	'createdAt-desc': CalendarArrowUp
+};
+
+export const APP_ICONS = { ...INPUT_ICONS, ...THEME_ICONS, ...SORT_ICONS };
