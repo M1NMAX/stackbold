@@ -3,22 +3,21 @@
 	import {
 		Button,
 		Dialog,
-		Drawer,
 		Label,
-		RadioGroup,
-		RadioGroupItem,
 		Tabs,
 		TabTrigger,
 		TabContent,
-		HSeparator
+		HSeparator,
+		Select,
+		type Lead
 	} from '$lib/components/base/index.js';
-	import { ChevronLeft, Moon, Palette, SunDim, SunMoon } from 'lucide-svelte';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { trpc } from '$lib/trpc/client';
 	import { goto } from '$app/navigation';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { capitalizeFirstLetter } from '$lib/utils';
-	import { getToastState, ModalState } from '$lib/states';
+	import { getToastState } from '$lib/states';
 
 	let { data } = $props();
 	let user = $state(data.user);
@@ -45,7 +44,18 @@
 		history.back();
 	}
 
-	const drawerState = new ModalState();
+	function setupThemeOptions() {
+		return ['light', 'dark', 'system'].map((theme) => ({
+			lead: {
+				type: 'icon',
+				key: theme
+			} as Lead,
+			id: theme,
+			label: capitalizeFirstLetter(theme),
+			isSelected: $mode === theme,
+			theme: ''
+		}));
+	}
 </script>
 
 <svelte:head>
@@ -133,133 +143,18 @@
 				</TabContent>
 				<TabContent value="appearance">
 					<h2 class="text-lg font-semibold">Appearance</h2>
-					<p>Customize the appearance of the app</p>
+					<p>Customize your app appearance</p>
 
-					<div class="hidden md:block my-4 gap-y-1.5">
-						<label for="md-theme" class="font-medium"> Theme </label>
-						<p class="text-xs">Select the theme</p>
-
-						<RadioGroup
-							id="md-theme"
-							value={$mode}
-							class="flex"
-							onchange={(value) => {
-								const valueCasted = value as typeof $mode;
-								setMode(valueCasted ?? 'system');
+					<div class="my-2 pb-1 rounded-sm text-foreground-muted bg-muted">
+						<Label for="app-theme" name="Theme" />
+						<Select
+							id="app-theme"
+							options={setupThemeOptions()}
+							onselect={(opt) => {
+								const value = opt.id as typeof $mode;
+								setMode(value ?? 'system');
 							}}
-						>
-							<Label
-								for="md-light"
-								class="flex flex-col [&:has([data-state=checked])>div]:border-primary"
-							>
-								<RadioGroupItem id="md-light" value="light" class="sr-only" />
-								<div
-									class="flex flex-col items-center rounded-md border-2 border-muted p-1 hover:border-accent"
-								>
-									<div class="space-y-2 rounded-sm bg-gray-200 p-2">
-										<div class="space-y-2 rounded-md bg-white p-2 shadow-sm">
-											<div class="h-2 w-[80px] rounded-lg bg-gray-200"></div>
-											<div class="h-2 w-[100px] rounded-lg bg-gray-200"></div>
-										</div>
-
-										<div class="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
-											<div class="h-4 w-4 rounded-full bg-gray-200"></div>
-
-											<div class="h-2 w-[100px] rounded-lg bg-gray-200"></div>
-										</div>
-									</div>
-								</div>
-								<span class="block w-full text-center font-normal"> Light </span>
-							</Label>
-							<Label
-								for="md-dark"
-								class="flex flex-col [&:has([data-state=checked])>div]:border-primary"
-							>
-								<RadioGroupItem id="md-dark" value="dark" class="sr-only" />
-								<div
-									class="flex flex-col items-center rounded-md border-2 border-muted bg-popover p-1 hover:bg-accent hover:text-accent-foreground"
-								>
-									<div class="space-y-2 rounded-sm bg-slate-950 p-2">
-										<div class="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
-											<div class="h-2 w-[80px] rounded-lg bg-slate-400"></div>
-
-											<div class="h-2 w-[100px] rounded-lg bg-slate-400"></div>
-										</div>
-
-										<div class="flex items-center space-x-2 rounded-md bg-slate-800 p-2 shadow-sm">
-											<div class="h-4 w-4 rounded-full bg-slate-400"></div>
-
-											<div class="h-2 w-[100px] rounded-lg bg-slate-400"></div>
-										</div>
-									</div>
-								</div>
-								<span class="block w-full text-center font-normal"> Dark </span>
-							</Label>
-
-							<Label
-								for="md-system"
-								class="flex flex-col [&:has([data-state=checked])>div]:border-primary"
-							>
-								<RadioGroupItem id="md-system" value="system" class="sr-only" />
-								<div
-									class="flex flex-col items-center rounded-md border-2 border-muted bg-popover p-1 hover:border-accent"
-								>
-									<div class="space-y-2 rounded-sm bg-gray-200 p-2">
-										<div class="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
-											<div class="h-2 w-[80px] rounded-lg bg-slate-400"></div>
-
-											<div class="h-2 w-[100px] rounded-lg bg-slate-400"></div>
-										</div>
-
-										<div class="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
-											<div class="h-4 w-4 rounded-full bg-gray-200"></div>
-
-											<div class="h-2 w-[100px] rounded-lg bg-gray-200"></div>
-										</div>
-									</div>
-								</div>
-								<span class="block w-full text-center font-normal"> System </span>
-							</Label>
-						</RadioGroup>
-					</div>
-
-					<div class="block md:hidden mt-4">
-						<Button theme="secondary" variant="menu" onclick={() => drawerState.open()}>
-							<Palette class="icon-sm" />
-							<span class="grow text-start"> Theme </span>
-							<span class="font-light"> {capitalizeFirstLetter($mode ?? 'system')}</span>
-						</Button>
-
-						<Drawer bind:open={drawerState.isOpen}>
-							<h1 class="text-center">Theme</h1>
-							<RadioGroup
-								id="theme"
-								value={$mode ?? 'system'}
-								onchange={(value) => {
-									const valueCasted = value as typeof $mode;
-									setMode(valueCasted ?? 'system');
-									drawerState.close();
-								}}
-							>
-								<Label for="light" compact hoverEffect>
-									<SunDim />
-									<span class="grow">Ligh</span>
-									<RadioGroupItem id="light" value="light" />
-								</Label>
-
-								<Label for="dark" compact hoverEffect>
-									<Moon />
-									<span class="grow"> Dark </span>
-									<RadioGroupItem id="dark" value="dark" />
-								</Label>
-
-								<Label for="system" compact hoverEffect>
-									<SunMoon />
-									<span class="grow">System </span>
-									<RadioGroupItem id="system" value="system" />
-								</Label>
-							</RadioGroup>
-						</Drawer>
+						/>
 					</div>
 				</TabContent>
 			</Tabs>
@@ -279,8 +174,8 @@
 
 	<div class="flex items-center justify-end space-x-2">
 		<Button theme="outline" onclick={close}>Cancel</Button>
-		<Button theme="destructive" disabled={!confirmed} onclick={handleClickDeleteAccount}
-			>Confirm</Button
-		>
+		<Button theme="destructive" disabled={!confirmed} onclick={handleClickDeleteAccount}>
+			Confirm
+		</Button>
 	</div>
 </Dialog>
