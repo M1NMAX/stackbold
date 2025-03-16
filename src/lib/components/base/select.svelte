@@ -1,10 +1,9 @@
 <script lang="ts" module>
-	export type Lead = { type: 'color'; color: string } | { type: 'icon'; key: string };
 	export type Option = {
-		lead?: Lead;
 		id: string;
 		label: string;
 		isSelected: boolean;
+		icon?: string;
 		theme?: string;
 	};
 </script>
@@ -186,8 +185,8 @@
 					option.theme
 				)}
 			>
-				{#if option.lead && option.lead.type === 'icon'}
-					{@render optionLead(option.lead)}
+				{#if option.icon}
+					{@render icon(option.icon)}
 				{/if}
 				<span>
 					{option.label}
@@ -280,8 +279,10 @@
 					onclick={() => selectOption(option)}
 					onmouseover={() => highlightOption(option.id)}
 				>
-					{#if option.lead}
-						{@render optionLead(option.lead)}
+					{#if option.icon}
+						{@render icon(option.icon)}
+					{:else if option.theme}
+						{@render color(option.theme)}
 					{/if}
 					<span class="grow text-sm font-semibold">
 						{option.label}
@@ -298,11 +299,11 @@
 	{/if}
 {/snippet}
 
-{#snippet optionLead(args: Lead)}
-	{#if args.type === 'color'}
-		<span class={['size-3.5 rounded-sm', args.color]}> </span>
-	{:else if args.type === 'icon'}
-		{@const Icon = APP_ICONS[args.key.toLowerCase()]}
-		<Icon class="icon-xs" />
-	{/if}
+{#snippet icon(key: string)}
+	{@const Icon = APP_ICONS[key.toLowerCase()]}
+	<Icon class="size-4" />
+{/snippet}
+
+{#snippet color(theme: string)}
+	<span class={['size-3.5 rounded-sm', theme]}> </span>
 {/snippet}

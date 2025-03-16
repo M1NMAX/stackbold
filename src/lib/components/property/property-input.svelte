@@ -23,7 +23,6 @@
 		HSeparator,
 		buttonVariants
 	} from '$lib/components/base/index.js';
-	import type { Lead } from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
@@ -118,10 +117,6 @@
 			id={property.id}
 			options={[
 				...property.options.map((option) => ({
-					lead: {
-						type: 'color',
-						color: PROPERTY_COLORS[option.color]
-					} as Lead,
 					id: option.id,
 					label: option.value,
 					isSelected: option.id === value,

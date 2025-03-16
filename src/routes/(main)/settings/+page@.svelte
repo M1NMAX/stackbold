@@ -8,8 +8,7 @@
 		TabTrigger,
 		TabContent,
 		HSeparator,
-		Select,
-		type Lead
+		Select
 	} from '$lib/components/base/index.js';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
@@ -46,14 +45,10 @@
 
 	function setupThemeOptions() {
 		return ['light', 'dark', 'system'].map((theme) => ({
-			lead: {
-				type: 'icon',
-				key: theme
-			} as Lead,
 			id: theme,
 			label: capitalizeFirstLetter(theme),
 			isSelected: $mode === theme,
-			theme: ''
+			icon: theme
 		}));
 	}
 </script>

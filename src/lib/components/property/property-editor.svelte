@@ -41,7 +41,7 @@
 	import { getItemState } from '$lib/components/items';
 	import { slide } from 'svelte/transition';
 	import { Button, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
-	import type { Option, Lead } from '$lib/components/base/index.js';
+	import type { Option } from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
@@ -86,14 +86,10 @@
 
 	function setupPropertyTypeSelectOptions() {
 		return Object.values(PropertyType).map((propertyType) => ({
-			lead: {
-				type: 'icon',
-				key: propertyType.toLowerCase()
-			} as Lead,
 			id: propertyType,
 			label: capitalizeFirstLetter(propertyType),
 			isSelected: propertyType === property.type,
-			theme: ''
+			icon: propertyType.toLowerCase()
 		}));
 	}
 
@@ -104,8 +100,7 @@
 			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
 				id: aggregator,
 				label: aggregatorLabel[aggregator.toLowerCase()],
-				isSelected: aggregator === property.aggregator,
-				theme: ''
+				isSelected: aggregator === property.aggregator
 			}))
 		);
 
@@ -114,8 +109,7 @@
 				...NUMBER_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
 					id: aggregator,
 					label: aggregatorLabel[aggregator.toLowerCase()],
-					isSelected: aggregator === property.aggregator,
-					theme: ''
+					isSelected: aggregator === property.aggregator
 				}))
 			);
 		}
@@ -125,21 +119,14 @@
 	function setupDefaultOptionSelectOptions() {
 		let options: Option[] = [];
 		options.push({
-			lead: {
-				type: 'icon',
-				key: 'text'
-			} as Lead,
 			id: '',
+			icon: 'text',
 			label: PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
 			isSelected: property.defaultValue === ''
 		});
 
 		options.push(
 			...property.options.map((option) => ({
-				lead: {
-					type: 'color',
-					color: PROPERTY_COLORS[option.color]
-				} as Lead,
 				id: option.id,
 				label: option.value,
 				isSelected: property.defaultValue === option.id,
