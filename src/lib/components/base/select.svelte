@@ -12,12 +12,13 @@
 <script lang="ts">
 	import Check from 'lucide-svelte/icons/check';
 	import Search from 'lucide-svelte/icons/search';
-	import SquareX from 'lucide-svelte/icons/square-x';
+	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import { INPUT_ICONS } from '$lib/constant/index.js';
+	import { APP_ICONS } from '$lib/constant/index.js';
 	import { tm, useId } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { buttonVariants, Drawer, Floating } from './index.js';
+	import { tick } from 'svelte';
 
 	type Props = {
 		id: string;
@@ -26,7 +27,7 @@
 		placeholder?: string;
 		searchable?: boolean;
 		disabled?: boolean;
-		onselect: (options: Option) => void;
+		onselect: (option: Option) => void;
 	};
 
 	//TODO: add support to multiple options
@@ -40,6 +41,7 @@
 		onselect
 	}: Props = $props();
 
+	let highlighted = $state('');
 	let selected = $derived.by(() => {
 		return options.filter((option) => option.isSelected);
 	});
@@ -53,19 +55,86 @@
 		);
 	});
 
-	let menuState = new ModalState();
-
+	const triggerId = useId('select-trigger');
+	const searchInputId = useId('select-search');
+	const contentId = useId('select-content');
+	const menuState = new ModalState();
 	const isLargeScreen = new MediaQuery('min-width: 768px', false);
+
+	function resetSearch() {
+		search = '';
+		tick().then(() => {
+			const inputEl = document.getElementById(searchInputId) as HTMLInputElement;
+			inputEl.focus();
+		});
+	}
+
+	function selectOption(option: Option) {
+		onselect(option);
+		menuState.close();
+		search = '';
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'j')) {
+			e.preventDefault();
+			highlightNext();
+		} else if (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'k')) {
+			e.preventDefault();
+			e.stopPropagation();
+			highlighPrev();
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			const opt = filteredOptions.find((opt) => opt.id === highlighted);
+			if (!opt) return;
+			selectOption(opt);
+		}
+	}
+
+	function highlightOption(id: string) {
+		highlighted = id;
+
+		tick().then(() => {
+			if (highlighted) {
+				const el = document.getElementById(highlighted) as HTMLElement;
+				el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+			}
+		});
+	}
+
+	function highlightFirstOption() {
+		if (filteredOptions.length > 0) {
+			highlightOption(filteredOptions[0].id);
+		}
+	}
+
+	function highlightLastOption() {
+		if (filteredOptions.length > 0) {
+			highlightOption(filteredOptions[filteredOptions.length - 1].id);
+		}
+	}
+
+	function highlightNext() {
+		const currentIdx = filteredOptions.findIndex((opt) => opt.id === highlighted);
+		if (currentIdx === -1 || currentIdx + 1 >= filteredOptions.length) {
+			highlightFirstOption();
+			return;
+		}
+		highlightOption(filteredOptions[currentIdx + 1].id);
+	}
+
+	function highlighPrev() {
+		const currentIdx = filteredOptions.findIndex((opt) => opt.id === highlighted);
+		if (currentIdx === -1 || currentIdx - 1 < 0) {
+			highlightLastOption();
+			return;
+		}
+		highlightOption(filteredOptions[currentIdx - 1].id);
+	}
 
 	function onLabelClick(e: Event) {
 		e.preventDefault();
 		if (!disabled) menuState.toggle();
-	}
-
-	function selectOption(e: MouseEvent, option: Option) {
-		e.preventDefault();
-		onselect(option);
-		menuState.close();
 	}
 
 	$effect(() => {
@@ -82,25 +151,40 @@
 		};
 	});
 
-	function resetSearch() {
-		search = '';
-	}
+	$effect(() => {
+		function getElement() {
+			if (searchable) return document.getElementById(searchInputId) as HTMLElement;
+			return document.getElementById(contentId) as HTMLElement;
+		}
 
-	const triggerBy = useId('select');
+		if (menuState.isOpen) {
+			const el = getElement();
+			tick().then(() => {
+				el.focus();
+				highlightFirstOption();
+			});
+		}
+	});
+
+	$effect(() => {
+		if (search) {
+			tick().then(() => highlightFirstOption());
+		}
+	});
 </script>
 
 <div>
 	<button
-		id={triggerBy}
+		id={triggerId}
 		class={buttonVariants({ theme: 'secondary', variant: 'menu' })}
 		onclick={() => menuState.toggle()}
 	>
 		{#each selected as option}
 			<span
-				class={[
+				class={tm(
 					'h-6 flex items-center gap-x-1.5 py-1 px-1.5 rounded-sm font-semibold text-sm',
 					option.theme
-				]}
+				)}
 			>
 				{#if option.lead && option.lead.type === 'icon'}
 					{@render optionLead(option.lead)}
@@ -119,92 +203,106 @@
 	{#if !disabled}
 		{#if isLargeScreen.current}
 			<Floating
-				{triggerBy}
+				triggerBy={triggerId}
 				bind:visible={menuState.isOpen}
 				sameWidth
 				align="start"
 				class="bg-secondary"
 			>
-				{#if searchable}
-					<div class="relative mb-0.5">
-						<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-							<Search class="size-4" />
-						</div>
-						<input
-							class="w-full h-9 px-10 text-base font-semibold rounded-sm bg-popover focus:outline-none"
-							placeholder="Search for an option"
-							bind:value={search}
-						/>
-
-						{#if search && search.length > 0}
-							<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
-								<button class="[&_svg]:size-6" onclick={resetSearch}>
-									<SquareX />
-								</button>
-							</div>
-						{/if}
-					</div>
-				{/if}
-
-				<div class="p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground">
-					{#each filteredOptions as option}
-						<!-- svelte-ignore a11y_click_events_have_key_events -->
-						<div
-							tabindex="0"
-							role="menuitem"
-							class="w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-							onclick={(e) => selectOption(e, option)}
-						>
-							{#if option.lead}
-								{@render optionLead(option.lead)}
-							{/if}
-							<span class="grow text-sm font-semibold">
-								{option.label}
-							</span>
-
-							<Check class={tm('icon-xs', !option.isSelected && 'text-transparent')} />
-						</div>
-					{:else}
-						<div>
-							{noOptionText}
-						</div>
-					{/each}
+				{@render searchInput()}
+				<div
+					class="p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground max-h-60 overflow-y-auto"
+				>
+					{@render content()}
 				</div>
 			</Floating>
 		{:else}
 			<Drawer bind:open={menuState.isOpen}>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				{#each filteredOptions as option}
-					<div
-						tabindex="0"
-						role="menuitem"
-						class="w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-						onclick={(e) => selectOption(e, option)}
-					>
-						{#if option.lead}
-							{@render optionLead(option.lead)}
-						{/if}
-						<span class="grow text-sm font-semibold">
-							{option.label}
-						</span>
-
-						<Check class={tm('icon-xs', !option.isSelected && 'text-transparent')} />
-					</div>
-				{:else}
-					<div>
-						{noOptionText}
-					</div>
-				{/each}
+				{@render content()}
 			</Drawer>
 		{/if}
 	{/if}
 </div>
 
+{#snippet searchInput()}
+	{#if searchable}
+		<div class="relative mb-0.5">
+			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+				<Search class="size-4" />
+			</div>
+			<input
+				id={searchInputId}
+				class="w-full h-9 px-10 text-base font-semibold rounded-sm bg-popover focus:outline-none"
+				placeholder="Search for an option"
+				bind:value={search}
+				type="text"
+				role="combobox"
+				aria-controls={contentId}
+				aria-expanded="true"
+				aria-autocomplete="list"
+				autocomplete="off"
+				autocorrect="off"
+				onkeydown={handleKeydown}
+			/>
+
+			{#if search && search.length > 0}
+				<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+					<button class="[&_svg]:size-6" onclick={resetSearch}>
+						<X />
+					</button>
+				</div>
+			{/if}
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet content()}
+	{#if filteredOptions.length > 0}
+		<div
+			id={contentId}
+			role="listbox"
+			aria-activedescendant={highlighted ?? undefined}
+			tabindex="-1"
+			onkeydown={handleKeydown}
+		>
+			{#each filteredOptions as option}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_mouse_events_have_key_events -->
+				<div
+					id={option.id}
+					role="option"
+					tabindex="-1"
+					aria-selected={option.isSelected}
+					class={tm(
+						'w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer',
+						highlighted == option.id && 'bg-secondary text-secondary-foreground'
+					)}
+					onclick={() => selectOption(option)}
+					onmouseover={() => highlightOption(option.id)}
+				>
+					{#if option.lead}
+						{@render optionLead(option.lead)}
+					{/if}
+					<span class="grow text-sm font-semibold">
+						{option.label}
+					</span>
+
+					<Check class={tm('size-4', !option.isSelected && 'text-transparent')} />
+				</div>
+			{/each}
+		</div>
+	{:else}
+		<div class="text-center py-2">
+			{noOptionText}
+		</div>
+	{/if}
+{/snippet}
+
 {#snippet optionLead(args: Lead)}
 	{#if args.type === 'color'}
 		<span class={['size-3.5 rounded-sm', args.color]}> </span>
 	{:else if args.type === 'icon'}
-		{@const Icon = INPUT_ICONS[args.key.toLowerCase()]}
+		{@const Icon = APP_ICONS[args.key.toLowerCase()]}
 		<Icon class="icon-xs" />
 	{/if}
 {/snippet}
