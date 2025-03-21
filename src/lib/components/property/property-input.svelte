@@ -6,8 +6,9 @@
 		DEBOUNCE_INTERVAL,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
+		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS
-	} from '$lib/constant';
+	} from '$lib/constant/index.js';
 	import { tm, sanitizeNumberInput } from '$lib/utils';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
@@ -21,7 +22,8 @@
 		Select,
 		Label,
 		HSeparator,
-		buttonVariants
+		buttonVariants,
+		Field
 	} from '$lib/components/base/index.js';
 
 	type Props = {
@@ -35,7 +37,6 @@
 
 	let value = $derived(getPropertyValue());
 	let color = $derived(getPropertyColor(property, value));
-	let isFocus = $state(false);
 
 	let wrapperState = new ModalState();
 
@@ -81,18 +82,6 @@
 		const option = getOption(property.options, propertyRef.value);
 		return option ? option.id : '';
 	}
-
-	function handleFocusIn() {
-		isFocus = true;
-	}
-	function handleFocusOut() {
-		isFocus = false;
-	}
-
-	//FIXME:
-	function onOpenChange(open: boolean) {
-		isFocus = open;
-	}
 </script>
 
 {#if property.type === 'CHECKBOX'}
@@ -111,7 +100,7 @@
 		<Label for={property.id} name={property.name} compact />
 	</div>
 {:else if property.type === 'SELECT'}
-	<div class={['pb-1 rounded-sm text-secondary-foreground bg-secondary']}>
+	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
 			id={property.id}
@@ -125,10 +114,11 @@
 			]}
 			onselect={(opt) => updPropertyRef({ id: property.id, value: opt.id })}
 			placeholder="Empty"
+			searchable={property.options.length > MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
-	</div>
+	</Field>
 {:else if property.type === 'DATE'}
-	<div class={['rounded-sm text-secondary-foreground bg-secondary']}>
+	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<AdaptiveWrapper
 			bind:open={wrapperState.isOpen}
@@ -154,9 +144,9 @@
 			/>
 			{@render clearBtn()}
 		</AdaptiveWrapper>
-	</div>
+	</Field>
 {:else}
-	<div class={['px-1 rounded-sm text-secondary-foreground bg-secondary']}>
+	<Field>
 		<Label
 			for={property.id}
 			name={property.name}
@@ -172,8 +162,6 @@
 				{value}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
-				onfocusin={handleFocusIn}
-				onfocusout={handleFocusOut}
 				class="ghost-textarea"
 			></textarea>
 		{:else if property.type === 'NUMBER'}
@@ -184,8 +172,6 @@
 				{value}
 				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 				oninput={handleOnInput}
-				onfocusin={handleFocusIn}
-				onfocusout={handleFocusOut}
 				class="ghost-input"
 			/>
 		{:else}
@@ -194,13 +180,11 @@
 				type={property.type.toLowerCase()}
 				{value}
 				oninput={handleOnInput}
-				onfocusin={handleFocusIn}
-				onfocusout={handleFocusOut}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				class="ghost-input"
 			/>
 		{/if}
-	</div>
+	</Field>
 {/if}
 
 {#snippet miniWrapper(content: string)}

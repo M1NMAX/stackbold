@@ -40,7 +40,7 @@
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
 	import { slide } from 'svelte/transition';
-	import { Button, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
+	import { Button, Field, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
 	import type { Option } from '$lib/components/base/index.js';
 
 	type Props = {
@@ -164,8 +164,8 @@
 		</Button>
 	</div>
 	{#if isOpen}
-		<div class=" flex flex-col gap-y-1 pt-2 px-1" transition:slide>
-			<div class="rounded bg-secondary text-secondary-foreground pb-1">
+		<div class="flex flex-col gap-y-1 pt-2 px-1" transition:slide>
+			<Field>
 				<Label for="property-type" name="Type" />
 				<Select
 					id="property-type"
@@ -173,19 +173,19 @@
 					onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
 					searchable
 				/>
-			</div>
+			</Field>
 
-			<div class="rounded bg-secondary text-secondary-foreground pb-1">
+			<Field>
 				<Label for="property-aggregator" name="Aggregator" />
 				<Select
 					id="property-aggregator"
 					options={setupAggregatorSelectOptions()}
 					onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
 				/>
-			</div>
+			</Field>
 
 			{#if property.type === 'SELECT'}
-				<div class="rounded bg-secondary text-secondary-foreground pb-1">
+				<Field>
 					<Label for="property-default-value" name="Default value" />
 					<Select
 						id="property-default-value"
@@ -193,7 +193,7 @@
 						onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
 						searchable={property.options.length > 6}
 					/>
-				</div>
+				</Field>
 			{/if}
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-1 py-2">
