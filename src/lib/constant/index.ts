@@ -33,6 +33,7 @@ export const MAX_ITEM_NAME_LENGTH = 200;
 export const MAX_GROUP_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NUMERIC_LENGTH = 10;
 export const MAX_PROPERTY_TEXT_LENGTH = 255;
+export const MIN_SEARCHABLE_PROPERTY_SELECT = 5;
 
 export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
 

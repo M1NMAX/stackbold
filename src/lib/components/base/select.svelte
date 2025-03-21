@@ -8,7 +8,7 @@
 	};
 </script>
 
-<script lang="ts">
+<script lang="ts" generics="IsMulti extends boolean = false">
 	import Check from 'lucide-svelte/icons/check';
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
@@ -19,17 +19,20 @@
 	import { buttonVariants, Drawer, Floating } from './index.js';
 	import { tick } from 'svelte';
 
-	type Props = {
+	type SingleSelect = (option: Option) => void;
+	type MultiSelect = (option: Option[]) => void;
+
+	type Props<T extends boolean = false> = {
 		id: string;
 		options: Option[];
 		noOptionText?: string;
 		placeholder?: string;
 		searchable?: boolean;
 		disabled?: boolean;
-		onselect: (option: Option) => void;
+		isMulti?: T;
+		onselect: T extends true ? MultiSelect : SingleSelect;
 	};
 
-	//TODO: add support to multiple options
 	let {
 		id,
 		options,
@@ -37,8 +40,9 @@
 		placeholder = '-- Select --',
 		searchable = false,
 		disabled = false,
+		isMulti = false as IsMulti,
 		onselect
-	}: Props = $props();
+	}: Props<IsMulti> = $props();
 
 	let highlighted = $state('');
 	let selected = $derived.by(() => {
@@ -69,9 +73,13 @@
 	}
 
 	function selectOption(option: Option) {
-		onselect(option);
-		menuState.close();
-		search = '';
+		if (isMulti) {
+			(onselect as MultiSelect)([...selected, option]);
+		} else {
+			(onselect as SingleSelect)(option);
+			menuState.close();
+			search = '';
+		}
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -152,11 +160,13 @@
 
 	$effect(() => {
 		function getElement() {
-			if (searchable) return document.getElementById(searchInputId) as HTMLElement;
+			if (searchable) {
+				return document.getElementById(searchInputId) as HTMLElement;
+			}
 			return document.getElementById(contentId) as HTMLElement;
 		}
 
-		if (menuState.isOpen) {
+		if (menuState.isOpen && isLargeScreen.current) {
 			const el = getElement();
 			tick().then(() => {
 				el.focus();
@@ -172,10 +182,14 @@
 	});
 </script>
 
-<div>
+<div class="pb-1">
 	<button
 		id={triggerId}
-		class={buttonVariants({ theme: 'secondary', variant: 'menu' })}
+		class={buttonVariants({
+			theme: 'secondary',
+			variant: 'menu',
+			className: menuState.isOpen && 'bg-secondary/80'
+		})}
 		onclick={() => menuState.toggle()}
 	>
 		{#each selected as option}
@@ -206,7 +220,7 @@
 				bind:visible={menuState.isOpen}
 				sameWidth
 				align="start"
-				class="bg-secondary"
+				class="bg-secondary focus-within:bg-secondary/80"
 			>
 				{@render searchInput()}
 				<div
