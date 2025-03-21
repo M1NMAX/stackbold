@@ -9,6 +9,7 @@ export { default as Command } from './command.svelte';
 export { default as CommandItem } from './command-item.svelte';
 export { default as Dialog } from './dialog.svelte';
 export { default as Drawer } from './drawer.svelte';
+export { default as Field } from './field.svelte';
 export { default as Floating } from './floating.svelte';
 export { default as HSeparator } from './h-separator.svelte';
 export { default as Label } from './label.svelte';
