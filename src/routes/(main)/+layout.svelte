@@ -194,7 +194,7 @@
 					{/each}
 				</div>
 
-				<Accordion type="multiple" value={groupState.groups.map((g) => g.id)}>
+				<Accordion isMulti value={groupState.groups.map((g) => g.id)}>
 					{#each groupState.groups as group, idx (group.id)}
 						{@const groupCollections = collectionState.collections.filter(
 							(collection) =>

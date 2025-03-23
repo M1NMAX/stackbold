@@ -49,6 +49,7 @@
 		getFilters
 	} from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
+	import { object } from 'zod';
 
 	let { data } = $props();
 
@@ -413,10 +414,7 @@
 		{#if !findGroupByConfig(view)}
 			<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
-			<Accordion
-				type="multiple"
-				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
-			>
+			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
 				{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
 					{@const property = propertyState.getProperty(groupedItems[key].pid)}
 

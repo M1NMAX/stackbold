@@ -1,34 +1,12 @@
 import { getContext, setContext } from 'svelte';
 import { ModalState } from './index.js';
 
-export type AccordionProps =
-	| { type: 'single'; value?: string }
-	| {
-			type: 'multiple';
-			value?: string[];
-	  };
-
 class AccordionState {
-	#args: AccordionProps;
+	#isMulti: boolean;
 	#children = new Map<string, ModalState>();
 
-	constructor(args: AccordionProps) {
-		this.#args = args;
-
-		$effect(() => {
-			if (args.type === 'multiple') {
-				if (args.value)
-					args.value.forEach((value) => {
-						const child = this.#children.get(value);
-						if (child) child.open();
-					});
-			} else {
-				if (args.value) {
-					const target = this.#children.get(args.value);
-					if (target) target.open();
-				}
-			}
-		});
+	constructor(isMulti: boolean) {
+		this.#isMulti = isMulti;
 	}
 
 	addChild(id: string) {
@@ -39,11 +17,19 @@ class AccordionState {
 		const target = this.#children.get(id);
 		if (target) target.open();
 
-		if (this.#args.type === 'single') {
+		if (!this.#isMulti) {
 			for (const key of this.#children.keys()) {
 				if (key !== id) {
 					this.#children.get(key)?.close();
 				}
+			}
+		}
+	}
+
+	openAll(value: string[]) {
+		if (this.#isMulti) {
+			for (const v of value) {
+				this.open(v);
 			}
 		}
 	}
@@ -63,8 +49,8 @@ class AccordionState {
 
 const ACCORDION_CTX_KEY = Symbol('ACCORDION_CTX_KEY');
 
-export function setAccordionState(args: AccordionProps) {
-	return setContext(ACCORDION_CTX_KEY, new AccordionState(args));
+export function setAccordionState(isMulti: boolean) {
+	return setContext(ACCORDION_CTX_KEY, new AccordionState(isMulti));
 }
 
 export function getAccordionState() {

@@ -1,20 +1,25 @@
-<script lang="ts">
+<script lang="ts" generics="IsMulti extends boolean = false">
 	import type { Snippet } from 'svelte';
-	import { type AccordionProps, setAccordionState } from '$lib/states/index.js';
+	import { setAccordionState } from '$lib/states/index.js';
 	import { tm } from '$lib/utils/index.js';
 
-	type Props = AccordionProps & {
+	type Props<T extends boolean = false> = {
+		isMulti?: T;
+		value?: T extends true ? string[] : string;
 		children: Snippet;
 		class?: string;
 	};
 
-	let { type: accordionType, value, children, class: className }: Props = $props();
+	let { isMulti = false as IsMulti, value, children, class: className }: Props<IsMulti> = $props();
+	const accordionState = setAccordionState(isMulti);
 
-	if (accordionType == 'single') {
-		setAccordionState({ type: 'single', value: value as string });
-	} else if (accordionType == 'multiple') {
-		setAccordionState({ type: 'multiple', value: value as string[] });
-	}
+	$effect(() => {
+		if (isMulti && value) {
+			accordionState.openAll(value as string[]);
+		} else if (value) {
+			accordionState.open(value as string);
+		}
+	});
 </script>
 
 <div class={tm(className)}>

@@ -119,7 +119,7 @@
 
 			{@render activeFilters()}
 
-			<Accordion type="single">
+			<Accordion>
 				{#each propertyState.properties as property}
 					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
 						<AccordionItem arrow={false}>
