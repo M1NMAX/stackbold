@@ -84,7 +84,7 @@ export class CollectionState {
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 
-			this.#toastState.addActionToast({
+			this.#toastState.action({
 				message: 'New collection created',
 				action: {
 					label: 'Go',
@@ -92,7 +92,7 @@ export class CollectionState {
 				}
 			});
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			this.#removeCollection(tmpId);
 		}
 	}
@@ -100,7 +100,7 @@ export class CollectionState {
 	async duplicateCollection(id: string) {
 		const target = this.#getCollection(id);
 		if (!target) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			return;
 		}
 
@@ -125,7 +125,7 @@ export class CollectionState {
 				);
 			}
 
-			this.#toastState.addActionToast({
+			this.#toastState.action({
 				message: `Collection [${name}] duplicated successfully`,
 				action: {
 					label: 'Go',
@@ -134,7 +134,7 @@ export class CollectionState {
 			});
 		} catch (err) {
 			// TODO: consider possible fallback
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 		}
 	}
 
@@ -142,7 +142,7 @@ export class CollectionState {
 		const { id, data } = args;
 		let target = this.#getCollection(id);
 		if (target == null) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			return;
 		}
 
@@ -150,7 +150,7 @@ export class CollectionState {
 			this.#updCollection(id, { ...target, ...data });
 			await trpc().collections.update.mutate({ ...args });
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			this.#updCollection(id, target);
 		}
 	}
@@ -158,18 +158,18 @@ export class CollectionState {
 	async deleteCollection(id: string, redirect: boolean = false) {
 		let target = this.#getCollection(id);
 		if (target == null) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			return;
 		}
 
 		try {
 			this.#removeCollection(id);
 			await trpc().collections.delete.mutate(id);
-			this.#toastState.addSuccessToast(`Collection [${target.name}] deleted successfully`);
+			this.#toastState.success(`Collection [${target.name}] deleted successfully`);
 
 			if (redirect) setTimeout(() => goto('/collections'), 500);
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			this.collections.push({ ...target });
 		}
 	}
@@ -178,7 +178,7 @@ export class CollectionState {
 		try {
 			this.collections = await trpc().collections.list.query();
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 		}
 	}
 }

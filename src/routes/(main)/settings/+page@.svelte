@@ -33,10 +33,10 @@
 	async function handleClickDeleteAccount() {
 		try {
 			await trpc().users.delete.mutate(user.id);
-			toastState.addSuccessToast('Account deleted successfully');
+			toastState.success('Account deleted successfully');
 			goto('/');
 		} catch (error) {
-			toastState.addErrorToast('Unable to delete your account, please try again');
+			toastState.error('Unable to delete your account, please try again');
 		}
 	}
 

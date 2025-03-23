@@ -47,7 +47,7 @@
 
 			await collectionState.refresh();
 
-			toastState.addActionToast({
+			toastState.action({
 				message: 'New collection created',
 				action: {
 					label: 'Go',
@@ -56,7 +56,7 @@
 			});
 		} catch (error) {
 			console.log(error);
-			toastState.addErrorToast(DEFAULT_FEEDBACK_ERR_MESSAGE);
+			toastState.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
 		}
 	}
 

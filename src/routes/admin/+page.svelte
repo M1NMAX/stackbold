@@ -45,13 +45,13 @@
 			switch (result.type) {
 				case 'success':
 					addUserModal.close();
-					toastState.addSuccessToast('User added successfully');
+					toastState.success('User added successfully');
 
 					invalidate('/admin');
 					break;
 
 				case 'error':
-					toastState.addErrorToast('Unable to add user');
+					toastState.error('Unable to add user');
 					break;
 			}
 		}
@@ -63,9 +63,9 @@
 
 			await invalidateAll();
 
-			toastState.addSuccessToast(`User [${name}] deleted successfully`);
+			toastState.success(`User [${name}] deleted successfully`);
 		} catch (error) {
-			toastState.addErrorToast();
+			toastState.error();
 		}
 	}
 

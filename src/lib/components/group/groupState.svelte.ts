@@ -37,9 +37,9 @@ export class GroupState {
 
 			const result = await trpc().groups.create.mutate({ ...args });
 			this.#updGroup(tmpId, result);
-			this.#toastState.addSuccessToast('New group created successfully');
+			this.#toastState.success('New group created successfully');
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			this.#removeGroup(tmpId);
 		}
 	}
@@ -49,7 +49,7 @@ export class GroupState {
 
 		let target = this.getGroup(id);
 		if (target == null) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			return;
 		}
 
@@ -57,7 +57,7 @@ export class GroupState {
 			this.#updGroup(id, { ...target, ...data });
 			await trpc().groups.update.mutate({ ...args });
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			this.#updGroup(id, target);
 		}
 	}
@@ -65,7 +65,7 @@ export class GroupState {
 	async deleteGroup(id: string) {
 		let target = this.getGroup(id);
 		if (target == null) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			return;
 		}
 
@@ -73,7 +73,7 @@ export class GroupState {
 			this.#removeGroup(id);
 			await trpc().groups.delete.mutate(id);
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 			this.groups.push({ ...target });
 		}
 	}
@@ -83,7 +83,7 @@ export class GroupState {
 			const result = await trpc().groups.list.query();
 			this.groups = result;
 		} catch (err) {
-			this.#toastState.addErrorToast();
+			this.#toastState.error();
 		}
 	}
 }

@@ -17,15 +17,15 @@ export class ToastState {
 		});
 	}
 
-	addSuccessToast(message: string, durationMs = 3000) {
+	success(message: string, durationMs = 3000) {
 		this.#add({ message, type: 'success' }, durationMs);
 	}
 
-	addErrorToast(message: string | null = null, durationMs = 4500) {
+	error(message: string | null = null, durationMs = 4500) {
 		this.#add({ message: message ?? DEFAULT_FEEDBACK_ERR_MESSAGE, type: 'error' }, durationMs);
 	}
 
-	addWarningToast(message: string, durationMs = 4000) {
+	warning(message: string, durationMs = 4000) {
 		this.#add({ message, type: 'warning' }, durationMs);
 	}
 
@@ -42,7 +42,7 @@ export class ToastState {
 		);
 	}
 
-	addActionToast(toast: ActionToastArg, durationMs = 4000) {
+	action(toast: ActionToastArg, durationMs = 4000) {
 		const id = crypto.randomUUID();
 
 		this.toasts.push({ id, type: 'action', ...toast });

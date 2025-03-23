@@ -11,29 +11,34 @@
 
 	type Props = {
 		dismissable?: boolean;
+		bottom?: boolean;
 	};
 
-	let { dismissable = false }: Props = $props();
+	let { dismissable = false, bottom = false }: Props = $props();
 
 	const toastState = getToastState();
 </script>
 
-<div class="absolute left-[40%] top-10 flex flex-col gap-2">
+<div
+	class="fixed bottom-10 md:bottom-auto md:top-10 z-50 flex flex-col flex-wrap content-center gap-2 w-full"
+>
 	{#each toastState.toasts as toast (toast.id)}
 		<div
 			in:slide={{ duration: 150 }}
 			out:fade={{ duration: 150 }}
 			animate:flip={{ duration: 150 }}
 			class={tm(
-				'min-w-[20rem] flex justify-between items-center space-x-2.5 p-3 rounded-lg shadow-lg group',
-				toast.type === 'success' && 'bg-green-950  border-[0.1px] border-green-900 text-green-400',
-				toast.type === 'error' && 'bg-red-700 border-[0.1px] border-red-400 text-red-100',
-				toast.type === 'warning' && 'bg-amber-600',
-				toast.type === 'action' && 'bg-background'
+				'min-w-[18rem] max-w-xs md:md-w-lg flex justify-between items-center space-x-2.5 p-2 rounded-lg shadow-lg group',
+				toast.type === 'success' && 'bg-green-50 dark:bg-green-800 text-green-500 dark:text-white',
+				toast.type === 'error' && 'bg-red-200 dark:bg-red-800 text-red-600 dark:text-red-100',
+				toast.type === 'warning' && 'bg-amber-100 dark:bg-amber-600 text-amber-600 dark:text-white',
+				toast.type === 'action' && 'bg-background border border-border'
 			)}
 		>
 			{#if toast.type === 'success'}
-				<CircleCheck class="size-6 stroke-green-950 fill-green-400" />
+				<CircleCheck
+					class="size-6 stroke-green-50 dark:stroke-green-800 fill-green-500 dark:fill-green-500"
+				/>
 			{:else if toast.type === 'error'}
 				<CircleAlert class="size-6" />
 			{:else if toast.type === 'warning'}
