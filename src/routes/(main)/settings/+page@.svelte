@@ -8,7 +8,8 @@
 		TabTrigger,
 		TabContent,
 		HSeparator,
-		Select
+		Select,
+		Field
 	} from '$lib/components/base/index.js';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
@@ -140,7 +141,7 @@
 					<h2 class="text-lg font-semibold">Appearance</h2>
 					<p>Customize your app appearance</p>
 
-					<div class="my-2 pb-1 rounded-sm text-foreground-muted bg-muted">
+					<Field>
 						<Label for="app-theme" name="Theme" />
 						<Select
 							id="app-theme"
@@ -150,7 +151,7 @@
 								setMode(value ?? 'system');
 							}}
 						/>
-					</div>
+					</Field>
 				</TabContent>
 			</Tabs>
 		</div>
