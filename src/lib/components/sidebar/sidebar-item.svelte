@@ -1,9 +1,10 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { tm } from '$lib/utils';
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import type { Snippet } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
+	import { SCREEN_MD_MEDIA_QUERY } from '$lib/constant';
 
 	type Props = {
 		children: Snippet;
@@ -15,7 +16,7 @@
 	let { children, href, active = false, label, ...rest }: Props = $props();
 
 	const sidebarState = getSidebarState();
-	const isLargeScreen = getScreenSizeState();
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
 		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;

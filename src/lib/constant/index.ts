@@ -48,3 +48,5 @@ export const WEEK_DAYS: { [key: number]: string } = {
 	5: 'Friday',
 	6: 'Saturday'
 };
+
+export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';

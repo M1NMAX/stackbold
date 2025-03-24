@@ -16,14 +16,14 @@
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
-	import { getScreenSizeState } from '$lib/components/screen/index.js';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
 		ModalState
 	} from '$lib/states/index.js';
 	import { getCollectionState } from '$lib/components/collection';
-	import { MAX_COLLECTION_NAME_LENGTH } from '$lib/constant/index.js';
+	import { MAX_COLLECTION_NAME_LENGTH, SCREEN_MD_MEDIA_QUERY } from '$lib/constant/index.js';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	type Props = {
 		active: boolean;
@@ -41,8 +41,8 @@
 	const renameModalState = new ModalState();
 	const menuState = new ModalState();
 
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY);
 	const sidebarState = getSidebarState();
-	const isLargeScreen = getScreenSizeState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 

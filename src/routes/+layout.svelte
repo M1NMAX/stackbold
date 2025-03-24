@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
-	import { setScreenSizeState } from '$lib/components/screen';
 	import { setDeleteModalState } from '$lib/states/index.js';
 	import { setToastState } from '$lib/states/index.js';
 	import { AlertDialog, Toaster } from '$lib/components/base/index.js';
@@ -9,7 +8,6 @@
 	let { children } = $props();
 
 	setToastState();
-	const isLargeScreen = setScreenSizeState();
 
 	const deleteModal = setDeleteModalState();
 

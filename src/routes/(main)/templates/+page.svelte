@@ -5,14 +5,18 @@
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { icons } from '$lib/components/icon';
-	import { DEFAULT_SORT_OPTIONS, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
-	import { getScreenSizeState } from '$lib/components/screen';
+	import {
+		DEFAULT_SORT_OPTIONS,
+		SCREEN_MD_MEDIA_QUERY,
+		TEMPLATE_PANEL_CTX_KEY
+	} from '$lib/constant';
 	import { tm, noCheck } from '$lib/utils';
 	import { Button, SlidingPanel } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/state';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let { data } = $props();
 	let active = $state('');
@@ -33,7 +37,7 @@
 	});
 
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
-	const isLargeScreen = getScreenSizeState();
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 
 	async function clickTemplate(e: MouseEvent, id: string) {
 		active = id;

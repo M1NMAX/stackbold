@@ -22,7 +22,6 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/state';
-	import { getScreenSizeState } from '$lib/components/screen';
 	import {
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
@@ -30,7 +29,8 @@
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_ITEM_NAME_LENGTH,
 		PROPERTIES_PANEL_CTX_KEY,
-		PROPERTY_COLORS
+		PROPERTY_COLORS,
+		SCREEN_MD_MEDIA_QUERY
 	} from '$lib/constant';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { setPropertyState } from '$lib/components/property';
@@ -50,6 +50,7 @@
 	} from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
 	import { object } from 'zod';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let { data } = $props();
 
@@ -119,7 +120,7 @@
 	let isSmHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
 
-	const isLargeScreen = getScreenSizeState();
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 	const activeItemState = getActiveItemState();
 
 	async function updCollection(data: RouterInputs['collections']['update']['data']) {

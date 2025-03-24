@@ -147,12 +147,7 @@
 	</Field>
 {:else}
 	<Field>
-		<Label
-			for={property.id}
-			name={property.name}
-			icon={property.type.toLowerCase()}
-			class="py-1 px-0.5"
-		/>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 
 		{#if property.type === 'TEXT'}
 			<textarea
@@ -214,7 +209,7 @@
 
 <style>
 	.ghost-input {
-		@apply h-9 w-full flex p-1 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+		@apply h-9 md:h-7 w-full flex p-2 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 
 		&:focus,
 		&:focus-within {
@@ -224,7 +219,7 @@
 	}
 
 	.ghost-textarea {
-		@apply resize-none w-full flex p-1 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+		@apply resize-none w-full flex p-2 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
 
 		&:focus,
 		&:focus-within {

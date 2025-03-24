@@ -113,7 +113,7 @@
 			onclick={(e) => onClickItemBody(e, item.id)}
 			onkeydown={(e) => handleItemKeydownEvent(e, item.id)}
 			class={[
-				'relative flex flex-col items-start py-1 px-2 space-y-2  rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
+				'relative flex flex-col items-start p-1.5 gap-y-2 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
 				item.id === activeItem.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			]}
 		>
