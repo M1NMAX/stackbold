@@ -182,60 +182,58 @@
 	});
 </script>
 
-<div class="pb-1">
-	<button
-		id={triggerId}
-		class={buttonVariants({
-			theme: 'secondary',
-			variant: 'menu',
-			className: menuState.isOpen && 'bg-secondary/80'
-		})}
-		onclick={() => menuState.toggle()}
-	>
-		{#each selected as option}
-			<span
-				class={tm(
-					'h-6 flex items-center gap-x-1.5 py-1 px-1.5 rounded-sm font-semibold text-sm',
-					option.theme
-				)}
-			>
-				{#if option.icon}
-					{@render icon(option.icon)}
-				{/if}
-				<span>
-					{option.label}
-				</span>
+<button
+	id={triggerId}
+	class={buttonVariants({
+		theme: 'secondary',
+		variant: 'menu',
+		className: 'mb-1.5 bg-transparent'
+	})}
+	onclick={() => menuState.toggle()}
+>
+	{#each selected as option}
+		<span
+			class={tm(
+				'h-6 flex items-center gap-x-1.5 py-1 px-1.5 rounded-sm font-semibold text-sm',
+				option.theme
+			)}
+		>
+			{#if option.icon}
+				{@render icon(option.icon)}
+			{/if}
+			<span>
+				{option.label}
 			</span>
-		{:else}
-			<div class="h-5 px-1.5 pb-1 text-sm font-semibold text-gray-400 dark:text-gray-500">
-				{placeholder}
-			</div>
-		{/each}
-	</button>
+		</span>
+	{:else}
+		<div class="h-5 px-1.5 pb-1 text-sm font-semibold text-gray-400 dark:text-gray-500">
+			{placeholder}
+		</div>
+	{/each}
+</button>
 
-	{#if !disabled}
-		{#if isLargeScreen.current}
-			<Floating
-				triggerBy={triggerId}
-				bind:visible={menuState.isOpen}
-				sameWidth
-				align="start"
-				class="bg-secondary focus-within:bg-secondary/80"
+{#if !disabled}
+	{#if isLargeScreen.current}
+		<Floating
+			triggerBy={triggerId}
+			bind:visible={menuState.isOpen}
+			sameWidth
+			align="start"
+			class="bg-secondary focus-within:bg-secondary/80"
+		>
+			{@render searchInput()}
+			<div
+				class="p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground max-h-60 overflow-y-auto"
 			>
-				{@render searchInput()}
-				<div
-					class="p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground max-h-60 overflow-y-auto"
-				>
-					{@render content()}
-				</div>
-			</Floating>
-		{:else}
-			<Drawer bind:open={menuState.isOpen}>
 				{@render content()}
-			</Drawer>
-		{/if}
+			</div>
+		</Floating>
+	{:else}
+		<Drawer bind:open={menuState.isOpen}>
+			{@render content()}
+		</Drawer>
 	{/if}
-</div>
+{/if}
 
 {#snippet searchInput()}
 	{#if searchable}

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Search, SquareX } from 'lucide-svelte';
-	import { Button } from '$lib/components/base/index.js';
+	import Search from 'lucide-svelte/icons/search';
+	import X from 'lucide-svelte/icons/x';
 
 	type Props = {
 		value?: string;
@@ -12,22 +12,18 @@
 <!-- TODO: turn responsive -->
 <div class="relative w-full">
 	<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-		<Search class="text-primary icon-sm" />
+		<Search class="size-4" />
 	</div>
 	<input
-		class="w-full h-9 px-10 text-base font-semibold rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+		class="w-full h-9 px-10 text-base font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
 		{placeholder}
 		{...rest}
 		bind:value
 	/>
 
 	{#if value && value.length > 0}
-		<Button
-			theme="ghost"
-			class="absolute inset-y-0 right-0 flex items-center [&_svg]:size-6"
-			onclick={() => (value = '')}
-		>
-			<SquareX class="text-primary" />
-		</Button>
+		<button class="absolute inset-y-0 right-0 pr-2 flex items-center" onclick={() => (value = '')}>
+			<X class="size-5" />
+		</button>
 	{/if}
 </div>
