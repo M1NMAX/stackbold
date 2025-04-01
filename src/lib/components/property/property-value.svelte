@@ -4,6 +4,8 @@
 		DEBOUNCE_INTERVAL,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
+		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
+		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS
 	} from '$lib/constant';
 	import { type Property, View } from '@prisma/client';
@@ -19,9 +21,7 @@
 		Button,
 		Calendar,
 		HSeparator,
-		Label,
-		RadioGroup,
-		RadioGroupItem,
+		Select,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
@@ -80,9 +80,11 @@
 	const buttonClass = $derived(
 		tm(
 			isTableView()
-				? 'w-full justify-start py-2 px-1 rounded-none border-0 bg-transparent hover:bg-transparent '
-				: `w-fit h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
-			property.type === 'NUMBER' && 'justify-end'
+				? 'w-full justify-start p-2 rounded-none border-0 bg-transparent hover:bg-transparent'
+				: `w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
+			property.type === 'NUMBER' && 'justify-end',
+			property.type === 'SELECT' && 'px-0 mx-2',
+			property.type !== 'SELECT' && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
 
@@ -138,30 +140,23 @@
 		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
 {:else if property.type === 'SELECT' && (value || isTableView())}
-	{@const selectedOption = getOption(property.options, value)?.value ?? ''}
+	<Select
+		id={`${property.id}-value-${itemId}`}
+		options={[
+			...property.options.map((option) => ({
+				id: option.id,
+				label: option.value,
+				isSelected: option.id === value,
+				theme: PROPERTY_COLORS[option.color]
+			}))
+		]}
+		onselect={(opt) => updPropertyRef(opt.id)}
+		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		triggerClass={buttonClass}
+		placeholder=""
+	/>
 
-	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
-		{#snippet trigger()}
-			{@render tooltipWrapper(selectedOption, !!value && isTableView())}
-		{/snippet}
-
-		<p class={labelClass}>{property.name}</p>
-
-		<RadioGroup value={value || undefined} onchange={(value) => updPropertyRef(value)}>
-			{#each property.options as option}
-				<Label for={option.id} compact hoverEffect>
-					<span class={tm('size-3.5 rounded-sm', PROPERTY_COLORS[option.color])}></span>
-					<span class="grow">
-						{option.value}
-					</span>
-
-					<RadioGroupItem id={option.id} value={option.id} />
-				</Label>
-			{/each}
-		</RadioGroup>
-
-		{@render clearBtn()}
-	</AdaptiveWrapper>
+	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
 {:else if property.type === 'DATE' && (value || isTableView())}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
@@ -179,14 +174,19 @@
 		{@render clearBtn()}
 	</AdaptiveWrapper>
 {:else if property.type === 'TEXT' && (value || isTableView())}
-	{@const MAX_LENGTH = 30}
-	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH - 3) + '...' : value}
+	{@const content =
+		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
+			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
+			: value}
 
 	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
 		floatingAlign="start"
 		triggerClass={buttonClass}
-		floatingClass={tm('w-full max-w-lg p-1', value && value.length < MAX_LENGTH && 'max-w-xs')}
+		floatingClass={tm(
+			'w-full max-w-lg p-1',
+			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
+		)}
 	>
 		{#snippet trigger()}
 			{@render tooltipWrapper(content)}
@@ -268,8 +268,12 @@
 		{content}
 	</span>
 
+	{@render tooltipContent(tooltipId)}
+{/snippet}
+
+{#snippet tooltipContent(id: string)}
 	{#if !isTableView()}
-		<Tooltip triggerBy={tooltipId}>
+		<Tooltip triggerBy={id}>
 			<div class="flex items-center p-1 gap-x-1.5">
 				<PropertyIcon key={property.type} class="size-4" />
 				<span class="text-sm font-semibold">{property.name}</span>

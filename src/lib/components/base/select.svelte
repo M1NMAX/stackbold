@@ -14,7 +14,7 @@
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
 	import { APP_ICONS } from '$lib/constant/index.js';
-	import { tm, useId } from '$lib/utils/index.js';
+	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { buttonVariants, Drawer, Floating } from './index.js';
 	import { tick } from 'svelte';
@@ -29,6 +29,7 @@
 		placeholder?: string;
 		searchable?: boolean;
 		disabled?: boolean;
+		triggerClass?: string;
 		isMulti?: T;
 		onselect: T extends true ? MultiSelect : SingleSelect;
 	};
@@ -40,6 +41,7 @@
 		placeholder = '-- Select --',
 		searchable = false,
 		disabled = false,
+		triggerClass,
 		isMulti = false as IsMulti,
 		onselect
 	}: Props<IsMulti> = $props();
@@ -58,9 +60,9 @@
 		);
 	});
 
-	const triggerId = useId('select-trigger');
-	const searchInputId = useId('select-search');
-	const contentId = useId('select-content');
+	const triggerId = `select-trigger-${id}`;
+	const searchInputId = `select-search-${id}`;
+	const contentId = `select-content-${id}`;
 	const menuState = new ModalState();
 	const isLargeScreen = new MediaQuery('min-width: 768px', false);
 
@@ -72,11 +74,22 @@
 		});
 	}
 
+	const clearOption: Option = {
+		id: '',
+		label: '',
+		isSelected: false
+	};
+
+	function isSelected(id: string) {
+		const opt = selected.find((option) => option.id === id);
+		return !!opt;
+	}
+
 	function selectOption(option: Option) {
 		if (isMulti) {
 			(onselect as MultiSelect)([...selected, option]);
 		} else {
-			(onselect as SingleSelect)(option);
+			(onselect as SingleSelect)(isSelected(option.id) ? clearOption : option);
 			menuState.close();
 			search = '';
 		}
@@ -184,17 +197,19 @@
 
 <button
 	id={triggerId}
-	class={buttonVariants({
-		theme: 'secondary',
-		variant: 'menu',
-		className: 'mb-1.5 bg-transparent'
-	})}
+	class={tm(
+		buttonVariants({
+			theme: 'secondary',
+			variant: 'menu',
+			className: tm(' bg-transparent', triggerClass)
+		})
+	)}
 	onclick={() => menuState.toggle()}
 >
 	{#each selected as option}
 		<span
 			class={tm(
-				'h-6 flex items-center gap-x-1.5 py-1 px-1.5 rounded-sm font-semibold text-sm',
+				'h-6 flex items-center gap-x-1.5 px-1.5 rounded-sm font-semibold text-sm',
 				option.theme
 			)}
 		>
@@ -206,7 +221,7 @@
 			</span>
 		</span>
 	{:else}
-		<div class="h-5 px-1.5 pb-1 text-sm font-semibold text-gray-400 dark:text-gray-500">
+		<div class="px-1.5 text-sm font-semibold text-secondary-foreground">
 			{placeholder}
 		</div>
 	{/each}
@@ -238,12 +253,12 @@
 {#snippet searchInput()}
 	{#if searchable}
 		<div class="relative mb-0.5">
-			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
+			<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none">
 				<Search class="size-4" />
 			</div>
 			<input
 				id={searchInputId}
-				class="w-full h-9 px-10 text-base font-semibold rounded-sm bg-popover focus:outline-none"
+				class="w-full h-9 px-8 text-base font-semibold rounded-sm bg-popover focus:outline-none"
 				placeholder="Search for an option"
 				bind:value={search}
 				type="text"
@@ -258,7 +273,7 @@
 
 			{#if search && search.length > 0}
 				<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
-					<button class="[&_svg]:size-6" onclick={resetSearch}>
+					<button class="[&_svg]:size-4" onclick={resetSearch}>
 						<X />
 					</button>
 				</div>

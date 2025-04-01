@@ -114,7 +114,7 @@
 			]}
 			onselect={(opt) => updPropertyRef({ id: property.id, value: opt.id })}
 			placeholder="Empty"
-			searchable={property.options.length > MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
 	</Field>
 {:else if property.type === 'DATE'}
@@ -125,7 +125,8 @@
 			floatingAlign="start"
 			triggerClass={buttonVariants({
 				theme: 'ghost',
-				className: 'w-full justify-start p-1 bg-transparent hover:bg-transparent'
+				variant: 'menu',
+				className: 'w-full justify-start bg-transparent hover:bg-transparent'
 			})}
 		>
 			{#snippet trigger()}
@@ -209,7 +210,7 @@
 
 <style>
 	.ghost-input {
-		@apply h-9 md:h-7 w-full flex p-2 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+		@apply h-9 md:h-7 w-full flex px-2 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 
 		&:focus,
 		&:focus-within {
@@ -219,7 +220,7 @@
 	}
 
 	.ghost-textarea {
-		@apply resize-none w-full flex p-2 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+		@apply resize-none w-full flex px-2 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
 
 		&:focus,
 		&:focus-within {
