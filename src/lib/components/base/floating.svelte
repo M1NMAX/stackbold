@@ -121,7 +121,7 @@
 		use:escapeKeydown
 		onescapekey={hide}
 		class={tm(
-			'fixed z-50 flex flex-col p-1 min-w-[15rem] rounded-md bg-background  text-secondary-foreground',
+			'fixed z-50 flex flex-col p-1 min-w-[15rem] rounded-md bg-background text-secondary-foreground',
 			className
 		)}
 		{...rest}

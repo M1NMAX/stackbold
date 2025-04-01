@@ -8,14 +8,14 @@
 	};
 
 	let { children, class: className }: Props = $props();
+	//TODO: add error visualizer
 </script>
 
 <div
 	class={tm(
-		'flex flex-col rounded text-secondary-foreground bg-secondary focus-within:bg-secondary/80',
+		'flex flex-col gap-y-0.5 rounded py-1.5 text-secondary-foreground bg-secondary focus-within:bg-secondary/80',
 		className
 	)}
 >
 	{@render children()}
-	<div class="bg-red-500"><span class="bg-inherit"> </span></div>
 </div>
