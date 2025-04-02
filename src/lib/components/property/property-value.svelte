@@ -83,7 +83,7 @@
 				? 'w-full justify-start p-2 rounded-none border-0 bg-transparent hover:bg-transparent'
 				: `w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
 			property.type === 'NUMBER' && 'justify-end',
-			property.type === 'SELECT' && isTableView() && 'px-0 mx-2',
+			property.type === 'SELECT' && `${isTableView() ? 'mx-2' : ''} px-0`,
 			property.type !== 'SELECT' && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
