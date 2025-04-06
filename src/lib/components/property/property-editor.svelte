@@ -41,12 +41,11 @@
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 	} from '$lib/constant';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import type { UpdProperty } from '$lib/types';
+	import type { UpdProperty, SelectOption } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
 	import { fade, slide } from 'svelte/transition';
 	import { Button, Field, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
-	import type { Option } from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
 
 	type Props = {
@@ -103,7 +102,7 @@
 	}
 
 	function setupAggregatorSelectOptions() {
-		let options: Option[] = [];
+		let options: SelectOption[] = [];
 
 		options.push(
 			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
@@ -126,7 +125,7 @@
 	}
 
 	function setupDefaultOptionSelectOptions() {
-		let options: Option[] = [];
+		let options: SelectOption[] = [];
 		options.push({
 			id: '',
 			icon: 'text',

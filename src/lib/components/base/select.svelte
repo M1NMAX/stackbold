@@ -1,13 +1,3 @@
-<script lang="ts" module>
-	export type Option = {
-		id: string;
-		label: string;
-		isSelected: boolean;
-		icon?: string;
-		theme?: string;
-	};
-</script>
-
 <script lang="ts" generics="IsMulti extends boolean = false">
 	import Check from 'lucide-svelte/icons/check';
 	import Search from 'lucide-svelte/icons/search';
@@ -18,13 +8,14 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { buttonVariants, Drawer, Floating } from './index.js';
 	import { tick } from 'svelte';
+	import type { SelectOption } from '$lib/types';
 
-	type SingleSelect = (option: Option) => void;
-	type MultiSelect = (option: Option[]) => void;
+	type SingleSelect = (option: SelectOption) => void;
+	type MultiSelect = (option: SelectOption[]) => void;
 
 	type Props<T extends boolean = false> = {
 		id: string;
-		options: Option[];
+		options: SelectOption[];
 		noOptionText?: string;
 		placeholder?: string;
 		searchable?: boolean;
@@ -74,7 +65,7 @@
 		});
 	}
 
-	const clearOption: Option = {
+	const clearOption: SelectOption = {
 		id: '',
 		label: '',
 		isSelected: false
@@ -85,7 +76,7 @@
 		return !!opt;
 	}
 
-	function selectOption(option: Option) {
+	function selectOption(option: SelectOption) {
 		if (isMulti) {
 			(onselect as MultiSelect)([...selected, option]);
 		} else {

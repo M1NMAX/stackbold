@@ -64,3 +64,11 @@ export type Placement = 'top' | 'right' | 'bottom' | 'left';
 
 export type ParamsType = FadeParams | BlurParams | FlyParams | SlideParams | ScaleParams;
 export type TransitionFun = (node: HTMLElement, param: ParamsType) => TransitionConfig;
+
+export type SelectOption = {
+	id: string;
+	label: string;
+	isSelected: boolean;
+	icon?: string;
+	theme?: string;
+};
