@@ -71,7 +71,7 @@
 {#if data.insidePanel}
 	<div class="flex items-center justify-between space-x-1">
 		<div class="flex items-center space-x-2">
-			<Icon class="icon-md" />
+			<Icon class="size-6" />
 			<h1 class="grow text-xl font-semibold">
 				{template.name}
 			</h1>
@@ -95,7 +95,7 @@
 			</Button>
 			{#if isSmHeadingVisible}
 				<div class="flex items-center space-x-2">
-					<Icon clas="icon-sm" />
+					<Icon clas="size-5" />
 					<h1 class="text-lg font-semibold">
 						{template.name}
 					</h1>
@@ -104,7 +104,7 @@
 		</PageHeader>
 		<PageContent class="grow" onScroll={handleScroll}>
 			<div class="flex items-center space-x-2 pt-1">
-				<Icon class="icon-md" />
+				<Icon class="size-6" />
 				<h2 class="text-2xl font-semibold">
 					{template.name}
 				</h2>

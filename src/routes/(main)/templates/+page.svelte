@@ -77,7 +77,7 @@
 
 		{#if isSmHeadingVisible}
 			<div class="flex items-center space-x-2">
-				<Dna class="icon-md" />
+				<Dna class="size-6" />
 				<h1 class="text-xl font-semibold">Templates</h1>
 			</div>
 		{/if}
@@ -85,7 +85,7 @@
 
 	<PageContent onScroll={handleScroll}>
 		<div class="flex items-center space-x-2">
-			<Dna class="icon-lg" />
+			<Dna class="size-9" />
 			<h1 class="font-semibold text-2xl">Templates</h1>
 		</div>
 
@@ -107,7 +107,7 @@
 						)}
 					>
 						<div class="w-full flex items-center space-x-2">
-							<Icon class=" icon-sm" />
+							<Icon class="size-5" />
 							<span class="text-lg font-semibold">{template.name}</span>
 						</div>
 

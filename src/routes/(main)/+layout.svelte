@@ -153,7 +153,7 @@
 			onclick={() => globalSearchModal.open()}
 		>
 			<span class="flex items-center space-x-0.5">
-				<Search class="icon-sm" />
+				<Search class="size-4" />
 				<span> Search</span>
 			</span>
 			<kbd
@@ -180,7 +180,7 @@
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					{@const Icon = item.icon}
 					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<Icon class={`icon-sm ${activeUrl === item.url && 'text-primary'}`} />
+						<Icon class={`size-5 ${activeUrl === item.url && 'text-primary'}`} />
 					</SidebarItem>
 				{/each}
 			</div>
@@ -215,11 +215,11 @@
 
 			<div class="flex items-center justify-between space-x-1 px-1">
 				<Button theme="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
-					<FolderPlus class="icon-sm" />
+					<FolderPlus />
 					<span> New collection </span>
 				</Button>
 				<Button theme="secondary" variant="icon" onclick={() => createGroupModal.open()}>
-					<PackagePlus class="icon-sm" />
+					<PackagePlus />
 					<span class="sr-only">New group</span>
 				</Button>
 			</div>
@@ -244,7 +244,7 @@
 						activeUrl === item.url && 'text-primary'
 					]}
 				>
-					<Icon class="icon-sm" />
+					<Icon />
 					<span class="text-xs font-semibold">{item.label}</span>
 				</Button>
 			{/each}

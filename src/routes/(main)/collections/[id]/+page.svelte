@@ -321,7 +321,7 @@
 			<ChevronLeft />
 		</Button>
 		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
-			<Icon class="icon-md" />
+			<Icon class="size-6" />
 			<h1 class="grow font-semibold text-xl text-nowrap">
 				{collection.name.length > 18 && !isLargeScreen.current
 					? collection.name.substring(0, 18) + '...'
@@ -502,16 +502,19 @@
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
-		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+		class={tm(
+			'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold [&_svg]:rotate-0',
+			PROPERTY_COLORS[color]
+		)}
 	>
 		{#if property.type === 'SELECT'}
 			{@const option = getOption(property.options, key)}
 			{option ? option.value : `No ${property.name}`}
 		{:else if property.type === 'CHECKBOX'}
 			{#if key === 'true'}
-				<CheckSquare2 class="icon-xs mr-1.5" />
+				<CheckSquare2 class="size-4 mr-1.5" />
 			{:else}
-				<Square class="icon-xs mr-1.5" />
+				<Square class="size-4 mr-1.5 " />
 			{/if}
 
 			{property.name}

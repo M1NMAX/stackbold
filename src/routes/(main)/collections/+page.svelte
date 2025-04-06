@@ -54,7 +54,7 @@
 <PageContainer>
 	<PageHeader>
 		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
-			<LibraryBig class="icon-md" />
+			<LibraryBig class="size-6" />
 			<h1 class="text-xl font-semibold">Collections</h1>
 		</div>
 
@@ -67,7 +67,7 @@
 	</PageHeader>
 	<PageContent onScroll={handleScroll}>
 		<div class=" hidden md:flex items-center space-x-2">
-			<LibraryBig class="icon-lg" />
+			<LibraryBig class="size-9" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
 		</div>
 

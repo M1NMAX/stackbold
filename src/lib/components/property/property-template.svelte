@@ -18,14 +18,14 @@
 {#if property.type == 'CHECKBOX'}
 	<div
 		class={tm(
-			'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold',
+			'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold [&_svg]:size-4',
 			PROPERTY_COLORS[color]
 		)}
 	>
 		{#if value === 'true'}
-			<CheckSquare2 class="icon-xs" />
+			<CheckSquare2 />
 		{:else}
-			<Square class="icon-xs" />
+			<Square />
 		{/if}
 
 		<span class="font-semibold">{property.name} </span>
@@ -46,7 +46,7 @@
 
 	<Tooltip triggerBy={tooltipId}>
 		<div class="flex items-center p-1">
-			<PropertyIcon key={property.type} class="icon-xs mr-1" />
+			<PropertyIcon key={property.type} class="size-4 mr-1" />
 			<span class="text-sm font-semibold">{property.name}</span>
 		</div>
 	</Tooltip>

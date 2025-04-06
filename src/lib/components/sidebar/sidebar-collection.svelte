@@ -24,6 +24,7 @@
 	import { getCollectionState } from '$lib/components/collection';
 	import { MAX_COLLECTION_NAME_LENGTH, SCREEN_MD_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
 		active: boolean;
@@ -113,7 +114,7 @@
 		class="grow flex items-center space-x-1.5"
 		onclick={onClickSidebarItem}
 	>
-		<Icon class={['icon-sm', active && 'text-primary']} />
+		<Icon class={tm('size-5', active && 'text-primary')} />
 		<span class={['font-semibold text-base text-nowrap', active && 'text-primary']}>
 			{collection.name.length > 25 && isLargeScreen.current
 				? collection.name.substring(0, 22) + ' ...'

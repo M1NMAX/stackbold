@@ -68,10 +68,10 @@
 	{#if el.type === 'collection'}
 		{@const Icon = icons[el.icon]}
 
-		<Icon class="icon-sm" />
+		<Icon class="size-5" />
 		<span> {el.name} </span>
 	{:else}
-		<Hash class="icon-sm" />
+		<Hash class="size-5" />
 		<span class="flex flex-col">
 			<span> {el.name} </span>
 

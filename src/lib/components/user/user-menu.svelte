@@ -50,7 +50,7 @@
 
 	{#if user.role === 'ADMIN'}
 		<Button theme="ghost" variant="menu" onclick={() => goto('/admin')}>
-			<Lock class="icon-xs" />
+			<Lock class="size-4" />
 			<span>Admin</span>
 		</Button>
 		<HSeparator />

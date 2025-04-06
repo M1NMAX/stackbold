@@ -109,7 +109,7 @@
 	<HSeparator />
 
 	<Button theme="danger" variant="menu" onclick={() => deleteOption()}>
-		<Trash class="icon-xs" />
+		<Trash class="size-4" />
 		<span>Delete option </span>
 	</Button>
 </AdaptiveWrapper>

@@ -19,14 +19,14 @@
 	class="flex flex-col items-start p-1.5 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60"
 >
 	<div class="w-full flex items-center justify-between space-x-2">
-		<Icon class="icon-md" />
+		<Icon class="size-6" />
 		<h2 class="grow text-base font-semibold text-nowrap truncate">
 			{collection.name}
 		</h2>
 	</div>
 
 	<div class="flex items-center text-xs text-muted-foreground">
-		<FileClock class="icon-xs mr-2 text-primary" />
+		<FileClock class="size-4 mr-2 text-primary" />
 		Updated {dayjs(collection.updatedAt).fromNow()}
 	</div>
 </a>
