@@ -12,6 +12,7 @@ export { default as Drawer } from './drawer.svelte';
 export { default as Field } from './field.svelte';
 export { default as Floating } from './floating.svelte';
 export { default as HSeparator } from './h-separator.svelte';
+export { default as IconPicker } from './icon-picker.svelte';
 export { default as Label } from './label.svelte';
 export { default as MenuTitle } from './menu-title.svelte';
 export { default as RadioGroup } from './radio-group.svelte';
@@ -27,5 +28,3 @@ export { default as Tooltip } from './tooltip.svelte';
 
 //To exports types and snippets
 export * from './button.svelte';
-export * from './select.svelte';
-export * from './toaster.svelte';

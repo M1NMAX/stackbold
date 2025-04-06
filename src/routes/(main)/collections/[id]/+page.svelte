@@ -18,11 +18,17 @@
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils';
-	import { Accordion, AccordionItem, Button, SlidingPanel } from '$lib/components/base/index.js';
+	import {
+		Accordion,
+		AccordionItem,
+		Button,
+		IconPicker,
+		SlidingPanel
+	} from '$lib/components/base/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { IconPicker, icons } from '$lib/components/icon';
 	import { page } from '$app/state';
 	import {
+		COLLECTION_ICONS,
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
 		ITEM_PANEL_CTX_KEY,
@@ -74,7 +80,7 @@
 	});
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 
-	const Icon = $derived(icons[collection.icon]);
+	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 
 	let view = $state<View>(View.LIST);
 

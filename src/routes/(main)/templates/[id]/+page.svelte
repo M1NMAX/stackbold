@@ -2,10 +2,13 @@
 	import { Button } from '$lib/components/base/index.js';
 	import { getToastState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { DEFAULT_FEEDBACK_ERR_MESSAGE, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
+	import {
+		COLLECTION_ICONS,
+		DEFAULT_FEEDBACK_ERR_MESSAGE,
+		TEMPLATE_PANEL_CTX_KEY
+	} from '$lib/constant/index.js';
 	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import { icons } from '$lib/components/icon';
 	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { trpc } from '$lib/trpc/client';
 	import { getCollectionState } from '$lib/components/collection/collectionState.svelte.js';
@@ -13,7 +16,7 @@
 
 	let { data } = $props();
 	let template = $derived(data.template);
-	const Icon = $derived(icons[template.icon]);
+	const Icon = $derived(COLLECTION_ICONS[template.icon]);
 	let isSmHeadingVisible = $state(false);
 
 	const toastState = getToastState();

@@ -4,12 +4,12 @@
 	import { SearchInput, SortMenu } from '$lib/components/filters';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { icons } from '$lib/components/icon';
 	import {
+		COLLECTION_ICONS,
 		DEFAULT_SORT_OPTIONS,
 		SCREEN_MD_MEDIA_QUERY,
 		TEMPLATE_PANEL_CTX_KEY
-	} from '$lib/constant';
+	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils';
 	import { Button, SlidingPanel } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
@@ -97,7 +97,7 @@
 
 			<div class="space-y-2">
 				{#each templates as template (template.id)}
-					{@const Icon = icons[template.icon]}
+					{@const Icon = COLLECTION_ICONS[template.icon]}
 					<a
 						href={`/templates/${template.id}`}
 						onclick={(e) => clickTemplate(e, template.id)}

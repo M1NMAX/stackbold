@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Collection } from '@prisma/client';
-	import { icons } from '$lib/components/icon';
 	import dayjs from '$lib/utils/dayjs';
-	import { FileClock } from 'lucide-svelte';
+	import FileClock from 'lucide-svelte/icons/file-clock';
+	import { COLLECTION_ICONS } from '$lib/constant';
 
 	type Props = {
 		collection: Collection;
@@ -10,7 +10,7 @@
 
 	let { collection }: Props = $props();
 
-	const Icon = $derived(icons[collection.icon]);
+	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 </script>
 
 <a

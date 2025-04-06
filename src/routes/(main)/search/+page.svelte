@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { Hash, Search } from 'lucide-svelte';
+	import Hash from 'lucide-svelte/icons/hash';
 	import { SearchInput } from '$lib/components/filters';
 	import type { Searchable } from '$lib/types';
-	import { icons } from '$lib/components/icon';
+	import { COLLECTION_ICONS } from '$lib/constant/icons.js';
 
 	let { data } = $props();
 	let search = $state('');
@@ -66,7 +66,7 @@
 
 {#snippet searchableElement(el: Searchable)}
 	{#if el.type === 'collection'}
-		{@const Icon = icons[el.icon]}
+		{@const Icon = COLLECTION_ICONS[el.icon]}
 
 		<Icon class="size-5" />
 		<span> {el.name} </span>

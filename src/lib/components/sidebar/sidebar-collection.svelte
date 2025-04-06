@@ -12,7 +12,6 @@
 		Dialog,
 		HSeparator
 	} from '$lib/components/base/index.js';
-	import { icons } from '$lib/components/icon';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
 	import { nameSchema } from '$lib/schema.js';
@@ -22,7 +21,11 @@
 		ModalState
 	} from '$lib/states/index.js';
 	import { getCollectionState } from '$lib/components/collection';
-	import { MAX_COLLECTION_NAME_LENGTH, SCREEN_MD_MEDIA_QUERY } from '$lib/constant/index.js';
+	import {
+		COLLECTION_ICONS,
+		MAX_COLLECTION_NAME_LENGTH,
+		SCREEN_MD_MEDIA_QUERY
+	} from '$lib/constant/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { tm } from '$lib/utils/index.js';
 
@@ -37,7 +40,7 @@
 	let renameError = $state<string | null>(null);
 
 	const collectionState = getCollectionState();
-	const Icon = $derived(icons[collection.icon]);
+	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 
 	const renameModalState = new ModalState();
 	const menuState = new ModalState();

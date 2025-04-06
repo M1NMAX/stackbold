@@ -30,11 +30,14 @@
 		setCtrCollectionModalState,
 		setMoveCollectionModalState
 	} from '$lib/states/index.js';
-	import { icons } from '$lib/components/icon';
 	import { nameSchema } from '$lib/schema';
 	import { setGroupState } from '$lib/components/group';
 	import { setCollectionState } from '$lib/components/collection';
-	import { MAX_COLLECTION_NAME_LENGTH, MAX_GROUP_NAME_LENGTH } from '$lib/constant/index.js';
+	import {
+		COLLECTION_ICONS,
+		MAX_COLLECTION_NAME_LENGTH,
+		MAX_GROUP_NAME_LENGTH
+	} from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/style.js';
 
 	let { data, children } = $props();
@@ -327,7 +330,7 @@
 		<span> New group </span>
 	</CommandItem>
 	{#each collections as collection}
-		{@const Icon = icons[collection.icon]}
+		{@const Icon = COLLECTION_ICONS[collection.icon]}
 		<CommandItem
 			value={collection.name}
 			onselect={() => {

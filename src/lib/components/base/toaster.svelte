@@ -11,10 +11,9 @@
 
 	type Props = {
 		dismissable?: boolean;
-		bottom?: boolean;
 	};
 
-	let { dismissable = false, bottom = false }: Props = $props();
+	let { dismissable = false }: Props = $props();
 
 	const toastState = getToastState();
 </script>
