@@ -18,17 +18,21 @@
 </script>
 
 <script lang="ts">
+	import Copy from 'lucide-svelte/icons/copy';
+	import Plus from 'lucide-svelte/icons/plus';
+	import X from 'lucide-svelte/icons/x';
+	import Trash from 'lucide-svelte/icons/trash';
+	import Settings from 'lucide-svelte/icons/settings';
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
-	import { Copy, Trash, Settings } from 'lucide-svelte';
-	import { capitalizeFirstLetter } from '$lib/utils';
+	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
 		// utils
 		containsView,
 		getPropertyState,
 		toggleView,
 		// components
-		PropertyOptions,
-		PropertyIcon
+		PropertyIcon,
+		PropertyOption
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -36,13 +40,14 @@
 		PROPERTY_COLORS,
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 	} from '$lib/constant';
-	import { getDeleteModalState } from '$lib/states/index.js';
+	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
-	import { slide } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import { Button, Field, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
 	import type { Option } from '$lib/components/base/index.js';
+	import { tick } from 'svelte';
 
 	type Props = {
 		property: Property;
@@ -55,6 +60,9 @@
 	const deleteModal = getDeleteModalState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const newOptionInputId = useId(`property-editor-${property.id}`);
+	const newOptionInputState = new ModalState();
+	const showAllOptions = new ModalState();
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
@@ -138,9 +146,31 @@
 		return options;
 	}
 
+	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
+		if (e.key !== 'Enter') return;
+		const value = e.currentTarget.value;
+		propertyState.addOptionToProperty(property.id, value);
+		e.currentTarget.value = '';
+	}
+
 	function getIdPrefix(tail: string) {
 		return `${property.id}-${tail}`;
 	}
+
+	function getMaxVisisbleOptions() {
+		if (property.type !== 'SELECT') return 0;
+		if (property.options.length < 6) return property.options.length;
+		return showAllOptions.isOpen ? property.options.length : 5;
+	}
+
+	$effect(() => {
+		if (newOptionInputState.isOpen) {
+			tick().then(() => {
+				document.getElementById(newOptionInputId)?.focus();
+			});
+		}
+	});
 </script>
 
 <div class="p-1 rounded bg-secondary/40 text-secondary-foreground">
@@ -222,7 +252,7 @@
 			</div>
 			{#if property.type === 'SELECT'}
 				<HSeparator />
-				<PropertyOptions propertyId={property.id} options={property.options} />
+				{@render propertyOptions()}
 			{/if}
 
 			<HSeparator />
@@ -240,3 +270,46 @@
 		</div>
 	{/if}
 </div>
+
+{#snippet propertyOptions()}
+	<div class=" flex flex-col space-y-1.5 pt-1">
+		<div class="flex justify-between space-x-1">
+			<span class="text-sm font-semibold">Options</span>
+			<Button theme="secondary" variant="compact" onclick={() => newOptionInputState.toggle()}>
+				{#if newOptionInputState.isOpen}
+					<X />
+				{:else}
+					<Plus />
+				{/if}
+			</Button>
+		</div>
+
+		<input
+			transition:fade
+			onkeypress={handleKeypress}
+			id={newOptionInputId}
+			placeholder="Enter option value"
+			class={tm(
+				'h-8 w-full p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 hidden',
+				newOptionInputState.isOpen && 'block'
+			)}
+		/>
+
+		<div class="space-y-1">
+			{#if property.options.length >= 6}
+				<Button
+					theme="secondary"
+					variant="menu"
+					class="justify-center"
+					onclick={() => showAllOptions.toggle()}
+				>
+					{showAllOptions.isOpen ? ' Show less options' : 'Show all options'}
+				</Button>
+			{/if}
+
+			{#each property.options.slice(0, getMaxVisisbleOptions()) as option}
+				<PropertyOption propertyId={property.id} {option} />
+			{/each}
+		</div>
+	</div>
+{/snippet}
