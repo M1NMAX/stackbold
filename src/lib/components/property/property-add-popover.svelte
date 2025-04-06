@@ -25,7 +25,12 @@
 	}
 </script>
 
-<AdaptiveWrapper bind:open={wrapper.isOpen} triggerClass={buttonVariants({ className: 'w-full' })}>
+<AdaptiveWrapper
+	bind:open={wrapper.isOpen}
+	triggerClass={buttonVariants({ className: 'w-full' })}
+	floatingAlign="start"
+	sameWidth
+>
 	{#snippet trigger()}
 		<Plus />
 		<span> New property </span>

@@ -12,6 +12,7 @@
 		triggerClass?: string;
 		floatingAlign?: Align;
 		floatingClass?: string;
+		sameWidth?: boolean;
 	};
 
 	let {
@@ -20,7 +21,8 @@
 		children,
 		triggerClass,
 		floatingAlign,
-		floatingClass
+		floatingClass,
+		sameWidth
 	}: Props = $props();
 
 	const id = useId();
@@ -39,7 +41,13 @@
 	</button>
 
 	{#if isLargeScreen.current}
-		<Floating bind:visible={open} triggerBy={id} align={floatingAlign} class={floatingClass}>
+		<Floating
+			bind:visible={open}
+			triggerBy={id}
+			align={floatingAlign}
+			class={floatingClass}
+			{sameWidth}
+		>
 			{@render children()}
 		</Floating>
 	{:else}
