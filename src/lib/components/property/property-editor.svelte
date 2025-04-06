@@ -32,6 +32,7 @@
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
+		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS,
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 	} from '$lib/constant';
@@ -136,6 +137,10 @@
 
 		return options;
 	}
+
+	function getIdPrefix(tail: string) {
+		return `${property.id}-${tail}`;
+	}
 </script>
 
 <div class="p-1 rounded bg-secondary/40 text-secondary-foreground">
@@ -166,9 +171,9 @@
 	{#if isOpen}
 		<div class="flex flex-col gap-y-1 pt-2 px-1" transition:slide>
 			<Field>
-				<Label for="property-type" name="Type" />
+				<Label for={getIdPrefix('property-type')} name="Type" />
 				<Select
-					id="property-type"
+					id={getIdPrefix('property-type')}
 					options={setupPropertyTypeSelectOptions()}
 					onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
 					searchable
@@ -176,22 +181,23 @@
 			</Field>
 
 			<Field>
-				<Label for="property-aggregator" name="Aggregator" />
+				<Label for={getIdPrefix('property-aggregator')} name="Aggregator" />
 				<Select
-					id="property-aggregator"
+					id={getIdPrefix('property-aggregator')}
 					options={setupAggregatorSelectOptions()}
 					onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
+					searchable
 				/>
 			</Field>
 
 			{#if property.type === 'SELECT'}
 				<Field>
-					<Label for="property-default-value" name="Default value" />
+					<Label for={getIdPrefix('property-default-value')} name="Default value" />
 					<Select
-						id="property-default-value"
+						id={getIdPrefix('property-default-value')}
 						options={setupDefaultOptionSelectOptions()}
 						onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
-						searchable={property.options.length > 6}
+						searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 					/>
 				</Field>
 			{/if}
