@@ -508,10 +508,7 @@
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
-		class={tm(
-			'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold [&_svg]:rotate-0',
-			PROPERTY_COLORS[color]
-		)}
+		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
 		{#if property.type === 'SELECT'}
 			{@const option = getOption(property.options, key)}

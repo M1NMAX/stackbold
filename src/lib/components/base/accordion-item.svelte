@@ -42,13 +42,12 @@
 		<button
 			onclick={handleClick}
 			aria-expanded={accordionState.isOpen(id)}
-			class={tm(
-				'grow h-9 md:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
-				isOpen && arrow && '[&_svg]:rotate-90'
-			)}
+			class="grow h-9 md:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all"
 		>
 			{#if arrow}
-				<ChevronRight class="size-4 shrink-0 transition-transform duration-200" />
+				<ChevronRight
+					class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
+				/>
 			{/if}
 
 			{#if title}
