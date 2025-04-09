@@ -143,7 +143,7 @@
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">
 	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1">
 		<Button
-			theme="outline"
+			theme="secondary"
 			variant="icon"
 			onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 		>
@@ -151,18 +151,18 @@
 		</Button>
 
 		<Button
-			theme="outline"
-			class="grow h-9 max-w-sm flex justify-between items-center space-x-1  dark:bg-background"
+			theme="secondary"
+			class="grow h-9 max-w-sm flex justify-between items-center space-x-1 rounded-md"
 			onclick={() => globalSearchModal.open()}
 		>
-			<span class="flex items-center space-x-0.5">
+			<span class="flex items-center gap-x-1.5">
 				<Search class="size-4" />
 				<span> Search</span>
 			</span>
 			<kbd
-				class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-sm border bg-muted px-1 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+				class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border bg-popover py-0.5 px-1.5 font-mono text-xs font-medium text-popover-foreground opacity-100"
 			>
-				<span class="text-xs">Ctrl</span>
+				<span>Ctrl</span>
 				<span>K</span>
 			</kbd>
 		</Button>

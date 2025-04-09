@@ -120,7 +120,7 @@
 				{#each items as item (item.id)}
 					<tr
 						class={tm(
-							'font-medium text-base whitespace-nowrap  border-y border-secondary hover:bg-muted/40 group',
+							'font-medium text-base whitespace-nowrap border-y border-secondary hover:bg-muted/40 group',
 							item.id === activeItem.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
