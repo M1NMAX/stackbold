@@ -55,7 +55,6 @@
 		getFilters
 	} from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
-	import { object } from 'zod';
 	import { MediaQuery } from 'svelte/reactivity';
 
 	let { data } = $props();
