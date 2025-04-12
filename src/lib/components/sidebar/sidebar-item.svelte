@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
+	import type { Snippet } from 'svelte';
+	import { tm } from '$lib/utils';
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import type { Snippet } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
+	import { SCREEN_MD_MEDIA_QUERY } from '$lib/constant';
 
 	type Props = {
 		children: Snippet;
@@ -15,7 +16,7 @@
 	let { children, href, active = false, label, ...rest }: Props = $props();
 
 	const sidebarState = getSidebarState();
-	const isLargeScreen = getScreenSizeState();
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
 		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;
@@ -30,14 +31,14 @@
 	{href}
 	onclick={onClickSidebarItem}
 	{...rest}
-	class={cn(
+	class={tm(
 		'w-full flex items-center space-x-1.5 py-0.5 px-1.5  hover:bg-secondary/95 	transition duration-75 text-secondary-foreground',
 		active && 'border-r-2 border-primary bg-secondary'
 	)}
 >
 	{@render children()}
 
-	<span class={cn('font-semibold', active && 'text-primary')}>
+	<span class={tm('font-semibold', active && 'text-primary')}>
 		{label}
 	</span>
 </a>

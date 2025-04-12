@@ -17,27 +17,30 @@
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { cn, noCheck, sortFun, type SortOption } from '$lib/utils';
-	import dayjs from '$lib/utils/dayjs';
-	import { Button } from '$lib/components/ui/button';
-	import { SlidingPanel } from '$lib/components/sliding-panel';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { IconPicker, icons } from '$lib/components/icon';
-	import { page } from '$app/state';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import * as Accordion from '$lib/components/ui/accordion';
+	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils';
 	import {
+		Accordion,
+		AccordionItem,
+		Button,
+		IconPicker,
+		SlidingPanel
+	} from '$lib/components/base/index.js';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
+	import { page } from '$app/state';
+	import {
+		COLLECTION_ICONS,
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
 		ITEM_PANEL_CTX_KEY,
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_ITEM_NAME_LENGTH,
 		PROPERTIES_PANEL_CTX_KEY,
-		PROPERTY_COLORS
+		PROPERTY_COLORS,
+		SCREEN_MD_MEDIA_QUERY
 	} from '$lib/constant';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { setPropertyState } from '$lib/components/property';
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext } from 'svelte';
@@ -52,6 +55,7 @@
 		getFilters
 	} from '$lib/components/filters';
 	import type { Filter } from '$lib/types';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let { data } = $props();
 
@@ -75,7 +79,7 @@
 	});
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 
-	const Icon = $derived(icons[collection.icon]);
+	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 
 	let view = $state<View>(View.LIST);
 
@@ -121,7 +125,7 @@
 	let isSmHeadingVisible = $state(false);
 	let isCreateItemDialogOpen = $state(false);
 
-	const isLargeScreen = getScreenSizeState();
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 	const activeItemState = getActiveItemState();
 
 	async function updCollection(data: RouterInputs['collections']['update']['data']) {
@@ -310,19 +314,19 @@
 </svelte:head>
 
 <PageContainer
-	class={cn(
+	class={tm(
 		'ease-in-out duration-300',
 		itemPanel.isOpen || propertiesPanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6'
 	)}
 >
 	<PageHeader
-		class={cn('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
+		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
 	>
-		<Button variant="secondary" size="icon" class="md:hidden" onclick={() => history.back()}>
+		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
 		</Button>
-		<div class={cn('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
-			<Icon class="icon-md" />
+		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
+			<Icon class="size-6" />
 			<h1 class="grow font-semibold text-xl text-nowrap">
 				{collection.name.length > 18 && !isLargeScreen.current
 					? collection.name.substring(0, 18) + '...'
@@ -330,13 +334,8 @@
 			</h1>
 		</div>
 		<div class="flex justify-end items-center space-x-1.5">
-			<span class="hidden lg:block font-semibold text-xs text-gray-500 mr-2">
-				Updated
-				{dayjs(collection.updatedAt).fromNow()}
-			</span>
-
-			<Button variant="secondary" size="icon" onclick={() => onClickOpenProperties()}>
-				<Settings2 class="icon-sm" />
+			<Button theme="secondary" variant="icon" onclick={() => onClickOpenProperties()}>
+				<Settings2 />
 			</Button>
 
 			<CollectionMenu {collection} />
@@ -421,31 +420,21 @@
 		{#if !findGroupByConfig(view)}
 			<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
-			<Accordion.Root
-				type="multiple"
-				value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}
-				class="w-full"
-			>
+			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
 				{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
 					{@const property = propertyState.getProperty(groupedItems[key].pid)}
 
 					{#if property}
 						{@const color = getPropertyColor(property, key)}
-						<Accordion.Item value={`accordion-item-${key}`}>
-							<Accordion.Trigger class="justify-start p-2 hover:no-underline">
+						<AccordionItem id={`accordion-item-${key}`}>
+							{#snippet header()}
 								{@render groupLabel(key, property, color)}
-							</Accordion.Trigger>
-							<Accordion.Content>
-								<Items
-									items={groupedItems[key].items}
-									{view}
-									clickOpenItem={(id) => clickItem(id)}
-								/>
-							</Accordion.Content>
-						</Accordion.Item>
+							{/snippet}
+							<Items items={groupedItems[key].items} {view} clickOpenItem={(id) => clickItem(id)} />
+						</AccordionItem>
 					{/if}
 				{/each}
-			</Accordion.Root>
+			</Accordion>
 		{/if}
 		{#if isLargeScreen.current}
 			<div class="sticky inset-x-0 bottom-0">
@@ -475,7 +464,7 @@
 			</div>
 		{:else}
 			<Button
-				size="icon"
+				variant="icon"
 				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-sm"
 				onclick={() => (isCreateItemDialogOpen = true)}
 			>
@@ -518,16 +507,16 @@
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
-		class={cn('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
 		{#if property.type === 'SELECT'}
 			{@const option = getOption(property.options, key)}
 			{option ? option.value : `No ${property.name}`}
 		{:else if property.type === 'CHECKBOX'}
 			{#if key === 'true'}
-				<CheckSquare2 class="icon-xs mr-1.5" />
+				<CheckSquare2 class="size-4 mr-1.5" />
 			{:else}
-				<Square class="icon-xs mr-1.5" />
+				<Square class="size-4 mr-1.5 " />
 			{/if}
 
 			{property.name}

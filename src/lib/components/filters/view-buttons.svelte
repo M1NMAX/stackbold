@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Root as RadioGroupRoot, Item as RadioGroupItem } from '$lib/components/ui/radio-group';
-	import { cn } from '$lib/utils';
+	import StretchHorizontal from 'lucide-svelte/icons/stretch-horizontal';
+	import Table from 'lucide-svelte/icons/table';
 	import { View } from '@prisma/client';
-	import { Label } from '$lib/components/ui/label';
-	import { StretchHorizontal, Table } from 'lucide-svelte';
+	import { tm } from '$lib/utils/index.js';
+	import { Label, RadioGroup, RadioGroupItem } from '$lib/components/base/index.js';
 
 	type Props = {
 		value: View;
@@ -14,25 +14,23 @@
 	let { value = $bindable(), options, class: className }: Props = $props();
 </script>
 
-<RadioGroupRoot
+<RadioGroup
 	{value}
-	onValueChange={(currentValue) => (value = currentValue as View)}
-	class={cn('h-9 flex gap-0.5 rounded-sm bg-secondary/55', className)}
+	onchange={(currValue) => (value = currValue as View)}
+	class={tm('h-9 flex gap-0.5 rounded-sm bg-secondary/55', className)}
 >
 	{#each options as option}
 		{@const Icon = option == View.LIST ? StretchHorizontal : Table}
 		<Label
 			for={`view-${option}`}
-			class={cn(
+			class={tm(
 				'flex items-center justify-center p-1.5 rounded-sm text-secondary-foreground cursor-pointer',
 				value === option && 'bg-secondary'
 			)}
 		>
 			<RadioGroupItem value={option} id={`view-${option}`} class="sr-only" />
 
-			<div class="flex items-center justify-between space-x-2 text-base">
-				<Icon class="icon-md" />
-			</div>
+			<Icon />
 		</Label>
 	{/each}
-</RadioGroupRoot>
+</RadioGroup>

@@ -1,35 +1,16 @@
-<script module>
-	import {
-		ArrowDownAZ,
-		ArrowDownZA,
-		ArrowUpDown,
-		CalendarArrowDown,
-		CalendarArrowUp,
-		Check,
-		ClockArrowDown,
-		ClockArrowUp,
-		type Icon as IconType
-	} from 'lucide-svelte';
-
-	const icons: { [idx: string]: typeof IconType } = {
-		'name-asc': ArrowDownAZ,
-		'name-desc': ArrowDownZA,
-		'updatedAt-asc': ClockArrowDown,
-		'updatedAt-desc': ClockArrowUp,
-		'createdAt-asc': CalendarArrowDown,
-		'createdAt-desc': CalendarArrowUp
-	};
-</script>
-
 <script lang="ts" generics="T">
-	import { buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import { Label } from '$lib/components/ui/label';
-	import type { SortOption } from '$lib/utils/sort';
-	import { ModalState } from '$lib/components/modal';
-	import { cn } from '$lib/utils';
+	import {
+		AdaptiveWrapper,
+		buttonVariants,
+		Label,
+		MenuTitle,
+		RadioGroup,
+		RadioGroupItem
+	} from '$lib/components/base/index.js';
+	import type { OrderType, SortOption } from '$lib/utils/sort';
+	import { ModalState } from '$lib/states/index.js';
+	import { useId } from '$lib/utils';
+	import { SORT_ICONS } from '$lib/constant/index.js';
 
 	type Props = {
 		options: SortOption<T>[];
@@ -38,83 +19,55 @@
 
 	let { value = $bindable(), options }: Props = $props();
 
-	const CurrentIcon = $derived(icons[`${value.field.toString()}-${value.order}`]);
+	const valueStr = $derived(joinOptionProperties(value));
+	const CurrentIcon = $derived(SORT_ICONS[joinOptionProperties(value, 1)]);
 
 	const menuState = new ModalState();
+
+	function handleChange(v: string) {
+		const [label, field, order] = v.split('-');
+		const option: SortOption<T> = {
+			label,
+			field: field as keyof T,
+			order: order as OrderType
+		};
+
+		value = { ...option };
+		menuState.close();
+	}
+
+	function joinOptionProperties(opt: SortOption<T>, idx: number = 0) {
+		let result = '';
+		for (let i = idx; i < Object.keys(opt).length; i++) {
+			result += Object.values(opt)[i].toString() + '-';
+		}
+		return result.slice(0, result.length - 1);
+	}
 </script>
 
-<DropdownMenu.Root>
-	<DropdownMenu.Trigger
-		class={buttonVariants({ variant: 'secondary', size: 'sm', className: 'hidden md:flex' })}
-	>
-		<CurrentIcon class="icon-xs" />
-		{value.label}
-	</DropdownMenu.Trigger>
-	<DropdownMenu.Content class="w-56">
-		<DropdownMenu.Label>Sort by</DropdownMenu.Label>
-		<DropdownMenu.Separator />
-
-		<DropdownMenu.Group>
-			{#each options as option}
-				{@const Icon = icons[`${option.field.toString()}-${option.order}`]}
-				<DropdownMenu.CheckboxItem
-					checked={value.field === option.field && value.order === option.order}
-					onclick={() => (value = { ...option })}
-				>
-					<Icon class="icon-xs mr-2" />
-					{option.label}
-				</DropdownMenu.CheckboxItem>
-			{/each}
-		</DropdownMenu.Group>
-	</DropdownMenu.Content>
-</DropdownMenu.Root>
-<Drawer.Root bind:open={menuState.isOpen}>
-	<Drawer.Trigger
-		class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'md:hidden' })}
-	>
+<AdaptiveWrapper
+	bind:open={menuState.isOpen}
+	triggerClass={buttonVariants({ theme: 'secondary' })}
+	floatingAlign="end"
+>
+	{#snippet trigger()}
 		<CurrentIcon />
-	</Drawer.Trigger>
-	<Drawer.Content>
-		<Drawer.Header class="pt-2 pb-0">
-			<span class="flex items-center gap-x-2">
-				<span class="p-1.5 rounded-md bg-secondary">
-					<ArrowUpDown class="icon-sm" />
-				</span>
-				<Drawer.Title class="text-left">Sort By</Drawer.Title>
-			</span>
-		</Drawer.Header>
-		<Drawer.Footer class="pt-2 pb-0 px-0">
-			<RadioGroup.Root value={`${value.field.toString()}-${value.order}`} class="px-0 py-1 gap-y-0">
-				{#each options as option}
-					{@const optValue = `${option.field.toString()}-${option.order}`}
-					{@const Icon = icons[optValue]}
-					<Label
-						for={optValue}
-						class="w-full flex items-center justify-between px-4 py-1 hover:bg-secondary/40"
-					>
-						<Icon class="icon-xs mr-2" />
-						<!-- TODO: Consider altenative labels -->
-						<span class="grow font-semibold text-base">
-							{option.label}
-						</span>
-						<RadioGroup.Item
-							class="sr-only"
-							id={optValue}
-							value={optValue}
-							onclick={() => {
-								value = { ...option };
-								menuState.close();
-							}}
-						/>
-						<Check
-							class={cn(
-								'size-5',
-								optValue !== `${value.field.toString()}-${value.order}` && 'text-transparent'
-							)}
-						/>
-					</Label>
-				{/each}
-			</RadioGroup.Root>
-		</Drawer.Footer>
-	</Drawer.Content>
-</Drawer.Root>
+		<span class="hidden md:block">
+			{value.label}
+		</span>
+	{/snippet}
+	<MenuTitle title="Sort by" />
+
+	<RadioGroup value={valueStr} onchange={handleChange}>
+		{#each options as option}
+			{@const optId = useId('sort-menu')}
+			{@const optValue = joinOptionProperties(option)}
+			{@const Icon = SORT_ICONS[joinOptionProperties(option, 1)]}
+			<Label for={optId} compact hoverEffect>
+				<Icon />
+				<span class="grow">{option.label} </span>
+				<RadioGroupItem id={optId} value={optValue}></RadioGroupItem>
+			</Label>
+		{/each}
+	</RadioGroup>
+</AdaptiveWrapper>

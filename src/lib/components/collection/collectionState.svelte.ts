@@ -7,13 +7,13 @@ import {
 	type FilterConfig,
 	type Property
 } from '@prisma/client';
-import { onError, redirectToast } from '$lib/components/feedback';
 import { trpc } from '$lib/trpc/client';
-import { toast } from 'svelte-sonner';
 import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
+import { getToastState } from '$lib/states';
 
 export class CollectionState {
+	#toastState = getToastState();
 	collections = $state<Collection[]>([]);
 
 	constructor(collections: Collection[]) {
@@ -83,9 +83,16 @@ export class CollectionState {
 			});
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
-			redirectToast('New collection created', `/collections/${result.id}`);
+
+			this.#toastState.action({
+				message: 'New collection created',
+				action: {
+					label: 'Go',
+					onclick: () => goto(`/collections/${result.id}`)
+				}
+			});
 		} catch (err) {
-			onError(err);
+			this.#toastState.error();
 			this.#removeCollection(tmpId);
 		}
 	}
@@ -93,7 +100,7 @@ export class CollectionState {
 	async duplicateCollection(id: string) {
 		const target = this.#getCollection(id);
 		if (!target) {
-			onError({ msg: 'collection state: Invalid collection' }, 'Selection invalid collection');
+			this.#toastState.error();
 			return;
 		}
 
@@ -118,39 +125,51 @@ export class CollectionState {
 				);
 			}
 
-			redirectToast(`Collection [${name}] duplicated successfully`, `/collections/${result.id}`);
+			this.#toastState.action({
+				message: `Collection [${name}] duplicated successfully`,
+				action: {
+					label: 'Go',
+					onclick: () => goto(`/collections/${result.id}`)
+				}
+			});
 		} catch (err) {
-			onError(err);
 			// TODO: consider possible fallback
+			this.#toastState.error();
 		}
 	}
 
 	async updCollection(args: RouterInputs['collections']['update']) {
 		const { id, data } = args;
 		let target = this.#getCollection(id);
-		if (target == null) return;
+		if (target == null) {
+			this.#toastState.error();
+			return;
+		}
 
 		try {
 			this.#updCollection(id, { ...target, ...data });
 			await trpc().collections.update.mutate({ ...args });
 		} catch (err) {
-			onError(err);
+			this.#toastState.error();
 			this.#updCollection(id, target);
 		}
 	}
 
 	async deleteCollection(id: string, redirect: boolean = false) {
 		let target = this.#getCollection(id);
-		if (target == null) return;
+		if (target == null) {
+			this.#toastState.error();
+			return;
+		}
 
 		try {
 			this.#removeCollection(id);
 			await trpc().collections.delete.mutate(id);
-			toast.success(`Collection [${target.name}] deleted successfully`);
+			this.#toastState.success(`Collection [${target.name}] deleted successfully`);
 
 			if (redirect) setTimeout(() => goto('/collections'), 500);
 		} catch (err) {
-			onError(err);
+			this.#toastState.error();
 			this.collections.push({ ...target });
 		}
 	}
@@ -159,7 +178,7 @@ export class CollectionState {
 		try {
 			this.collections = await trpc().collections.list.query();
 		} catch (err) {
-			onError(err);
+			this.#toastState.error();
 		}
 	}
 }

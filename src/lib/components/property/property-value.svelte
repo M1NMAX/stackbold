@@ -1,33 +1,30 @@
 <script lang="ts">
-	import { createTooltip, melt } from '@melt-ui/svelte';
+	import Eraser from 'lucide-svelte/icons/eraser';
 	import {
 		DEBOUNCE_INTERVAL,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
+		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
+		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS
 	} from '$lib/constant';
 	import { type Property, View } from '@prisma/client';
-	import { Check, Eraser } from 'lucide-svelte';
-	import { Label } from '$lib/components/ui/label';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { cn, sanitizeNumberInput } from '$lib/utils';
-	import { Calendar } from '$lib/components/ui/calendar';
-	import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date';
-	import {
-		getOption,
-		getPropertyColor,
-		getPropertyRef,
-		PropertyIcon,
-		PropertyResponsiveWrapper
-	} from '.';
-	import { getScreenSizeState } from '$lib/components/screen';
+	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
+	import { getLocalTimeZone, parseDate } from '@internationalized/date';
+	import { getOption, getPropertyColor, getPropertyRef, PropertyIcon } from '.';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
-	import { textareaAutoSize } from '$lib/actions';
-	import { ModalState } from '$lib/components/modal';
-	import { fade } from 'svelte/transition';
-	import { Separator } from '$lib/components/ui/separator';
-	import { Button } from '$lib/components/ui/button';
+	import { textareaAutoSize } from '$lib/actions/index.js';
+	import { fullDateFormat, ModalState } from '$lib/states/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		Calendar,
+		HSeparator,
+		Select,
+		Tooltip
+	} from '$lib/components/base/index.js';
+	import { tick } from 'svelte';
 
 	type Props = {
 		itemId: string;
@@ -38,7 +35,6 @@
 	let { itemId, property, view = View.LIST }: Props = $props();
 
 	const itemState = getItemState();
-	const isLargeScreen = getScreenSizeState();
 
 	let wrapperState = new ModalState();
 
@@ -82,17 +78,18 @@
 	}
 
 	const buttonClass = $derived(
-		cn(
+		tm(
 			isTableView()
-				? 'w-full justify-start py-2 px-1 rounded-none border-0 bg-inherit'
-				: `w-fit h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
-			property.type === 'NUMBER' && 'justify-end'
+				? 'w-full justify-start p-2 rounded-none border-0 bg-transparent hover:bg-transparent'
+				: `w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
+			property.type === 'NUMBER' && 'justify-end',
+			property.type === 'SELECT' && `${isTableView() ? 'ml-2' : ''} px-0`,
+			property.type !== 'SELECT' && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
 
-	const labelClass = cn(
-		'font-semibold text-sm text-center px-0 pb-0.5 pt-1',
-		isLargeScreen.current && 'sr-only'
+	const labelClass = tm(
+		'md:sr-only font-semibold text-sm text-center px-0 pb-0.5 pt-1 select-none'
 	);
 
 	//uitls
@@ -117,23 +114,21 @@
 		return view === View.TABLE;
 	}
 
-	// tooltip
-	const {
-		elements: { trigger, content, arrow },
-		states: { open }
-	} = createTooltip({
-		positioning: {
-			placement: 'top'
-		},
-		openDelay: 0,
-		closeDelay: 0,
-		closeOnPointerDown: false
+	function hasInput() {
+		return property.type === 'TEXT' || property.type === 'NUMBER' || property.type === 'URL';
+	}
+
+	$effect(() => {
+		if (wrapperState.isOpen && hasInput()) {
+			const inputEl = document.getElementById(property.id) as HTMLInputElement;
+			tick().then(() => inputEl.focus());
+		}
 	});
 </script>
 
 {#if property.type === 'CHECKBOX'}
 	<label
-		class={cn(
+		class={tm(
 			'flex justify-center',
 			!isTableView() &&
 				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-sm text-sm font-semibold',
@@ -142,103 +137,58 @@
 	>
 		<input type="checkbox" checked={value === 'true'} oninput={handleOnInput} class="checkbox" />
 
-		<span class={cn('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
+		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
 {:else if property.type === 'SELECT' && (value || isTableView())}
-	{@const selectedOption = getOption(property.options, value)?.value ?? ''}
-	<PropertyResponsiveWrapper
-		bind:open={wrapperState.isOpen}
-		alignCenter={false}
-		btnClass={buttonClass}
-		mobileClass="p-2"
-		desktopClass="w-full p-1"
-	>
-		{#snippet header()}
-			{@render tooltipWrapper(selectedOption, !!value && isTableView())}
-		{/snippet}
+	<Select
+		id={`${property.id}-value-${itemId}`}
+		options={[
+			...property.options.map((option) => ({
+				id: option.id,
+				label: option.value,
+				isSelected: option.id === value,
+				theme: PROPERTY_COLORS[option.color]
+			}))
+		]}
+		onselect={(opt) => updPropertyRef(opt.id)}
+		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		triggerClass={buttonClass}
+		placeholder=""
+	/>
 
-		<div>
-			<p class={labelClass}>{property.name}</p>
-			<RadioGroup.Root value={value || undefined} class="gap-y-0">
-				{#each property.options as option}
-					<Label
-						for={option.id}
-						class="w-full flex items-center space-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-					>
-						<span class={cn('size-3.5 rounded-sm', PROPERTY_COLORS[option.color])}></span>
-						<span class="grow text-sm font-semibold pr-10">
-							{option.value}
-						</span>
-
-						<Check class={cn('icon-xs', value !== option.id && 'text-transparent')} />
-						<RadioGroup.Item
-							value={option.id}
-							id={option.id}
-							class="sr-only"
-							onclick={() => updPropertyRef(option.id)}
-						/>
-					</Label>
-				{/each}
-			</RadioGroup.Root>
-		</div>
-
-		{@render clearBtn()}
-	</PropertyResponsiveWrapper>
+	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
 {:else if property.type === 'DATE' && (value || isTableView())}
-	<!--js current date need some adjustiments based on  https://stackoverflow.com/a/10211214 -->
-	{@const plus = value ? 0 : 1}
-	{@const valueAsDate = value ? new Date(value) : new Date()}
-	{@const df = new DateFormatter('en-US', { dateStyle: 'long' })}
-	{@const content = df.format(
-		new CalendarDate(
-			valueAsDate.getFullYear(),
-			valueAsDate.getMonth(),
-			valueAsDate.getDate()
-		).toDate(getLocalTimeZone())
-	)}
-
-	<PropertyResponsiveWrapper
-		bind:open={wrapperState.isOpen}
-		alignCenter={false}
-		btnClass={buttonClass}
-		desktopClass="w-auto p-1"
-		mobileClass="p-2"
-	>
-		{#snippet header()}
+	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
+		{#snippet trigger()}
 			{#if value}
-				{@render tooltipWrapper(content, !!value && isTableView())}
+				{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
+				{@render tooltipWrapper(formatted, !!value && isTableView())}
 			{/if}
 		{/snippet}
 
-		<p class={cn(labelClass, 'text-center py-1')}>{property.name}</p>
-		<div class="w-full p-0.5">
-			<Calendar
-				type="single"
-				value={new CalendarDate(
-					valueAsDate.getFullYear(),
-					valueAsDate.getMonth() + plus,
-					valueAsDate.getDate()
-				)}
-				onValueChange={(dt) => {
-					if (!dt) return;
-					updPropertyRef(dt.toString());
-				}}
-				class="p-0"
-			/>
-		</div>
+		<p class={tm(labelClass, 'text-center py-1')}>{property.name}</p>
+		<Calendar
+			value={value ? parseDate(value) : undefined}
+			onchange={(dt) => updPropertyRef(dt.toString())}
+		/>
 		{@render clearBtn()}
-	</PropertyResponsiveWrapper>
+	</AdaptiveWrapper>
 {:else if property.type === 'TEXT' && (value || isTableView())}
-	{@const MAX_LENGTH = isLargeScreen.current ? 50 : 20}
-	{@const content = value.length > MAX_LENGTH ? value.substring(0, MAX_LENGTH) + '...' : value}
-	<PropertyResponsiveWrapper
+	{@const content =
+		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
+			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
+			: value}
+
+	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
-		alignCenter={false}
-		btnClass={buttonClass}
-		mobileClass="p-2"
-		desktopClass={cn('w-full max-w-xl p-1', value && value?.length < MAX_LENGTH && 'max-w-xs')}
+		floatingAlign="start"
+		triggerClass={buttonClass}
+		floatingClass={tm(
+			'w-full max-w-lg p-1',
+			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
+		)}
 	>
-		{#snippet header()}
+		{#snippet trigger()}
 			{@render tooltipWrapper(content)}
 		{/snippet}
 
@@ -257,16 +207,10 @@
 				onkeypress={handleEnterKeypress}
 			></textarea>
 		</form>
-	</PropertyResponsiveWrapper>
+	</AdaptiveWrapper>
 {:else if property.type === 'NUMBER' && (value || isTableView())}
-	<PropertyResponsiveWrapper
-		bind:open={wrapperState.isOpen}
-		alignCenter={false}
-		btnClass={buttonClass}
-		mobileClass="p-2"
-		desktopClass="p-1"
-	>
-		{#snippet header()}
+	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
+		{#snippet trigger()}
 			{@render tooltipWrapper(value)}
 		{/snippet}
 
@@ -288,15 +232,10 @@
 				onkeypress={handleEnterKeypress}
 			/>
 		</form>
-	</PropertyResponsiveWrapper>
+	</AdaptiveWrapper>
 {:else if value || isTableView()}
-	<PropertyResponsiveWrapper
-		bind:open={wrapperState.isOpen}
-		btnClass={buttonClass}
-		alignCenter={false}
-		desktopClass="p-1"
-	>
-		{#snippet header()}
+	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
+		{#snippet trigger()}
 			{@render tooltipWrapper(value)}
 		{/snippet}
 
@@ -315,41 +254,38 @@
 				oninput={handleOnInput}
 			/>
 		</form>
-	</PropertyResponsiveWrapper>
+	</AdaptiveWrapper>
 {/if}
 
 {#snippet tooltipWrapper(content: string, isWrappered: boolean = false)}
-	{@const wrapperClass = cn(
+	{@const tooltipId = useId(`property-tooltip-${property.id}-`)}
+	{@const wrapperClass = tm(
 		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
 		isWrappered && PROPERTY_COLORS[color]
 	)}
-	<span use:melt={$trigger} class={wrapperClass}>
+
+	<span id={tooltipId} class={wrapperClass}>
 		{content}
 	</span>
 
-	{@render tooltipContent()}
+	{@render tooltipContent(tooltipId)}
 {/snippet}
 
-{#snippet tooltipContent()}
-	{#if $open && !isTableView()}
-		<div
-			use:melt={$content}
-			transition:fade={{ duration: 100 }}
-			class="z-10 rounded-sm bg-white dark:bg-gray-900 shadow-xl"
-		>
-			<div use:melt={$arrow}></div>
-			<div class="flex items-center p-1">
-				<PropertyIcon key={property.type} class="icon-xs mr-1" />
+{#snippet tooltipContent(id: string)}
+	{#if !isTableView()}
+		<Tooltip triggerBy={id}>
+			<div class="flex items-center p-1 gap-x-1.5">
+				<PropertyIcon key={property.type} class="size-4" />
 				<span class="text-sm font-semibold">{property.name}</span>
 			</div>
-		</div>
+		</Tooltip>
 	{/if}
 {/snippet}
 
 {#snippet clearBtn()}
-	<Separator class="my-0.5" />
+	<HSeparator />
 	<Button
-		variant="ghost"
+		theme="ghost"
 		class="h-8 w-full font-semibold justify-start"
 		disabled={value === ''}
 		onclick={() => {
@@ -358,6 +294,7 @@
 		}}
 	>
 		<Eraser />
+
 		Clear
 	</Button>
 {/snippet}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import logoSrc from '$lib/assets/logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/base/index.js';
 	import { dev } from '$app/environment';
 
 	let { data } = $props();
@@ -44,7 +44,7 @@
 	</form>
 
 	<form method="post" use:enhance action="?/resend" class="mt-5">
-		<Button type="submit" variant="secondary" class="w-full">Resend</Button>
+		<Button type="submit" theme="secondary" class="w-full">Resend</Button>
 	</form>
 </div>
 {#if dev}

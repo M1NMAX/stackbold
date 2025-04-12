@@ -5,6 +5,7 @@ import type { User } from '$lib/server/user.js';
 
 // for information about these interfaces
 declare global {
+	var baseIdCounter: { current: number };
 	namespace App {
 		// interface Error {}
 

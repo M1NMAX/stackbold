@@ -1,17 +1,23 @@
 <script lang="ts">
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import Copy from 'lucide-svelte/icons/copy';
+	import X from 'lucide-svelte/icons/x';
+	import Ellipsis from 'lucide-svelte/icons/ellipsis';
+	import Trash from 'lucide-svelte/icons/trash';
+	import { Button, buttonVariants, Drawer, HSeparator } from '$lib/components/base/index.js';
 	import { getActiveItemState, getItemState } from '$lib/components/items';
-	import { getDeleteModalState, ModalState } from '$lib/components/modal';
+	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { getPropertyState, PropertyInput } from '$lib/components/property';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { DEBOUNCE_INTERVAL, ITEM_PANEL_CTX_KEY, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
+	import {
+		DEBOUNCE_INTERVAL,
+		ITEM_PANEL_CTX_KEY,
+		MAX_ITEM_NAME_LENGTH
+	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router.js';
-	import { cn } from '$lib/utils';
 	import debounce from 'debounce';
-	import { ChevronLeft, Copy, X, MoreHorizontal, Trash } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import * as Drawer from '$lib/components/ui/drawer';
-	import { textareaAutoSize } from '$lib/actions/textareaAutosize.js';
+	import { textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema.js';
 
 	let { data } = $props();
@@ -94,13 +100,13 @@
 
 {#if data.insidePanel}
 	<div
-		class={cn('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
+		class={['flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end']}
 	>
-		<p class={cn('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
+		<p class={['grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden']}>
 			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
 		</p>
 
-		<Button variant="secondary" size="icon" onclick={() => goBack()}>
+		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 			<X />
 		</Button>
 	</div>
@@ -123,10 +129,10 @@
 {:else}
 	<PageContainer>
 		<PageHeader class="flex items-center justify-between">
-			<Button variant="secondary" size="icon" onclick={() => goBack()}>
+			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
-			<h1 class={cn('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
+			<h1 class={['grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden']}>
 				{item.name}
 			</h1>
 
@@ -156,38 +162,38 @@
 {/snippet}
 
 {#snippet topMenu()}
-	<Drawer.Root bind:open={menuState.isOpen}>
-		<Drawer.Trigger
-			class={buttonVariants({ variant: 'secondary', size: 'icon', className: 'md:hidden' })}
-		>
-			<MoreHorizontal />
-		</Drawer.Trigger>
-		<Drawer.Content>
-			<Drawer.Footer class="pt-2">
-				<Button variant="secondary" onclick={() => duplicateItem()}>
-					<Copy class="icon-xs" />
-					<span>Duplicate</span>
-				</Button>
-				<Button variant="destructive" onclick={() => deleteItem()}>
-					<Trash class="icon-xs" />
-					<span>Delete</span>
-				</Button>
-			</Drawer.Footer>
-		</Drawer.Content>
-	</Drawer.Root>
+	<button
+		onclick={() => menuState.toggle()}
+		class={buttonVariants({ theme: 'secondary', variant: 'icon', className: 'md:hidden' })}
+	>
+		<Ellipsis />
+	</button>
+	<Drawer bind:open={menuState.isOpen}>
+		<Button theme="ghost" variant="menu" onclick={() => duplicateItem()}>
+			<Copy />
+			<span>Duplicate item </span>
+		</Button>
+
+		<HSeparator />
+
+		<Button theme="danger" variant="menu" onclick={() => deleteItem()}>
+			<Trash />
+			<span>Delete item</span>
+		</Button>
+	</Drawer>
 {/snippet}
 
 {#snippet bottomMenu()}
 	<div class="hidden md:block px-0.5 pb-0.5">
-		<hr class="mb-1.5" />
+		<HSeparator />
 		<div class="flex items-center justify-end gap-x-1.5">
-			<Button variant="secondary" onclick={() => duplicateItem()}>
-				<Copy class="icon-xs" />
+			<Button theme="secondary" onclick={() => duplicateItem()}>
+				<Copy />
 				<span> Duplicate</span>
 			</Button>
 
-			<Button variant="secondary" class="hover:text-red-500" onclick={() => deleteItem()}>
-				<Trash class="icon-xs" />
+			<Button theme="secondary" class="hover:text-red-500" onclick={() => deleteItem()}>
+				<Trash />
 				<span> Delete</span>
 			</Button>
 		</div>

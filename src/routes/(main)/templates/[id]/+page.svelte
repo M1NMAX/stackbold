@@ -1,21 +1,25 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button';
-	import { ModalState } from '$lib/components/modal';
+	import { Button } from '$lib/components/base/index.js';
+	import { getToastState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
+	import {
+		COLLECTION_ICONS,
+		DEFAULT_FEEDBACK_ERR_MESSAGE,
+		TEMPLATE_PANEL_CTX_KEY
+	} from '$lib/constant/index.js';
 	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import { icons } from '$lib/components/icon';
 	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { trpc } from '$lib/trpc/client';
-	import { onError, redirectToast } from '$lib/components/feedback';
 	import { getCollectionState } from '$lib/components/collection/collectionState.svelte.js';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 	let template = $derived(data.template);
-	const Icon = $derived(icons[template.icon]);
+	const Icon = $derived(COLLECTION_ICONS[template.icon]);
 	let isSmHeadingVisible = $state(false);
 
+	const toastState = getToastState();
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
 	const collectionState = getCollectionState();
 
@@ -45,9 +49,17 @@
 			await trpc().items.createMany.mutate(itemsCopy);
 
 			await collectionState.refresh();
-			redirectToast('New collection created', `/collections/${createdCollection.id}`);
+
+			toastState.action({
+				message: 'New collection created',
+				action: {
+					label: 'Go',
+					onclick: () => goto(`/collections/${createdCollection.id}`)
+				}
+			});
 		} catch (error) {
-			onError(error);
+			console.log(error);
+			toastState.error(DEFAULT_FEEDBACK_ERR_MESSAGE);
 		}
 	}
 
@@ -62,14 +74,14 @@
 {#if data.insidePanel}
 	<div class="flex items-center justify-between space-x-1">
 		<div class="flex items-center space-x-2">
-			<Icon class="icon-md" />
+			<Icon class="size-6" />
 			<h1 class="grow text-xl font-semibold">
 				{template.name}
 			</h1>
 		</div>
 
-		<Button variant="secondary" size="icon" onclick={() => goBack()}>
-			<X class="icon-sm" />
+		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+			<X />
 		</Button>
 	</div>
 
@@ -81,12 +93,12 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button variant="secondary" size="icon" onclick={() => history.back()}>
+			<Button theme="secondary" variant="icon" onclick={() => history.back()}>
 				<ChevronLeft />
 			</Button>
 			{#if isSmHeadingVisible}
 				<div class="flex items-center space-x-2">
-					<Icon clas="icon-sm" />
+					<Icon clas="size-5" />
 					<h1 class="text-lg font-semibold">
 						{template.name}
 					</h1>
@@ -95,7 +107,7 @@
 		</PageHeader>
 		<PageContent class="grow" onScroll={handleScroll}>
 			<div class="flex items-center space-x-2 pt-1">
-				<Icon class="icon-md" />
+				<Icon class="size-6" />
 				<h2 class="text-2xl font-semibold">
 					{template.name}
 				</h2>

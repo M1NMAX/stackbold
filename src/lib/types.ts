@@ -1,5 +1,17 @@
 import type { Color } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
+import type {
+	BlurParams,
+	FadeParams,
+	FlyParams,
+	ScaleParams,
+	SlideParams,
+	TransitionConfig
+} from 'svelte/transition';
+
+export type Toast =
+	| { id: string; type: 'action'; message: string; action: { label: string; onclick: () => void } }
+	| { id: string; type: 'success' | 'error' | 'warning'; message: string };
 
 export type Colors = { [key in Color]?: string };
 
@@ -46,3 +58,17 @@ export type Searchable =
 				name: string;
 			};
 	  };
+
+export type Align = 'start' | 'center' | 'end';
+export type Placement = 'top' | 'right' | 'bottom' | 'left';
+
+export type ParamsType = FadeParams | BlurParams | FlyParams | SlideParams | ScaleParams;
+export type TransitionFun = (node: HTMLElement, param: ParamsType) => TransitionConfig;
+
+export type SelectOption = {
+	id: string;
+	label: string;
+	isSelected: boolean;
+	icon?: string;
+	theme?: string;
+};

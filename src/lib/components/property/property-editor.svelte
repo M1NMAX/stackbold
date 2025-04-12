@@ -18,35 +18,35 @@
 </script>
 
 <script lang="ts">
-	import { Aggregator, Color, PropertyType, View, type Property } from '@prisma/client';
-	import { Button } from '$lib/components/ui/button';
-	import { Check, Copy, Trash, Settings, SquareSlash } from 'lucide-svelte';
-	import { capitalizeFirstLetter, cn } from '$lib/utils';
+	import Copy from 'lucide-svelte/icons/copy';
+	import Plus from 'lucide-svelte/icons/plus';
+	import X from 'lucide-svelte/icons/x';
+	import Trash from 'lucide-svelte/icons/trash';
+	import Settings from 'lucide-svelte/icons/settings';
+	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
+	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
 		// utils
 		containsView,
-		getOption,
+		getPropertyState,
 		toggleView,
 		// components
-		PropertyOptions,
 		PropertyIcon,
-		getPropertyState,
-		PropertyResponsiveWrapper
-	} from '.';
+		PropertyOption
+	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
+		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS,
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
 	} from '$lib/constant';
-	import { Separator } from '$lib/components/ui/separator';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { Label } from '$lib/components/ui/label';
-	import { Switch } from '$lib/components/ui/switch';
-	import { getDeleteModalState, ModalState } from '$lib/components/modal';
-	import type { UpdProperty } from '$lib/types';
+	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
+	import type { UpdProperty, SelectOption } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items';
-	import { slide } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
+	import { Button, Field, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
+	import { tick } from 'svelte';
 
 	type Props = {
 		property: Property;
@@ -56,14 +56,12 @@
 
 	let { property, isOpen = false, openChange }: Props = $props();
 
-	// menus wrapper
-	const typeWrapper = new ModalState();
-	const aggregatorWrapper = new ModalState();
-	const defaultValueWrapper = new ModalState();
-
 	const deleteModal = getDeleteModalState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const newOptionInputId = useId(`property-editor-${property.id}`);
+	const newOptionInputState = new ModalState();
+	const showAllOptions = new ModalState();
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
@@ -94,24 +92,84 @@
 		});
 	}
 
-	// style
-	const popoverClass =
-		'w-[var(--bits-popover-anchor-width)] min-w-[var(--bits-popover-anchor-width)] px-0.5 pt-1';
+	function setupPropertyTypeSelectOptions() {
+		return Object.values(PropertyType).map((propertyType) => ({
+			id: propertyType,
+			label: capitalizeFirstLetter(propertyType),
+			isSelected: propertyType === property.type,
+			icon: propertyType.toLowerCase()
+		}));
+	}
 
-	const drawerClass = 'p-2';
-	const btnClass = 'w-full justify-start px-0';
+	function setupAggregatorSelectOptions() {
+		let options: SelectOption[] = [];
 
-	type RadioItemIcon =
-		| { type: null }
-		| { type: 'property'; key: PropertyType }
-		| { type: 'default-value'; color?: Color };
-	type RadioItemProps = {
-		id: string;
-		value: string;
-		isSelected: boolean;
-		icon: RadioItemIcon;
-		onClickItem: () => void;
-	};
+		options.push(
+			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
+				id: aggregator,
+				label: aggregatorLabel[aggregator.toLowerCase()],
+				isSelected: aggregator === property.aggregator
+			}))
+		);
+
+		if (property.type === 'NUMBER') {
+			options.push(
+				...NUMBER_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
+					id: aggregator,
+					label: aggregatorLabel[aggregator.toLowerCase()],
+					isSelected: aggregator === property.aggregator
+				}))
+			);
+		}
+		return options;
+	}
+
+	function setupDefaultOptionSelectOptions() {
+		let options: SelectOption[] = [];
+		options.push({
+			id: '',
+			icon: 'text',
+			label: PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
+			isSelected: property.defaultValue === ''
+		});
+
+		options.push(
+			...property.options.map((option) => ({
+				id: option.id,
+				label: option.value,
+				isSelected: property.defaultValue === option.id,
+				theme: PROPERTY_COLORS[option.color]
+			}))
+		);
+
+		return options;
+	}
+
+	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
+		if (e.key !== 'Enter') return;
+		const value = e.currentTarget.value;
+		propertyState.addOptionToProperty(property.id, value);
+		e.currentTarget.value = '';
+	}
+
+	function getIdPrefix(tail: string) {
+		return `${property.id}-${tail}`;
+	}
+
+	function getMaxVisisbleOptions() {
+		if (property.type !== 'SELECT') return 0;
+		if (property.options.length < 6) return property.options.length;
+		return showAllOptions.isOpen ? property.options.length : 5;
+	}
+
+	$effect(() => {
+		if (newOptionInputState.isOpen) {
+			tick().then(() => {
+				document.getElementById(newOptionInputId)?.focus();
+			});
+		}
+	});
 </script>
 
 <div class="p-1 rounded bg-secondary/40 text-secondary-foreground">
@@ -131,189 +189,80 @@
 				oninput={handleOnInput}
 			/>
 		</div>
-		<Button variant="secondary" size="icon" onclick={() => openChange(isOpen ? null : property.id)}>
+		<Button
+			theme="secondary"
+			variant="icon"
+			onclick={() => openChange(isOpen ? null : property.id)}
+		>
 			<Settings />
 		</Button>
 	</div>
 	{#if isOpen}
 		<div class="flex flex-col gap-y-1 pt-2 px-1" transition:slide>
-			<div class="selector-container">
-				<div>Type</div>
+			<Field>
+				<Label for={getIdPrefix('property-type')} name="Type" />
+				<Select
+					id={getIdPrefix('property-type')}
+					options={setupPropertyTypeSelectOptions()}
+					onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
+					searchable
+				/>
+			</Field>
 
-				<PropertyResponsiveWrapper
-					bind:open={typeWrapper.isOpen}
-					alignCenter={false}
-					{btnClass}
-					mobileClass={drawerClass}
-					desktopClass={popoverClass}
-				>
-					{#snippet header()}
-						<div class="flex items-center gap-x-1.5">
-							<PropertyIcon key={property.type} class="icon-sm" />
-							{capitalizeFirstLetter(property.type.toString())}
-						</div>
-					{/snippet}
-
-					<div>
-						<p class="menu-heading">Type</p>
-						<RadioGroup.Root value={property.type} class="gap-y-0">
-							{#each Object.values(PropertyType) as propertyType}
-								{@render RadioItem({
-									id: propertyType,
-									value: capitalizeFirstLetter(propertyType),
-									isSelected: property.type === propertyType,
-									icon: { type: 'property', key: propertyType },
-									onClickItem: () => {
-										updProperty({ id: property.id, type: propertyType });
-										typeWrapper.close();
-									}
-								})}
-							{/each}
-						</RadioGroup.Root>
-					</div>
-				</PropertyResponsiveWrapper>
-			</div>
-
-			<div class="selector-container">
-				<p class="text-sm">Aggregator</p>
-
-				<PropertyResponsiveWrapper
-					bind:open={aggregatorWrapper.isOpen}
-					alignCenter={false}
-					{btnClass}
-					mobileClass={drawerClass}
-					desktopClass={popoverClass}
-				>
-					{#snippet header()}
-						{aggregatorLabel[property.aggregator.toLowerCase()]}
-					{/snippet}
-
-					<div>
-						<p class="menu-heading">Aggregator</p>
-						<RadioGroup.Root value={property.aggregator} class="gap-y-0">
-							{#each UNIVESAL_AGGREGATORS as aggregator}
-								{@render RadioItem({
-									id: aggregator,
-									value: aggregatorLabel[aggregator.toLowerCase()],
-									isSelected: property.aggregator === aggregator,
-									icon: { type: null },
-									onClickItem: () => {
-										updProperty({ id: property.id, aggregator });
-										aggregatorWrapper.close();
-									}
-								})}
-							{/each}
-
-							{#if property.type === 'NUMBER'}
-								{#each NUMBER_EXCLUSIVE_AGGREGATORS as aggregator}
-									{@render RadioItem({
-										id: aggregator,
-										value: aggregatorLabel[aggregator.toLowerCase()],
-										isSelected: property.aggregator === aggregator,
-										icon: { type: null },
-										onClickItem: () => {
-											updProperty({ id: property.id, aggregator });
-											aggregatorWrapper.close();
-										}
-									})}
-								{/each}
-							{/if}
-						</RadioGroup.Root>
-					</div>
-				</PropertyResponsiveWrapper>
-			</div>
+			<Field>
+				<Label for={getIdPrefix('property-aggregator')} name="Aggregator" />
+				<Select
+					id={getIdPrefix('property-aggregator')}
+					options={setupAggregatorSelectOptions()}
+					onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
+					searchable
+				/>
+			</Field>
 
 			{#if property.type === 'SELECT'}
-				{@const selectedOpt = getOption(property.options, property.defaultValue)}
-
-				<div class="selector-container">
-					<p class="text-sm">Default value</p>
-
-					<PropertyResponsiveWrapper
-						bind:open={defaultValueWrapper.isOpen}
-						alignCenter={false}
-						{btnClass}
-						mobileClass={drawerClass}
-						desktopClass={popoverClass}
-					>
-						{#snippet header()}
-							<div class="flex items-center">
-								{#if selectedOpt}
-									<span class={cn('size-3.5 rounded-sm mr-2', PROPERTY_COLORS[selectedOpt.color])}
-									></span>
-									{selectedOpt.value}
-								{:else}
-									<SquareSlash class="size-3.5 mr-2" />
-									{PROPERTY_DEFAULT_VALUE_NOT_DEFINED}
-								{/if}
-							</div>
-						{/snippet}
-
-						<div>
-							<p class="menu-heading">Default value</p>
-							<RadioGroup.Root value={property.defaultValue} class="gap-y-0">
-								{@render RadioItem({
-									id: 'default-value-none',
-									value: PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
-									isSelected: property.defaultValue === '',
-									icon: { type: 'default-value' },
-									onClickItem: () => {
-										updProperty({ id: property.id, defaultValue: '' });
-										defaultValueWrapper.close();
-									}
-								})}
-
-								{#each property.options as option}
-									{@render RadioItem({
-										id: option.id,
-										value: option.value,
-										isSelected: property.defaultValue === option.id,
-										icon: { type: 'default-value', color: option.color },
-										onClickItem: () => {
-											updProperty({ id: property.id, defaultValue: option.id });
-											defaultValueWrapper.close();
-										}
-									})}
-								{/each}
-							</RadioGroup.Root>
-						</div>
-					</PropertyResponsiveWrapper>
-				</div>
+				<Field>
+					<Label for={getIdPrefix('property-default-value')} name="Default value" />
+					<Select
+						id={getIdPrefix('property-default-value')}
+						options={setupDefaultOptionSelectOptions()}
+						onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
+						searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+					/>
+				</Field>
 			{/if}
 
-			<div class="grid grid-cols-2 grid-flow-row gap-1 py-2">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-1 py-2">
 				{#each Object.values(View) as view}
-					<div class="flex items-center gap-x-2">
+					<div class="w-full md:w-fit flex items-center gap-x-2">
+						<Label for={view} name={`Visible in ${capitalizeFirstLetter(view.toString())} view`} />
+
 						<Switch
 							id={view}
 							checked={containsView(property.visibleInViews, view)}
-							onCheckedChange={() => {
+							onchange={() => {
 								updProperty({
 									id: property.id,
 									visibleInViews: toggleView(property.visibleInViews, view)
 								});
 							}}
 						/>
-						<Label for={view} class="text-sm font-semibold">
-							Visible in {capitalizeFirstLetter(view.toString())} view
-						</Label>
 					</div>
 				{/each}
 			</div>
 			{#if property.type === 'SELECT'}
-				<Separator />
-				<PropertyOptions propertyId={property.id} options={property.options} />
+				<HSeparator />
+				{@render propertyOptions()}
 			{/if}
 
-			<Separator />
+			<HSeparator />
 			<div class="flex justify-end items-center space-x-1.5 pt-1">
-				<Button variant="secondary" onclick={() => duplicateProperty()}>
-					<Copy class="icon-xs" />
+				<Button theme="secondary" onclick={() => duplicateProperty()}>
+					<Copy />
 					<span> Duplicate</span>
 				</Button>
 
-				<Button variant="secondary" class="hover:text-primary" onclick={() => deleteProperty()}>
-					<Trash class="icon-xs" />
+				<Button theme="secondary" class="hover:text-primary" onclick={() => deleteProperty()}>
+					<Trash />
 					<span> Delete</span>
 				</Button>
 			</div>
@@ -321,47 +270,45 @@
 	{/if}
 </div>
 
-{#snippet RadioItem(itemProps: RadioItemProps)}
-	{@const icon = itemProps.icon}
-	<Label
-		for={itemProps.id}
-		class="w-full flex items-center gap-x-2 py-1.5 px-2 rounded-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
-	>
-		{#if icon.type}
-			{#if icon.type === 'property'}
-				<PropertyIcon key={icon.key} class="size-3.5" />
-			{:else if icon.type === 'default-value'}
-				{#if icon.color}
-					<span class={cn('size-3.5 rounded-sm', PROPERTY_COLORS[icon.color])}> </span>
+{#snippet propertyOptions()}
+	<div class=" flex flex-col space-y-1.5 pt-1">
+		<div class="flex justify-between space-x-1">
+			<span class="text-sm font-semibold">Options</span>
+			<Button theme="secondary" variant="compact" onclick={() => newOptionInputState.toggle()}>
+				{#if newOptionInputState.isOpen}
+					<X />
 				{:else}
-					<SquareSlash class="size-3.5" />
+					<Plus />
 				{/if}
-			{/if}
-		{/if}
-		<span class="label-text">
-			{itemProps.value}
-		</span>
+			</Button>
+		</div>
 
-		<Check class={cn('size-5', !itemProps.isSelected && 'text-transparent')} />
-		<RadioGroup.Item
-			id={itemProps.id}
-			value={itemProps.id}
-			class="sr-only"
-			onclick={() => itemProps.onClickItem()}
+		<input
+			transition:fade
+			onkeypress={handleKeypress}
+			id={newOptionInputId}
+			placeholder="Enter option value"
+			class={tm(
+				'h-8 w-full p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 hidden',
+				newOptionInputState.isOpen && 'block'
+			)}
 		/>
-	</Label>
+
+		<div class="space-y-1">
+			{#if property.options.length >= 6}
+				<Button
+					theme="secondary"
+					variant="menu"
+					class="justify-center"
+					onclick={() => showAllOptions.toggle()}
+				>
+					{showAllOptions.isOpen ? ' Show less options' : 'Show all options'}
+				</Button>
+			{/if}
+
+			{#each property.options.slice(0, getMaxVisisbleOptions()) as option}
+				<PropertyOption propertyId={property.id} {option} />
+			{/each}
+		</div>
+	</div>
 {/snippet}
-
-<style>
-	.selector-container {
-		@apply py-1 px-2 rounded bg-secondary text-secondary-foreground;
-	}
-
-	.menu-heading {
-		@apply font-semibold text-sm text-center px-0 pb-0.5 pt-1 md:sr-only;
-	}
-
-	.label-text {
-		@apply grow text-sm font-semibold pr-10;
-	}
-</style>

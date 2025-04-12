@@ -3,21 +3,20 @@
 </script>
 
 <script lang="ts">
-	import { ItemMenu, getActiveItemState, getItemState } from '.';
+	import Check from 'lucide-svelte/icons/check';
+	import Pencil from 'lucide-svelte/icons/pencil';
+	import { ItemMenu, getActiveItemState, getItemState } from './index.js';
 	import {
 		PropertyValue,
 		containsView,
-		// helpers
 		getPropertyRef,
 		getPropertyState
 	} from '$lib/components/property';
 	import { type Item, View } from '@prisma/client';
-	import { cn } from '$lib/utils';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
+	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
 	import debounce from 'debounce';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { Check, Pencil } from 'lucide-svelte';
+	import { Button } from '$lib/components/base/index.js';
 
 	type Props = {
 		items: Item[];
@@ -106,17 +105,17 @@
 	});
 </script>
 
-<div class="h-full space-y-2 grow overflow-y-auto">
+<div class="h-full space-y-2 grow">
 	{#each items as item}
 		<div
 			tabindex="0"
 			role="button"
 			onclick={(e) => onClickItemBody(e, item.id)}
 			onkeydown={(e) => handleItemKeydownEvent(e, item.id)}
-			class={cn(
-				'relative flex flex-col items-start py-1 px-2 space-y-2 overflow-hidden rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
+			class={[
+				'relative flex flex-col items-start p-1.5 gap-y-2 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
 				item.id === activeItem.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
-			)}
+			]}
 		>
 			{#if isCurrentlyEditing(item.id)}
 				<input
@@ -130,27 +129,25 @@
 				/>
 
 				<Button
-					size="xs"
-					variant="ghost"
+					theme="ghost"
+					variant="compact"
 					onclick={() => {
 						const target = document.getElementById(item.id) as HTMLInputElement;
 						saveAndClose(target);
 					}}
 					class="absolute right-3 top-0"
 				>
-					<Check class="icon-xs" />
+					<Check />
 				</Button>
 			{:else}
 				<p class="text-lg font-semibold">
 					{item.name}
 				</p>
-				<div
-					class="absolute right-2 top-0 flex items-center gap-x-0.5 invisible md:group-hover:visible"
-				>
-					<Button size="xs" variant="ghost" onclick={() => startEditing(item.id)}>
-						<Pencil class="icon-xs" />
+				<div class="absolute right-2 top-0 flex items-center gap-x-0.5 invisible md:visible">
+					<Button theme="ghost" variant="compact" onclick={() => startEditing(item.id)}>
+						<Pencil />
 					</Button>
-					<ItemMenu id={item.id} name={item.name} {clickOpenItem} />
+					<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />
 				</div>
 			{/if}
 

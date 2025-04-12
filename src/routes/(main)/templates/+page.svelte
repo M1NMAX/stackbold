@@ -4,16 +4,19 @@
 	import { SearchInput, SortMenu } from '$lib/components/filters';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { icons } from '$lib/components/icon';
-	import { DEFAULT_SORT_OPTIONS, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant';
-	import { getScreenSizeState } from '$lib/components/screen';
-	import { cn, noCheck } from '$lib/utils';
-	import { Button } from '$lib/components/ui/button';
-	import { SlidingPanel } from '$lib/components/sliding-panel';
+	import {
+		COLLECTION_ICONS,
+		DEFAULT_SORT_OPTIONS,
+		SCREEN_MD_MEDIA_QUERY,
+		TEMPLATE_PANEL_CTX_KEY
+	} from '$lib/constant/index.js';
+	import { tm, noCheck } from '$lib/utils';
+	import { Button, SlidingPanel } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
-	import { ModalState } from '$lib/components/modal';
+	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/state';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let { data } = $props();
 	let active = $state('');
@@ -34,7 +37,7 @@
 	});
 
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
-	const isLargeScreen = getScreenSizeState();
+	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 
 	async function clickTemplate(e: MouseEvent, id: string) {
 		active = id;
@@ -65,16 +68,16 @@
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
 <PageContainer
-	class={cn('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
+	class={tm('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
 >
 	<PageHeader>
-		<Button variant="secondary" size="icon" class="md:hidden" onclick={() => history.back()}>
-			<ChevronLeft class="icon-md" />
+		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
+			<ChevronLeft />
 		</Button>
 
 		{#if isSmHeadingVisible}
 			<div class="flex items-center space-x-2">
-				<Dna class="icon-md" />
+				<Dna class="size-6" />
 				<h1 class="text-xl font-semibold">Templates</h1>
 			</div>
 		{/if}
@@ -82,7 +85,7 @@
 
 	<PageContent onScroll={handleScroll}>
 		<div class="flex items-center space-x-2">
-			<Dna class="icon-lg" />
+			<Dna class="size-9" />
 			<h1 class="font-semibold text-2xl">Templates</h1>
 		</div>
 
@@ -94,17 +97,17 @@
 
 			<div class="space-y-2">
 				{#each templates as template (template.id)}
-					{@const Icon = icons[template.icon]}
+					{@const Icon = COLLECTION_ICONS[template.icon]}
 					<a
 						href={`/templates/${template.id}`}
 						onclick={(e) => clickTemplate(e, template.id)}
-						class={cn(
+						class={tm(
 							'w-full flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/50 dark:hover:bg-secondary/80 truncate',
 							template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 						)}
 					>
 						<div class="w-full flex items-center space-x-2">
-							<Icon class=" icon-sm" />
+							<Icon class="size-5" />
 							<span class="text-lg font-semibold">{template.name}</span>
 						</div>
 

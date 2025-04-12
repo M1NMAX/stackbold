@@ -1,17 +1,22 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
 	import type { Snippet } from 'svelte';
+	import { tm } from '$lib/utils/index.js';
+
 	type Props = {
 		children: Snippet;
-		class?: string;
 		onScroll?: (e: Event) => void;
+		class?: string;
 	};
+
 	let { children, class: className, onScroll }: Props = $props();
 </script>
 
 <div
 	onscroll={onScroll}
-	class={cn('h-max w-full mx-auto pt-0.5 pb-2 px-2  space-y-2 overflow-y-auto', className)}
+	class={tm(
+		'h-full w-full flex flex-col mx-auto pt-0.5 pb-2 px-2  gap-y-2 overflow-y-auto',
+		className
+	)}
 >
 	{@render children()}
 </div>
