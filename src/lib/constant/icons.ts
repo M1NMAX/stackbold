@@ -6,6 +6,7 @@ import Hash from 'lucide-svelte/icons/hash';
 import Link from 'lucide-svelte/icons/link';
 import List from 'lucide-svelte/icons/list';
 import Text from 'lucide-svelte/icons/text';
+import Logs from 'lucide-svelte/icons/logs';
 
 // Theme
 import Moon from 'lucide-svelte/icons/moon';
@@ -58,6 +59,7 @@ export const INPUT_ICONS: IconBundle = {
 	none: SquareSlash,
 	text: Text,
 	select: List,
+	multiselect: Logs,
 	checkbox: SquareCheck,
 	date: Calendar,
 	number: Hash,
