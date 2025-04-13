@@ -14,7 +14,13 @@
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
 	import { fullDateFormat, ModalState } from '$lib/states/index.js';
-	import { getOption, getPropertyColor, getPropertyRef } from './index.js';
+	import {
+		separeteMultiselectOptions,
+		getPropertyColor,
+		getPropertyRef,
+		joinMultiselectOptions,
+		isNumerical
+	} from './index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -54,7 +60,7 @@
 		const targetEl = e.target as HTMLInputElement;
 		let value = targetEl.value;
 
-		if (property.type === 'NUMBER') {
+		if (isNumerical(property.type)) {
 			value = sanitizeNumberInput(targetEl.value);
 			updTargetElValue(targetEl, value);
 		} else if (targetEl.type === 'checkbox') {
@@ -75,12 +81,9 @@
 		if (!item) return '';
 
 		const propertyRef = getPropertyRef(item.properties, property.id);
-
 		if (!propertyRef) return '';
-		if (property.type !== 'SELECT') return propertyRef.value;
 
-		const option = getOption(property.options, propertyRef.value);
-		return option ? option.id : '';
+		return propertyRef.value;
 	}
 </script>
 
@@ -115,6 +118,26 @@
 			onselect={(opt) => updPropertyRef({ id: property.id, value: opt.id })}
 			placeholder="Empty"
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		/>
+	</Field>
+{:else if property.type === 'MULTISELECT'}
+	{@const selectedOptions = separeteMultiselectOptions(value)}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Select
+			id={property.id}
+			options={[
+				...property.options.map((option) => ({
+					id: option.id,
+					label: option.value,
+					isSelected: selectedOptions.includes(option.id),
+					theme: PROPERTY_COLORS[option.color]
+				}))
+			]}
+			onselect={(opts) => updPropertyRef({ id: property.id, value: joinMultiselectOptions(opts) })}
+			placeholder="Empty"
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			isMulti
 		/>
 	</Field>
 {:else if property.type === 'DATE'}

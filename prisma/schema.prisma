@@ -71,12 +71,13 @@ enum Color {
 }
 
 enum PropertyType {
-  TEXT     @map("text")
-  SELECT   @map("select")
-  CHECKBOX @map("checkbox")
-  URL      @map("url")
-  DATE     @map("date")
-  NUMBER   @map("number")
+  TEXT        @map("text")
+  SELECT      @map("select")
+  MULTISELECT @map("multiselect")
+  CHECKBOX    @map("checkbox")
+  URL         @map("url")
+  DATE        @map("date")
+  NUMBER      @map("number")
 }
 
 enum Aggregator {
