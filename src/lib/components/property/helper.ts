@@ -27,7 +27,7 @@ export function getOption(options: Option[], id: string) {
 }
 
 export function getPropertyDefaultValue(propType: PropertyType, defaultValue: string) {
-	if (propType === 'SELECT') return defaultValue;
+	if (hasOptions(propType)) return defaultValue;
 	if (propType === 'CHECKBOX') return 'false';
 	return '';
 }
