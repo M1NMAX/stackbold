@@ -41,10 +41,6 @@ export function toggleView(propertyViews: View[], view: View) {
 	else return [...propertyViews, view];
 }
 
-export function hasOptions(type: PropertyType) {
-	return type === 'SELECT' || type === 'MULTISELECT';
-}
-
 export function isSelectable(type: PropertyType) {
 	return type === 'SELECT' || type === 'MULTISELECT';
 }
