@@ -78,14 +78,14 @@
 
 	function selectOption(option: SelectOption) {
 		if (isMulti) {
-			(onselect as MultiSelect)(toggle(option));
+			(onselect as MultiSelect)(toggleOption(option));
 		} else {
 			(onselect as SingleSelect)(isSelected(option.id) ? clearOption : option);
 			menuState.close();
 			search = '';
 		}
 	}
-	function toggle(option: SelectOption) {
+	function toggleOption(option: SelectOption) {
 		if (!isSelected(option.id)) return [...selected, option];
 		return selected.filter((opt) => opt.id !== option.id);
 	}
