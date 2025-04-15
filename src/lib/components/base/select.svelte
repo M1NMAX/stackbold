@@ -78,12 +78,16 @@
 
 	function selectOption(option: SelectOption) {
 		if (isMulti) {
-			(onselect as MultiSelect)([...selected, option]);
+			(onselect as MultiSelect)(toggleOption(option));
 		} else {
 			(onselect as SingleSelect)(isSelected(option.id) ? clearOption : option);
 			menuState.close();
 			search = '';
 		}
+	}
+	function toggleOption(option: SelectOption) {
+		if (!isSelected(option.id)) return [...selected, option];
+		return selected.filter((opt) => opt.id !== option.id);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -192,7 +196,7 @@
 		buttonVariants({
 			theme: 'secondary',
 			variant: 'menu',
-			className: tm(' bg-transparent', triggerClass)
+			className: tm('bg-transparent', triggerClass)
 		})
 	)}
 	onclick={() => menuState.toggle()}

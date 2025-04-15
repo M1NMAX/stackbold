@@ -1,3 +1,4 @@
+import type { SelectOption } from '$lib/types';
 import type { Color, Property, PropertyRef, Option, PropertyType, View } from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
@@ -25,9 +26,9 @@ export function getOption(options: Option[], id: string) {
 	return options.find((opt) => opt.id === id) || null;
 }
 
-export function getPropertyDefaultValue(propType: PropertyType, defaultValue: string) {
-	if (propType === 'SELECT') return defaultValue;
-	if (propType === 'CHECKBOX') return 'false';
+export function getPropertyDefaultValue(property: Property) {
+	if (isSelectable(property.type)) return property.defaultValue;
+	if (property.type === 'CHECKBOX') return 'false';
 	return '';
 }
 
@@ -38,4 +39,20 @@ export function containsView(propertyViews: View[], view: View) {
 export function toggleView(propertyViews: View[], view: View) {
 	if (containsView(propertyViews, view)) return propertyViews.filter((v) => v !== view);
 	else return [...propertyViews, view];
+}
+
+export function isSelectable(type: PropertyType) {
+	return type === 'SELECT' || type === 'MULTISELECT';
+}
+
+export function isNumerical(type: PropertyType) {
+	return type === 'NUMBER';
+}
+
+export function joinMultiselectOptions(options: SelectOption[]) {
+	return options.map((option) => option.id).join('|');
+}
+
+export function separeteMultiselectOptions(value: string) {
+	return value.split('|');
 }

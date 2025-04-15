@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { AddPropertyPopover, getPropertyState, PropertyEditor } from '$lib/components/property';
+	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property';
 	import { Button } from '$lib/components/base/index.js';
 	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
 	import { tm } from '$lib/utils/index.js';
@@ -54,7 +54,7 @@
 	</div>
 
 	<div>
-		<AddPropertyPopover />
+		<AddProperty />
 	</div>
 {:else}
 	<PageContainer>
@@ -75,7 +75,7 @@
 			{@render editors()}
 		</PageContent>
 		<div class="px-2 pb-2">
-			<AddPropertyPopover />
+			<AddProperty />
 		</div>
 	</PageContainer>
 {/if}

@@ -1,5 +1,4 @@
 import type { Colors } from '$lib/types';
-import type { Color } from '@prisma/client';
 
 export * from './icons';
 

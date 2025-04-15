@@ -11,7 +11,15 @@
 	import { type Property, View } from '@prisma/client';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseDate } from '@internationalized/date';
-	import { getOption, getPropertyColor, getPropertyRef, PropertyIcon } from '.';
+	import {
+		getPropertyColor,
+		getPropertyRef,
+		isNumerical,
+		isSelectable,
+		joinMultiselectOptions,
+		PropertyIcon,
+		separeteMultiselectOptions
+	} from './index.js';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions/index.js';
@@ -56,7 +64,7 @@
 		const targetEl = e.target as HTMLInputElement;
 
 		let value = targetEl.value;
-		if (property.type === 'NUMBER') {
+		if (isNumerical(property.type)) {
 			value = sanitizeNumberInput(targetEl.value);
 			updTargetElValue(targetEl, value);
 		} else if (targetEl.type === 'checkbox') {
@@ -71,7 +79,7 @@
 		if (e.key !== 'Enter') return;
 		e.preventDefault();
 		const targetEl = e.target as HTMLInputElement;
-		const value = property.type !== 'NUMBER' ? targetEl.value : sanitizeNumberInput(targetEl.value);
+		const value = isNumerical(property.type) ? sanitizeNumberInput(targetEl.value) : targetEl.value;
 
 		wrapperState.close();
 		await updPropertyRef(value);
@@ -81,10 +89,10 @@
 		tm(
 			isTableView()
 				? 'w-full justify-start p-2 rounded-none border-0 bg-transparent hover:bg-transparent'
-				: `w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold ${PROPERTY_COLORS[color]} hover:bg-current/90 hover:text-white`,
-			property.type === 'NUMBER' && 'justify-end',
-			property.type === 'SELECT' && `${isTableView() ? 'ml-2' : ''} px-0`,
-			property.type !== 'SELECT' && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
+				: 'w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
+			isNumerical(property.type) && 'justify-end',
+			isSelectable(property.type) && `${isTableView() ? 'ml-2' : ''} px-0`,
+			!isSelectable(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
 
@@ -92,22 +100,19 @@
 		'md:sr-only font-semibold text-sm text-center px-0 pb-0.5 pt-1 select-none'
 	);
 
-	//uitls
+	//utils
 	function getPropertyValue() {
 		const item = itemState.getItem(itemId);
 		if (!item) return '';
 
 		const propertyRef = getPropertyRef(item.properties, property.id);
-
 		if (!propertyRef) return '';
-		if (property.type !== 'SELECT') return propertyRef.value;
 
-		const option = getOption(property.options, propertyRef.value);
-		return option ? option.id : '';
+		return propertyRef.value;
 	}
 
 	function shouldClose() {
-		return wrapperState.isOpen && (property.type === 'SELECT' || property.type === 'DATE');
+		return wrapperState.isOpen && property.type === 'DATE';
 	}
 
 	function isTableView() {
@@ -154,6 +159,26 @@
 		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		placeholder=""
+	/>
+
+	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
+{:else if property.type === 'MULTISELECT' && (value || isTableView())}
+	{@const selectedOptions = separeteMultiselectOptions(value)}
+	<Select
+		id={`${property.id}-value-${itemId}`}
+		options={[
+			...property.options.map((option) => ({
+				id: option.id,
+				label: option.value,
+				isSelected: selectedOptions.includes(option.id),
+				theme: PROPERTY_COLORS[option.color]
+			}))
+		]}
+		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
+		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		triggerClass={buttonClass}
+		placeholder=""
+		isMulti
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}

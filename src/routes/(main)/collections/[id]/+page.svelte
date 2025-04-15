@@ -176,7 +176,7 @@
 			collectionId: collection.id,
 			properties: propertyState.properties.map((prop) => ({
 				id: prop.id,
-				value: getPropertyDefaultValue(prop.type, prop.defaultValue)
+				value: getPropertyDefaultValue(prop)
 			}))
 		});
 		itemName = '';

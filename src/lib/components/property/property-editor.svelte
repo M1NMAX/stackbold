@@ -32,7 +32,8 @@
 		toggleView,
 		// components
 		PropertyIcon,
-		PropertyOption
+		PropertyOption,
+		isSelectable
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -158,7 +159,7 @@
 	}
 
 	function getMaxVisisbleOptions() {
-		if (property.type !== 'SELECT') return 0;
+		if (!isSelectable(property.type)) return 0;
 		if (property.options.length < 6) return property.options.length;
 		return showAllOptions.isOpen ? property.options.length : 5;
 	}
@@ -219,7 +220,7 @@
 				/>
 			</Field>
 
-			{#if property.type === 'SELECT'}
+			{#if isSelectable(property.type)}
 				<Field>
 					<Label for={getIdPrefix('property-default-value')} name="Default value" />
 					<Select
@@ -249,7 +250,7 @@
 					</div>
 				{/each}
 			</div>
-			{#if property.type === 'SELECT'}
+			{#if isSelectable(property.type)}
 				<HSeparator />
 				{@render propertyOptions()}
 			{/if}
