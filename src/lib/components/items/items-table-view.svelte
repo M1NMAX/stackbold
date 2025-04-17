@@ -10,7 +10,6 @@
 		containsView,
 		// helpers
 		getPropertyRef,
-		getPropertyValue,
 		toggleView,
 		getPropertyState
 	} from '$lib/components/property';
@@ -71,7 +70,7 @@
 		if (type === 'SUM' || type === 'AVG') {
 			const sum = items.reduce((acc, curr) => {
 				const propertyRef = getPropertyRef(curr.properties, property.id);
-				const inc = propertyRef ? getPropertyValue(property, propertyRef.value) : 0;
+				const inc = propertyRef ? propertyRef.value : 0;
 				return acc + Number(inc);
 			}, 0);
 			if (type === 'SUM') return sum.toFixed(2);
