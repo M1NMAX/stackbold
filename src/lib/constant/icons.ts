@@ -7,6 +7,7 @@ import Link from 'lucide-svelte/icons/link';
 import List from 'lucide-svelte/icons/list';
 import Text from 'lucide-svelte/icons/text';
 import Logs from 'lucide-svelte/icons/logs';
+import CalendarClock from 'lucide-svelte/icons/calendar-clock';
 
 // Theme
 import Moon from 'lucide-svelte/icons/moon';
@@ -63,7 +64,8 @@ export const INPUT_ICONS: IconBundle = {
 	checkbox: SquareCheck,
 	date: Calendar,
 	number: Hash,
-	url: Link
+	url: Link,
+	created: CalendarClock
 };
 
 export const THEME_ICONS: IconBundle = {

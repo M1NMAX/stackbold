@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import type { Property } from '@prisma/client';
-	import { getLocalTimeZone, parseDate } from '@internationalized/date';
+	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
 		MAX_PROPERTY_NUMERIC_LENGTH,
@@ -13,7 +13,7 @@
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
-	import { fullDateFormat, ModalState } from '$lib/states/index.js';
+	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
 		separeteMultiselectOptions,
 		getPropertyColor,
@@ -80,6 +80,8 @@
 		const item = itemState.getItem(itemId);
 		if (!item) return '';
 
+		if (property.type === 'CREATED') return item.createdAt.toISOString();
+
 		const propertyRef = getPropertyRef(item.properties, property.id);
 		if (!propertyRef) return '';
 
@@ -89,9 +91,7 @@
 
 {#if property.type === 'CHECKBOX'}
 	<div
-		class={[
-			'flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm bg-secondary text-secondary-foreground'
-		]}
+		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm bg-secondary text-secondary-foreground"
 	>
 		<input
 			id={property.id}
@@ -168,6 +168,19 @@
 			/>
 			{@render clearBtn()}
 		</AdaptiveWrapper>
+	</Field>
+{:else if property.type === 'CREATED'}
+	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<div
+			class={buttonVariants({
+				theme: 'ghost',
+				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+			})}
+		>
+			{@render miniWrapper(formatted)}
+		</div>
 	</Field>
 {:else}
 	<Field>

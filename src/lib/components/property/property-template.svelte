@@ -3,7 +3,7 @@
 	import type { Color, Property } from '@prisma/client';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { tm, useId } from '$lib/utils';
-	import { getPropertyValue, PropertyIcon } from '.';
+	import { getOption, isSelectable, PropertyIcon } from '.';
 	import { Tooltip } from '$lib/components/base/index.js';
 
 	type Props = {
@@ -32,7 +32,9 @@
 	</div>
 {:else}
 	{@const tooltipId = useId(`template-prop-tooltip-${property.id}`)}
-	{@const result = getPropertyValue(property, value)}
+	{@const result = isSelectable(property.type)
+		? (getOption(property.options, value)?.value ?? '')
+		: value}
 	<span
 		id={tooltipId}
 		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}

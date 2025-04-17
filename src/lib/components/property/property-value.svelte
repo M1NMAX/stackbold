@@ -10,7 +10,7 @@
 	} from '$lib/constant';
 	import { type Property, View } from '@prisma/client';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
-	import { getLocalTimeZone, parseDate } from '@internationalized/date';
+	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		getPropertyColor,
 		getPropertyRef,
@@ -23,10 +23,11 @@
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions/index.js';
-	import { fullDateFormat, ModalState } from '$lib/states/index.js';
+	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
+		buttonVariants,
 		Calendar,
 		HSeparator,
 		Select,
@@ -104,6 +105,8 @@
 	function getPropertyValue() {
 		const item = itemState.getItem(itemId);
 		if (!item) return '';
+
+		if (property.type === 'CREATED') return item.createdAt.toISOString();
 
 		const propertyRef = getPropertyRef(item.properties, property.id);
 		if (!propertyRef) return '';
@@ -198,6 +201,11 @@
 		/>
 		{@render clearBtn()}
 	</AdaptiveWrapper>
+{:else if property.type === 'CREATED'}
+	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
+	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
+		{@render tooltipWrapper(formatted, !!value && isTableView())}
+	</div>
 {:else if property.type === 'TEXT' && (value || isTableView())}
 	{@const content =
 		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
