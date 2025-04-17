@@ -34,6 +34,9 @@ class Month {
 		this.title = title;
 	}
 }
+export function fullDateTimeFormat(date: Date) {
+	return new DateFormatter(LOCALE, { dateStyle: 'long', timeStyle: 'medium' }).format(date);
+}
 
 export function fullDateFormat(date: Date) {
 	return new DateFormatter(LOCALE, { dateStyle: 'long' }).format(date);

@@ -5,19 +5,8 @@ export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
 
-//TODO: ref it can be better
-export function getPropertyValue(property: Property, refValue: string, actual: boolean = true) {
-	if (property.type !== 'SELECT') return refValue;
-	const option = property.options.find((opt) => opt.id === refValue);
-
-	if (!option) return '';
-
-	if (actual) return option.value;
-	return option.id;
-}
-
 export function getPropertyColor(property: Property, value: string) {
-	if (property.type !== 'SELECT') return 'GRAY' as Color;
+	if (!isSelectable(property.type)) return 'GRAY' as Color;
 	const option = property.options.find((opt) => opt.id === value);
 	return option ? option.color : ('GRAY' as Color);
 }

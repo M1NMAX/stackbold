@@ -78,6 +78,7 @@ enum PropertyType {
   URL         @map("url")
   DATE        @map("date")
   NUMBER      @map("number")
+  CREATED     @map("created")
 }
 
 enum Aggregator {
