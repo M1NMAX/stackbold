@@ -1,13 +1,16 @@
 <script lang="ts">
-	import { CheckSquare2, ChevronLeft, Plus, Settings2, Square } from 'lucide-svelte';
+	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import Plus from 'lucide-svelte/icons/plus';
+	import Settings2 from 'lucide-svelte/icons/settings-2';
+	import Square from 'lucide-svelte/icons/square';
 	import { Color, View, type Property } from '@prisma/client';
 	import {
-		ItemNew,
 		Items,
 		getActiveItemState,
 		groupItemsByPropertyValue,
 		setItemState
-	} from '$lib/components/items';
+	} from '$lib/components/items/index.js';
 	import {
 		getOption,
 		getPropertyColor,
