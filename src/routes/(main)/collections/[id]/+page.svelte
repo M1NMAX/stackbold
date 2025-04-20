@@ -41,7 +41,7 @@
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
 	import { setPropertyState } from '$lib/components/property';
 	import { ModalState } from '$lib/states/index.js';
-	import ItemPage from './item/[itemid]/+page.svelte';
+	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext } from 'svelte';
 	import { clickOutside, textareaAutoSize } from '$lib/actions';

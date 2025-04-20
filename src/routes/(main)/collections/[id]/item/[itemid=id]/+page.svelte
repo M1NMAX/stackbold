@@ -10,8 +10,8 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { getPropertyState, PropertyInput } from '$lib/components/property';
 	import {
+		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
-		ITEM_PANEL_CTX_KEY,
 		MAX_ITEM_NAME_LENGTH
 	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router.js';
@@ -38,12 +38,12 @@
 		return itemState.items.find((item) => item.id === data.id)!;
 	}
 
-	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
+	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 	function goBack() {
 		activeItem.reset();
 		history.back();
 		if (data.insidePanel) {
-			itemPanel.close();
+			panelState.close();
 		}
 	}
 
