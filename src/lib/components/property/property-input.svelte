@@ -10,14 +10,12 @@
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
 	import { tm, sanitizeNumberInput } from '$lib/utils';
-	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
 		separeteMultiselectOptions,
 		getPropertyColor,
-		getPropertyRef,
 		joinMultiselectOptions,
 		isNumerical
 	} from './index.js';
@@ -34,26 +32,21 @@
 
 	type Props = {
 		property: Property;
-		itemId: string;
+		onchange: (value: string) => void;
+		value?: string;
 	};
 
-	let { property, itemId }: Props = $props();
+	let { property, onchange, value = '' }: Props = $props();
 
-	const itemState = getItemState();
-
-	let value = $derived(getPropertyValue());
 	let color = $derived(getPropertyColor(property, value));
-
 	let wrapperState = new ModalState();
 
-	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
-	async function updPropertyRef(ref: { id: string; value: string }) {
-		await itemState.updPropertyRef(itemId, ref);
-	}
+	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
+	const updTargetElValue = debounce(updInputEl, DEBOUNCE_INTERVAL);
 
-	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
+	function updInputEl(target: HTMLInputElement, value: string) {
 		target.value = value;
-	}, DEBOUNCE_INTERVAL);
+	}
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
@@ -66,26 +59,12 @@
 		} else if (targetEl.type === 'checkbox') {
 			value = targetEl.checked.toString();
 		}
-
-		updPropertyRefDebounced({ id: property.id, value });
+		onchangeDebounced(value);
 	}
 
 	function onClickClear() {
-		updPropertyRef({ id: property.id, value: '' });
+		onchange('');
 		wrapperState.close();
-	}
-
-	// utils
-	function getPropertyValue() {
-		const item = itemState.getItem(itemId);
-		if (!item) return '';
-
-		if (property.type === 'CREATED') return item.createdAt.toISOString();
-
-		const propertyRef = getPropertyRef(item.properties, property.id);
-		if (!propertyRef) return '';
-
-		return propertyRef.value;
 	}
 </script>
 
@@ -115,7 +94,7 @@
 					theme: PROPERTY_COLORS[option.color]
 				}))
 			]}
-			onselect={(opt) => updPropertyRef({ id: property.id, value: opt.id })}
+			onselect={(opt) => onchange(opt.id)}
 			placeholder="Empty"
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
@@ -134,7 +113,7 @@
 					theme: PROPERTY_COLORS[option.color]
 				}))
 			]}
-			onselect={(opts) => updPropertyRef({ id: property.id, value: joinMultiselectOptions(opts) })}
+			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			isMulti
@@ -162,7 +141,7 @@
 			<Calendar
 				value={value ? parseDate(value) : undefined}
 				onchange={(dt) => {
-					updPropertyRef({ id: property.id, value: dt.toString() });
+					onchange(dt.toString());
 					wrapperState.close();
 				}}
 			/>
@@ -194,7 +173,7 @@
 				{value}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
-				class="ghost-textarea"
+				class="textarea textarea-ghost"
 			></textarea>
 		{:else if property.type === 'NUMBER'}
 			<input
@@ -204,7 +183,7 @@
 				{value}
 				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 				oninput={handleOnInput}
-				class="ghost-input"
+				class="input input-ghost"
 			/>
 		{:else}
 			<input
@@ -213,7 +192,7 @@
 				{value}
 				oninput={handleOnInput}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
-				class="ghost-input"
+				class="input input-ghost"
 			/>
 		{/if}
 	</Field>
@@ -243,25 +222,3 @@
 		Clear
 	</Button>
 {/snippet}
-
-<style>
-	.ghost-input {
-		@apply h-9 md:h-7 w-full flex px-2 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
-
-		&:focus,
-		&:focus-within {
-			@apply outline-none;
-			box-shadow: none;
-		}
-	}
-
-	.ghost-textarea {
-		@apply resize-none w-full flex px-2 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
-
-		&:focus,
-		&:focus-within {
-			@apply outline-none;
-			box-shadow: none;
-		}
-	}
-</style>

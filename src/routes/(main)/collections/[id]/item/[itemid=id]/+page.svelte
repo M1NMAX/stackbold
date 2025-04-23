@@ -7,18 +7,24 @@
 	import { Button, buttonVariants, Drawer, HSeparator } from '$lib/components/base/index.js';
 	import { getActiveItemState, getItemState } from '$lib/components/items';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { getPropertyState, PropertyInput } from '$lib/components/property';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import {
+		getPropertyRef,
+		getPropertyState,
+		PropertyInput
+	} from '$lib/components/property/index.js';
+	import {
+		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
-		ITEM_PANEL_CTX_KEY,
 		MAX_ITEM_NAME_LENGTH
 	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import debounce from 'debounce';
-	import { getContext } from 'svelte';
+	import { getContext, tick } from 'svelte';
 	import { textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema.js';
+	import { tm, useId } from '$lib/utils/index.js';
+	import type { Property, PropertyRef } from '@prisma/client';
 
 	let { data } = $props();
 
@@ -32,18 +38,15 @@
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
 	const activeItem = getActiveItemState();
+	const nameId = useId();
 
-	// Utils functions
-	function getCurrentItem() {
-		return itemState.items.find((item) => item.id === data.id)!;
-	}
-
-	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
+	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 	function goBack() {
+		forceItemRename();
 		activeItem.reset();
 		history.back();
 		if (data.insidePanel) {
-			itemPanel.close();
+			panelState.close();
 		}
 	}
 
@@ -75,6 +78,11 @@
 		updItemDebounced({ name: targetEl.value });
 	}
 
+	function forceItemRename() {
+		if (item.name.trim() !== '') return;
+		updItem({ name: 'Untitled' });
+	}
+
 	function duplicateItem() {
 		if (menuState.isOpen) menuState.close();
 		itemState.duplicateItem(item.id);
@@ -92,6 +100,29 @@
 			}
 		});
 	}
+	async function updPropertyRef(ref: PropertyRef) {
+		await itemState.updPropertyRef(item.id, ref);
+	}
+	// utils
+	function getPropertyValue(property: Property) {
+		if (property.type === 'CREATED') return item.createdAt.toISOString();
+
+		const propertyRef = getPropertyRef(item.properties, property.id);
+		if (!propertyRef) return '';
+
+		return propertyRef.value;
+	}
+
+	function getCurrentItem() {
+		return itemState.items.find((item) => item.id === data.id)!;
+	}
+
+	$effect(() => {
+		if (panelState.isOpen) {
+			const inputEl = document.getElementById(nameId) as HTMLTextAreaElement;
+			tick().then(() => inputEl.focus());
+		}
+	});
 </script>
 
 <svelte:head>
@@ -100,9 +131,9 @@
 
 {#if data.insidePanel}
 	<div
-		class={['flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end']}
+		class={tm('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
 	>
-		<p class={['grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden']}>
+		<p class={tm('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
 			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
 		</p>
 
@@ -111,14 +142,7 @@
 		</Button>
 	</div>
 	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
-		<textarea
-			use:textareaAutoSize
-			class="textarea textarea-ghost textarea-xl"
-			value={item.name}
-			oninput={handleUpdItemName}
-			maxlength={MAX_ITEM_NAME_LENGTH}
-			spellcheck={false}
-		></textarea>
+		{@render nameInput()}
 
 		<div class="space-y-2">
 			{@render properties()}
@@ -132,32 +156,41 @@
 			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
-			<h1 class={['grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden']}>
+			<h1 class={tm('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
 				{item.name}
 			</h1>
 
 			{@render topMenu()}
 		</PageHeader>
 
-		<PageContent class="grow" onScroll={handleScroll}>
-			<textarea
-				use:textareaAutoSize
-				class="textarea textarea-ghost textarea-xl"
-				value={item.name}
-				oninput={handleUpdItemName}
-				maxlength={MAX_ITEM_NAME_LENGTH}
-				spellcheck={false}
-			></textarea>
-
+		<PageContent class="grow" onscroll={handleScroll}>
+			{@render nameInput()}
 			{@render properties()}
 		</PageContent>
 		{@render bottomMenu()}
 	</PageContainer>
 {/if}
 
+{#snippet nameInput()}
+	<textarea
+		id={nameId}
+		use:textareaAutoSize
+		class="textarea textarea-ghost textarea-xl"
+		value={item.name}
+		oninput={handleUpdItemName}
+		maxlength={MAX_ITEM_NAME_LENGTH}
+		spellcheck={false}
+		placeholder="New item"
+	></textarea>
+{/snippet}
+
 {#snippet properties()}
 	{#each propertyState.properties as property}
-		<PropertyInput {property} itemId={item.id} />
+		<PropertyInput
+			{property}
+			value={getPropertyValue(property)}
+			onchange={(value) => updPropertyRef({ id: property.id, value })}
+		/>
 	{/each}
 {/snippet}
 

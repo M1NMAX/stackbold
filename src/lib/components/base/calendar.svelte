@@ -33,7 +33,11 @@
 
 <div class="flex flex-col gap-y-2 p-2 rounded-md bg-background">
 	<div class="grid grid-cols-7 grid-flow-rows gap-x-4 md:gap-x-2">
-		<button class={buttonVariants({ theme: 'outline', variant: 'icon' })} onclick={previousMonth}>
+		<button
+			type="button"
+			class={buttonVariants({ theme: 'outline', variant: 'icon' })}
+			onclick={previousMonth}
+		>
 			<ChevronLeft />
 		</button>
 
@@ -41,7 +45,11 @@
 			{month.title}
 		</span>
 
-		<button class={buttonVariants({ theme: 'outline', variant: 'icon' })} onclick={nextMonth}>
+		<button
+			type="button"
+			class={buttonVariants({ theme: 'outline', variant: 'icon' })}
+			onclick={nextMonth}
+		>
 			<ChevronRight />
 		</button>
 	</div>
@@ -61,6 +69,7 @@
 	<div class="grid grid-cols-7 grid-flow-rows gap-y-2 gap-x-4 md:gap-x-2">
 		{#each month.days as day}
 			<button
+				type="button"
 				disabled={day.isDisabled}
 				onclick={() => onClickDay(day.date)}
 				class={tm(

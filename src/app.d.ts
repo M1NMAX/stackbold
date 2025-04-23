@@ -18,7 +18,6 @@ declare global {
 		interface PageState {
 			id?: string;
 			insidePanel?: boolean;
-			showPanel?: boolean;
 			template?: Template;
 		}
 	}
