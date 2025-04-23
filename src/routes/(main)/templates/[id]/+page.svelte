@@ -105,7 +105,7 @@
 				</div>
 			{/if}
 		</PageHeader>
-		<PageContent class="grow" onScroll={handleScroll}>
+		<PageContent class="grow" onscroll={handleScroll}>
 			<div class="flex items-center space-x-2 pt-1">
 				<Icon class="size-6" />
 				<h2 class="text-2xl font-semibold">

@@ -65,7 +65,7 @@
 			<UserMenu user={data.user} />
 		</div>
 	</PageHeader>
-	<PageContent onScroll={handleScroll}>
+	<PageContent onscroll={handleScroll}>
 		<div class=" hidden md:flex items-center space-x-2">
 			<LibraryBig class="size-9" />
 			<h1 class="font-semibold text-2xl">Collections</h1>

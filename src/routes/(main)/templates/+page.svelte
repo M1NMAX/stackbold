@@ -83,7 +83,7 @@
 		{/if}
 	</PageHeader>
 
-	<PageContent onScroll={handleScroll}>
+	<PageContent onscroll={handleScroll}>
 		<div class="flex items-center space-x-2">
 			<Dna class="size-9" />
 			<h1 class="font-semibold text-2xl">Templates</h1>
