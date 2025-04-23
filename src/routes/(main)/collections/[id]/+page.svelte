@@ -16,38 +16,39 @@
 		getPropertyColor,
 		getPropertyDefaultValue,
 		getPropertyRef
-	} from '$lib/components/property';
+	} from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils';
+	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils/index.js';
 	import {
 		Accordion,
 		AccordionItem,
 		Button,
 		IconPicker,
-		SlidingPanel
+		Shortcut,
+		SlidingPanel,
+		Tooltip
 	} from '$lib/components/base/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
 		COLLECTION_ICONS,
+		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
-		ITEM_PANEL_CTX_KEY,
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_ITEM_NAME_LENGTH,
-		PROPERTIES_PANEL_CTX_KEY,
 		PROPERTY_COLORS,
 		SCREEN_MD_MEDIA_QUERY
-	} from '$lib/constant';
-	import { CollectionMenu, getCollectionState } from '$lib/components/collection';
+	} from '$lib/constant/index.js';
+	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
 	import { setPropertyState } from '$lib/components/property';
 	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
-	import { getContext } from 'svelte';
-	import { clickOutside, textareaAutoSize } from '$lib/actions';
+	import { getContext, tick } from 'svelte';
+	import { clickOutside, escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import {
 		FilterMenu,
@@ -56,7 +57,7 @@
 		SortMenu,
 		ViewButtons,
 		getFilters
-	} from '$lib/components/filters';
+	} from '$lib/components/filters/index.js';
 	import type { Filter } from '$lib/types';
 	import { MediaQuery } from 'svelte/reactivity';
 
@@ -126,7 +127,12 @@
 	let renameCollectionError = $state<string | null>(null);
 
 	let isSmHeadingVisible = $state(false);
-	let isCreateItemDialogOpen = $state(false);
+	let isNewItemInputVisible = $state(false);
+
+	type PanelContentType = 'view-item' | 'view-properties' | null;
+
+	let panelContentType = $state<PanelContentType>(null);
+	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
 	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 	const activeItemState = getActiveItemState();
@@ -184,6 +190,30 @@
 		});
 		itemName = '';
 	}
+
+	$effect(() => {
+		if (isNewItemInputVisible) {
+			const inputEl = document.getElementById('new-item-name') as HTMLInputElement;
+			tick().then(() => inputEl.focus());
+		}
+	});
+
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if (e.altKey && e.key === 'n') {
+				e.preventDefault();
+				isNewItemInputVisible = true;
+			} else if (e.ctrlKey && e.altKey && e.key === 'm') {
+				e.preventDefault();
+				onClickCreateItemAdvance();
+			}
+		}
+
+		document.addEventListener('keydown', handleKeydown);
+		return () => {
+			document.removeEventListener('keydown', handleKeydown);
+		};
+	});
 
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
@@ -248,7 +278,6 @@
 	}
 
 	//Filters
-
 	function updFilterConfig(filters: Filter[]) {
 		if (collection.filterConfigs.length === 0) {
 			const baseConfigs = [
@@ -271,10 +300,10 @@
 		updCollection({ filterConfigs });
 	}
 
-	//  Sliding panels
-	const propertiesPanel = getContext<ModalState>(PROPERTIES_PANEL_CTX_KEY);
-
+	// Sliding panel
 	async function onClickOpenProperties() {
+		if (panelState.isOpen) history.back();
+
 		const url = `/collections/${collection.id}/properties`;
 		if (!isLargeScreen.current) {
 			goto(url);
@@ -282,18 +311,18 @@
 		}
 
 		const result = await preloadData(url);
-
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { showPanel: true, insidePanel: true });
-			propertiesPanel.open();
+			pushState(url, { insidePanel: true });
+			panelContentType = 'view-properties';
+			if (!panelState.isOpen) panelState.open();
 		} else {
 			goto(url);
 		}
 	}
 
-	const itemPanel = getContext<ModalState>(ITEM_PANEL_CTX_KEY);
-
 	async function clickItem(id: string) {
+		if (panelState.isOpen) history.back();
+
 		activeItemState.update(id);
 		const url = `/collections/${collection.id}/item/${id}`;
 		if (!isLargeScreen.current) {
@@ -302,13 +331,26 @@
 		}
 
 		const result = await preloadData(url);
-
 		if (result.type === 'loaded' && result.status === 200) {
 			pushState(url, { id: result.data.id, insidePanel: true });
-			itemPanel.open();
+			panelContentType = 'view-item';
+			if (!panelState.isOpen) panelState.open();
 		} else {
 			goto(url);
 		}
+	}
+
+	async function onClickCreateItemAdvance() {
+		const id = await itemState.createItem({
+			name: '',
+			collectionId: collection.id,
+			properties: propertyState.properties.map((prop) => ({
+				id: prop.id,
+				value: getPropertyDefaultValue(prop)
+			}))
+		});
+		if (!id) return;
+		await clickItem(id);
 	}
 </script>
 
@@ -317,10 +359,7 @@
 </svelte:head>
 
 <PageContainer
-	class={tm(
-		'ease-in-out duration-300',
-		itemPanel.isOpen || propertiesPanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6'
-	)}
+	class={tm('ease-in-out duration-300', panelState.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6')}
 >
 	<PageHeader
 		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
@@ -345,7 +384,7 @@
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1" onScroll={handleScroll}>
+	<PageContent class="relative lg:pt-1" onscroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -395,8 +434,6 @@
 			{/if}
 
 			<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
-
-			<Button onclick={() => (isCreateItemDialogOpen = true)}>New item</Button>
 		</div>
 		<div class="flex flex-col md:hidden space-y-1">
 			<SearchInput placeholder="Find Item" bind:value={search} />
@@ -439,74 +476,67 @@
 				{/each}
 			</Accordion>
 		{/if}
-		{#if isLargeScreen.current}
-			<div class="sticky inset-x-0 bottom-0">
-				{#if itemNameError}
-					<span
-						use:clickOutside
-						onclickoutside={() => (itemNameError = null)}
-						class="w-full text-error"
-					>
-						{itemNameError}
-					</span>
-				{/if}
-				<form onsubmit={handleCreateItem} class="relative">
-					<label for="item-name" class="sr-only"> Name</label>
-					<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-						<Plus class="text-primary" />
-					</div>
-					<input
-						bind:value={itemName}
-						id="item-name"
-						name="name"
-						placeholder="New item"
-						autocomplete="off"
-						class="h-10 w-full pl-10 text-base font-semibold rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
-					/>
-				</form>
+	</PageContent>
+	<div class="w-full flex gap-x-0.5 px-2 pb-2">
+		<Tooltip triggerBy="createItemAdvanceBtn" align="start">
+			<div class="flex items-center p-1 gap-x-2">
+				<span class="text-sm font-semibold">Create item advanced</span>
+				<Shortcut>
+					<span> Ctrl </span>
+					<span> Alt </span>
+					<span> M </span>
+				</Shortcut>
 			</div>
+		</Tooltip>
+		<Button
+			id="createItemAdvanceBtn"
+			theme="secondary"
+			variant="icon"
+			class="[&_svg]:text-primary [&_svg]:size-5"
+			onclick={onClickCreateItemAdvance}
+		>
+			<Plus />
+		</Button>
+		{#if isNewItemInputVisible}
+			<form onsubmit={handleCreateItem} class="grow relative">
+				<label for="new-item-name" class="sr-only"> Item name</label>
+				<input
+					bind:value={itemName}
+					use:escapeKeydown
+					id="new-item-name"
+					name="new-item-name"
+					placeholder="New item"
+					autocomplete="off"
+					class="h-9 w-full px-2 text-base font-semibold rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					onfocusout={() => (isNewItemInputVisible = false)}
+					onescapekey={() => (isNewItemInputVisible = false)}
+				/>
+			</form>
 		{:else}
 			<Button
-				variant="icon"
-				class="fixed bottom-4 right-3 z-10 h-12 w-12 rounded-sm"
-				onclick={() => (isCreateItemDialogOpen = true)}
+				theme="secondary"
+				class="grow flex justify-between items-center"
+				onclick={() => (isNewItemInputVisible = true)}
 			>
-				<Plus />
+				<span class="text-base font-semibold text-primary"> New item </span>
+
+				<Shortcut>
+					<span>Alt</span>
+					<span>N</span>
+				</Shortcut>
 			</Button>
 		{/if}
-	</PageContent>
+	</div>
 </PageContainer>
 
-{#if page.state.id}
-	<!-- Item sliding-panel -->
-	<SlidingPanel open={itemPanel.isOpen} class="w-full md:w-2/6">
+<!-- Sliding panel -->
+<SlidingPanel open={panelState.isOpen} class="w-full md:w-2/6 ">
+	{#if panelContentType === 'view-item' && page.state.id}
 		<ItemPage data={noCheck(page.state)} />
-	</SlidingPanel>
-{/if}
-{#if page.state.showPanel}
-	<!-- Properties Sliding panel -->
-	<SlidingPanel open={propertiesPanel.isOpen} class="w-full md:w-2/6 ">
+	{:else if panelContentType === 'view-properties'}
 		<PropertiesPage data={noCheck(page.state)} />
-	</SlidingPanel>
-{/if}
-<ItemNew bind:isOpen={isCreateItemDialogOpen}>
-	<form onsubmit={handleCreateItem} class="flex flex-col space-y-2">
-		<label for="item-name" class="sr-only"> Name</label>
-
-		<input
-			bind:value={itemName}
-			id="item-name"
-			placeholder="New item"
-			name="name"
-			autocomplete="off"
-			class="input"
-			type="text"
-			maxlength={MAX_ITEM_NAME_LENGTH}
-		/>
-
-		<Button type="submit" class="w-full">Create</Button>
-	</form>
-</ItemNew>
+	{/if}
+</SlidingPanel>
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
