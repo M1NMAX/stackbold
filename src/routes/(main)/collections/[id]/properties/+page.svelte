@@ -3,7 +3,7 @@
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property';
 	import { Button } from '$lib/components/base/index.js';
-	import { PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
+	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { ArrowDown, ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
@@ -11,7 +11,7 @@
 	let { data } = $props();
 
 	const propertyState = getPropertyState();
-	const propertiesPanel = getContext<ModalState>(PROPERTIES_PANEL_CTX_KEY);
+	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
 	let currentlyOpen = $state<string | null>(
 		propertyState.properties.length > 0 ? propertyState.properties[0].id : null
@@ -24,7 +24,7 @@
 	function goBack() {
 		history.back();
 		if (data.insidePanel) {
-			propertiesPanel.close();
+			panelState.close();
 		}
 	}
 
@@ -42,15 +42,24 @@
 </svelte:head>
 
 {#if data.insidePanel}
-	<div class="flex items-center justify-between">
-		<h2 class="text-xl font-semibold text-center">Properties</h2>
+	<div
+		class={tm('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
+	>
+		<h1 class={tm('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
+			Properties
+		</h1>
 		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 			<X />
 		</Button>
 	</div>
 
-	<div class="grow flex flex-col space-y-2 overflow-y-auto hd-scroll">
-		{@render editors()}
+	<div class="grow flex flex-col space-y-2 overflow-y-auto hd-scroll" onscroll={handleScroll}>
+		<h1 class={tm('text-xl font-semibold pb-2', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+			Properties
+		</h1>
+		<div class="space-y-2">
+			{@render editors()}
+		</div>
 	</div>
 
 	<div>
@@ -67,7 +76,7 @@
 				Properties
 			</h1>
 		</PageHeader>
-		<PageContent class="grow gap-y-0" onScroll={handleScroll}>
+		<PageContent class="grow gap-y-0 hd-scroll" onscroll={handleScroll}>
 			<h1 class={tm('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
 				Properties
 			</h1>

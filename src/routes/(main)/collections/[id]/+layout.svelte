@@ -3,7 +3,7 @@
 	import { setActiveItemState, setItemState } from '$lib/components/items';
 	import { ModalState } from '$lib/states/index.js';
 	import { setPropertyState } from '$lib/components/property';
-	import { ITEM_PANEL_CTX_KEY, PROPERTIES_PANEL_CTX_KEY } from '$lib/constant';
+	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant';
 	import { setContext } from 'svelte';
 
 	let { children, data } = $props();
@@ -13,9 +13,7 @@
 	const propertyState = setPropertyState(findCurrentCollection().properties, data.cid);
 
 	const activeItem = setActiveItemState();
-
-	const propertiesPanel = setContext(PROPERTIES_PANEL_CTX_KEY, new ModalState());
-	const itemPanel = setContext(ITEM_PANEL_CTX_KEY, new ModalState());
+	const panelState = setContext(COLLECTION_PAGE_PANEL_CTX_KEY, new ModalState());
 
 	function findCurrentCollection() {
 		return collectionState.collections.find((collection) => collection.id === data.cid)!;
@@ -29,9 +27,8 @@
 
 	$effect(() => {
 		data.cid;
-		propertiesPanel.close();
-		itemPanel.close();
 		activeItem.reset();
+		panelState.close();
 	});
 </script>
 
