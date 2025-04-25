@@ -22,7 +22,6 @@
 	import debounce from 'debounce';
 	import { getContext, tick } from 'svelte';
 	import { textareaAutoSize } from '$lib/actions/index.js';
-	import { getNameSchema } from '$lib/schema.js';
 	import { tm, useId } from '$lib/utils/index.js';
 	import type { Property, PropertyRef } from '@prisma/client';
 
@@ -33,7 +32,6 @@
 	let item = $derived(getCurrentItem());
 
 	let isSmHeadingVisible = $state(false);
-	let renameItemError = $state<string | null>(null);
 
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
@@ -41,10 +39,10 @@
 	const nameId = useId();
 
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
-	function goBack() {
-		forceItemRename();
-		activeItem.reset();
+	function goBack(forceRename: boolean = true) {
+		if (forceRename) forceItemRename();
 		history.back();
+		activeItem.reset();
 		if (data.insidePanel) {
 			panelState.close();
 		}
@@ -65,16 +63,6 @@
 
 	async function handleUpdItemName(e: Event) {
 		const targetEl = e.currentTarget as HTMLTextAreaElement;
-
-		const parseResult = getNameSchema({ label: 'Item name', max: MAX_ITEM_NAME_LENGTH }).safeParse(
-			targetEl.value
-		);
-		if (!parseResult.success) {
-			renameItemError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		renameItemError = null;
 		updItemDebounced({ name: targetEl.value });
 	}
 
@@ -95,15 +83,15 @@
 			id: item.id,
 			name: item.name,
 			fun: async () => {
+				goBack(false);
 				await itemState.deleteItem(item.id);
-				goBack();
 			}
 		});
 	}
 	async function updPropertyRef(ref: PropertyRef) {
 		await itemState.updPropertyRef(item.id, ref);
 	}
-	// utils
+
 	function getPropertyValue(property: Property) {
 		if (property.type === 'CREATED') return item.createdAt.toISOString();
 
@@ -124,10 +112,6 @@
 		}
 	});
 </script>
-
-<svelte:head>
-	<title>{item.name} - Stackbold</title>
-</svelte:head>
 
 {#if data.insidePanel}
 	<div
