@@ -18,7 +18,7 @@
 		getPropertyRef
 	} from '$lib/components/property/index.js';
 	import debounce from 'debounce';
-	import { goto, invalidate, invalidateAll, preloadData, pushState } from '$app/navigation';
+	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils/index.js';
 	import {
@@ -326,7 +326,6 @@
 		activeItemState.update(id);
 		const url = `/collections/${collection.id}/item/${id}`;
 		if (!isLargeScreen.current) {
-			await invalidateAll();
 			goto(url);
 			return;
 		}
@@ -337,14 +336,13 @@
 			panelContentType = 'view-item';
 			if (!panelState.isOpen) panelState.open();
 		} else {
-			await invalidateAll();
 			goto(url);
 		}
 	}
 
 	async function onClickCreateItemAdvance() {
 		const id = await itemState.createItem({
-			name: 'name',
+			name: '',
 			collectionId: collection.id,
 			properties: propertyState.properties.map((prop) => ({
 				id: prop.id,
