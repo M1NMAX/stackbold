@@ -192,6 +192,8 @@
 
 <button
 	id={triggerId}
+	type="button"
+	onclick={() => menuState.toggle()}
 	class={tm(
 		buttonVariants({
 			theme: 'secondary',
@@ -199,7 +201,6 @@
 			className: tm('bg-transparent', triggerClass)
 		})
 	)}
-	onclick={() => menuState.toggle()}
 >
 	{#each selected as option}
 		<span

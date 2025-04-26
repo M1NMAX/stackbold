@@ -36,7 +36,12 @@
 </script>
 
 <div>
-	<button {id} onclick={toggle} class={buttonVariants({ theme: 'ghost', className: triggerClass })}>
+	<button
+		{id}
+		onclick={toggle}
+		type="button"
+		class={buttonVariants({ theme: 'ghost', className: triggerClass })}
+	>
 		{@render trigger()}
 	</button>
 

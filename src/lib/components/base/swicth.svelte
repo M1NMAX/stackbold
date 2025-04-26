@@ -34,6 +34,7 @@
 
 <button
 	{id}
+	type="button"
 	role="switch"
 	aria-checked={checked}
 	aria-required={required}

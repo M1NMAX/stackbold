@@ -46,7 +46,7 @@ input[type='number'] {
 }
 
 .input {
-	@apply h-9 w-full flex p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 md:h-7 w-full flex px-2 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
@@ -69,7 +69,7 @@ input[type='number'] {
 
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
+			@apply outline-none;
 			box-shadow: none;
 		}
 	}
@@ -114,7 +114,7 @@ input[type='number'] {
 }
 
 .textarea {
-	@apply resize-none w-full flex rounded-sm border border-input bg-secondary p-1 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+	@apply resize-none w-full flex px-2 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
@@ -133,17 +133,17 @@ input[type='number'] {
 	}
 
 	&-ghost {
-		@apply bg-opacity-10 rounded-sm border-none;
+		@apply bg-opacity-10;
 
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
+			@apply outline-none;
 			box-shadow: none;
 		}
 	}
 
 	&-xl {
-		@apply text-xl font-semibold  mt-0.5 mb-1.5;
+		@apply text-xl font-semibold mt-0.5 mb-1.5;
 	}
 }
 

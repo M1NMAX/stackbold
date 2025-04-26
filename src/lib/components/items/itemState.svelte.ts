@@ -48,6 +48,7 @@ export class ItemState {
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
 			this.#updItem(tmpId, createdItem);
+			return createdItem.id;
 		} catch (err) {
 			this.#toastState.error();
 			this.#removeItem(tmpId);
