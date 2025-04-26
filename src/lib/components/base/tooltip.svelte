@@ -62,6 +62,7 @@
 	function onTriggerLeave() {
 		hideTimoutId = setTimeout(hide, 100);
 	}
+
 	function setTooltipPosition() {
 		if (!tooltipEl || !triggerEl) return;
 
@@ -78,18 +79,33 @@
 			case 'top':
 				top = refRect.top + scrollY - tooltipRect.height - 10 - offset;
 				left = refRect.left + scrollX + refRect.width / 2 - tooltipRect.width / 2;
+
+				if (align === 'start') left = refRect.left + scrollX;
+				else if (align === 'end') left = refRect.right + scrollX - tooltipRect.width;
+
 				if (arrowRect && offset === 0) {
 					arrowTop = tooltipRect.height - 5;
 					arrowLeft = tooltipRect.width / 2 - arrowRect.width / 2;
+
+					if (align === 'start') arrowLeft = arrowRect.width;
+					else if (align === 'end') arrowLeft = tooltipRect.width - arrowRect.width * 2;
 				}
+
 				break;
 
 			case 'bottom':
 				top = refRect.bottom + scrollY + 10 + offset;
 				left = refRect.left + scrollX + refRect.width / 2 - tooltipRect.width / 2;
+
+				if (align === 'start') left = refRect.left + scrollX;
+				else if (align === 'end') left = refRect.right + scrollX - tooltipRect.width;
+
 				if (arrowRect && offset === 0) {
 					arrowTop = -arrowRect.height + 9;
 					arrowLeft = tooltipRect.width / 2 - arrowRect.width / 2;
+
+					if (align === 'start') arrowLeft = arrowRect.width;
+					else if (align === 'end') arrowLeft = tooltipRect.width - arrowRect.width * 2;
 				}
 				break;
 			case 'right':
@@ -152,7 +168,7 @@
 		bind:this={tooltipEl}
 		transition:fade={{ duration: 200, easing: linear }}
 		class={tm(
-			'fixed p-0.5 rounded-md bg-background transition-opacity',
+			'fixed z-50 p-0.5 rounded-md bg-background transition-opacity',
 			positioned ? 'visible opacity-100' : 'invisible opacity-0',
 			className
 		)}
