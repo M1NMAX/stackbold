@@ -115,7 +115,10 @@
 
 {#if data.insidePanel}
 	<div
-		class={tm('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
+		class={tm(
+			'flex items-center justify-between space-x-1 p-4 pb-2',
+			!isSmHeadingVisible && 'justify-end'
+		)}
 	>
 		<p class={tm('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
 			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
@@ -125,7 +128,7 @@
 			<X />
 		</Button>
 	</div>
-	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
+	<div class="grow flex flex-col px-4 overflow-y-auto hd-scroll" onscroll={handleScroll}>
 		{@render nameInput()}
 
 		<div class="space-y-2">
@@ -201,7 +204,7 @@
 {/snippet}
 
 {#snippet bottomMenu()}
-	<div class="hidden md:block px-0.5 pb-0.5">
+	<div class="hidden md:block px-4 pb-4">
 		<HSeparator />
 		<div class="flex items-center justify-end gap-x-1.5">
 			<Button theme="secondary" onclick={() => duplicateItem()}>
