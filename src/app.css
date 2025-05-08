@@ -114,7 +114,7 @@ input[type='number'] {
 }
 
 .textarea {
-	@apply resize-none w-full flex px-2 rounded-sm border-0 bg-transparent  text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+	@apply resize-none h-auto w-full flex px-2 rounded-sm border-0 bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
@@ -143,7 +143,7 @@ input[type='number'] {
 	}
 
 	&-xl {
-		@apply text-xl font-semibold mt-0.5 mb-1.5;
+		@apply text-2xl font-semibold mt-0.5 mb-1.5;
 	}
 }
 
