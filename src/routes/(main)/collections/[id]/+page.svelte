@@ -362,7 +362,6 @@
 	<title>{collection.name} - Stackbold</title>
 </svelte:head>
 
-<!-- panelState.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6' -->
 <PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
 	<PageHeader
 		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
