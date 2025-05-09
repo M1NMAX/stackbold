@@ -1,11 +1,18 @@
 <script lang="ts">
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property';
+	import {
+		PageContainer,
+		PageContent,
+		PageFooter,
+		PageHeader
+	} from '$lib/components/page/index.js';
+	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property/index.js';
 	import { Button } from '$lib/components/base/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
-	import { ArrowDown, ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 
 	let { data } = $props();
@@ -13,9 +20,8 @@
 	const propertyState = getPropertyState();
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
-	let currentlyOpen = $state<string | null>(
-		propertyState.properties.length > 0 ? propertyState.properties[0].id : null
-	);
+	let currentlyOpen = $state<string | null>(null);
+	let isSmHeadingVisible = $state(false);
 
 	function toggleEditor(pid: string | null) {
 		currentlyOpen = pid;
@@ -28,7 +34,6 @@
 		}
 	}
 
-	let isSmHeadingVisible = $state(false);
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
 
@@ -43,7 +48,10 @@
 
 {#if data.insidePanel}
 	<div
-		class={tm('flex items-center justify-between space-x-1', !isSmHeadingVisible && 'justify-end')}
+		class={tm(
+			'flex items-center justify-between space-x-1 p-4 pb-2',
+			!isSmHeadingVisible && 'justify-end'
+		)}
 	>
 		<h1 class={tm('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
 			Properties
@@ -53,8 +61,8 @@
 		</Button>
 	</div>
 
-	<div class="grow flex flex-col space-y-2 overflow-y-auto hd-scroll" onscroll={handleScroll}>
-		<h1 class={tm('text-xl font-semibold pb-2', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+	<div class="grow flex flex-col space-y-2 hd-scroll" onscroll={handleScroll}>
+		<h1 class={tm('text-2xl font-semibold px-4 ', !isSmHeadingVisible ? 'visible' : 'hidden')}>
 			Properties
 		</h1>
 		<div class="space-y-2">
@@ -62,7 +70,7 @@
 		</div>
 	</div>
 
-	<div>
+	<div class="px-4 pb-4">
 		<AddProperty />
 	</div>
 {:else}
@@ -76,22 +84,23 @@
 				Properties
 			</h1>
 		</PageHeader>
-		<PageContent class="grow gap-y-0 hd-scroll" onscroll={handleScroll}>
-			<h1 class={tm('pb-2 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+		<PageContent class="grow px-0 gap-y-0 hd-scroll" onscroll={handleScroll}>
+			<h1 class={tm('pb-2 px-4 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
 				Properties
 			</h1>
 
 			{@render editors()}
 		</PageContent>
-		<div class="px-2 pb-2">
+		<PageFooter>
 			<AddProperty />
-		</div>
+		</PageFooter>
 	</PageContainer>
 {/if}
 
 {#snippet editors()}
-	{#each propertyState.properties as property}
+	{#each propertyState.properties as property, idx (property.id)}
 		<PropertyEditor
+			{idx}
 			{property}
 			isOpen={currentlyOpen === property.id}
 			openChange={(value) => toggleEditor(value)}

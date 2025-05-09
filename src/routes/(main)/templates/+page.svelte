@@ -11,7 +11,7 @@
 		TEMPLATE_PANEL_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils';
-	import { Button, SlidingPanel } from '$lib/components/base/index.js';
+	import { Button } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
@@ -67,9 +67,7 @@
 
 <svelte:head><title>Templates - Stackbold</title></svelte:head>
 
-<PageContainer
-	class={tm('ease-in-out duration-300', templatePanel.isOpen ? 'w-0 md:w-1/2' : 'w-full md:w-5/6')}
->
+<PageContainer class={tm(templatePanel.isOpen && 'w-0 md:w-1/2')}>
 	<PageHeader>
 		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
@@ -124,7 +122,13 @@
 </PageContainer>
 
 {#if page.state.template}
-	<SlidingPanel open={templatePanel.isOpen} class="w-full md:w-2/6">
+	<aside
+		class={tm(
+			'h-full flex flex-col space-y-2 p-4 overflow-hidden',
+			'rounded-md bg-card text-card-foreground transition-all duration-300',
+			templatePanel.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
+		)}
+	>
 		<TemplatePage data={noCheck(page.state)} />
-	</SlidingPanel>
+	</aside>
 {/if}

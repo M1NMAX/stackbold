@@ -11,7 +11,7 @@ export class PropertyState {
 	collectionId = $state<string>('');
 
 	constructor(properties: Property[], collectionId: string) {
-		this.properties = properties;
+		this.properties = properties.sort((a, b) => a.order - b.order);
 		this.collectionId = collectionId;
 	}
 
@@ -23,9 +23,14 @@ export class PropertyState {
 		this.properties = this.properties.filter((prop) => prop.id !== id);
 	}
 
+	sort() {
+		this.properties = this.properties.sort((a, b) => a.order - b.order);
+	}
+
 	getProperty(id: string) {
 		return this.properties.find((property) => property.id === id);
 	}
+
 	getMostRecentProperty(properties: Property[]) {
 		return properties.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[
 			this.properties.length - 1
@@ -36,6 +41,7 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 		try {
 			const name = capitalizeFirstLetter(type);
+			const order = this.properties.length + 1;
 
 			this.properties.push({
 				id: tmpId,
@@ -45,12 +51,13 @@ export class PropertyState {
 				defaultValue: '',
 				visibleInViews: [View.LIST, View.TABLE],
 				aggregator: Aggregator.NONE,
-				options: []
+				options: [],
+				order: order
 			});
 
 			const { properties } = await trpc().collections.addProperty.mutate({
 				id: this.collectionId,
-				property: { name, type }
+				property: { name, type, order }
 			});
 			this.#updProperty(tmpId, this.getMostRecentProperty(properties));
 		} catch (err) {
@@ -75,6 +82,7 @@ export class PropertyState {
 				...rest,
 				name: name + ' copy',
 				id: tmpId,
+				order: this.properties.length + 1,
 				createdAt: new Date()
 			});
 
@@ -109,6 +117,26 @@ export class PropertyState {
 			this.#toastState.error();
 			this.#updProperty(property.id, target);
 		}
+	}
+
+	async orderProperty(start: number, end: number) {
+		if (start === end) return;
+		const target = this.properties[start];
+		await this.updProperty({ id: target.id, order: end + 1 });
+
+		if (start < end) {
+			for (let i = start + 1; i <= end; i++) {
+				const prop = this.properties[i];
+				await this.updProperty({ id: prop.id, order: prop.order - 1 });
+			}
+		} else {
+			for (let i = end; i < start; i++) {
+				const prop = this.properties[i];
+				await this.updProperty({ id: prop.id, order: prop.order + 1 });
+			}
+		}
+
+		this.sort();
 	}
 
 	async deleteProperty(id: string) {

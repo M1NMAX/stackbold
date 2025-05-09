@@ -169,58 +169,81 @@
 		<UserMenu {user} />
 	</div>
 	<div
-		class="w-full h-full md:grow flex flex-col md:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background"
+		class={tm(
+			'w-full h-full md:grow flex md:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background',
+			isBottomBarItemActive() && 'flex-col'
+		)}
 	>
 		<!-- SIDEBAR -->
 		<aside
-			class={[
-				'hidden md:flex h-full flex-col space-y-2 rounded-md px-0 py-1.5 overflow-hidden bg-card text-card-foreground transition-all',
+			class={tm(
+				'hidden md:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
+				'overflow-hidden bg-card text-card-foreground transition-all duration-300',
 				sidebarState.isOpen ? 'w-1/6 mr-1.5' : 'w-0'
-			]}
+			)}
 		>
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					{@const Icon = item.icon}
 					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<Icon class={`size-5 ${activeUrl === item.url && 'text-primary'}`} />
+						<Icon class={tm('size-5', activeUrl === item.url && 'text-primary')} />
 					</SidebarItem>
 				{/each}
 			</div>
 
-			<div class="grow flex flex-col space-y-1.5">
-				<div class="space-y-0">
+			<Accordion value="favorites" class="grow flex flex-col pt-1">
+				<AccordionItem
+					id="favorites"
+					title="Favorites"
+					arrow={false}
+					triggerClass="px-2.5 font-semibold text-sm"
+					contentClass="p-0"
+				>
 					{#each collectionState.collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
 							<SidebarCollection {collection} active={activeCollection(collection.id)} />
 						{/if}
 					{/each}
-				</div>
+					<Accordion isMulti value={groupState.groups.map((g) => g.id)}>
+						{#each groupState.groups as group (group.id)}
+							{@const groupCollections = collectionState.collections.filter(
+								(collection) =>
+									collection.groupId && collection.groupId === group.id && collection.isPinned
+							)}
 
-				<Accordion isMulti value={groupState.groups.map((g) => g.id)}>
-					{#each groupState.groups as group, idx (group.id)}
-						{@const groupCollections = collectionState.collections.filter(
-							(collection) =>
-								collection.groupId && collection.groupId === group.id && collection.isPinned
-						)}
+							<AccordionItem
+								id={group.id}
+								title={group.name}
+								triggerClass="px-2.5"
+								contentClass="overflow-visible p-0"
+							>
+								{#snippet extra()}
+									<SidebarGroupMenu id={group.id} />
+								{/snippet}
+								{#each groupCollections as collection}
+									<SidebarCollection
+										asChild
+										{collection}
+										active={activeCollection(collection.id)}
+									/>
+								{/each}
+							</AccordionItem>
+						{/each}
+					</Accordion>
+				</AccordionItem>
+			</Accordion>
 
-						<AccordionItem id={group.id} title={group.name} contentClass="overflow-visible px-0">
-							{#snippet extra()}
-								<SidebarGroupMenu id={group.id} />
-							{/snippet}
-							{#each groupCollections as collection}
-								<SidebarCollection asChild {collection} active={activeCollection(collection.id)} />
-							{/each}
-						</AccordionItem>
-					{/each}
-				</Accordion>
-			</div>
-
-			<div class="flex items-center justify-between space-x-1 px-1">
+			<div class="flex items-center justify-between gap-x-1 px-3.5 pb-2">
 				<Button theme="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
 					<FolderPlus />
 					<span> New collection </span>
 				</Button>
-				<Button theme="secondary" variant="icon" onclick={() => createGroupModal.open()}>
+				<Button
+					theme="secondary"
+					variant="icon"
+					class="shrink-0"
+					onclick={() => createGroupModal.open()}
+				>
 					<PackagePlus />
 					<span class="sr-only">New group</span>
 				</Button>

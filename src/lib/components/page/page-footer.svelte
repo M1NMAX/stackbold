@@ -10,9 +10,7 @@
 	let { children, class: className }: Props = $props();
 </script>
 
-<div
-	class={tm('flex items-center justify-start gap-x-2 pt-2 md:pt-4 px-2 md:px-4 pb-0', className)}
->
+<div class={tm('px-2 md:px-4 pb-2 md:pb-4', className)}>
 	{#if children}
 		{@render children()}
 	{/if}

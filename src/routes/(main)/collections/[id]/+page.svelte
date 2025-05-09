@@ -27,10 +27,14 @@
 		Button,
 		IconPicker,
 		Shortcut,
-		SlidingPanel,
 		Tooltip
 	} from '$lib/components/base/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import {
+		PageContainer,
+		PageContent,
+		PageFooter,
+		PageHeader
+	} from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
 		COLLECTION_ICONS,
@@ -358,9 +362,7 @@
 	<title>{collection.name} - Stackbold</title>
 </svelte:head>
 
-<PageContainer
-	class={tm('ease-in-out duration-300', panelState.isOpen ? 'w-0 md:w-1/2' : 'w-full md:5/6')}
->
+<PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
 	<PageHeader
 		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
 	>
@@ -477,7 +479,7 @@
 			</Accordion>
 		{/if}
 	</PageContent>
-	<div class="w-full flex gap-x-0.5 px-2 pb-2">
+	<PageFooter class="w-full flex gap-x-0.5">
 		<Tooltip triggerBy="createItemAdvanceBtn" align="start">
 			<div class="flex items-center p-1 gap-x-2">
 				<span class="text-sm font-semibold">Create item advanced</span>
@@ -526,17 +528,23 @@
 				</Shortcut>
 			</Button>
 		{/if}
-	</div>
+	</PageFooter>
 </PageContainer>
 
 <!-- Sliding panel -->
-<SlidingPanel open={panelState.isOpen} class="w-full md:w-2/6 ">
+<aside
+	class={tm(
+		'h-full flex flex-col space-y-2 p-0 overflow-hidden',
+		'rounded-md bg-card text-card-foreground transition-all duration-300',
+		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
+	)}
+>
 	{#if panelContentType === 'view-item' && page.state.id}
 		<ItemPage data={noCheck(page.state)} />
 	{:else if panelContentType === 'view-properties'}
 		<PropertiesPage data={noCheck(page.state)} />
 	{/if}
-</SlidingPanel>
+</aside>
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
