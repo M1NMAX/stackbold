@@ -222,7 +222,15 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="flex group pr-4 my-0.5" {ondragstart} {ondrop} {ondragend} {ondragover} {ondragleave}>
+<div
+	class="flex group pr-4 my-0.5"
+	draggable="true"
+	{ondragstart}
+	{ondrop}
+	{ondragend}
+	{ondragover}
+	{ondragleave}
+>
 	<GripVertical
 		class={tm(
 			'size-4 cursor-pointer invisible group-hover:visible',
