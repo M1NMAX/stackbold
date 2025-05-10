@@ -97,9 +97,7 @@
 		)
 	);
 
-	const labelClass = tm(
-		'md:sr-only font-semibold text-sm text-center px-0 pb-0.5 pt-1 select-none'
-	);
+	const labelClass = tm('md:sr-only block font-semibold text-sm text-center px-0 py-1 select-none');
 
 	//utils
 	function getPropertyValue() {
@@ -194,7 +192,7 @@
 			{/if}
 		{/snippet}
 
-		<p class={tm(labelClass, 'text-center py-1')}>{property.name}</p>
+		<p class={labelClass}>{property.name}</p>
 		<Calendar
 			value={value ? parseDate(value) : undefined}
 			onchange={(dt) => updPropertyRef(dt.toString())}
