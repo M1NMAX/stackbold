@@ -14,7 +14,7 @@
 <div
 	{onscroll}
 	class={tm(
-		'h-full w-full flex flex-col mx-auto pt-0.5 pb-2 px-2 md:px-4 gap-y-2 overflow-y-auto',
+		'h-full w-full flex flex-col mx-auto pt-0.5 pb-2 px-2 md:px-4 gap-y-2 overflow-x-hidden overflow-y-auto',
 		className
 	)}
 >
