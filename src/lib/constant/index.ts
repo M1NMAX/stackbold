@@ -11,6 +11,15 @@ export const PROPERTY_COLORS: Colors = {
 	ORANGE: 'bg-orange-500 text-white dark:bg-orange-700 dark:text-orange-100'
 };
 
+export const PROPERTY_AGGREGATOR_LABELS: { [key: string]: string } = {
+	none: 'None',
+	count: 'Count all',
+	count_empty: 'Count empty',
+	count_not_empty: 'Count not empty',
+	avg: 'Average',
+	sum: 'Sum'
+};
+
 export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Name Ascending', field: 'name', order: 'asc' },
 	{ label: 'Name Descending', field: 'name', order: 'desc' },
