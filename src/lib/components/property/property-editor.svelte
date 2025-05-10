@@ -1,13 +1,4 @@
 <script module lang="ts">
-	const aggregatorLabel: { [key: string]: string } = {
-		none: 'None',
-		count: 'Count all',
-		count_empty: 'Count empty',
-		count_not_empty: 'Count not empty',
-		avg: 'Average',
-		sum: 'Sum'
-	};
-
 	const UNIVESAL_AGGREGATORS = [
 		Aggregator.NONE,
 		Aggregator.COUNT,
@@ -19,6 +10,8 @@
 
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
+	import Ellipsis from 'lucide-svelte/icons/ellipsis';
+	import GripVertical from 'lucide-svelte/icons/grip-vertical';
 	import Plus from 'lucide-svelte/icons/plus';
 	import X from 'lucide-svelte/icons/x';
 	import Trash from 'lucide-svelte/icons/trash';
@@ -38,24 +31,37 @@
 	import {
 		DEBOUNCE_INTERVAL,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
+		PROPERTY_AGGREGATOR_LABELS,
 		PROPERTY_COLORS,
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
-	} from '$lib/constant';
+	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption } from '$lib/types';
 	import debounce from 'debounce';
-	import { getItemState } from '$lib/components/items';
-	import { fade, slide } from 'svelte/transition';
-	import { Button, Field, HSeparator, Label, Select, Switch } from '$lib/components/base/index.js';
+	import { getItemState } from '$lib/components/items/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		Field,
+		HSeparator,
+		Label,
+		Select,
+		Switch
+	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
+	import { fade, slide } from 'svelte/transition';
 
 	type Props = {
 		property: Property;
 		isOpen: boolean;
+		idx: number;
 		openChange: (value: string | null) => void;
 	};
 
-	let { property, isOpen = false, openChange }: Props = $props();
+	let { property, isOpen, idx, openChange }: Props = $props();
+
+	let dragging = $state(false);
+	let dragover = $state(false);
 
 	const deleteModal = getDeleteModalState();
 	const propertyState = getPropertyState();
@@ -63,6 +69,7 @@
 	const newOptionInputId = useId(`property-editor-${property.id}`);
 	const newOptionInputState = new ModalState();
 	const showAllOptions = new ModalState();
+	const menuState = new ModalState();
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
@@ -82,6 +89,7 @@
 	}
 
 	function deleteProperty() {
+		menuState.close();
 		deleteModal.open({
 			id: property.id,
 			type: 'property',
@@ -108,7 +116,7 @@
 		options.push(
 			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
 				id: aggregator,
-				label: aggregatorLabel[aggregator.toLowerCase()],
+				label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
 				isSelected: aggregator === property.aggregator
 			}))
 		);
@@ -117,7 +125,7 @@
 			options.push(
 				...NUMBER_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
 					id: aggregator,
-					label: aggregatorLabel[aggregator.toLowerCase()],
+					label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
 					isSelected: aggregator === property.aggregator
 				}))
 			);
@@ -164,6 +172,38 @@
 		return showAllOptions.isOpen ? property.options.length : 5;
 	}
 
+	function ondragover(e: DragEvent) {
+		e.preventDefault();
+		dragover = true;
+	}
+
+	function ondragleave(e: DragEvent) {
+		e.preventDefault();
+		dragover = false;
+	}
+
+	function ondragend() {
+		dragging = false;
+		dragover = false;
+	}
+
+	function ondragstart(e: DragEvent) {
+		dragging = true;
+		if (!e.dataTransfer) return;
+		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.dropEffect = 'move';
+		e.dataTransfer.setData('text/plain', idx.toString());
+	}
+
+	async function ondrop(e: DragEvent) {
+		dragover = false;
+		dragging = false;
+		if (!e.dataTransfer) return;
+		e.dataTransfer.dropEffect = 'move';
+		const start = +e.dataTransfer.getData('text/plain');
+		await propertyState.orderProperty(start, idx);
+	}
+
 	$effect(() => {
 		if (newOptionInputState.isOpen) {
 			tick().then(() => {
@@ -173,102 +213,136 @@
 	});
 </script>
 
-<div class="p-1 rounded bg-secondary/40 text-secondary-foreground">
-	<div class="flex space-x-0.5">
-		<div class="relative w-full">
-			<div class="absolute inset-y-0 pl-3 flex items-center pointer-events-none">
-				<PropertyIcon key={property.type} />
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="flex group pr-4 my-0.5"
+	draggable="true"
+	{ondragstart}
+	{ondrop}
+	{ondragend}
+	{ondragover}
+	{ondragleave}
+>
+	<GripVertical
+		class={tm(
+			'size-4 cursor-pointer invisible group-hover:visible',
+			'opacity-50 hover:opacity-100 transition-opacity',
+			isOpen ? 'mt-5' : 'mt-3.5'
+		)}
+	/>
+	<div
+		class={tm(
+			'grow border-2 ',
+			isOpen ? 'rounded my-2' : 'rounded-sm my-0.5',
+			dragover ? 'border-secondary/60' : 'border-2 border-secondary',
+			dragging && 'select-text outline-0 min-w-0'
+		)}
+	>
+		<div class={tm('flex bg-secondary ', dragover && 'bg-opacity-60')}>
+			<div class="relative w-full border-r border-card p-0.5">
+				<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
+					<PropertyIcon key={property.type} />
+				</div>
+
+				<label for={`${property.id}-name`} class="sr-only"> Name</label>
+				<input
+					id={`${property.id}-name`}
+					value={property.name}
+					name="name"
+					type="text"
+					class="w-full h-8 pl-7 text-sm rounded-md bg-transparent focus:bg-card placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					oninput={handleOnInput}
+				/>
 			</div>
-
-			<label for={`${property.id}-name`} class="sr-only"> Name</label>
-			<input
-				id={`${property.id}-name`}
-				value={property.name}
-				name="name"
-				type="text"
-				class="w-full h-9 pl-9 text-sm rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
-				oninput={handleOnInput}
-			/>
+			<Button
+				theme="ghost"
+				variant="icon"
+				class="hover:bg-card hover:text-card-foreground rounded-3xl"
+				onclick={() => openChange(isOpen ? null : property.id)}
+			>
+				<Settings />
+			</Button>
 		</div>
-		<Button
-			theme="secondary"
-			variant="icon"
-			onclick={() => openChange(isOpen ? null : property.id)}
-		>
-			<Settings />
-		</Button>
-	</div>
-	{#if isOpen}
-		<div class="flex flex-col gap-y-1 pt-2 px-1" transition:slide>
-			<Field>
-				<Label for={getIdPrefix('property-type')} name="Type" />
-				<Select
-					id={getIdPrefix('property-type')}
-					options={setupPropertyTypeSelectOptions()}
-					onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
-					searchable
-				/>
-			</Field>
-
-			<Field>
-				<Label for={getIdPrefix('property-aggregator')} name="Aggregator" />
-				<Select
-					id={getIdPrefix('property-aggregator')}
-					options={setupAggregatorSelectOptions()}
-					onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
-					searchable
-				/>
-			</Field>
-
-			{#if isSelectable(property.type)}
+		{#if isOpen}
+			<div class="flex flex-col gap-y-1 p-2" transition:slide>
 				<Field>
-					<Label for={getIdPrefix('property-default-value')} name="Default value" />
+					<Label for={getIdPrefix('property-type')} name="Type" />
 					<Select
-						id={getIdPrefix('property-default-value')}
-						options={setupDefaultOptionSelectOptions()}
-						onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
-						searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+						id={getIdPrefix('property-type')}
+						options={setupPropertyTypeSelectOptions()}
+						onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
+						searchable
 					/>
 				</Field>
-			{/if}
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-1 py-2">
-				{#each Object.values(View) as view}
-					<div class="w-full md:w-fit flex items-center gap-x-2">
-						<Label for={view} name={`Visible in ${capitalizeFirstLetter(view.toString())} view`} />
+				<Field>
+					<Label for={getIdPrefix('property-aggregator')} name="Aggregator" />
+					<Select
+						id={getIdPrefix('property-aggregator')}
+						options={setupAggregatorSelectOptions()}
+						onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
+						searchable
+					/>
+				</Field>
 
-						<Switch
-							id={view}
-							checked={containsView(property.visibleInViews, view)}
-							onchange={() => {
-								updProperty({
-									id: property.id,
-									visibleInViews: toggleView(property.visibleInViews, view)
-								});
-							}}
+				{#if isSelectable(property.type)}
+					<Field>
+						<Label for={getIdPrefix('property-default-value')} name="Default value" />
+						<Select
+							id={getIdPrefix('property-default-value')}
+							options={setupDefaultOptionSelectOptions()}
+							onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
+							searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 						/>
-					</div>
-				{/each}
-			</div>
-			{#if isSelectable(property.type)}
+					</Field>
+				{/if}
+				{#if isSelectable(property.type)}
+					<HSeparator />
+					{@render propertyOptions()}
+				{/if}
+
 				<HSeparator />
-				{@render propertyOptions()}
-			{/if}
+				<div class="grid grid-cols-1 md:grid-cols-9 gap-1 py-2">
+					{#each Object.values(View) as view}
+						<div class="w-full md:w-fit col-span-4 flex items-center gap-x-2">
+							<Label
+								for={view}
+								name={`Visible in ${capitalizeFirstLetter(view.toString())} view`}
+							/>
 
-			<HSeparator />
-			<div class="flex justify-end items-center space-x-1.5 pt-1">
-				<Button theme="secondary" onclick={() => duplicateProperty()}>
-					<Copy />
-					<span> Duplicate</span>
-				</Button>
+							<Switch
+								id={view}
+								checked={containsView(property.visibleInViews, view)}
+								onchange={() => {
+									updProperty({
+										id: property.id,
+										visibleInViews: toggleView(property.visibleInViews, view)
+									});
+								}}
+							/>
+						</div>
+					{/each}
 
-				<Button theme="secondary" class="hover:text-primary" onclick={() => deleteProperty()}>
-					<Trash />
-					<span> Delete</span>
-				</Button>
+					<div class="flex justify-end items-center">
+						<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
+							{#snippet trigger()}
+								<Ellipsis />
+							{/snippet}
+							<Button theme="ghost" variant="menu" onclick={() => duplicateProperty()}>
+								<Copy />
+								<span> Duplicate property</span>
+							</Button>
+
+							<Button theme="danger" variant="menu" onclick={() => deleteProperty()}>
+								<Trash />
+								<span> Delete property</span>
+							</Button>
+						</AdaptiveWrapper>
+					</div>
+				</div>
 			</div>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
 
 {#snippet propertyOptions()}
@@ -303,7 +377,7 @@
 					class="justify-center"
 					onclick={() => showAllOptions.toggle()}
 				>
-					{showAllOptions.isOpen ? ' Show less options' : 'Show all options'}
+					{showAllOptions.isOpen ? ' Show fewer options' : 'Show all options'}
 				</Button>
 			{/if}
 

@@ -339,9 +339,10 @@ async function main() {
 				name,
 				description,
 				groupByConfigs: [{ view: View.LIST }, { view: View.TABLE }],
-				properties: properties.map(({ name, type, options }) => ({
+				properties: properties.map(({ name, type, options }, idx) => ({
 					name,
 					type,
+					order: idx + 1,
 					options: options.map(({ value }) => ({
 						color: colorsNames[randomIntFromInterval(0, colorsNames.length - 1)] as Color,
 						value

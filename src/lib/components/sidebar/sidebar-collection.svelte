@@ -107,9 +107,9 @@
 
 <span
 	class={[
-		'group flex items-center py-0.5 pl-3.5 pr-0.5  hover:bg-secondary/90  transition duration-75 text-secondary-foreground',
+		'group flex items-center py-0.5 pl-2.5 pr-0.5  hover:bg-secondary/90  transition duration-75 text-secondary-foreground',
 		active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
-		asChild && 'pl-5'
+		asChild && 'pl-8'
 	]}
 >
 	<a

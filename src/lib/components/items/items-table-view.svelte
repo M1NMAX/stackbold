@@ -22,7 +22,11 @@
 		MenuTitle,
 		Switch
 	} from '$lib/components/base/index.js';
-	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant';
+	import {
+		DEBOUNCE_INTERVAL,
+		MAX_ITEM_NAME_LENGTH,
+		PROPERTY_AGGREGATOR_LABELS
+	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
 
@@ -79,7 +83,7 @@
 	}
 </script>
 
-<div class="overflow-x-auto">
+<div class="overflow-x-auto pb-1.5">
 	<table class="w-full table-auto">
 		<thead>
 			<tr class="text-muted-foreground text-sm">
@@ -150,14 +154,13 @@
 								class="hidden md:flex items-center py-0.5 px-1 gap-x-1 invisible group-hover:visible "
 							>
 								<span> Open </span>
-
 								<PanelLeftOpen />
 							</Button>
 						</td>
 
 						{#each propertyState.properties as property (property.id)}
 							{#if containsView(property.visibleInViews, View.TABLE)}
-								<td class="border last:border-r-0">
+								<td class="border last:border-r-0 px-2">
 									<PropertyValue view={View.TABLE} {property} itemId={item.id} />
 								</td>
 							{/if}
@@ -169,12 +172,14 @@
 					<td></td>
 
 					{#each propertyState.properties as property (property.id)}
-						{#if property.visibleInViews.some((v) => v === View.LIST)}
+						{#if containsView(property.visibleInViews, View.TABLE)}
 							{#if property.aggregator === 'NONE'}
 								<td></td>
 							{:else}
 								<td class="text-right text-nowrap px-2">
-									<span class="text-[0.65rem] font-medium"> {property.aggregator}</span>
+									<span class="text-[0.65rem] font-medium">
+										{PROPERTY_AGGREGATOR_LABELS[property.aggregator.toLowerCase()]}
+									</span>
 									<span class="font-semibold">
 										{aggregatePropertyValue(property, property.aggregator)}
 									</span>

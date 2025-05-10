@@ -54,6 +54,7 @@ const collectionCreateSchema = z.object({
 				aggregator: AggregatorSchema.optional(),
 				defaultValue: z.string().optional(),
 				visibleInViews: z.array(ViewSchema).optional(),
+				order: z.number().optional(),
 				options: z
 					.array(
 						z.object({
@@ -91,6 +92,7 @@ const collectionUpdatePropertySchema = z.object({
 		aggregator: AggregatorSchema.optional(),
 		defaultValue: z.string().optional(),
 		visibleInViews: z.array(ViewSchema).optional(),
+		order: z.number().optional(),
 		options: z
 			.array(
 				z.object({
