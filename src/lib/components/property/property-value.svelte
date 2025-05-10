@@ -89,10 +89,10 @@
 	const buttonClass = $derived(
 		tm(
 			isTableView()
-				? 'w-full justify-start p-2 rounded-none border-0 bg-transparent hover:bg-transparent'
+				? 'w-full justify-start  rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
 			isNumerical(property.type) && 'justify-end',
-			isSelectable(property.type) && `${isTableView() ? 'ml-2' : ''} px-0`,
+			isSelectable(property.type) && 'px-0',
 			!isSelectable(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);

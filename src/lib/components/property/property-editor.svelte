@@ -1,13 +1,4 @@
 <script module lang="ts">
-	const aggregatorLabel: { [key: string]: string } = {
-		none: 'None',
-		count: 'Count all',
-		count_empty: 'Count empty',
-		count_not_empty: 'Count not empty',
-		avg: 'Average',
-		sum: 'Sum'
-	};
-
 	const UNIVESAL_AGGREGATORS = [
 		Aggregator.NONE,
 		Aggregator.COUNT,
@@ -40,9 +31,10 @@
 	import {
 		DEBOUNCE_INTERVAL,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
+		PROPERTY_AGGREGATOR_LABELS,
 		PROPERTY_COLORS,
 		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
-	} from '$lib/constant';
+	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption } from '$lib/types';
 	import debounce from 'debounce';
@@ -124,7 +116,7 @@
 		options.push(
 			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
 				id: aggregator,
-				label: aggregatorLabel[aggregator.toLowerCase()],
+				label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
 				isSelected: aggregator === property.aggregator
 			}))
 		);
@@ -133,7 +125,7 @@
 			options.push(
 				...NUMBER_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
 					id: aggregator,
-					label: aggregatorLabel[aggregator.toLowerCase()],
+					label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
 					isSelected: aggregator === property.aggregator
 				}))
 			);
