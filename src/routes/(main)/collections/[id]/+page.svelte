@@ -80,7 +80,6 @@
 	}
 
 	$effect(() => {
-		itemState.items = data.items;
 		propertyState.collectionId = collection.id;
 
 		propertyState.properties = collection.properties;
@@ -119,6 +118,7 @@
 	$effect(() => {
 		data.cid;
 		search = '';
+		itemState.items = data.items;
 	});
 
 	let groupedItems = $derived.by(() => {
@@ -174,9 +174,11 @@
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
-		const parseResult = getNameSchema({ label: 'Item name', max: MAX_ITEM_NAME_LENGTH }).safeParse(
-			itemName
-		);
+		const parseResult = getNameSchema({
+			label: 'Item name',
+			max: MAX_ITEM_NAME_LENGTH
+		}).safeParse(itemName);
+
 		if (!parseResult.success) {
 			itemNameError = parseResult.error.issues[0].message;
 			return;
@@ -272,13 +274,15 @@
 	}
 
 	function updGroupByConfig(view: View, value: string) {
-		return collection.groupByConfigs.map((config) => {
+		const groupByConfigs = collection.groupByConfigs.map((config) => {
 			if (config.view !== view) return config;
 			return {
 				view,
 				propertyId: value
 			};
 		});
+
+		updCollection({ groupByConfigs });
 	}
 
 	//Filters
@@ -431,7 +435,7 @@
 				/>
 				<GroupByMenu
 					value={findGroupByConfig(view) || 'none'}
-					updValue={(value) => updCollection({ groupByConfigs: updGroupByConfig(view, value) })}
+					updValue={(value) => updGroupByConfig(view, value)}
 				/>
 			{/if}
 
@@ -451,7 +455,7 @@
 						/>
 						<GroupByMenu
 							value={findGroupByConfig(view) || 'none'}
-							updValue={(value) => updCollection({ groupByConfigs: updGroupByConfig(view, value) })}
+							updValue={(value) => updGroupByConfig(view, value)}
 						/>
 					{/if}
 				</div>
