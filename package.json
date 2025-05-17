@@ -1,6 +1,6 @@
 {
 	"name": "stackbold",
-	"version": "0.74.2-test",
+	"version": "0.74.3",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
