@@ -49,7 +49,7 @@
 	<AlertDialog
 		bind:open={deleteModal.isOpen}
 		title="Delete"
-		description={`Are you sure you want to delete this ${deleteModal.detail.type} ?`}
+		description={`Are you sure you want to delete this ${deleteModal.detail.type}?`}
 		onClickConfirm={handleDelete}
 	></AlertDialog>
 {/if}
