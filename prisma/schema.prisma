@@ -5,11 +5,6 @@ generator client {
   binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
-generator zod {
-  provider         = "zod-prisma-types"
-  createModelTypes = false
-}
-
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")

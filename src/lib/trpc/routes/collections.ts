@@ -2,22 +2,17 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import {
-	PropertyCreateInputSchema,
-	ColorSchema,
-	PropertyTypeSchema,
-	AggregatorSchema,
-	ViewSchema
-} from '$prisma-zod';
 import { View } from '@prisma/client';
 
+const viewSchema = z.nativeEnum(View);
+
 const groupByConfigSchema = z.object({
-	view: ViewSchema,
+	view: viewSchema,
 	propertyId: z.string()
 });
 
 const filterConfigsSchema = z.object({
-	view: ViewSchema,
+	view: viewSchema,
 	filters: z.array(
 		z.object({
 			id: z.string(),
