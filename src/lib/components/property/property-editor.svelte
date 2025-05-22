@@ -73,8 +73,7 @@
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
-		const prop = propertyState.getMostRecentProperty(propertyState.properties);
-		await itemState.addPropertyRef(prop.id);
+		await itemState.refresh(propertyState.collectionId);
 	}
 
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
@@ -96,7 +95,6 @@
 			name: property.name,
 			fun: async () => {
 				await propertyState.deleteProperty(property.id);
-				await itemState.deletePropertyRef(property.id);
 			}
 		});
 	}

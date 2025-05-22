@@ -1,12 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import {
-	Aggregator,
-	Color,
-	PropertyType,
-	type Collection,
-	type FilterConfig,
-	type Property
-} from '@prisma/client';
+import type { Collection } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
@@ -36,36 +29,6 @@ export class CollectionState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			let properties: Property[] = [];
-
-			if (args.properties) {
-				properties = args.properties.map((property) => ({
-					createdAt: new Date(),
-					id: property.id || crypto.randomUUID(),
-					name: property.name,
-					type: property.type || PropertyType.TEXT,
-					visibleInViews: property.visibleInViews || [],
-					aggregator: property.aggregator || Aggregator.NONE,
-					defaultValue: property.defaultValue || '',
-					options: !property.options
-						? []
-						: property.options.map((opt) => ({
-								id: opt.id || crypto.randomUUID(),
-								value: opt.value,
-								color: opt.color || Color.GRAY
-							}))
-				}));
-			}
-
-			let filterConfigs: FilterConfig[] = [];
-
-			if (args.filterConfigs) {
-				filterConfigs = args.filterConfigs.map((config) => ({
-					view: config.view,
-					filters: config.filters || []
-				}));
-			}
-
 			this.collections.push({
 				id: tmpId,
 				ownerId: tmpId,
@@ -78,9 +41,9 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || false,
 				groupByConfigs: args.groupByConfigs || [],
-				filterConfigs: filterConfigs,
-				properties: properties
+				filterConfigs: args.filterConfigs || []
 			});
+
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 
@@ -107,23 +70,8 @@ export class CollectionState {
 		const { id: _, ownerId, name, ...rest } = target;
 
 		try {
-			const result = await trpc().collections.create.mutate({
-				...rest,
-				name: name + ' copy'
-			});
-
+			const result = await trpc().collections.duplicate.mutate(id);
 			this.collections.push({ ...result });
-
-			const items = await trpc().items.list.query(id);
-
-			if (items.length > 0) {
-				await trpc().items.createMany.mutate(
-					items.map(({ id, collectionId, ...rest }) => ({
-						collectionId: result.id,
-						...rest
-					}))
-				);
-			}
 
 			this.#toastState.action({
 				message: `Collection [${name}] duplicated successfully`,
@@ -139,7 +87,7 @@ export class CollectionState {
 	}
 
 	async updCollection(args: RouterInputs['collections']['update']) {
-		const { id, data } = args;
+		const { id, ...rest } = args;
 		let target = this.#getCollection(id);
 		if (target == null) {
 			this.#toastState.error();
@@ -147,7 +95,7 @@ export class CollectionState {
 		}
 
 		try {
-			this.#updCollection(id, { ...target, ...data });
+			this.#updCollection(id, { ...target, ...rest });
 			await trpc().collections.update.mutate({ ...args });
 		} catch (err) {
 			this.#toastState.error();

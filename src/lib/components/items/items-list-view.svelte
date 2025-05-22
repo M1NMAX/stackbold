@@ -40,7 +40,7 @@
 
 		const id = targetEl.dataset.id!;
 		const name = targetEl.value;
-		updItemDebounced({ id, data: { name } });
+		updItemDebounced({ id, name });
 	}
 
 	type ClickItemEvent = MouseEvent & {
@@ -82,7 +82,7 @@
 	function saveAndClose(target: HTMLInputElement) {
 		const id = target.dataset.id!;
 		const name = target.value;
-		updItem({ id, data: { name } });
+		updItem({ id, name });
 		stopEditing();
 	}
 

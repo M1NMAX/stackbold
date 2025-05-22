@@ -1,11 +1,19 @@
 import type { SelectOption } from '$lib/types';
-import type { Color, Property, PropertyRef, Option, PropertyType, View } from '@prisma/client';
+import type {
+	Color,
+	Property,
+	PropertyRef,
+	Option,
+	PropertyType,
+	View,
+	TemplateProperty
+} from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
 
-export function getPropertyColor(property: Property, value: string) {
+export function getPropertyColor(property: Property | TemplateProperty, value: string) {
 	if (!isSelectable(property.type)) return 'GRAY' as Color;
 	const option = property.options.find((opt) => opt.id === value);
 	return option ? option.color : ('GRAY' as Color);

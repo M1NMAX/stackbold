@@ -56,11 +56,11 @@ export class ItemState {
 	}
 
 	async updItem(args: RouterInputs['items']['update']) {
-		const { id, data } = args;
+		const { id, ...rest } = args;
 		const target = this.getItem(id);
 		if (target == null) return;
 		try {
-			this.#updItem(id, { ...target, ...data });
+			this.#updItem(id, { ...target, ...rest });
 			await trpc().items.update.mutate(args);
 		} catch (err) {
 			this.#toastState.error();
@@ -114,25 +114,6 @@ export class ItemState {
 		}
 	}
 
-	async addPropertyRef(id: string) {
-		try {
-			const ref = { id, value: '' };
-
-			this.items = this.items.map((item) => {
-				const refs = [...item.properties, ref];
-
-				return { ...item, properties: refs };
-			});
-
-			await trpc().items.addProperty.mutate({
-				property: ref,
-				ids: this.items.map(({ id }) => id)
-			});
-		} catch (err) {
-			this.#toastState.error();
-		}
-	}
-
 	async updPropertyRef(id: string, propertyRef: { id: string; value: string }) {
 		const target = this.getItem(id);
 		if (!target) {
@@ -151,23 +132,6 @@ export class ItemState {
 		} catch (err) {
 			this.#toastState.error();
 			this.#updItem(target.id, target);
-		}
-	}
-
-	async deletePropertyRef(id: string) {
-		try {
-			this.items = this.items.map((item) => {
-				const refs = item.properties.filter((ref) => ref.id !== id);
-
-				return { ...item, properties: refs };
-			});
-
-			await trpc().items.deleteProperty.mutate({
-				propertyId: id,
-				ids: this.items.map(({ id }) => id)
-			});
-		} catch (err) {
-			this.#toastState.error();
 		}
 	}
 

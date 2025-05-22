@@ -31,22 +31,7 @@
 	// TODO: ref better try catch and feedback
 	async function createCollectionBasedOnTemplate() {
 		try {
-			const { icon, name, description, properties, groupByConfigs, items } = template;
-
-			const createdCollection = await trpc().collections.create.mutate({
-				icon,
-				name,
-				description,
-				properties,
-				groupByConfigs
-			});
-
-			const itemsCopy = items.map(({ id, ...rest }) => ({
-				...rest,
-				collectionId: createdCollection.id
-			}));
-
-			await trpc().items.createMany.mutate(itemsCopy);
+			const collection = await trpc().templates.turn.mutate(template.id);
 
 			await collectionState.refresh();
 
@@ -54,7 +39,7 @@
 				message: 'New collection created',
 				action: {
 					label: 'Go',
-					onclick: () => goto(`/collections/${createdCollection.id}`)
+					onclick: () => goto(`/collections/${collection.id}`)
 				}
 			});
 		} catch (error) {
