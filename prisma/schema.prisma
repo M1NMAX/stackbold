@@ -111,18 +111,6 @@ type Option {
   color Color  @default(GRAY)
 }
 
-type Property {
-  id             String       @default(uuid()) @map("_id")
-  name           String
-  createdAt      DateTime     @default(now())
-  type           PropertyType @default(TEXT)
-  options        Option[]
-  visibleInViews View[]       @default([LIST, TABLE])
-  aggregator     Aggregator   @default(NONE)
-  defaultValue   String       @default("")
-  order          Int          @default(0)
-}
-
 type PropertyRef {
   id    String @map("_id")
   value String @default("")
@@ -150,14 +138,26 @@ model Collection {
   ownerId        String          @db.ObjectId
   items          Item[]
   groupByConfigs GroupByConfig[]
-  properties     Property[]
   group          Group?          @relation(fields: [groupId], references: [id])
   groupId        String?         @db.ObjectId
   icon           String          @default("folder")
   filterConfigs  FilterConfig[]
+  properties     Property[]
+}
 
-  @@index([properties.id], name: "property_id_index")
-  @@index([properties.options.id], name: "property_option_id_index")
+model Property {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  collection     Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId   String       @db.ObjectId
+  name           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  type           PropertyType @default(TEXT)
+  options        Option[]
+  visibleInViews View[]       @default([LIST, TABLE])
+  aggregator     Aggregator   @default(NONE)
+  defaultValue   String       @default("")
+  order          Int          @default(0)
 }
 
 model Item {
@@ -172,6 +172,18 @@ model Item {
   @@index([properties.id], name: "propertyref_id_index")
 }
 
+type TemplateProperty {
+  id             String       @default(uuid()) @map("_id")
+  name           String
+  createdAt      DateTime     @default(now())
+  type           PropertyType @default(TEXT)
+  options        Option[]
+  visibleInViews View[]       @default([LIST, TABLE])
+  aggregator     Aggregator   @default(NONE)
+  defaultValue   String       @default("")
+  order          Int          @default(0)
+}
+
 type TemplateItem {
   id         String        @default(uuid()) @map("_id")
   name       String
@@ -179,13 +191,13 @@ type TemplateItem {
 }
 
 model Template {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
   name           String
-  description    String          @default("")
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  properties     Property[]
+  description    String             @default("")
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  properties     TemplateProperty[]
   items          TemplateItem[]
   groupByConfigs GroupByConfig[]
-  icon           String          @default("folder")
+  icon           String             @default("folder")
 }
