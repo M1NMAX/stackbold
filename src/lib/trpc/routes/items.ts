@@ -73,14 +73,7 @@ export const items = createTRPCRouter({
 
 		await prisma.item.delete({ where: { id } });
 	}),
-	addProperty: protectedProcedure
-		.input(z.object({ ids: z.array(z.string()), property: PropertyRefCreateInputSchema }))
-		.mutation(async ({ input: { ids, property } }) => {
-			await prisma.item.updateMany({
-				data: { properties: { push: property } },
-				where: { id: { in: ids } }
-			});
-		}),
+
 	updateProperty: protectedProcedure
 		.input(
 			z.object({
@@ -97,23 +90,5 @@ export const items = createTRPCRouter({
 					properties: { updateMany: { where: { id: pid }, data: rest } }
 				}
 			});
-		}),
-	deleteProperty: protectedProcedure
-		.input(z.object({ ids: z.array(z.string()), propertyId: z.string() }))
-		.mutation(async ({ input: { ids, propertyId } }) => {
-			await prisma.$transaction(
-				ids.map((id) =>
-					prisma.item.update({
-						data: {
-							properties: {
-								deleteMany: {
-									where: { id: propertyId }
-								}
-							}
-						},
-						where: { id }
-					})
-				)
-			);
 		})
 });

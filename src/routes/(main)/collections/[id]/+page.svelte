@@ -72,18 +72,12 @@
 	let collection = $derived(getCurrentCollection());
 
 	const itemState = setItemState(data.items);
-
-	const propertyState = setPropertyState(getCurrentCollection().properties, data.cid);
+	const propertyState = setPropertyState(data.properties);
 
 	function getCurrentCollection() {
 		return collectionState.collections.find((collection) => collection.id == data.cid)!;
 	}
 
-	$effect(() => {
-		propertyState.collectionId = collection.id;
-
-		propertyState.properties = collection.properties;
-	});
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
@@ -119,6 +113,8 @@
 		data.cid;
 		search = '';
 		itemState.items = data.items;
+		propertyState.properties = data.properties;
+		propertyState.collectionId = data.cid;
 	});
 
 	let groupedItems = $derived.by(() => {
@@ -141,8 +137,8 @@
 	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
 	const activeItemState = getActiveItemState();
 
-	async function updCollection(data: RouterInputs['collections']['update']['data']) {
-		await collectionState.updCollection({ id: collection.id, data });
+	async function updCollection(args: Omit<RouterInputs['collections']['update'], 'id'>) {
+		await collectionState.updCollection({ ...args, id: collection.id });
 	}
 	const updCollectionDebounced = debounce(updCollection, DEBOUNCE_INTERVAL);
 

@@ -18,10 +18,8 @@
 
 	async function addProperty(propType: PropertyType) {
 		if (wrapper.isOpen) wrapper.close();
-
 		await propertyState.addProperty(propType);
-		const property = propertyState.getMostRecentProperty(propertyState.properties);
-		await itemState.addPropertyRef(property.id);
+		await itemState.refresh(propertyState.collectionId);
 	}
 </script>
 

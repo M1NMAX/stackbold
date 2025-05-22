@@ -1,12 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import {
-	Aggregator,
-	Color,
-	PropertyType,
-	type Collection,
-	type FilterConfig,
-	type Property
-} from '@prisma/client';
+import type { Collection } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
@@ -36,36 +29,6 @@ export class CollectionState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			let properties: Property[] = [];
-
-			if (args.properties) {
-				properties = args.properties.map((property) => ({
-					createdAt: new Date(),
-					id: property.id || crypto.randomUUID(),
-					name: property.name,
-					type: property.type || PropertyType.TEXT,
-					visibleInViews: property.visibleInViews || [],
-					aggregator: property.aggregator || Aggregator.NONE,
-					defaultValue: property.defaultValue || '',
-					options: !property.options
-						? []
-						: property.options.map((opt) => ({
-								id: opt.id || crypto.randomUUID(),
-								value: opt.value,
-								color: opt.color || Color.GRAY
-							}))
-				}));
-			}
-
-			let filterConfigs: FilterConfig[] = [];
-
-			if (args.filterConfigs) {
-				filterConfigs = args.filterConfigs.map((config) => ({
-					view: config.view,
-					filters: config.filters || []
-				}));
-			}
-
 			this.collections.push({
 				id: tmpId,
 				ownerId: tmpId,
@@ -78,9 +41,9 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || false,
 				groupByConfigs: args.groupByConfigs || [],
-				filterConfigs: filterConfigs,
-				properties: properties
+				filterConfigs: args.filterConfigs || []
 			});
+
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 
