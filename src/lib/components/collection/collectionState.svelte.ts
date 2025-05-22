@@ -70,23 +70,8 @@ export class CollectionState {
 		const { id: _, ownerId, name, ...rest } = target;
 
 		try {
-			const result = await trpc().collections.create.mutate({
-				...rest,
-				name: name + ' copy'
-			});
-
+			const result = await trpc().collections.duplicate.mutate(id);
 			this.collections.push({ ...result });
-
-			const items = await trpc().items.list.query(id);
-
-			if (items.length > 0) {
-				await trpc().items.createMany.mutate(
-					items.map(({ id, collectionId, ...rest }) => ({
-						collectionId: result.id,
-						...rest
-					}))
-				);
-			}
 
 			this.#toastState.action({
 				message: `Collection [${name}] duplicated successfully`,
@@ -102,7 +87,7 @@ export class CollectionState {
 	}
 
 	async updCollection(args: RouterInputs['collections']['update']) {
-		const { id, data } = args;
+		const { id, ...rest } = args;
 		let target = this.#getCollection(id);
 		if (target == null) {
 			this.#toastState.error();
@@ -110,7 +95,7 @@ export class CollectionState {
 		}
 
 		try {
-			this.#updCollection(id, { ...target, ...data });
+			this.#updCollection(id, { ...target, ...rest });
 			await trpc().collections.update.mutate({ ...args });
 		} catch (err) {
 			this.#toastState.error();

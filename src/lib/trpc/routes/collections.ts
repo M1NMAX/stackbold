@@ -39,66 +39,18 @@ const collectionCreateSchema = z.object({
 	isDescHidden: z.boolean().optional(),
 	groupId: z.string().nullable().optional(),
 	groupByConfigs: z.array(groupByConfigSchema).optional().default(defaultGroupByConfigs),
-	filterConfigs: z.array(filterConfigsSchema).optional().default(defaultFilterConfigs),
-	properties: z
-		.array(
-			z.object({
-				id: z.string().optional(),
-				name: z.string(),
-				type: PropertyTypeSchema.optional(),
-				aggregator: AggregatorSchema.optional(),
-				defaultValue: z.string().optional(),
-				visibleInViews: z.array(ViewSchema).optional(),
-				order: z.number().optional(),
-				options: z
-					.array(
-						z.object({
-							id: z.string().optional(),
-							value: z.string(),
-							color: z.lazy(() => ColorSchema).optional()
-						})
-					)
-					.optional()
-			})
-		)
-		.optional()
+	filterConfigs: z.array(filterConfigsSchema).optional().default(defaultFilterConfigs)
 });
 
-const collectionUpdateSchema = z.object({
-	id: z.string(),
-	data: z.object({
-		icon: z.string().optional(),
-		name: z.string().optional(),
-		isPinned: z.boolean().optional(),
-		description: z.string().optional(),
-		isDescHidden: z.boolean().optional(),
-		groupId: z.string().nullable().optional(),
-		groupByConfigs: z.array(groupByConfigSchema).optional(),
-		filterConfigs: z.array(filterConfigsSchema).optional()
-	})
-});
-
-const collectionUpdatePropertySchema = z.object({
-	id: z.string(),
-	property: z.object({
-		id: z.string(),
-		name: z.string().optional(),
-		type: PropertyTypeSchema.optional(),
-		aggregator: AggregatorSchema.optional(),
-		defaultValue: z.string().optional(),
-		visibleInViews: z.array(ViewSchema).optional(),
-		order: z.number().optional(),
-		options: z
-			.array(
-				z.object({
-					id: z.string(),
-					value: z.string(),
-					color: z.lazy(() => ColorSchema)
-				})
-			)
-			.optional()
-	})
-});
+const collectionUpdateSchema = collectionCreateSchema
+	.merge(
+		z.object({
+			id: z.string(),
+			groupByConfigs: z.array(groupByConfigSchema).optional(),
+			filterConfigs: z.array(filterConfigsSchema).optional()
+		})
+	)
+	.partial({ name: true });
 
 export const collections = createTRPCRouter({
 	list: protectedProcedure.query(({ ctx: { userId } }) =>
@@ -122,10 +74,59 @@ export const collections = createTRPCRouter({
 				data: { ownerId: userId, ...collectionData }
 			})
 	),
+
+	duplicate: protectedProcedure.input(z.string()).mutation(async ({ input: id }) => {
+		const {
+			id: _,
+			properties,
+			items,
+			...rest
+		} = await prisma.collection.findFirstOrThrow({
+			where: { id },
+			include: { items: true, properties: true }
+		});
+
+		const collection = await prisma.collection.create({
+			data: { ...rest, name: rest.name + ' copy' }
+		});
+
+		const props = await Promise.all(
+			properties.map(async ({ id, ...rest }) => {
+				const result = await prisma.property.create({
+					data: { ...rest, collectionId: collection.id }
+				});
+				return { ...result, old: id };
+			})
+		);
+
+		if (items.length > 0) {
+			const collectionItems = items.map(({ id, ...rest }) => {
+				const properties = props
+					.filter((prop) => prop.type !== 'CREATED')
+					.map((prop) => {
+						const ref = rest.properties.find((ref) => ref.id === prop.old);
+						if (!ref) return { id: prop.id, value: '' };
+						return { id: prop.id, value: ref.value };
+					});
+
+				return {
+					...rest,
+					collectionId: collection.id,
+					properties
+				};
+			});
+
+			await prisma.item.createMany({ data: collectionItems });
+		}
+
+		return collection;
+	}),
+
 	update: protectedProcedure
 		.input(collectionUpdateSchema)
 		.mutation(
-			async ({ input: { id, data } }) => await prisma.collection.update({ data, where: { id } })
+			async ({ input: { id, ...rest } }) =>
+				await prisma.collection.update({ where: { id }, data: { ...rest } })
 		),
 
 	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
@@ -134,5 +135,5 @@ export const collections = createTRPCRouter({
 		if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
 		await prisma.collection.delete({ where: { id } });
-		})
+	})
 });
