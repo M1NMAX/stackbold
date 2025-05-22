@@ -56,11 +56,11 @@ export class ItemState {
 	}
 
 	async updItem(args: RouterInputs['items']['update']) {
-		const { id, data } = args;
+		const { id, ...rest } = args;
 		const target = this.getItem(id);
 		if (target == null) return;
 		try {
-			this.#updItem(id, { ...target, ...data });
+			this.#updItem(id, { ...target, ...rest });
 			await trpc().items.update.mutate(args);
 		} catch (err) {
 			this.#toastState.error();
