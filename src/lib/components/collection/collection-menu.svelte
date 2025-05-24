@@ -41,7 +41,7 @@
 		wrapper.close();
 		collectionState.updCollection({
 			id: collection.id,
-			data: { isDescHidden: !collection.isDescHidden }
+			isDescHidden: !collection.isDescHidden
 		});
 	}
 	function deleteCollection() {

@@ -54,11 +54,10 @@
 	type Props = {
 		property: Property;
 		isOpen: boolean;
-		idx: number;
 		openChange: (value: string | null) => void;
 	};
 
-	let { property, isOpen, idx, openChange }: Props = $props();
+	let { property, isOpen, openChange }: Props = $props();
 
 	let dragging = $state(false);
 	let dragover = $state(false);
@@ -73,8 +72,7 @@
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
-		const prop = propertyState.getMostRecentProperty(propertyState.properties);
-		await itemState.addPropertyRef(prop.id);
+		await itemState.refresh(propertyState.collectionId);
 	}
 
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
@@ -96,7 +94,6 @@
 			name: property.name,
 			fun: async () => {
 				await propertyState.deleteProperty(property.id);
-				await itemState.deletePropertyRef(property.id);
 			}
 		});
 	}
@@ -192,7 +189,7 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'move';
 		e.dataTransfer.dropEffect = 'move';
-		e.dataTransfer.setData('text/plain', idx.toString());
+		e.dataTransfer.setData('text/plain', property.order.toString());
 	}
 
 	async function ondrop(e: DragEvent) {
@@ -201,7 +198,7 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.dropEffect = 'move';
 		const start = +e.dataTransfer.getData('text/plain');
-		await propertyState.orderProperty(start, idx);
+		await propertyState.orderProperty(start, property.order);
 	}
 
 	$effect(() => {

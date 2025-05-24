@@ -55,8 +55,8 @@
 		else isSmHeadingVisible = false;
 	}
 
-	async function updItem(data: RouterInputs['items']['update']['data']) {
-		await itemState.updItem({ id: item.id, data });
+	async function updItem(args: Omit<RouterInputs['items']['update'], 'id'>) {
+		await itemState.updItem({ id: item.id, ...args });
 	}
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);

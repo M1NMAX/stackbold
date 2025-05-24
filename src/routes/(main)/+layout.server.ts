@@ -1,5 +1,5 @@
 import { createContext } from '$lib/trpc/context';
-import { router } from '$lib/trpc/router';
+import { createCaller } from '$lib/trpc/router';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import type { Collection } from '@prisma/client';
@@ -15,7 +15,7 @@ export const load: LayoutServerLoad = async (event) => {
 	async function getItems(collections: Collection[]) {
 		let searchableItems: Searchable[] = [];
 		for (const collection of collections) {
-			const items = await router.createCaller(await createContext(event)).items.list(collection.id);
+			const items = await createCaller(await createContext(event)).items.list(collection.id);
 
 			const tp = items.map<Searchable>((item) => ({
 				type: 'item',
@@ -31,8 +31,8 @@ export const load: LayoutServerLoad = async (event) => {
 		return searchableItems;
 	}
 
-	const groups = await router.createCaller(await createContext(event)).groups.list();
-	const collections = await router.createCaller(await createContext(event)).collections.list();
+	const groups = await createCaller(await createContext(event)).groups.list();
+	const collections = await createCaller(await createContext(event)).collections.list();
 
 	const items = await getItems(collections);
 

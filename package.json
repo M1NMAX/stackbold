@@ -24,7 +24,6 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@types/debounce": "^1.2.3",
 		"@types/node": "^20.8.2",
-		"@types/uuid": "^9.0.6",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
 		"autoprefixer": "^10.4.16",
@@ -65,9 +64,7 @@
 		"dotenv": "^16.4.1",
 		"oslo": "^1.2.0",
 		"superjson": "^2.2.0",
-		"trpc-sveltekit": "^3.6.2",
-		"uuid": "^9.0.1",
-		"zod-prisma-types": "^3.2.1"
+		"trpc-sveltekit": "^3.6.2"
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"

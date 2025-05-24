@@ -60,7 +60,7 @@
 			option: option.id,
 			name: option.value,
 			fun: () => {
-				propertyState.deletePropertyOption(propertyId, option.id);
+				propertyState.removeOptionFromProperty(propertyId, option.id);
 			}
 		});
 	}

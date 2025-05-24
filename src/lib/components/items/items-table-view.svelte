@@ -52,7 +52,7 @@
 
 		const id = targetEl.dataset.id!;
 		const name = targetEl.value;
-		updItemDebounced({ id, data: { name } });
+		updItemDebounced({ id, name });
 	}
 
 	function aggregatePropertyValue(property: Property, type: Aggregator) {
