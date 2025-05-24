@@ -43,7 +43,7 @@
 		}
 
 		renameError = null;
-		groupState.updGroup({ id, data: { name } });
+		groupState.updGroup({ id, name });
 		renameGroupModal.close();
 	}
 

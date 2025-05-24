@@ -38,6 +38,12 @@ const propertyUpdateSchema = propertyCreateSchema
 	.merge(z.object({ id: z.string() }))
 	.partial({ collectionId: true, name: true });
 
+const propertyOrderSchema = z.object({
+	cid: z.string(),
+	start: z.number(),
+	end: z.number()
+});
+
 const optionAddSchema = z.object({
 	pid: z.string(),
 	option: optionSchema.required({ id: true })
@@ -82,6 +88,29 @@ export const properties = createTRPCRouter({
 		.mutation(async ({ input: { id, ...rest } }) =>
 			prisma.property.update({ where: { id }, data: { ...rest } })
 		),
+	order: protectedProcedure.input(propertyOrderSchema).mutation(async ({ input }) => {
+		const properties = await prisma.property.findMany({
+			where: { collectionId: input.cid },
+			orderBy: { order: 'asc' }
+		});
+
+		if (input.start < input.end) {
+			await prisma.property.updateMany({
+				where: { collectionId: input.cid, order: { gt: input.start, lte: input.end } },
+				data: { order: { decrement: 1 } }
+			});
+		} else {
+			await prisma.property.updateMany({
+				where: { collectionId: input.cid, order: { gte: input.end, lt: input.start } },
+				data: { order: { increment: 1 } }
+			});
+		}
+
+		await prisma.property.update({
+			where: { id: properties[input.start - 1].id },
+			data: { order: input.end }
+		});
+	}),
 
 	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
 		const property = await prisma.property.findFirstOrThrow({
