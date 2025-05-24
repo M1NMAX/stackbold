@@ -98,9 +98,8 @@
 {/if}
 
 {#snippet editors()}
-	{#each propertyState.properties as property, idx (property.id)}
+	{#each propertyState.properties as property (property.id)}
 		<PropertyEditor
-			{idx}
 			{property}
 			isOpen={currentlyOpen === property.id}
 			openChange={(value) => toggleEditor(value)}

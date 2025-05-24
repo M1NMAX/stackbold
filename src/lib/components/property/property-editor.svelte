@@ -54,11 +54,10 @@
 	type Props = {
 		property: Property;
 		isOpen: boolean;
-		idx: number;
 		openChange: (value: string | null) => void;
 	};
 
-	let { property, isOpen, idx, openChange }: Props = $props();
+	let { property, isOpen, openChange }: Props = $props();
 
 	let dragging = $state(false);
 	let dragover = $state(false);
