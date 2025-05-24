@@ -65,7 +65,7 @@
 
 		renameError = null;
 
-		collectionState.updCollection({ id: collection.id, data: { name } });
+		collectionState.updCollection({ id: collection.id, name });
 		renameModalState.close();
 	}
 
