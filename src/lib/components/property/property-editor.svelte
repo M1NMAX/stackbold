@@ -190,7 +190,7 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'move';
 		e.dataTransfer.dropEffect = 'move';
-		e.dataTransfer.setData('text/plain', idx.toString());
+		e.dataTransfer.setData('text/plain', property.order.toString());
 	}
 
 	async function ondrop(e: DragEvent) {
@@ -199,7 +199,7 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.dropEffect = 'move';
 		const start = +e.dataTransfer.getData('text/plain');
-		await propertyState.orderProperty(start, idx);
+		await propertyState.orderProperty(start, property.order);
 	}
 
 	$effect(() => {

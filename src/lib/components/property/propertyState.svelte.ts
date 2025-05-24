@@ -122,22 +122,8 @@ export class PropertyState {
 
 	async orderProperty(start: number, end: number) {
 		if (start === end) return;
-		const target = this.properties[start];
-		await this.updProperty({ id: target.id, order: end + 1 });
-
-		if (start < end) {
-			for (let i = start + 1; i <= end; i++) {
-				const prop = this.properties[i];
-				await this.updProperty({ id: prop.id, order: prop.order - 1 });
-			}
-		} else {
-			for (let i = end; i < start; i++) {
-				const prop = this.properties[i];
-				await this.updProperty({ id: prop.id, order: prop.order + 1 });
-			}
-		}
-
-		this.sort();
+		await trpc().properties.order.mutate({ cid: this.collectionId, start, end });
+		await this.refresh(this.collectionId);
 	}
 
 	async deleteProperty(id: string) {
@@ -153,6 +139,14 @@ export class PropertyState {
 		} catch (err) {
 			this.#toastState.error();
 			this.properties.push({ ...target });
+		}
+	}
+
+	async refresh(id: string) {
+		try {
+			this.properties = await trpc().properties.list.query(id);
+		} catch (err) {
+			this.#toastState.error();
 		}
 	}
 
