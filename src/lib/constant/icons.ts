@@ -8,6 +8,7 @@ import List from 'lucide-svelte/icons/list';
 import Text from 'lucide-svelte/icons/text';
 import Logs from 'lucide-svelte/icons/logs';
 import CalendarClock from 'lucide-svelte/icons/calendar-clock';
+import FolderSymlink from 'lucide-svelte/icons/folder-symlink';
 
 // Theme
 import Moon from 'lucide-svelte/icons/moon';
@@ -65,7 +66,8 @@ export const INPUT_ICONS: IconBundle = {
 	date: Calendar,
 	number: Hash,
 	url: Link,
-	created: CalendarClock
+	created: CalendarClock,
+	relation: FolderSymlink
 };
 
 export const THEME_ICONS: IconBundle = {

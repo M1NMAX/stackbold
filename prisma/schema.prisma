@@ -74,6 +74,7 @@ enum PropertyType {
   DATE        @map("date")
   NUMBER      @map("number")
   CREATED     @map("created")
+  RELATION    @map("relation")
 }
 
 enum Aggregator {
@@ -146,18 +147,19 @@ model Collection {
 }
 
 model Property {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  collection     Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId   String       @db.ObjectId
-  name           String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  type           PropertyType @default(TEXT)
-  options        Option[]
-  visibleInViews View[]       @default([LIST, TABLE])
-  aggregator     Aggregator   @default(NONE)
-  defaultValue   String       @default("")
-  order          Int          @default(0)
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  collection       Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId     String       @db.ObjectId
+  name             String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  type             PropertyType @default(TEXT)
+  options          Option[]
+  visibleInViews   View[]       @default([LIST, TABLE])
+  aggregator       Aggregator   @default(NONE)
+  defaultValue     String       @default("")
+  order            Int          @default(0)
+  targetCollection String       @default("") // RELATION-only
 }
 
 model Item {

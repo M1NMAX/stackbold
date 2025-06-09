@@ -31,7 +31,8 @@ const propertyCreateSchema = z.object({
 	defaultValue: z.string().optional(),
 	visibleInViews: z.array(viewSchema).optional(),
 	order: z.number().optional(),
-	options: z.array(optionSchema).optional()
+	options: z.array(optionSchema).optional(),
+	targetCollection: z.string().optional()
 });
 
 const propertyUpdateSchema = propertyCreateSchema
@@ -60,27 +61,47 @@ const optionRemoveSchema = z.object({
 });
 
 export const properties = createTRPCRouter({
-	list: protectedProcedure
-		.input(z.string())
-		.query(({ input }) =>
-			prisma.property.findMany({ where: { collectionId: input }, orderBy: { order: 'asc' } })
-		),
+	list: protectedProcedure.input(z.string()).query(async ({ input }) => {
+		const properties = await prisma.property.findMany({
+			where: { collectionId: input },
+			orderBy: { order: 'asc' }
+		});
+
+		return await Promise.all(
+			properties.map(async (property) => {
+				if (property.type !== 'RELATION' || !property.targetCollection) return property;
+
+				const items = await prisma.item.findMany({
+					where: { collectionId: property.targetCollection }
+				});
+
+				return {
+					...property,
+					options: items.map((item) => ({
+						id: item.id,
+						value: item.name,
+						color: Color.GRAY
+					}))
+				};
+			})
+		);
+	}),
 
 	load: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.property.findUnique({ where: { id: input } })),
 
 	create: protectedProcedure.input(propertyCreateSchema).mutation(async ({ input: property }) => {
-		const createdProp = await prisma.property.create({ data: property });
+		const prop = await prisma.property.create({ data: property });
 
-		if (createdProp.type !== 'CREATED') {
+		if (hasRef(prop.type)) {
 			await prisma.item.updateMany({
-				where: { collectionId: createdProp.collectionId },
-				data: { properties: { push: { id: createdProp.id, value: '' } } }
+				where: { collectionId: prop.collectionId },
+				data: { properties: { push: { id: prop.id, value: '' } } }
 			});
 		}
 
-		return createdProp;
+		return prop;
 	}),
 
 	update: protectedProcedure
@@ -125,7 +146,7 @@ export const properties = createTRPCRouter({
 
 		if (property.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-		if (property.type !== 'CREATED') {
+		if (hasRef(property.type)) {
 			await prisma.item.updateMany({
 				where: { collectionId: property.collection.id },
 				data: { properties: { deleteMany: { where: { id } } } }
@@ -169,6 +190,10 @@ export const properties = createTRPCRouter({
 		})
 	)
 });
+
+function hasRef(type: PropertyType) {
+	return type !== 'CREATED';
+}
 
 function wasGroupBy(configs: GroupByConfig[], pid: string) {
 	let tainted = false;

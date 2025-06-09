@@ -119,6 +119,23 @@
 			isMulti
 		/>
 	</Field>
+{:else if property.type === 'RELATION'}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Select
+			id={property.id}
+			options={[
+				...property.options.map((option) => ({
+					id: option.id,
+					label: option.value,
+					isSelected: option.id === value
+				}))
+			]}
+			onselect={(opt) => onchange(opt.id)}
+			placeholder="Empty"
+			searchable
+		/>
+	</Field>
 {:else if property.type === 'DATE'}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />

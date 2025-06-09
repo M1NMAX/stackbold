@@ -53,6 +53,7 @@ export class PropertyState {
 				visibleInViews: [View.LIST, View.TABLE],
 				aggregator: Aggregator.NONE,
 				options: [],
+				targetCollection: '',
 				order,
 				collectionId
 			});

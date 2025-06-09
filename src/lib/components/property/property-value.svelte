@@ -15,6 +15,7 @@
 		getPropertyColor,
 		getPropertyRef,
 		isNumerical,
+		isRelation,
 		isSelectable,
 		joinMultiselectOptions,
 		PropertyIcon,
@@ -92,7 +93,7 @@
 				? 'w-full justify-start  rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
 			isNumerical(property.type) && 'justify-end',
-			isSelectable(property.type) && 'px-0',
+			(isSelectable(property.type) || isRelation(property.type)) && 'px-0',
 			!isSelectable(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
@@ -180,6 +181,23 @@
 		triggerClass={buttonClass}
 		placeholder=""
 		isMulti
+	/>
+
+	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
+{:else if property.type === 'RELATION' && (value || isTableView())}
+	<Select
+		id={`${property.id}-value-${itemId}`}
+		options={[
+			...property.options.map((option) => ({
+				id: option.id,
+				label: option.value,
+				isSelected: option.id === value
+			}))
+		]}
+		onselect={(opt) => updPropertyRef(opt.id)}
+		triggerClass={buttonClass}
+		searchable
+		placeholder=""
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}

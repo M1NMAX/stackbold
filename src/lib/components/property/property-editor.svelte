@@ -50,6 +50,7 @@
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
+	import { getCollectionState } from '$lib/components/collection/index.js';
 
 	type Props = {
 		property: Property;
@@ -63,6 +64,7 @@
 	let dragover = $state(false);
 
 	const deleteModal = getDeleteModalState();
+	const collectionState = getCollectionState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	const newOptionInputId = useId(`property-editor-${property.id}`);
@@ -292,10 +294,25 @@
 							searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 						/>
 					</Field>
-				{/if}
-				{#if isSelectable(property.type)}
 					<HSeparator />
 					{@render propertyOptions()}
+				{/if}
+
+				{#if property.type === 'RELATION'}
+					<Field>
+						<Label for={getIdPrefix('property-target-collection')} name="Related to" />
+						<Select
+							id={getIdPrefix('property-target-collection')}
+							options={collectionState.collections.map((collection) => ({
+								id: collection.id,
+								label: collection.name,
+								isSelected: property.targetCollection === collection.id
+							}))}
+							onselect={(opt) => updProperty({ id: property.id, targetCollection: opt.id })}
+							placeholder="Empty"
+							searchable
+						/>
+					</Field>
 				{/if}
 
 				<HSeparator />

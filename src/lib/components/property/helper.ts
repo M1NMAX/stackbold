@@ -42,6 +42,10 @@ export function isSelectable(type: PropertyType) {
 	return type === 'SELECT' || type === 'MULTISELECT';
 }
 
+export function isRelation(type: PropertyType) {
+	return type === 'RELATION';
+}
+
 export function isNumerical(type: PropertyType) {
 	return type === 'NUMBER';
 }
