@@ -19,7 +19,7 @@
 		isSelectable,
 		joinMultiselectOptions,
 		PropertyIcon,
-		separeteMultiselectOptions
+		separateMultiselectOptions
 	} from './index.js';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
@@ -165,7 +165,7 @@
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
 {:else if property.type === 'MULTISELECT' && (value || isTableView())}
-	{@const selectedOptions = separeteMultiselectOptions(value)}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
 		id={`${property.id}-value-${itemId}`}
 		options={[
@@ -185,19 +185,21 @@
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
 {:else if property.type === 'RELATION' && (value || isTableView())}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
 		id={`${property.id}-value-${itemId}`}
 		options={[
 			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
-				isSelected: option.id === value
+				isSelected: selectedOptions.includes(option.id)
 			}))
 		]}
-		onselect={(opt) => updPropertyRef(opt.id)}
+		onselect={(opts) => updPropertyRef(joinMultiselectOptions(opts))}
 		triggerClass={buttonClass}
-		searchable
 		placeholder=""
+		searchable
+		isMulti
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}

@@ -14,7 +14,7 @@
 	import { textareaAutoSize } from '$lib/actions';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
-		separeteMultiselectOptions,
+		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
 		isNumerical
@@ -100,7 +100,7 @@
 		/>
 	</Field>
 {:else if property.type === 'MULTISELECT'}
-	{@const selectedOptions = separeteMultiselectOptions(value)}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
@@ -120,6 +120,7 @@
 		/>
 	</Field>
 {:else if property.type === 'RELATION'}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
@@ -128,12 +129,13 @@
 				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
-					isSelected: option.id === value
+					isSelected: selectedOptions.includes(option.id)
 				}))
 			]}
-			onselect={(opt) => onchange(opt.id)}
+			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
 			searchable
+			isMulti
 		/>
 	</Field>
 {:else if property.type === 'DATE'}

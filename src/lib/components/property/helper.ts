@@ -54,6 +54,6 @@ export function joinMultiselectOptions(options: SelectOption[]) {
 	return options.map((option) => option.id).join('|');
 }
 
-export function separeteMultiselectOptions(value: string) {
+export function separateMultiselectOptions(value: string) {
 	return value.split('|');
 }

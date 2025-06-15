@@ -128,7 +128,7 @@ export class ItemState {
 
 			this.#updItem(id, { ...target, properties: propertiesRef });
 
-			await trpc().items.updateProperty.mutate({ id, property: propertyRef });
+			await trpc().items.updateProperty.mutate({ id, ref: propertyRef });
 		} catch (err) {
 			this.#toastState.error();
 			this.#updItem(target.id, target);

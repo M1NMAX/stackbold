@@ -160,6 +160,7 @@ model Property {
   defaultValue     String       @default("")
   order            Int          @default(0)
   targetCollection String       @default("") // RELATION-only
+  relatedProperty  String       @default("") // RELATION-only
 }
 
 model Item {

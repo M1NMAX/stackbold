@@ -54,6 +54,7 @@ export class PropertyState {
 				aggregator: Aggregator.NONE,
 				options: [],
 				targetCollection: '',
+				relatedProperty: '',
 				order,
 				collectionId
 			});
@@ -61,7 +62,6 @@ export class PropertyState {
 			const property = await trpc().properties.create.mutate({
 				name,
 				type,
-				order,
 				collectionId
 			});
 			this.#updProperty(tmpId, property);
