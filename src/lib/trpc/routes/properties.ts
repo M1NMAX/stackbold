@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { hasRef, isRelation } from '$lib/trpc/utils';
+import { hasRef, isBundle, isRelation } from '$lib/trpc/utils';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -10,7 +10,8 @@ import {
 	View,
 	type Filter,
 	type FilterConfig,
-	type GroupByConfig
+	type GroupByConfig,
+	type Property
 } from '@prisma/client';
 
 const colorSchema = z.nativeEnum(Color);
@@ -34,7 +35,10 @@ const propertyCreateSchema = z.object({
 	order: z.number().optional(),
 	options: z.array(optionSchema).optional(),
 	targetCollection: z.string().optional(),
-	relatedProperty: z.string().optional()
+	relatedProperty: z.string().optional(),
+	intTargetProperty: z.string().optional(),
+	extTargetProperty: z.string().optional(),
+	calculate: aggregatorSchema.optional()
 });
 
 const propertyUpdateSchema = propertyCreateSchema
@@ -123,23 +127,45 @@ async function listProperties(cid: string) {
 	});
 
 	return await Promise.all(
-		properties.map(async (property) => {
-			if (!isRelation(property)) return property;
-
-			const items = await prisma.item.findMany({
-				where: { collectionId: property.targetCollection }
-			});
-
-			return {
-				...property,
-				options: items.map((item) => ({
-					id: item.id,
-					value: item.name,
-					color: Color.GRAY
-				}))
-			};
-		})
+		properties.map(async (property) => await injectPropertyOptions(property))
 	);
+}
+
+async function injectPropertyOptions(property: Property) {
+	if (isRelation(property)) {
+		const items = await prisma.item.findMany({
+			where: { collectionId: property.targetCollection }
+		});
+
+		return {
+			...property,
+			options: items.map((item) => ({
+				id: item.id,
+				value: item.name,
+				color: Color.GRAY
+			}))
+		};
+	} else if (isBundle(property)) {
+		const targetProperty = await prisma.property.findFirstOrThrow({
+			where: { id: property.intTargetProperty }
+		});
+
+		const properties = await prisma.property.findMany({
+			where: { collectionId: targetProperty.targetCollection }
+		});
+
+		return {
+			...property,
+			options: properties.map((prop) => ({
+				id: prop.id,
+				value: prop.name,
+				color: Color.GRAY,
+				extra: prop.type.toString()
+			}))
+		};
+	}
+
+	return property;
 }
 
 async function createProperty(property: z.infer<typeof propertyCreateSchema>) {

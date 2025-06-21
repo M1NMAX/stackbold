@@ -1,7 +1,7 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { isRelation } from '$lib/trpc/utils';
-import { PropertyType } from '@prisma/client';
+import { aggregatePropertyValue, getPropertyRef, isRelation } from '$lib/trpc/utils';
+import { PropertyType, type Item, type Property, type PropertyRef } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -20,9 +20,7 @@ const itemUpdateSchema = itemCreateSchema
 const propertyUpdateSchema = z.object({ id: z.string(), ref: propertyRefSchema });
 
 export const items = createTRPCRouter({
-	list: protectedProcedure
-		.input(z.string())
-		.query(({ input }) => prisma.item.findMany({ where: { collectionId: input } })),
+	list: protectedProcedure.input(z.string()).query(async ({ input }) => await listItems(input)),
 
 	load: protectedProcedure
 		.input(z.string())
@@ -70,6 +68,34 @@ export const items = createTRPCRouter({
 		})
 });
 
+async function listItems(cid: string) {
+	const [items, properties] = await Promise.all([
+		prisma.item.findMany({ where: { collectionId: cid } }),
+		prisma.property.findMany({ where: { collectionId: cid, type: PropertyType.BUNDLE } })
+	]);
+
+	if (properties.length === 0) return items;
+
+	let updItems: Item[] = [];
+
+	await Promise.all(
+		properties.map(async (property) => {
+			if (!property.extTargetProperty || !property.intTargetProperty) return;
+
+			const extProperty = await prisma.property.findUnique({
+				where: { id: property.extTargetProperty }
+			});
+
+			if (!extProperty) return;
+
+			updItems = await Promise.all(
+				items.map(async (item) => injectBundleValue(item, property, extProperty.id))
+			);
+		})
+	);
+	return updItems;
+}
+
 async function updBidirectionalRelationRef(args: z.infer<typeof propertyUpdateSchema>) {
 	const { id, ref } = args;
 
@@ -89,7 +115,7 @@ async function updBidirectionalRelationRef(args: z.infer<typeof propertyUpdateSc
 
 	await Promise.all(
 		items.map(async (item) => {
-			const innerRef = item.properties.find((r) => r.id === relatedProperty.id);
+			const innerRef = getPropertyRef(item.properties, relatedProperty.id);
 			if (!innerRef) return;
 
 			let values = innerRef.value ? innerRef.value.split('|') : [];
@@ -121,6 +147,19 @@ async function getStoredRefValue(itemId: string, refId: string) {
 	return ref.value;
 }
 
+async function injectBundleValue(item: Item, property: Property, extPid: string) {
+	const ref = getPropertyRef(item.properties, property.intTargetProperty);
+	if (!ref) return addRef(item, { id: property.id, value: '' });
+
+	const ids = ref.value ? ref.value.split('|') : [];
+	if (ids.length === 0) return addRef(item, { id: property.id, value: '' });
+
+	const extItems = await prisma.item.findMany({ where: { id: { in: ids } } });
+	const value = aggregatePropertyValue(extItems, property.calculate, extPid);
+
+	return addRef(item, { id: property.id, value: value.toString() });
+}
+
 function getTargetIdsAndMode(storedRefValue: string, receivedRefValue: string) {
 	const storedRefValues = storedRefValue ? storedRefValue.split('|') : [];
 	const receivedRefValues = receivedRefValue ? receivedRefValue.split('|') : [];
@@ -135,4 +174,8 @@ function getTargetIdsAndMode(storedRefValue: string, receivedRefValue: string) {
 		: receivedRefValues.filter((v) => !storedSet.has(v));
 
 	return { ids, isDeletion };
+}
+
+function addRef(item: Item, ref: PropertyRef) {
+	return { ...item, properties: [...item.properties, { id: ref.id, value: ref.value }] };
 }
