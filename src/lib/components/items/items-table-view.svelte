@@ -55,29 +55,27 @@
 		updItemDebounced({ id, name });
 	}
 
-	function aggregatePropertyValue(property: Property, type: Aggregator) {
-		if (type === 'COUNT') return items.length;
-		if (type === 'COUNT_EMPTY') {
+	function aggregatePropertyValue(property: Property) {
+		if (property.aggregator === 'COUNT') return items.length;
+		else if (property.aggregator === 'COUNT_EMPTY') {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
 				if (propertyRef == null || propertyRef.value === '') return acc + 1;
 				return acc;
 			}, 0);
-		}
-		if (type === 'COUNT_NOT_EMPTY') {
+		} else if (property.aggregator === 'COUNT_NOT_EMPTY') {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
 				if (propertyRef && propertyRef.value !== '') return acc + 1;
 				return acc;
 			}, 0);
-		}
-		if (type === 'SUM' || type === 'AVG') {
+		} else if (property.aggregator === 'SUM' || property.aggregator === 'AVG') {
 			const sum = items.reduce((acc, curr) => {
 				const propertyRef = getPropertyRef(curr.properties, property.id);
 				const inc = propertyRef ? propertyRef.value : 0;
 				return acc + Number(inc);
 			}, 0);
-			if (type === 'SUM') return sum.toFixed(2);
+			if (property.aggregator === 'SUM') return sum.toFixed(2);
 			return (sum / items.length).toFixed(2);
 		}
 	}
@@ -181,7 +179,7 @@
 										{PROPERTY_AGGREGATOR_LABELS[property.aggregator.toLowerCase()]}
 									</span>
 									<span class="font-semibold">
-										{aggregatePropertyValue(property, property.aggregator)}
+										{aggregatePropertyValue(property)}
 									</span>
 								</td>
 							{/if}
