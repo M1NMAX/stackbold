@@ -53,10 +53,13 @@ export class PropertyState {
 				visibleInViews: [View.LIST, View.TABLE],
 				aggregator: Aggregator.NONE,
 				options: [],
+				order,
+				collectionId,
 				targetCollection: '',
 				relatedProperty: '',
-				order,
-				collectionId
+				intTargetProperty: '',
+				extTargetProperty: '',
+				calculate: Aggregator.NONE
 			});
 
 			const property = await trpc().properties.create.mutate({

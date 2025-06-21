@@ -15,8 +15,7 @@
 		getPropertyColor,
 		getPropertyRef,
 		isNumerical,
-		isRelation,
-		isSelectable,
+		useSelector,
 		joinMultiselectOptions,
 		PropertyIcon,
 		separateMultiselectOptions
@@ -93,8 +92,8 @@
 				? 'w-full justify-start  rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
 			isNumerical(property.type) && 'justify-end',
-			(isSelectable(property.type) || isRelation(property.type)) && 'px-0',
-			!isSelectable(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
+			useSelector(property.type) && 'px-0',
+			!useSelector(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
 
@@ -172,8 +171,8 @@
 			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
-				isSelected: selectedOptions.includes(option.id),
-				theme: PROPERTY_COLORS[option.color]
+				theme: PROPERTY_COLORS[option.color],
+				isSelected: selectedOptions.includes(option.id)
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
@@ -192,6 +191,8 @@
 			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
+				theme: PROPERTY_COLORS[option.color],
+				icon: 'item',
 				isSelected: selectedOptions.includes(option.id)
 			}))
 		]}
@@ -203,6 +204,10 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
+{:else if property.type === 'BUNDLE' && (value || isTableView())}
+	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
+		{@render tooltipWrapper(value, !!value && isTableView())}
+	</div>
 {:else if property.type === 'DATE' && (value || isTableView())}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}

@@ -129,6 +129,8 @@
 				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
+					theme: PROPERTY_COLORS[option.color],
+					icon: 'item',
 					isSelected: selectedOptions.includes(option.id)
 				}))
 			]}
@@ -137,6 +139,18 @@
 			searchable
 			isMulti
 		/>
+	</Field>
+{:else if property.type === 'BUNDLE'}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<div
+			class={buttonVariants({
+				theme: 'ghost',
+				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+			})}
+		>
+			{@render miniWrapper(value)}
+		</div>
 	</Field>
 {:else if property.type === 'DATE'}
 	<Field>
