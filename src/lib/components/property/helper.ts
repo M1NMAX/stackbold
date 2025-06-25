@@ -13,6 +13,11 @@ export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
 
+export function getRefValue(refs: PropertyRef[], pid: string) {
+	const ref = getPropertyRef(refs, pid);
+	return ref ? ref.value : '';
+}
+
 export function getPropertyColor(property: Property | TemplateProperty, value: string) {
 	if (!hasOptions(property.type)) return 'GRAY' as Color;
 	const option = property.options.find((opt) => opt.id === value);
@@ -49,6 +54,10 @@ export function hasOptions(type: PropertyType) {
 
 export function isNumerical(type: PropertyType) {
 	return type === 'NUMBER';
+}
+const PROPERTIES_THAT_USE_INPUT = ['TEXT', 'NUMBER', 'URL'];
+export function useInputField(type: PropertyType) {
+	return PROPERTIES_THAT_USE_INPUT.includes(type);
 }
 
 export function joinMultiselectOptions(options: SelectOption[]) {

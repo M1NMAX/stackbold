@@ -22,11 +22,11 @@
 		// utils
 		containsView,
 		getPropertyState,
+		hasOptions,
 		toggleView,
 		// components
 		PropertyIcon,
-		PropertyOption,
-		hasOptions
+		PropertyOption
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,

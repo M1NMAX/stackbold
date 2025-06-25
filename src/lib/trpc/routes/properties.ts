@@ -22,7 +22,8 @@ const aggregatorSchema = z.nativeEnum(Aggregator);
 const optionSchema = z.object({
 	id: z.string(),
 	value: z.string(),
-	color: colorSchema
+	color: colorSchema,
+	extra: z.string()
 });
 
 const propertyCreateSchema = z.object({
@@ -84,10 +85,12 @@ export const properties = createTRPCRouter({
 		.mutation(async ({ input: { id, ...rest } }) => {
 			const relatedProperty = await createBidirectionalRelation({ id, ...rest });
 
-			return await prisma.property.update({
+			const property = await prisma.property.update({
 				where: { id },
 				data: { ...rest, relatedProperty }
 			});
+
+			return injectPropertyOptions(property);
 		}),
 
 	order: protectedProcedure
@@ -126,9 +129,7 @@ async function listProperties(cid: string) {
 		orderBy: { order: 'asc' }
 	});
 
-	return await Promise.all(
-		properties.map(async (property) => await injectPropertyOptions(property))
-	);
+	return await Promise.all(properties.map((property) => injectPropertyOptions(property)));
 }
 
 async function injectPropertyOptions(property: Property) {
@@ -142,7 +143,8 @@ async function injectPropertyOptions(property: Property) {
 			options: items.map((item) => ({
 				id: item.id,
 				value: item.name,
-				color: Color.GRAY
+				color: Color.GRAY,
+				extra: ''
 			}))
 		};
 	} else if (isBundle(property)) {

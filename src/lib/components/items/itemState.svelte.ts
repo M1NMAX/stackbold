@@ -114,7 +114,7 @@ export class ItemState {
 		}
 	}
 
-	async updPropertyRef(id: string, propertyRef: { id: string; value: string }) {
+	async updPropertyRef(id: string, ref: { id: string; value: string }) {
 		const target = this.getItem(id);
 		if (!target) {
 			this.#toastState.error('Invalid property');
@@ -122,13 +122,17 @@ export class ItemState {
 		}
 
 		try {
-			const propertiesRef = target.properties.map((ref) =>
-				ref.id !== propertyRef.id ? ref : { ...ref, value: propertyRef.value }
+			const refs = target.properties.map((ref) =>
+				ref.id !== ref.id ? ref : { ...ref, value: ref.value }
 			);
 
-			this.#updItem(id, { ...target, properties: propertiesRef });
+			const updatedItem = await trpc().items.updateRef.mutate({
+				id,
+				ref,
+				cid: target.collectionId
+			});
 
-			await trpc().items.updateProperty.mutate({ id, ref: propertyRef });
+			this.#updItem(id, { ...updatedItem });
 		} catch (err) {
 			this.#toastState.error();
 			this.#updItem(target.id, target);
@@ -137,8 +141,7 @@ export class ItemState {
 
 	async refresh(id: string) {
 		try {
-			const storedItems = await trpc().items.list.query(id);
-			this.items = storedItems;
+			this.items = await trpc().items.list.query(id);
 		} catch (err) {
 			this.#toastState.error();
 		}

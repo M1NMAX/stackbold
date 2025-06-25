@@ -33,10 +33,10 @@
 	type Props = {
 		property: Property;
 		onchange: (value: string) => void;
-		value?: string;
+		value: string;
 	};
 
-	let { property, onchange, value = '' }: Props = $props();
+	let { property, onchange, value }: Props = $props();
 
 	let color = $derived(getPropertyColor(property, value));
 	let wrapperState = new ModalState();
