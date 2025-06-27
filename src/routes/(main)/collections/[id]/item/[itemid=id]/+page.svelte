@@ -8,11 +8,7 @@
 	import { getActiveItemState, getItemState } from '$lib/components/items';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
-	import {
-		getPropertyRef,
-		getPropertyState,
-		PropertyInput
-	} from '$lib/components/property/index.js';
+	import { getPropertyState, getRefValue, PropertyInput } from '$lib/components/property/index.js';
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
@@ -23,7 +19,7 @@
 	import { getContext, tick } from 'svelte';
 	import { textareaAutoSize } from '$lib/actions/index.js';
 	import { tm, useId } from '$lib/utils/index.js';
-	import type { Property, PropertyRef } from '@prisma/client';
+	import type { PropertyRef } from '@prisma/client';
 
 	let { data } = $props();
 
@@ -90,15 +86,6 @@
 	}
 	async function updPropertyRef(ref: PropertyRef) {
 		await itemState.updPropertyRef(item.id, ref);
-	}
-
-	function getPropertyValue(property: Property) {
-		if (property.type === 'CREATED') return item.createdAt.toISOString();
-
-		const propertyRef = getPropertyRef(item.properties, property.id);
-		if (!propertyRef) return '';
-
-		return propertyRef.value;
 	}
 
 	function getCurrentItem() {
@@ -175,7 +162,7 @@
 	{#each propertyState.properties as property}
 		<PropertyInput
 			{property}
-			value={getPropertyValue(property)}
+			value={getRefValue(item.properties, property.id)}
 			onchange={(value) => updPropertyRef({ id: property.id, value })}
 		/>
 	{/each}

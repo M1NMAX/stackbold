@@ -22,11 +22,11 @@
 		// utils
 		containsView,
 		getPropertyState,
+		hasOptions,
 		toggleView,
 		// components
 		PropertyIcon,
-		PropertyOption,
-		isSelectable
+		PropertyOption
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -50,6 +50,7 @@
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
+	import { getCollectionState } from '$lib/components/collection/index.js';
 
 	type Props = {
 		property: Property;
@@ -63,6 +64,7 @@
 	let dragover = $state(false);
 
 	const deleteModal = getDeleteModalState();
+	const collectionState = getCollectionState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	const newOptionInputId = useId(`property-editor-${property.id}`);
@@ -107,23 +109,31 @@
 		}));
 	}
 
-	function setupAggregatorSelectOptions() {
+	function isExtPropertyNumerical(property: Property) {
+		if (property.type !== PropertyType.BUNDLE) return false;
+
+		const select = property.options.find((opt) => opt.id === property.extTargetProperty);
+		if (!select) return false;
+		return select.extra === PropertyType.NUMBER;
+	}
+
+	function setupAggregatorSelectOptions(isNumerical: boolean, current: Aggregator) {
 		let options: SelectOption[] = [];
 
 		options.push(
 			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
 				id: aggregator,
 				label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
-				isSelected: aggregator === property.aggregator
+				isSelected: aggregator === current
 			}))
 		);
 
-		if (property.type === 'NUMBER') {
+		if (isNumerical) {
 			options.push(
 				...NUMBER_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
 					id: aggregator,
 					label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
-					isSelected: aggregator === property.aggregator
+					isSelected: aggregator === current
 				}))
 			);
 		}
@@ -164,7 +174,7 @@
 	}
 
 	function getMaxVisisbleOptions() {
-		if (!isSelectable(property.type)) return 0;
+		if (!hasOptions(property.type)) return 0;
 		if (property.options.length < 6) return property.options.length;
 		return showAllOptions.isOpen ? property.options.length : 5;
 	}
@@ -276,13 +286,13 @@
 					<Label for={getIdPrefix('property-aggregator')} name="Aggregator" />
 					<Select
 						id={getIdPrefix('property-aggregator')}
-						options={setupAggregatorSelectOptions()}
+						options={setupAggregatorSelectOptions(property.type === 'NUMBER', property.aggregator)}
 						onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
 						searchable
 					/>
 				</Field>
 
-				{#if isSelectable(property.type)}
+				{#if property.type === 'SELECT' || property.type === 'MULTISELECT'}
 					<Field>
 						<Label for={getIdPrefix('property-default-value')} name="Default value" />
 						<Select
@@ -292,10 +302,70 @@
 							searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 						/>
 					</Field>
-				{/if}
-				{#if isSelectable(property.type)}
 					<HSeparator />
 					{@render propertyOptions()}
+				{:else if property.type === 'RELATION'}
+					<Field>
+						<Label for={getIdPrefix('property-target-collection')} name="Related to" />
+						<Select
+							id={getIdPrefix('property-target-collection')}
+							options={collectionState.collections.map((collection) => ({
+								id: collection.id,
+								label: collection.name,
+								icon: collection.icon,
+								isSelected: collection.id === property.targetCollection
+							}))}
+							onselect={(opt) => updProperty({ id: property.id, targetCollection: opt.id })}
+							placeholder="Empty"
+							searchable
+						/>
+					</Field>
+				{:else if property.type === 'BUNDLE'}
+					<Field>
+						<Label for={getIdPrefix('property-target-relation')} name="Relation" />
+						<Select
+							id={getIdPrefix('property-target-relation')}
+							options={propertyState.properties
+								.filter((prop) => prop.type === 'RELATION')
+								.map((prop) => ({
+									id: prop.id,
+									label: prop.name,
+									icon: prop.type.toLowerCase(),
+									isSelected: prop.id === property.intTargetProperty
+								}))}
+							onselect={(opt) => updProperty({ id: property.id, intTargetProperty: opt.id })}
+							placeholder="Empty"
+							searchable
+						/>
+					</Field>
+					<Field>
+						<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
+						<Select
+							id={getIdPrefix('property-ext-target-property')}
+							options={property.options.map((opt) => ({
+								id: opt.id,
+								label: opt.value,
+								icon: opt.extra.toLowerCase(),
+								isSelected: opt.id === property.extTargetProperty
+							}))}
+							onselect={(opt) => updProperty({ id: property.id, extTargetProperty: opt.id })}
+							placeholder="Empty"
+							searchable
+						/>
+					</Field>
+					<Field>
+						<Label for={getIdPrefix('property-calculate')} name="Calculate" />
+						<Select
+							id={getIdPrefix('property-calculate')}
+							options={setupAggregatorSelectOptions(
+								isExtPropertyNumerical(property),
+								property.calculate
+							)}
+							onselect={(opt) => updProperty({ id: property.id, calculate: opt.id as Aggregator })}
+							placeholder="Empty"
+							searchable
+						/>
+					</Field>
 				{/if}
 
 				<HSeparator />

@@ -14,7 +14,7 @@
 	import { textareaAutoSize } from '$lib/actions';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
-		separeteMultiselectOptions,
+		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
 		isNumerical
@@ -33,10 +33,10 @@
 	type Props = {
 		property: Property;
 		onchange: (value: string) => void;
-		value?: string;
+		value: string;
 	};
 
-	let { property, onchange, value = '' }: Props = $props();
+	let { property, onchange, value }: Props = $props();
 
 	let color = $derived(getPropertyColor(property, value));
 	let wrapperState = new ModalState();
@@ -100,7 +100,7 @@
 		/>
 	</Field>
 {:else if property.type === 'MULTISELECT'}
-	{@const selectedOptions = separeteMultiselectOptions(value)}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
@@ -118,6 +118,39 @@
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			isMulti
 		/>
+	</Field>
+{:else if property.type === 'RELATION'}
+	{@const selectedOptions = separateMultiselectOptions(value)}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Select
+			id={property.id}
+			options={[
+				...property.options.map((option) => ({
+					id: option.id,
+					label: option.value,
+					theme: PROPERTY_COLORS[option.color],
+					icon: 'item',
+					isSelected: selectedOptions.includes(option.id)
+				}))
+			]}
+			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
+			placeholder="Empty"
+			searchable
+			isMulti
+		/>
+	</Field>
+{:else if property.type === 'BUNDLE'}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<div
+			class={buttonVariants({
+				theme: 'ghost',
+				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+			})}
+		>
+			{@render miniWrapper(value)}
+		</div>
 	</Field>
 {:else if property.type === 'DATE'}
 	<Field>

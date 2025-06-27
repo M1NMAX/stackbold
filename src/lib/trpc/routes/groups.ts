@@ -3,7 +3,8 @@ import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
-const groupCreateSchema = z.object({ id: z.string(), name: z.string() });
+const groupCreateSchema = z.object({ name: z.string() });
+const groupUpdateSchema = groupCreateSchema.merge(z.object({ id: z.string() }));
 
 export const groups = createTRPCRouter({
 	list: protectedProcedure.query(({ ctx: { userId } }) => {
@@ -20,7 +21,7 @@ export const groups = createTRPCRouter({
 			})
 	),
 	update: protectedProcedure
-		.input(groupCreateSchema)
+		.input(groupUpdateSchema)
 		.mutation(
 			async ({ input: { id, ...rest } }) =>
 				await prisma.group.update({ where: { id }, data: { ...rest } })

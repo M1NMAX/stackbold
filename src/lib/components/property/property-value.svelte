@@ -8,17 +8,18 @@
 		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS
 	} from '$lib/constant';
-	import { type Property, View } from '@prisma/client';
+	import { type Item, type Property, View } from '@prisma/client';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		getPropertyColor,
-		getPropertyRef,
 		isNumerical,
-		isSelectable,
+		useSelector,
 		joinMultiselectOptions,
 		PropertyIcon,
-		separeteMultiselectOptions
+		separateMultiselectOptions,
+		getRefValue,
+		useInputField
 	} from './index.js';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
@@ -36,24 +37,24 @@
 	import { tick } from 'svelte';
 
 	type Props = {
-		itemId: string;
+		item: Item;
 		property: Property;
 		view?: View;
 	};
 
-	let { itemId, property, view = View.LIST }: Props = $props();
+	let { item, property, view = View.LIST }: Props = $props();
 
 	const itemState = getItemState();
 
 	let wrapperState = new ModalState();
 
-	let value = $derived(getPropertyValue());
+	let value = $derived(getRefValue(item.properties, property.id));
 	let color = $derived(getPropertyColor(property, value));
 
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(value: string) {
 		if (shouldClose()) wrapperState.close();
-		await itemState.updPropertyRef(itemId, { id: property.id, value });
+		await itemState.updPropertyRef(item.id, { id: property.id, value });
 	}
 
 	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
@@ -92,26 +93,14 @@
 				? 'w-full justify-start  rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
 			isNumerical(property.type) && 'justify-end',
-			isSelectable(property.type) && 'px-0',
-			!isSelectable(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
+			useSelector(property.type) && 'px-0',
+			!useSelector(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)
 	);
 
 	const labelClass = tm('md:sr-only block font-semibold text-sm text-center px-0 py-1 select-none');
 
 	//utils
-	function getPropertyValue() {
-		const item = itemState.getItem(itemId);
-		if (!item) return '';
-
-		if (property.type === 'CREATED') return item.createdAt.toISOString();
-
-		const propertyRef = getPropertyRef(item.properties, property.id);
-		if (!propertyRef) return '';
-
-		return propertyRef.value;
-	}
-
 	function shouldClose() {
 		return wrapperState.isOpen && property.type === 'DATE';
 	}
@@ -120,12 +109,8 @@
 		return view === View.TABLE;
 	}
 
-	function hasInput() {
-		return property.type === 'TEXT' || property.type === 'NUMBER' || property.type === 'URL';
-	}
-
 	$effect(() => {
-		if (wrapperState.isOpen && hasInput()) {
+		if (wrapperState.isOpen && useInputField(property.type)) {
 			const inputEl = document.getElementById(property.id) as HTMLInputElement;
 			tick().then(() => inputEl.focus());
 		}
@@ -147,7 +132,7 @@
 	</label>
 {:else if property.type === 'SELECT' && (value || isTableView())}
 	<Select
-		id={`${property.id}-value-${itemId}`}
+		id={`${property.id}-value-${item.id}`}
 		options={[
 			...property.options.map((option) => ({
 				id: option.id,
@@ -162,17 +147,17 @@
 		placeholder=""
 	/>
 
-	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
+	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
 {:else if property.type === 'MULTISELECT' && (value || isTableView())}
-	{@const selectedOptions = separeteMultiselectOptions(value)}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
-		id={`${property.id}-value-${itemId}`}
+		id={`${property.id}-value-${item.id}`}
 		options={[
 			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
-				isSelected: selectedOptions.includes(option.id),
-				theme: PROPERTY_COLORS[option.color]
+				theme: PROPERTY_COLORS[option.color],
+				isSelected: selectedOptions.includes(option.id)
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
@@ -182,7 +167,32 @@
 		isMulti
 	/>
 
-	{@render tooltipContent(`select-trigger-${property.id}-value-${itemId}`)}
+	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
+{:else if property.type === 'RELATION' && (value || isTableView())}
+	{@const selectedOptions = separateMultiselectOptions(value)}
+	<Select
+		id={`${property.id}-value-${item.id}`}
+		options={[
+			...property.options.map((option) => ({
+				id: option.id,
+				label: option.value,
+				theme: PROPERTY_COLORS[option.color],
+				icon: 'item',
+				isSelected: selectedOptions.includes(option.id)
+			}))
+		]}
+		onselect={(opts) => updPropertyRef(joinMultiselectOptions(opts))}
+		triggerClass={buttonClass}
+		placeholder=""
+		searchable
+		isMulti
+	/>
+
+	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
+{:else if property.type === 'BUNDLE' && (value || isTableView())}
+	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
+		{@render tooltipWrapper(value, !!value && isTableView())}
+	</div>
 {:else if property.type === 'DATE' && (value || isTableView())}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}

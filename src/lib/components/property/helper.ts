@@ -13,8 +13,13 @@ export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
 
+export function getRefValue(refs: PropertyRef[], pid: string) {
+	const ref = getPropertyRef(refs, pid);
+	return ref ? ref.value : '';
+}
+
 export function getPropertyColor(property: Property | TemplateProperty, value: string) {
-	if (!isSelectable(property.type)) return 'GRAY' as Color;
+	if (!hasOptions(property.type)) return 'GRAY' as Color;
 	const option = property.options.find((opt) => opt.id === value);
 	return option ? option.color : ('GRAY' as Color);
 }
@@ -24,7 +29,7 @@ export function getOption(options: Option[], id: string) {
 }
 
 export function getPropertyDefaultValue(property: Property) {
-	if (isSelectable(property.type)) return property.defaultValue;
+	if (hasOptions(property.type)) return property.defaultValue;
 	if (property.type === 'CHECKBOX') return 'false';
 	return '';
 }
@@ -38,18 +43,27 @@ export function toggleView(propertyViews: View[], view: View) {
 	else return [...propertyViews, view];
 }
 
-export function isSelectable(type: PropertyType) {
+const PROPERTY_THAT_USES_SELECTOR = ['SELECT', 'MULTISELECT', 'RELATION'];
+export function useSelector(type: PropertyType) {
+	return PROPERTY_THAT_USES_SELECTOR.includes(type);
+}
+
+export function hasOptions(type: PropertyType) {
 	return type === 'SELECT' || type === 'MULTISELECT';
 }
 
 export function isNumerical(type: PropertyType) {
 	return type === 'NUMBER';
 }
+const PROPERTIES_THAT_USE_INPUT = ['TEXT', 'NUMBER', 'URL'];
+export function useInputField(type: PropertyType) {
+	return PROPERTIES_THAT_USE_INPUT.includes(type);
+}
 
 export function joinMultiselectOptions(options: SelectOption[]) {
 	return options.map((option) => option.id).join('|');
 }
 
-export function separeteMultiselectOptions(value: string) {
+export function separateMultiselectOptions(value: string) {
 	return value.split('|');
 }
