@@ -3,7 +3,7 @@
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import { APP_ICONS } from '$lib/constant/index.js';
+	import { APP_ICONS, PROPERTY_COLORS } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { buttonVariants, Drawer, Floating } from './index.js';
@@ -38,8 +38,12 @@
 	}: Props<IsMulti> = $props();
 
 	let highlighted = $state('');
-	let selected = $derived.by(() => {
-		return options.filter((option) => option.isSelected);
+	let selectedOptions = $derived.by(() => {
+		return options.filter((opt) => opt.isSelected);
+	});
+	let selectedToRender = $derived.by(() => {
+		if (selectedOptions.length <= 2) return selectedOptions;
+		return selectedOptions.slice(0, 3);
 	});
 
 	let search = $state('');
@@ -72,7 +76,8 @@
 	};
 
 	function isSelected(id: string) {
-		const opt = selected.find((option) => option.id === id);
+		if (id === 'more-selected-options-id') return false;
+		const opt = selectedOptions.find((option) => option.id === id);
 		return !!opt;
 	}
 
@@ -86,8 +91,8 @@
 		}
 	}
 	function toggleOption(option: SelectOption) {
-		if (!isSelected(option.id)) return [...selected, option];
-		return selected.filter((opt) => opt.id !== option.id);
+		if (!isSelected(option.id)) return [...selectedOptions, option];
+		return selectedOptions.filter((opt) => opt.id !== option.id);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -198,29 +203,26 @@
 		buttonVariants({
 			theme: 'secondary',
 			variant: 'menu',
-			className: tm('bg-transparent', triggerClass)
+			className: tm(triggerClass, 'bg-transparent overflow-y-hidden')
 		})
 	)}
 >
-	{#each selected as option}
-		<span
-			class={tm(
-				'h-6 flex items-center gap-x-1.5 px-1.5 rounded-sm font-semibold text-sm',
-				option.theme
-			)}
-		>
-			{#if option.icon}
-				{@render icon(option.icon)}
-			{/if}
-			<span>
-				{option.label}
-			</span>
-		</span>
+	{#each selectedToRender as opt}
+		{@render option(opt)}
 	{:else}
 		<div class="px-1.5 text-sm font-semibold text-secondary-foreground">
 			{placeholder}
 		</div>
 	{/each}
+
+	{#if selectedOptions.length > 3}
+		{@render option({
+			id: 'selector-more-option-id',
+			label: `+${selectedOptions.length - 3} More`,
+			isSelected: false,
+			theme: PROPERTY_COLORS['GRAY']
+		})}
+	{/if}
 </button>
 
 {#if !disabled}
@@ -329,4 +331,17 @@
 
 {#snippet color(theme: string)}
 	<span class={['size-3.5 rounded-sm', theme]}> </span>
+{/snippet}
+
+{#snippet option(opt: SelectOption)}
+	<span
+		class={tm('h-6 flex items-center gap-x-1.5 px-1.5 rounded-sm font-semibold text-sm', opt.theme)}
+	>
+		{#if opt.icon}
+			{@render icon(opt.icon)}
+		{/if}
+		<span>
+			{opt.label}
+		</span>
+	</span>
 {/snippet}

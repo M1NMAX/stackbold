@@ -149,7 +149,9 @@
 				className: 'w-full justify-start bg-transparent hover:bg-transparent'
 			})}
 		>
-			{@render miniWrapper(value)}
+			{#if value}
+				{@render miniWrapper(value)}
+			{/if}
 		</div>
 	</Field>
 {:else if property.type === 'DATE'}
