@@ -96,7 +96,7 @@ async function listSearchableItem(userId: string) {
 async function updBidirectionalRelationRef(args: { id: string; ref: PropertyRef }) {
 	const { id, ref } = args;
 
-	const property = await prisma.property.findFirstOrThrow({ where: { id: ref.id } });
+	const property = await prisma.property.findUniqueOrThrow({ where: { id: ref.id } });
 	if (!isRelation(property) || !property.relatedProperty) return;
 
 	const storedRefValue = await getStoredRefValue(id, ref.id);
