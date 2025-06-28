@@ -191,8 +191,7 @@ async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSc
 		include: { collection: { select: { name: true } } }
 	});
 
-	if (!args.targetCollection || args.targetCollection === storedProperty.targetCollection)
-		return '';
+	if (!args.targetCollection || args.targetCollection === storedProperty.targetCollection) return;
 
 	const exists = !!(await prisma.property.findFirst({
 		where: {
@@ -203,7 +202,7 @@ async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSc
 		}
 	}));
 
-	if (exists) return '';
+	if (exists) return;
 
 	const property = await createProperty({
 		name: `Related to ${storedProperty.collection.name}`,
