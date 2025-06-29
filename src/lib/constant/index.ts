@@ -1,5 +1,5 @@
 import type { Colors } from '$lib/types';
-import { PropertyType } from '@prisma/client';
+import { Aggregator, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
@@ -61,9 +61,35 @@ export const WEEK_DAYS: { [key: number]: string } = {
 
 export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';
 
-export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
-	PropertyType.CHECKBOX,
+export const NUMBERICAL_PROPERTY_TYPES: PropertyType[] = [PropertyType.NUMBER];
+
+export const PROPERTIES_THAT_USE_INPUT: PropertyType[] = [
+	PropertyType.TEXT,
+	PropertyType.NUMBER,
+	PropertyType.URL
+];
+
+export const PROPERTIES_WITH_LISTABLE_OPTIONS: PropertyType[] = [
 	PropertyType.SELECT,
-	PropertyType.MULTISELECT,
+	PropertyType.MULTISELECT
+];
+
+export const PROPERTIES_THAT_USE_SELECTOR: PropertyType[] = [
+	...PROPERTIES_WITH_LISTABLE_OPTIONS,
 	PropertyType.RELATION
+];
+
+export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
+	...PROPERTIES_THAT_USE_SELECTOR,
+	PropertyType.CHECKBOX
+];
+export const PROPERTY_UNIVERSAL_AGGREGATORS: Aggregator[] = [
+	Aggregator.NONE,
+	Aggregator.COUNT,
+	Aggregator.COUNT_EMPTY,
+	Aggregator.COUNT_NOT_EMPTY
+];
+export const NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS: Aggregator[] = [
+	Aggregator.SUM,
+	Aggregator.AVG
 ];

@@ -1,13 +1,3 @@
-<script module lang="ts">
-	const UNIVESAL_AGGREGATORS = [
-		Aggregator.NONE,
-		Aggregator.COUNT,
-		Aggregator.COUNT_EMPTY,
-		Aggregator.COUNT_NOT_EMPTY
-	];
-	const NUMBER_EXCLUSIVE_AGGREGATORS = [Aggregator.SUM, Aggregator.AVG];
-</script>
-
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
@@ -19,21 +9,23 @@
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
-		// utils
 		containsView,
 		getPropertyState,
 		hasOptions,
 		toggleView,
-		// components
+		isPropertyNumerical,
 		PropertyIcon,
 		PropertyOption
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
+		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
+		PROPERTIES_WITH_LISTABLE_OPTIONS,
 		PROPERTY_AGGREGATOR_LABELS,
 		PROPERTY_COLORS,
-		PROPERTY_DEFAULT_VALUE_NOT_DEFINED
+		PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
+		PROPERTY_UNIVERSAL_AGGREGATORS
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption } from '$lib/types';
@@ -109,19 +101,11 @@
 		}));
 	}
 
-	function isExtPropertyNumerical(property: Property) {
-		if (property.type !== PropertyType.BUNDLE) return false;
-
-		const select = property.options.find((opt) => opt.id === property.extTargetProperty);
-		if (!select) return false;
-		return select.extra === PropertyType.NUMBER;
-	}
-
 	function setupAggregatorSelectOptions(isNumerical: boolean, current: Aggregator) {
 		let options: SelectOption[] = [];
 
 		options.push(
-			...UNIVESAL_AGGREGATORS.map((aggregator) => ({
+			...PROPERTY_UNIVERSAL_AGGREGATORS.map((aggregator) => ({
 				id: aggregator,
 				label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
 				isSelected: aggregator === current
@@ -130,7 +114,7 @@
 
 		if (isNumerical) {
 			options.push(
-				...NUMBER_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
+				...NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS.map((aggregator) => ({
 					id: aggregator,
 					label: PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()],
 					isSelected: aggregator === current
@@ -282,29 +266,11 @@
 					/>
 				</Field>
 
-				<Field>
-					<Label for={getIdPrefix('property-aggregator')} name="Aggregator" />
-					<Select
-						id={getIdPrefix('property-aggregator')}
-						options={setupAggregatorSelectOptions(property.type === 'NUMBER', property.aggregator)}
-						onselect={(opt) => updProperty({ id: property.id, aggregator: opt.id as Aggregator })}
-						searchable
-					/>
-				</Field>
-
-				{#if property.type === 'SELECT' || property.type === 'MULTISELECT'}
-					<Field>
-						<Label for={getIdPrefix('property-default-value')} name="Default value" />
-						<Select
-							id={getIdPrefix('property-default-value')}
-							options={setupDefaultOptionSelectOptions()}
-							onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
-							searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
-						/>
-					</Field>
+				{#if PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)}
+					{@render defaultValueSelector()}
 					<HSeparator />
 					{@render propertyOptions()}
-				{:else if property.type === 'RELATION'}
+				{:else if property.type === PropertyType.RELATION}
 					<Field>
 						<Label for={getIdPrefix('property-target-collection')} name="Related to" />
 						<Select
@@ -320,7 +286,9 @@
 							searchable
 						/>
 					</Field>
-				{:else if property.type === 'BUNDLE'}
+
+					{@render defaultValueSelector()}
+				{:else if property.type === PropertyType.BUNDLE}
 					<Field>
 						<Label for={getIdPrefix('property-target-relation')} name="Relation" />
 						<Select
@@ -358,7 +326,7 @@
 						<Select
 							id={getIdPrefix('property-calculate')}
 							options={setupAggregatorSelectOptions(
-								isExtPropertyNumerical(property),
+								isPropertyNumerical(property),
 								property.calculate
 							)}
 							onselect={(opt) => updProperty({ id: property.id, calculate: opt.id as Aggregator })}
@@ -453,4 +421,16 @@
 			{/each}
 		</div>
 	</div>
+{/snippet}
+
+{#snippet defaultValueSelector()}
+	<Field>
+		<Label for={getIdPrefix('property-default-value')} name="Default value" />
+		<Select
+			id={getIdPrefix('property-default-value')}
+			options={setupDefaultOptionSelectOptions()}
+			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		/>
+	</Field>
 {/snippet}
