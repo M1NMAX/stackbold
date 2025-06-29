@@ -3,7 +3,6 @@
 	import {
 		AdaptiveWrapper,
 		buttonVariants,
-		HSeparator,
 		RadioGroup,
 		RadioGroupItem,
 		Label,
@@ -12,6 +11,7 @@
 	import { getPropertyState, PropertyIcon } from '$lib/components/property';
 	import { ModalState } from '$lib/states/index.js';
 	import { useId } from '$lib/utils';
+	import { FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
 
 	type Props = {
 		value: string;
@@ -20,8 +20,11 @@
 
 	let { value, updValue }: Props = $props();
 	const propertyState = getPropertyState();
-
 	const menuState = new ModalState();
+
+	let properties = $derived.by(() =>
+		propertyState.properties.filter((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type))
+	);
 
 	function handleChange(value: string) {
 		updValue(value === 'none' ? '' : value);
@@ -40,15 +43,13 @@
 	{/snippet}
 	<MenuTitle title="Group by" />
 	<RadioGroup value={value ?? 'none'} onchange={handleChange}>
-		{#each propertyState.properties as property (property.id)}
-			{#if property.type === 'SELECT' || property.type === 'CHECKBOX'}
-				{@const id = useId(`group-by-${property.id}`)}
-				<Label for={id} compact hoverEffect>
-					<PropertyIcon key={property.type} />
-					<span class="grow"> {property.name} </span>
-					<RadioGroupItem {id} value={property.id} />
-				</Label>
-			{/if}
+		{#each properties as property (property.id)}
+			{@const id = useId(`group-by-${property.id}`)}
+			<Label for={id} compact hoverEffect>
+				<PropertyIcon key={property.type} />
+				<span class="grow"> {property.name} </span>
+				<RadioGroupItem {id} value={property.id} />
+			</Label>
 		{/each}
 		<Label for="collection-group-by-none" compact hoverEffect>
 			<PropertyIcon key="none" />

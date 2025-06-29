@@ -1,4 +1,4 @@
-import type { Filter, FilterConfig, PropertyType, View } from '@prisma/client';
+import { PropertyType, type Filter, type FilterConfig, type View } from '@prisma/client';
 
 type Target = {
 	id: string;
@@ -21,9 +21,9 @@ export function toggleFilter(filters: Filter[], src: Source) {
 
 	if (!target) return [...filters, { id, values: [value] }];
 
-	if (type === 'CHECKBOX') {
+	if (type === PropertyType.CHECKBOX) {
 		return filters.map((filter) => (filter.id !== id ? filter : { ...target, values: [value] }));
-	} else if (type === 'SELECT') {
+	} else if (type === PropertyType.SELECT || type === PropertyType.MULTISELECT) {
 		if (!target.values.includes(value)) {
 			return filters.map((filter) =>
 				filter.id !== id ? filter : { ...filter, values: [...target.values, value] }

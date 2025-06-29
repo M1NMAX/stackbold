@@ -55,6 +55,7 @@ export function hasOptions(type: PropertyType) {
 export function isNumerical(type: PropertyType) {
 	return type === 'NUMBER';
 }
+
 const PROPERTIES_THAT_USE_INPUT = ['TEXT', 'NUMBER', 'URL'];
 export function useInputField(type: PropertyType) {
 	return PROPERTIES_THAT_USE_INPUT.includes(type);
