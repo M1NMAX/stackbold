@@ -2,8 +2,8 @@
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import Settings from 'lucide-svelte/icons/settings-2';
 	import { tm } from '$lib/utils';
-	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
-	import { getActiveItemState, getItemState, ItemMenu } from '.';
+	import { type Property, type Item, View, PropertyType } from '@prisma/client';
+	import { getActiveItemState, getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
 		PropertyIcon,
@@ -11,7 +11,8 @@
 		// helpers
 		getPropertyRef,
 		toggleView,
-		getPropertyState
+		getPropertyState,
+		PropertyAggregatorMenu
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import {
@@ -22,11 +23,7 @@
 		MenuTitle,
 		Switch
 	} from '$lib/components/base/index.js';
-	import {
-		DEBOUNCE_INTERVAL,
-		MAX_ITEM_NAME_LENGTH,
-		PROPERTY_AGGREGATOR_LABELS
-	} from '$lib/constant/index.js';
+	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
 
@@ -78,6 +75,8 @@
 			if (property.aggregator === 'SUM') return sum.toFixed(2);
 			return (sum / items.length).toFixed(2);
 		}
+
+		return '';
 	}
 </script>
 
@@ -171,18 +170,17 @@
 
 					{#each propertyState.properties as property (property.id)}
 						{#if containsView(property.visibleInViews, View.TABLE)}
-							{#if property.aggregator === 'NONE'}
-								<td></td>
-							{:else}
-								<td class="text-right text-nowrap px-2">
-									<span class="text-[0.65rem] font-medium">
-										{PROPERTY_AGGREGATOR_LABELS[property.aggregator.toLowerCase()]}
-									</span>
-									<span class="font-semibold">
-										{aggregatePropertyValue(property)}
-									</span>
-								</td>
-							{/if}
+							<td>
+								<div class="flex w-full justify-end group">
+									<PropertyAggregatorMenu
+										{property}
+										calculated={aggregatePropertyValue(property).toString()}
+										onchange={(aggregator) => {
+											propertyState.updProperty({ id: property.id, aggregator });
+										}}
+									/>
+								</div>
+							</td>
 						{/if}
 					{/each}
 				</tr>

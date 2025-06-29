@@ -17,7 +17,7 @@
 		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
-		isNumerical
+		isPropertyNumerical
 	} from './index.js';
 	import {
 		AdaptiveWrapper,
@@ -53,7 +53,7 @@
 		const targetEl = e.target as HTMLInputElement;
 		let value = targetEl.value;
 
-		if (isNumerical(property.type)) {
+		if (isPropertyNumerical(property)) {
 			value = sanitizeNumberInput(targetEl.value);
 			updTargetElValue(targetEl, value);
 		} else if (targetEl.type === 'checkbox') {

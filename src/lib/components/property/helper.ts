@@ -51,8 +51,14 @@ export function hasOptions(type: PropertyType) {
 	return PROPERTIES_WITH_LISTABLE_OPTIONS.includes(type);
 }
 
-export function isNumerical(type: PropertyType) {
-	return NUMBERICAL_PROPERTY_TYPES.includes(type);
+export function isPropertyNumerical(property: Property) {
+	if (NUMBERICAL_PROPERTY_TYPES.includes(property.type)) return true;
+	else if (property.type === PropertyType.BUNDLE) {
+		const select = property.options.find((opt) => opt.id === property.extTargetProperty);
+		return select ? NUMBERICAL_PROPERTY_TYPES.includes(select.extra as PropertyType) : false;
+	}
+
+	return false;
 }
 
 export function joinMultiselectOptions(options: SelectOption[]) {

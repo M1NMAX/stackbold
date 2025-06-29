@@ -15,7 +15,7 @@
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		getPropertyColor,
-		isNumerical,
+		isPropertyNumerical,
 		joinMultiselectOptions,
 		PropertyIcon,
 		separateMultiselectOptions,
@@ -66,7 +66,7 @@
 		const targetEl = e.target as HTMLInputElement;
 
 		let value = targetEl.value;
-		if (isNumerical(property.type)) {
+		if (isPropertyNumerical(property)) {
 			value = sanitizeNumberInput(targetEl.value);
 			updTargetElValue(targetEl, value);
 		} else if (targetEl.type === 'checkbox') {
@@ -81,7 +81,9 @@
 		if (e.key !== 'Enter') return;
 		e.preventDefault();
 		const targetEl = e.target as HTMLInputElement;
-		const value = isNumerical(property.type) ? sanitizeNumberInput(targetEl.value) : targetEl.value;
+		const value = isPropertyNumerical(property)
+			? sanitizeNumberInput(targetEl.value)
+			: targetEl.value;
 
 		wrapperState.close();
 		await updPropertyRef(value);
@@ -92,7 +94,7 @@
 			isTableView()
 				? 'w-full justify-start  rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'w-fit h-6 md:h-6 py-1 px-1.5 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
-			isNumerical(property.type) && 'justify-end',
+			isPropertyNumerical(property) && 'justify-end',
 			useSelector(property.type) && 'px-0',
 			!useSelector(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
 		)

@@ -1,5 +1,5 @@
 import type { Colors } from '$lib/types';
-import { PropertyType } from '@prisma/client';
+import { Aggregator, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
@@ -82,4 +82,14 @@ export const PROPERTIES_THAT_USE_SELECTOR: PropertyType[] = [
 export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
 	...PROPERTIES_THAT_USE_SELECTOR,
 	PropertyType.CHECKBOX
+];
+export const PROPERTY_UNIVERSAL_AGGREGATORS: Aggregator[] = [
+	Aggregator.NONE,
+	Aggregator.COUNT,
+	Aggregator.COUNT_EMPTY,
+	Aggregator.COUNT_NOT_EMPTY
+];
+export const NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS: Aggregator[] = [
+	Aggregator.SUM,
+	Aggregator.AVG
 ];
