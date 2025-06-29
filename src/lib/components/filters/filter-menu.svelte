@@ -20,8 +20,8 @@
 		Label
 	} from '$lib/components/base/index.js';
 	import { getOption, getPropertyState, PropertyIcon } from '$lib/components/property';
-	import { PROPERTY_COLORS } from '$lib/constant';
-	import type { Filter, Property, PropertyType } from '@prisma/client';
+	import { PROPERTY_COLORS, FILTERABLE_PROPERTY_TYPES } from '$lib/constant';
+	import { type Filter, type Property, PropertyType } from '@prisma/client';
 	import { ModalState } from '$lib/states/index.js';
 	import { isFilterSeletect, toggleFilter } from './helpers';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -40,10 +40,18 @@
 	const menuState = new ModalState();
 	const isLargeScreen = new MediaQuery('min-width: 768px', false);
 
-	let selectedProperty = $state(propertyState.properties[0]);
+	let properties = $derived.by(() =>
+		propertyState.properties.filter((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type))
+	);
+	// svelte-ignore state_referenced_locally
+	let selectedProperty = $state(properties[0]);
 
 	function isSelected(id: string, value: string) {
 		return isFilterSeletect(filters, { id, value });
+	}
+
+	function getProperty(id: string) {
+		return properties.find((property) => property.id === id);
 	}
 
 	function getValue(id: string) {
@@ -53,13 +61,7 @@
 	}
 
 	function onClickFilterOption(id: string, value: string, type: PropertyType) {
-		updFilters(
-			toggleFilter(filters, {
-				id,
-				value,
-				type
-			})
-		);
+		updFilters(toggleFilter(filters, { id, value, type }));
 	}
 
 	function hasValues(id: string) {
@@ -90,20 +92,18 @@
 
 				{@render activeFilters()}
 
-				{#each propertyState.properties as property}
-					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
-						<Button
-							theme="ghost"
-							variant="menu"
-							onclick={() => {
-								selectedProperty = property;
-								detailViewState.open();
-							}}
-						>
-							<PropertyIcon key={property.type} />
-							{property.name}
-						</Button>
-					{/if}
+				{#each properties as property}
+					<Button
+						theme="ghost"
+						variant="menu"
+						onclick={() => {
+							selectedProperty = property;
+							detailViewState.open();
+						}}
+					>
+						<PropertyIcon key={property.type} />
+						{property.name}
+					</Button>
 				{/each}
 			{:else}
 				{@render header()}
@@ -120,18 +120,16 @@
 			{@render activeFilters()}
 
 			<Accordion>
-				{#each propertyState.properties as property}
-					{#if property.type === 'CHECKBOX' || property.type === 'SELECT'}
-						<AccordionItem arrow={false}>
-							{#snippet header()}
-								<PropertyIcon key={property.type} class="size-4 mr-0" />
-								{property.name}
-							{/snippet}
-							<div class="px-0">
-								{@render content(property)}
-							</div>
-						</AccordionItem>
-					{/if}
+				{#each properties as property}
+					<AccordionItem arrow={false}>
+						{#snippet header()}
+							<PropertyIcon key={property.type} class="size-4 mr-0" />
+							{property.name}
+						{/snippet}
+						<div class="px-0">
+							{@render content(property)}
+						</div>
+					</AccordionItem>
 				{/each}
 			</Accordion>
 		</Drawer>
@@ -143,10 +141,10 @@
 		<p class="w-full text-xs font-semibold px-2 py-0.5">Active filters</p>
 		<div class="w-full flex flex-wrap gap-1 px-2 pb-0.5">
 			{#each filters as filter}
-				{@const property = propertyState.getProperty(filter.id)}
+				{@const property = getProperty(filter.id)}
 
 				{#if property}
-					{#if property.type === 'CHECKBOX'}
+					{#if property.type === PropertyType.CHECKBOX}
 						{@const value = filter.values[0]}
 						<Button
 							theme="secondary"
@@ -158,9 +156,9 @@
 							<span> {property.name} </span>
 							<X />
 						</Button>
-					{:else if property.type === 'SELECT'}
-						{#each filter.values as vl}
-							{@const option = getOption(property.options, vl)}
+					{:else}
+						{#each filter.values as fv}
+							{@const option = getOption(property.options, fv)}
 							{#if option}
 								<Button
 									theme="secondary"
@@ -203,7 +201,7 @@
 {/snippet}
 
 {#snippet content(property: Property)}
-	{#if property.type === 'CHECKBOX'}
+	{#if property.type === PropertyType.CHECKBOX}
 		{@const currValue = getValue(property.id)}
 		{#key currValue}
 			<RadioGroup
@@ -221,7 +219,7 @@
 				{/each}
 			</RadioGroup>
 		{/key}
-	{:else if property.type === 'SELECT'}
+	{:else}
 		{#each property.options as option}
 			<Checkbox
 				checked={isSelected(property.id, option.id)}

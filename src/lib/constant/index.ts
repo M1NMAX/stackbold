@@ -1,4 +1,5 @@
 import type { Colors } from '$lib/types';
+import { PropertyType } from '@prisma/client';
 
 export * from './icons';
 
@@ -59,3 +60,10 @@ export const WEEK_DAYS: { [key: number]: string } = {
 };
 
 export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';
+
+export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
+	PropertyType.CHECKBOX,
+	PropertyType.SELECT,
+	PropertyType.MULTISELECT,
+	PropertyType.RELATION
+];
