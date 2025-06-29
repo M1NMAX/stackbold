@@ -1,5 +1,6 @@
 import {
 	NUMBERICAL_PROPERTY_TYPES,
+	PROPERTIES_THAT_USE_SELECTOR,
 	PROPERTIES_WITH_LISTABLE_OPTIONS
 } from '$lib/constant/index.js';
 import type { SelectOption } from '$lib/types';
@@ -33,7 +34,7 @@ export function getOption(options: Option[], id: string) {
 }
 
 export function getPropertyDefaultValue(property: Property) {
-	if (hasOptions(property.type)) return property.defaultValue;
+	if (PROPERTIES_THAT_USE_SELECTOR.includes(property.type)) return property.defaultValue;
 	if (property.type === PropertyType.CHECKBOX) return 'false';
 	return '';
 }
@@ -53,7 +54,7 @@ export function hasOptions(type: PropertyType) {
 
 export function isPropertyNumerical(property: Property) {
 	if (NUMBERICAL_PROPERTY_TYPES.includes(property.type)) return true;
-	else if (property.type === PropertyType.BUNDLE) {
+	if (property.type === PropertyType.BUNDLE) {
 		const select = property.options.find((opt) => opt.id === property.extTargetProperty);
 		return select ? NUMBERICAL_PROPERTY_TYPES.includes(select.extra as PropertyType) : false;
 	}

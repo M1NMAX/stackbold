@@ -9,15 +9,13 @@
 	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
-		// utils
 		containsView,
 		getPropertyState,
 		hasOptions,
 		toggleView,
-		// components
+		isPropertyNumerical,
 		PropertyIcon,
-		PropertyOption,
-		isPropertyNumerical
+		PropertyOption
 	} from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -269,18 +267,10 @@
 				</Field>
 
 				{#if PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)}
-					<Field>
-						<Label for={getIdPrefix('property-default-value')} name="Default value" />
-						<Select
-							id={getIdPrefix('property-default-value')}
-							options={setupDefaultOptionSelectOptions()}
-							onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
-							searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
-						/>
-					</Field>
+					{@render defaultValueSelector()}
 					<HSeparator />
 					{@render propertyOptions()}
-				{:else if property.type === 'RELATION'}
+				{:else if property.type === PropertyType.RELATION}
 					<Field>
 						<Label for={getIdPrefix('property-target-collection')} name="Related to" />
 						<Select
@@ -296,7 +286,9 @@
 							searchable
 						/>
 					</Field>
-				{:else if property.type === 'BUNDLE'}
+
+					{@render defaultValueSelector()}
+				{:else if property.type === PropertyType.BUNDLE}
 					<Field>
 						<Label for={getIdPrefix('property-target-relation')} name="Relation" />
 						<Select
@@ -429,4 +421,16 @@
 			{/each}
 		</div>
 	</div>
+{/snippet}
+
+{#snippet defaultValueSelector()}
+	<Field>
+		<Label for={getIdPrefix('property-default-value')} name="Default value" />
+		<Select
+			id={getIdPrefix('property-default-value')}
+			options={setupDefaultOptionSelectOptions()}
+			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		/>
+	</Field>
 {/snippet}
