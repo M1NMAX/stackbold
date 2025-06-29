@@ -1,12 +1,16 @@
+import {
+	NUMBERICAL_PROPERTY_TYPES,
+	PROPERTIES_WITH_LISTABLE_OPTIONS
+} from '$lib/constant/index.js';
 import type { SelectOption } from '$lib/types';
-import type {
+import {
 	Color,
-	Property,
-	PropertyRef,
-	Option,
+	type Property,
+	type PropertyRef,
+	type Option,
 	PropertyType,
-	View,
-	TemplateProperty
+	type View,
+	type TemplateProperty
 } from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
@@ -19,9 +23,9 @@ export function getRefValue(refs: PropertyRef[], pid: string) {
 }
 
 export function getPropertyColor(property: Property | TemplateProperty, value: string) {
-	if (!hasOptions(property.type)) return 'GRAY' as Color;
+	if (!hasOptions(property.type)) return Color.GRAY;
 	const option = property.options.find((opt) => opt.id === value);
-	return option ? option.color : ('GRAY' as Color);
+	return option ? option.color : Color.GRAY;
 }
 
 export function getOption(options: Option[], id: string) {
@@ -30,7 +34,7 @@ export function getOption(options: Option[], id: string) {
 
 export function getPropertyDefaultValue(property: Property) {
 	if (hasOptions(property.type)) return property.defaultValue;
-	if (property.type === 'CHECKBOX') return 'false';
+	if (property.type === PropertyType.CHECKBOX) return 'false';
 	return '';
 }
 
@@ -43,22 +47,12 @@ export function toggleView(propertyViews: View[], view: View) {
 	else return [...propertyViews, view];
 }
 
-const PROPERTY_THAT_USES_SELECTOR = ['SELECT', 'MULTISELECT', 'RELATION'];
-export function useSelector(type: PropertyType) {
-	return PROPERTY_THAT_USES_SELECTOR.includes(type);
-}
-
 export function hasOptions(type: PropertyType) {
-	return type === 'SELECT' || type === 'MULTISELECT';
+	return PROPERTIES_WITH_LISTABLE_OPTIONS.includes(type);
 }
 
 export function isNumerical(type: PropertyType) {
-	return type === 'NUMBER';
-}
-
-const PROPERTIES_THAT_USE_INPUT = ['TEXT', 'NUMBER', 'URL'];
-export function useInputField(type: PropertyType) {
-	return PROPERTIES_THAT_USE_INPUT.includes(type);
+	return NUMBERICAL_PROPERTY_TYPES.includes(type);
 }
 
 export function joinMultiselectOptions(options: SelectOption[]) {

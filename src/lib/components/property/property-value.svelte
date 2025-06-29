@@ -6,20 +6,20 @@
 		MAX_PROPERTY_TEXT_LENGTH,
 		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
+		PROPERTIES_THAT_USE_INPUT,
+		PROPERTIES_THAT_USE_SELECTOR,
 		PROPERTY_COLORS
-	} from '$lib/constant';
-	import { type Item, type Property, View } from '@prisma/client';
+	} from '$lib/constant/index.js';
+	import { type Item, type Property, PropertyType, View } from '@prisma/client';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		getPropertyColor,
 		isNumerical,
-		useSelector,
 		joinMultiselectOptions,
 		PropertyIcon,
 		separateMultiselectOptions,
-		getRefValue,
-		useInputField
+		getRefValue
 	} from './index.js';
 	import { getItemState } from '$lib/components/items';
 	import debounce from 'debounce';
@@ -107,6 +107,14 @@
 
 	function isTableView() {
 		return view === View.TABLE;
+	}
+
+	function useInputField(type: PropertyType) {
+		return PROPERTIES_THAT_USE_INPUT.includes(type);
+	}
+
+	function useSelector(type: PropertyType) {
+		return PROPERTIES_THAT_USE_SELECTOR.includes(type);
 	}
 
 	$effect(() => {

@@ -61,9 +61,25 @@ export const WEEK_DAYS: { [key: number]: string } = {
 
 export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';
 
-export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
-	PropertyType.CHECKBOX,
+export const NUMBERICAL_PROPERTY_TYPES: PropertyType[] = [PropertyType.NUMBER];
+
+export const PROPERTIES_THAT_USE_INPUT: PropertyType[] = [
+	PropertyType.TEXT,
+	PropertyType.NUMBER,
+	PropertyType.URL
+];
+
+export const PROPERTIES_WITH_LISTABLE_OPTIONS: PropertyType[] = [
 	PropertyType.SELECT,
-	PropertyType.MULTISELECT,
+	PropertyType.MULTISELECT
+];
+
+export const PROPERTIES_THAT_USE_SELECTOR: PropertyType[] = [
+	...PROPERTIES_WITH_LISTABLE_OPTIONS,
 	PropertyType.RELATION
+];
+
+export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
+	...PROPERTIES_THAT_USE_SELECTOR,
+	PropertyType.CHECKBOX
 ];
