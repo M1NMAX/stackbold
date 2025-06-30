@@ -5,7 +5,11 @@ export function isRelation(property: Property) {
 }
 
 export function isBundle(property: Property) {
-	return property.type === 'BUNDLE' && property.intTargetProperty !== '';
+	return (
+		property.type === 'BUNDLE' &&
+		property.intTargetProperty !== '' &&
+		property.targetCollection !== ''
+	);
 }
 
 const PROPERTY_TYPES_WITHOUT_REF = ['CREATED', 'BUNDLE'];

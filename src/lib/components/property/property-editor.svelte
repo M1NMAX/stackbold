@@ -74,6 +74,11 @@
 		await propertyState.updProperty(property);
 	}
 
+	async function handleUpdPropertyCalculate(aggregator: Aggregator) {
+		await propertyState.updProperty({ id: property.id, calculate: aggregator });
+		await itemState.refresh(propertyState.collectionId);
+	}
+
 	function handleOnInput(e: Event) {
 		// TODO: clean property value, when property type changes
 		const targetEl = e.target as HTMLInputElement;
@@ -155,6 +160,11 @@
 
 	function getIdPrefix(tail: string) {
 		return `${property.id}-${tail}`;
+	}
+
+	function getTargetCollection(properties: Property[]) {
+		const target = properties.find((prop) => prop.id === property.intTargetProperty);
+		return target ? target.targetCollection : '';
 	}
 
 	function getMaxVisisbleOptions() {
@@ -289,19 +299,26 @@
 
 					{@render defaultValueSelector()}
 				{:else if property.type === PropertyType.BUNDLE}
+					{@const relations = propertyState.properties.filter(
+						(prop) => prop.type === PropertyType.RELATION
+					)}
+
 					<Field>
 						<Label for={getIdPrefix('property-target-relation')} name="Relation" />
 						<Select
 							id={getIdPrefix('property-target-relation')}
-							options={propertyState.properties
-								.filter((prop) => prop.type === 'RELATION')
-								.map((prop) => ({
-									id: prop.id,
-									label: prop.name,
-									icon: prop.type.toLowerCase(),
-									isSelected: prop.id === property.intTargetProperty
-								}))}
-							onselect={(opt) => updProperty({ id: property.id, intTargetProperty: opt.id })}
+							options={relations.map((prop) => ({
+								id: prop.id,
+								label: prop.name,
+								icon: prop.type.toLowerCase(),
+								isSelected: prop.id === property.intTargetProperty
+							}))}
+							onselect={(opt) =>
+								updProperty({
+									id: property.id,
+									intTargetProperty: opt.id,
+									targetCollection: getTargetCollection(relations)
+								})}
 							placeholder="Empty"
 							searchable
 						/>
@@ -329,7 +346,7 @@
 								isPropertyNumerical(property),
 								property.calculate
 							)}
-							onselect={(opt) => updProperty({ id: property.id, calculate: opt.id as Aggregator })}
+							onselect={(opt) => handleUpdPropertyCalculate(opt.id as Aggregator)}
 							placeholder="Empty"
 							searchable
 						/>
