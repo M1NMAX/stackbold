@@ -148,12 +148,8 @@ async function injectPropertyOptions(property: Property) {
 			}))
 		};
 	} else if (isBundle(property)) {
-		const targetProperty = await prisma.property.findFirstOrThrow({
-			where: { id: property.intTargetProperty }
-		});
-
 		const properties = await prisma.property.findMany({
-			where: { collectionId: targetProperty.targetCollection }
+			where: { collectionId: property.targetCollection }
 		});
 
 		return {

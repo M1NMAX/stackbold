@@ -154,7 +154,7 @@ async function injectBundleValue(items: Item[], property: Property) {
 
 	if (!extProperty) return items;
 
-	return Promise.all(
+	return await Promise.all(
 		items.map(async (item) => {
 			const ref = getPropertyRef(item.properties, property.intTargetProperty);
 			if (!ref) return addRef(item, { id: property.id, value: '' });
