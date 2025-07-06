@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { hasRef, isBundle, isRelation } from '$lib/trpc/utils';
+import { groupBy, hasRef, isBundle, isRelation } from '$lib/trpc/utils';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -11,6 +11,7 @@ import {
 	type Filter,
 	type FilterConfig,
 	type GroupByConfig,
+	type Item,
 	type Property
 } from '@prisma/client';
 
@@ -82,16 +83,7 @@ export const properties = createTRPCRouter({
 
 	update: protectedProcedure
 		.input(propertyUpdateSchema)
-		.mutation(async ({ input: { id, ...rest } }) => {
-			const relatedProperty = await createBidirectionalRelation({ id, ...rest });
-
-			const property = await prisma.property.update({
-				where: { id },
-				data: { ...rest, relatedProperty }
-			});
-
-			return injectPropertyOptions(property);
-		}),
+		.mutation(async ({ input }) => await updateProperty(input)),
 
 	order: protectedProcedure
 		.input(propertyOrderSchema)
@@ -129,10 +121,80 @@ async function listProperties(cid: string) {
 		orderBy: { order: 'asc' }
 	});
 
-	return await Promise.all(properties.map((property) => injectPropertyOptions(property)));
+	const relationTargets = new Set<string>();
+	const bundleTargets = new Set<string>();
+
+	for (const property of properties) {
+		if (isRelation(property)) relationTargets.add(property.targetCollection);
+		else if (isBundle(property)) bundleTargets.add(property.targetCollection);
+	}
+
+	if (relationTargets.size === 0 && bundleTargets.size === 0) return properties;
+
+	const [itemsMap, propertiesMap] = await Promise.all([
+		relationTargets.size > 0
+			? prisma.item
+					.findMany({ where: { collectionId: { in: Array.from(relationTargets) } } })
+					.then((items) => groupBy(items, 'collectionId'))
+			: Promise.resolve(new Map()),
+
+		bundleTargets.size > 0
+			? prisma.property
+					.findMany({ where: { collectionId: { in: Array.from(bundleTargets) } } })
+					.then((props) => groupBy(props, 'collectionId'))
+			: Promise.resolve(new Map())
+	]);
+
+	return properties.map((property) => injectPropertyOptionsSync(property, itemsMap, propertiesMap));
 }
 
-async function injectPropertyOptions(property: Property) {
+function injectPropertyOptionsSync(
+	property: Property,
+	itemsMap: Map<string, Item[]>,
+	propsMap: Map<string, Property[]>
+) {
+	if (isRelation(property)) {
+		const items = itemsMap.get(property.targetCollection) || [];
+
+		return {
+			...property,
+			options: items.map((item) => ({
+				id: item.id,
+				value: item.name,
+				color: Color.GRAY,
+				extra: ''
+			}))
+		};
+	} else if (isBundle(property)) {
+		const properties = propsMap.get(property.targetCollection) || [];
+
+		return {
+			...property,
+			options: properties.map((prop) => ({
+				id: prop.id,
+				value: prop.name,
+				color: Color.GRAY,
+				extra: prop.type.toString()
+			}))
+		};
+	}
+
+	return property;
+}
+
+async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
+	const { id, ...rest } = args;
+	const relatedProperty = await createBidirectionalRelation({ id, ...rest });
+
+	const property = await prisma.property.update({
+		where: { id },
+		data: { ...rest, relatedProperty }
+	});
+
+	return injectPropertyOptionsSingle(property);
+}
+
+async function injectPropertyOptionsSingle(property: Property) {
 	if (isRelation(property)) {
 		const items = await prisma.item.findMany({
 			where: { collectionId: property.targetCollection }
