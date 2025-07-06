@@ -1,6 +1,7 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { z } from 'zod';
+import { hasRef } from '$lib/trpc/utils';
 
 export const templates = createTRPCRouter({
 	list: protectedProcedure.query(() => prisma.template.findMany({ orderBy: { createdAt: 'asc' } })),
@@ -9,7 +10,12 @@ export const templates = createTRPCRouter({
 		.query(({ input }) => prisma.template.findUniqueOrThrow({ where: { id: input } })),
 
 	turn: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
-		const { items, properties, ...rest } = await prisma.template.findFirstOrThrow({
+		const {
+			id: _,
+			items,
+			properties,
+			...rest
+		} = await prisma.template.findFirstOrThrow({
 			where: { id }
 		});
 
@@ -28,7 +34,7 @@ export const templates = createTRPCRouter({
 
 		const collectionItems = items.map(({ id, ...rest }) => {
 			const properties = props
-				.filter((prop) => prop.type !== 'CREATED')
+				.filter((prop) => hasRef(prop.type))
 				.map((prop) => {
 					const ref = rest.properties.find((ref) => ref.id === prop.old);
 					if (!ref) return { id: prop.id, value: '' };
