@@ -1,4 +1,5 @@
 import type { Aggregator, Item, Property, PropertyRef, PropertyType } from '@prisma/client';
+import { map } from '@trpc/server/observable';
 
 export function isRelation(property: Property) {
 	return property.type === 'RELATION' && property.targetCollection !== '';
@@ -45,4 +46,18 @@ export function aggregatePropertyValue(items: Item[], aggregator: Aggregator, pi
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
+}
+
+export function groupBy<T>(items: T[], key: keyof T) {
+	return items.reduce((map, item) => {
+		const groupKey = item[key] as string;
+
+		if (!map.has(groupKey)) {
+			map.set(groupKey, []);
+		}
+
+		map.get(groupKey)!.push(item);
+
+		return map;
+	}, new Map<string, T[]>());
 }
