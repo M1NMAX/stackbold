@@ -82,9 +82,7 @@ async function listItems(cid: string) {
 
 	if (bundleProps.length === 0) return updItems;
 
-	updItems = await processBundleProperties(updItems, bundleProps);
-
-	return updItems;
+	return await processBundleProperties(updItems, bundleProps);
 }
 
 async function processBundleProperties(items: Item[], properties: Property[]) {
@@ -162,6 +160,87 @@ async function listSearchableItem(userId: string) {
 	});
 }
 
+async function updateRef(args: z.infer<typeof refUpdateSchema>) {
+	const { id: pid, ...rest } = args.ref;
+
+	let [_, item, properties] = await Promise.all([
+		updBidirectionalRelationRef({ id: args.id, ref: args.ref }),
+		prisma.item.update({
+			where: { id: args.id },
+			data: {
+				properties: {
+					updateMany: { where: { id: pid }, data: rest }
+				}
+			}
+		}),
+		prisma.property.findMany({
+			where: {
+				collectionId: args.cid,
+				type: { in: [PropertyType.BUNDLE, PropertyType.CREATED] }
+			}
+		})
+	]);
+
+	if (properties.length === 0) return item;
+
+	const createdProps = properties.filter((prop) => prop.type === PropertyType.CREATED);
+	const bundleProps = properties.filter(
+		(prop) => prop.type === PropertyType.BUNDLE && prop.extTargetProperty && prop.intTargetProperty
+	);
+
+	for (const property of createdProps) {
+		item = addRef(item, { id: property.id, value: item.createdAt.toISOString() });
+	}
+
+	if (bundleProps.length === 0) return item;
+
+	const extPropertyIds = bundleProps.map((prop) => prop.extTargetProperty);
+	const extPropertiesMap = new Map<string, Property>();
+
+	if (extPropertyIds.length > 0) {
+		const extProperties = await prisma.property.findMany({ where: { id: { in: extPropertyIds } } });
+
+		for (const property of extProperties) {
+			extPropertiesMap.set(property.id, property);
+		}
+	}
+
+	const allReferencedIds = new Set<string>();
+	const bundleProcessingData = bundleProps.map((property) => {
+		const ref = getPropertyRef(item.properties, property.intTargetProperty!);
+		const ids = ref?.value ? ref.value.split('|').filter(Boolean) : [];
+		ids.forEach((id) => allReferencedIds.add(id));
+		return { property, ref, ids };
+	});
+
+	const extItemsMap = new Map<string, Item>();
+	if (allReferencedIds.size > 0) {
+		const extItems = await prisma.item.findMany({
+			where: { id: { in: Array.from(allReferencedIds) } }
+		});
+
+		for (const item of extItems) {
+			extItemsMap.set(item.id, item);
+		}
+	}
+
+	for (const { property, ref, ids } of bundleProcessingData) {
+		const extProperty = extPropertiesMap.get(property.extTargetProperty);
+		if (!extProperty) continue;
+
+		if (!ref || ids.length === 0) {
+			item = addRef(item, { id: property.id, value: '' });
+			continue;
+		}
+
+		const extItems = ids.map((id) => extItemsMap.get(id)).filter(Boolean) as Item[];
+		const value = aggregatePropertyValue(extItems, property.calculate, extProperty.id);
+		item = addRef(item, { id: property.id, value: value.toString() });
+	}
+
+	return item;
+}
+
 async function updBidirectionalRelationRef(args: { id: string; ref: PropertyRef }) {
 	const { id, ref } = args;
 
@@ -212,63 +291,6 @@ async function getStoredRefValue(itemId: string, refId: string) {
 	if (!ref) throw new Error('Unable to find ref ' + refId);
 
 	return ref.value;
-}
-
-async function updateRef(args: z.infer<typeof refUpdateSchema>) {
-	const { id: pid, ...rest } = args.ref;
-
-	let [_, item, properties] = await Promise.all([
-		updBidirectionalRelationRef({ id: args.id, ref: args.ref }),
-		prisma.item.update({
-			where: { id: args.id },
-			data: {
-				properties: {
-					updateMany: { where: { id: pid }, data: rest }
-				}
-			}
-		}),
-		prisma.property.findMany({
-			where: {
-				collectionId: args.cid,
-				type: { in: [PropertyType.BUNDLE, PropertyType.CREATED] }
-			}
-		})
-	]);
-
-	if (properties.length === 0) return item;
-
-	for (const property of properties) {
-		if (property.type === PropertyType.CREATED) {
-			item = addRef(item, { id: property.id, value: item.createdAt.toISOString() });
-		} else if (property.type === PropertyType.BUNDLE) {
-			if (!property.extTargetProperty || !property.intTargetProperty) continue;
-
-			const extProperty = await prisma.property.findUnique({
-				where: { id: property.extTargetProperty }
-			});
-
-			if (!extProperty) continue;
-
-			const ref = getPropertyRef(item.properties, property.intTargetProperty);
-			if (!ref) {
-				item = addRef(item, { id: property.id, value: '' });
-				continue;
-			}
-
-			const ids = ref.value ? ref.value.split('|') : [];
-			if (ids.length === 0) {
-				item = addRef(item, { id: property.id, value: '' });
-				continue;
-			}
-
-			const extItems = await prisma.item.findMany({ where: { id: { in: ids } } });
-			const value = aggregatePropertyValue(extItems, property.calculate, extProperty.id);
-
-			item = addRef(item, { id: property.id, value: value.toString() });
-		}
-	}
-
-	return item;
 }
 
 function injectCreatedRef(items: Item[], property: Property) {
