@@ -53,6 +53,12 @@ export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
 
+export function getPropertyDefaultValue(property: Property) {
+	if (!PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE.includes(property.type)) return '';
+	if (property.type === PropertyType.CHECKBOX) return 'false';
+	return property.defaultValue;
+}
+
 export function groupBy<T>(items: T[], key: keyof T) {
 	return items.reduce((map, item) => {
 		const groupKey = item[key] as string;

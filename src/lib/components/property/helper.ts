@@ -1,4 +1,5 @@
 import {
+	DEFAULT_STRING_DELIMITER,
 	NUMBERICAL_PROPERTY_TYPES,
 	PROPERTIES_THAT_USE_SELECTOR,
 	PROPERTIES_WITH_LISTABLE_OPTIONS
@@ -33,12 +34,6 @@ export function getOption(options: Option[], id: string) {
 	return options.find((opt) => opt.id === id) || null;
 }
 
-export function getPropertyDefaultValue(property: Property) {
-	if (PROPERTIES_THAT_USE_SELECTOR.includes(property.type)) return property.defaultValue;
-	if (property.type === PropertyType.CHECKBOX) return 'false';
-	return '';
-}
-
 export function containsView(propertyViews: View[], view: View) {
 	return propertyViews.some((v) => v === view);
 }
@@ -63,9 +58,9 @@ export function isPropertyNumerical(property: Property) {
 }
 
 export function joinMultiselectOptions(options: SelectOption[]) {
-	return options.map((option) => option.id).join('|');
+	return options.map((option) => option.id).join(DEFAULT_STRING_DELIMITER);
 }
 
 export function separateMultiselectOptions(value: string) {
-	return value.split('|');
+	return value.split(DEFAULT_STRING_DELIMITER);
 }
