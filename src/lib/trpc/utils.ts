@@ -1,4 +1,8 @@
 import {
+	PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE,
+	PROPERTIES_WITHOUT_REF
+} from '$lib/constant/index.js';
+import {
 	Aggregator,
 	PropertyType,
 	type Item,
@@ -10,17 +14,21 @@ export function isRelation(property: Property) {
 	return property.type === PropertyType.RELATION && property.targetCollection !== '';
 }
 
+export function isBidirectionalRelation(property: Property) {
+	return isRelation(property) && property.relatedProperty !== '';
+}
+
 export function isBundle(property: Property) {
 	return (
 		property.type === PropertyType.BUNDLE &&
 		property.intTargetProperty !== '' &&
+		property.extTargetProperty !== '' &&
 		property.targetCollection !== ''
 	);
 }
 
-const PROPERTY_TYPES_WITHOUT_REF: PropertyType[] = [PropertyType.CREATED, PropertyType.BUNDLE];
 export function hasRef(type: PropertyType) {
-	return !PROPERTY_TYPES_WITHOUT_REF.includes(type);
+	return !PROPERTIES_WITHOUT_REF.includes(type);
 }
 
 export function aggregatePropertyValue(items: Item[], aggregator: Aggregator, pid: string) {

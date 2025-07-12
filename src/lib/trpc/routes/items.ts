@@ -1,6 +1,13 @@
+import { DEFAULT_STRING_DELIMITER, PROPERTIES_WITHOUT_REF } from '$lib/constant/index.js';
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { aggregatePropertyValue, getPropertyRef, isRelation } from '$lib/trpc/utils';
+import {
+	aggregatePropertyValue,
+	getPropertyDefaultValue,
+	getPropertyRef,
+	isBidirectionalRelation,
+	isBundle
+} from '$lib/trpc/utils';
 import { PropertyType, type Item, type Property, type PropertyRef } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -10,7 +17,7 @@ const refSchema = z.object({ id: z.string(), value: z.string() });
 const itemCreateSchema = z.object({
 	name: z.string(),
 	collectionId: z.string(),
-	properties: z.array(refSchema).optional()
+	properties: z.array(refSchema).optional().default([])
 });
 
 const itemUpdateSchema = itemCreateSchema
@@ -32,18 +39,17 @@ export const items = createTRPCRouter({
 		.input(itemCreateSchema)
 		.mutation(async ({ input }) => await createItem(input)),
 
-	update: protectedProcedure.input(itemUpdateSchema).mutation(
-		async ({ input: { id, ...rest } }) =>
-			await prisma.item.update({
-				where: { id },
-				data: { ...rest }
-			})
-	),
+	update: protectedProcedure
+		.input(itemUpdateSchema)
+		.mutation(
+			async ({ input: { id, ...rest } }) =>
+				await prisma.item.update({ where: { id }, data: { ...rest } })
+		),
 
 	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
 		const item = await prisma.item.findUniqueOrThrow({
-			select: { collection: true },
-			where: { id }
+			where: { id },
+			select: { collection: true }
 		});
 		if (item.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
@@ -61,7 +67,7 @@ async function listItems(cid: string) {
 		prisma.property.findMany({
 			where: {
 				collectionId: cid,
-				type: { in: [PropertyType.BUNDLE, PropertyType.CREATED] }
+				type: { in: PROPERTIES_WITHOUT_REF }
 			}
 		})
 	]);
@@ -69,12 +75,12 @@ async function listItems(cid: string) {
 	if (properties.length === 0) return items;
 
 	const createdProps = properties.filter((prop) => prop.type === PropertyType.CREATED);
-	const bundleProps = properties.filter((prop) => prop.type === PropertyType.BUNDLE);
+	const bundleProps = properties.filter((prop) => isBundle(prop));
 
 	let updItems = [...items];
 
 	for (const property of createdProps) {
-		updItems = injectCreatedRef(updItems, property);
+		updItems = injectCreatedRef(updItems, property.id);
 	}
 
 	if (bundleProps.length === 0) return updItems;
@@ -83,53 +89,38 @@ async function listItems(cid: string) {
 }
 
 async function processBundleProperties(items: Item[], properties: Property[]) {
-	const extPropertyIds = properties
-		.map((prop) => prop.extTargetProperty)
-		.filter(Boolean) as string[];
+	const extPropertyIds = properties.map((prop) => prop.extTargetProperty);
+	const extProperties = await prisma.property.findMany({ where: { id: { in: extPropertyIds } } });
 
 	const extPropertiesMap = new Map<string, Property>();
-	if (extPropertyIds.length > 0) {
-		const extProperties = await prisma.property.findMany({ where: { id: { in: extPropertyIds } } });
-
-		for (const property of extProperties) {
-			extPropertiesMap.set(property.id, property);
-		}
+	for (const property of extProperties) {
+		extPropertiesMap.set(property.id, property);
 	}
 
 	const allReferencedIds = new Set<string>();
-	const bundleProcessingData = properties
-		.map((property) => {
-			if (!property.intTargetProperty) return null;
+	const bundleProcessingData = properties.map((property) => {
+		const itemRefs = items.map((item) => {
+			const ref = getPropertyRef(item.properties, property.intTargetProperty);
+			const ids = ref ? ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean) : [];
+			ids.forEach((id) => allReferencedIds.add(id));
+			return { item, ids };
+		});
 
-			const itemRefs = items.map((item) => {
-				const ref = getPropertyRef(item.properties, property.intTargetProperty);
-				const ids = ref?.value ? ref.value.split('|').filter(Boolean) : [];
-				ids.forEach((id) => allReferencedIds.add(id));
-				return { item, ids };
-			});
+		return { property, itemRefs };
+	});
+	if (allReferencedIds.size === 0) return items;
 
-			return { property, itemRefs };
-		})
-		.filter(Boolean);
+	const extItems = await prisma.item.findMany({
+		where: { id: { in: Array.from(allReferencedIds) } }
+	});
 
 	const extItemsMap = new Map<string, Item>();
-	if (allReferencedIds.size > 0) {
-		const extItems = await prisma.item.findMany({
-			where: { id: { in: Array.from(allReferencedIds) } }
-		});
-		for (const item of extItems) {
-			extItemsMap.set(item.id, item);
-		}
+	for (const item of extItems) {
+		extItemsMap.set(item.id, item);
 	}
 
-	let updItems = items;
-	for (const data of bundleProcessingData) {
-		if (!data) continue;
-
-		const { property, itemRefs } = data;
-
-		if (!property.extTargetProperty || !property.intTargetProperty) continue;
-
+	let updItems = [...items];
+	for (const { property, itemRefs } of bundleProcessingData) {
 		const extProperty = extPropertiesMap.get(property.extTargetProperty);
 		if (!extProperty) continue;
 
@@ -248,7 +239,7 @@ async function updateRef(args: z.infer<typeof refUpdateSchema>) {
 		prisma.property.findMany({
 			where: {
 				collectionId: args.cid,
-				type: { in: [PropertyType.BUNDLE, PropertyType.CREATED] }
+				type: { in: PROPERTIES_WITHOUT_REF }
 			}
 		})
 	]);
@@ -256,9 +247,7 @@ async function updateRef(args: z.infer<typeof refUpdateSchema>) {
 	if (properties.length === 0) return item;
 
 	const createdProps = properties.filter((prop) => prop.type === PropertyType.CREATED);
-	const bundleProps = properties.filter(
-		(prop) => prop.type === PropertyType.BUNDLE && prop.extTargetProperty && prop.intTargetProperty
-	);
+	const bundleProps = properties.filter((prop) => isBundle(prop));
 
 	for (const property of createdProps) {
 		item = addRef(item, { id: property.id, value: item.createdAt.toISOString() });
@@ -267,40 +256,37 @@ async function updateRef(args: z.infer<typeof refUpdateSchema>) {
 	if (bundleProps.length === 0) return item;
 
 	const extPropertyIds = bundleProps.map((prop) => prop.extTargetProperty);
+	const extProperties = await prisma.property.findMany({ where: { id: { in: extPropertyIds } } });
+
 	const extPropertiesMap = new Map<string, Property>();
-
-	if (extPropertyIds.length > 0) {
-		const extProperties = await prisma.property.findMany({ where: { id: { in: extPropertyIds } } });
-
-		for (const property of extProperties) {
-			extPropertiesMap.set(property.id, property);
-		}
+	for (const property of extProperties) {
+		extPropertiesMap.set(property.id, property);
 	}
 
 	const allReferencedIds = new Set<string>();
 	const bundleProcessingData = bundleProps.map((property) => {
 		const ref = getPropertyRef(item.properties, property.intTargetProperty!);
-		const ids = ref?.value ? ref.value.split('|').filter(Boolean) : [];
+		const ids = ref ? ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean) : [];
 		ids.forEach((id) => allReferencedIds.add(id));
-		return { property, ref, ids };
+		return { property, ids };
+	});
+
+	if (allReferencedIds.size === 0) return item;
+
+	const extItems = await prisma.item.findMany({
+		where: { id: { in: Array.from(allReferencedIds) } }
 	});
 
 	const extItemsMap = new Map<string, Item>();
-	if (allReferencedIds.size > 0) {
-		const extItems = await prisma.item.findMany({
-			where: { id: { in: Array.from(allReferencedIds) } }
-		});
-
-		for (const item of extItems) {
-			extItemsMap.set(item.id, item);
-		}
+	for (const item of extItems) {
+		extItemsMap.set(item.id, item);
 	}
 
-	for (const { property, ref, ids } of bundleProcessingData) {
+	for (const { property, ids } of bundleProcessingData) {
 		const extProperty = extPropertiesMap.get(property.extTargetProperty);
 		if (!extProperty) continue;
 
-		if (!ref || ids.length === 0) {
+		if (ids.length === 0) {
 			item = addRef(item, { id: property.id, value: '' });
 			continue;
 		}
@@ -314,66 +300,61 @@ async function updateRef(args: z.infer<typeof refUpdateSchema>) {
 }
 
 async function updBidirectionalRelationRef(args: { id: string; ref: PropertyRef }) {
-	const { id, ref } = args;
+	const property = await prisma.property.findUniqueOrThrow({ where: { id: args.ref.id } });
 
-	const property = await prisma.property.findUniqueOrThrow({ where: { id: ref.id } });
-	if (!isRelation(property) || !property.relatedProperty) return;
+	if (!isBidirectionalRelation(property)) return;
 
-	const storedRefValue = await getStoredRefValue(id, ref.id);
+	const storedRefValue = await getStoredRefValue(args.id, args.ref.id);
 
-	const { ids, isDeletion } = getTargetIdsAndMode(storedRefValue, ref.value);
+	const { ids, isDeletion } = getTargetIdsAndMode(storedRefValue, args.ref.value);
 	if (ids.length === 0) return;
 
 	const [relatedProperty, items] = await Promise.all([
-		prisma.property.findFirstOrThrow({
-			where: { id: property.relatedProperty, type: PropertyType.RELATION }
-		}),
+		prisma.property.findFirstOrThrow({ where: { id: property.relatedProperty } }),
 		prisma.item.findMany({ where: { id: { in: ids } } })
 	]);
 
 	const updatePromises = items.map((item) => {
-		const innerRef = getPropertyRef(item.properties, relatedProperty.id);
-		if (!innerRef) return null;
+		const ref = getPropertyRef(item.properties, relatedProperty.id);
+		if (!ref) return null;
 
-		let values = innerRef.value ? innerRef.value.split('|') : [];
+		let values = ref.value ? ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean) : [];
 
-		if (isDeletion) values = values.filter((v) => v !== id);
-		else if (!values.includes(id)) values.push(id);
+		if (isDeletion) values = values.filter((v) => v !== args.id);
+		else if (!values.includes(args.id)) values.push(args.id);
 
 		return prisma.item.update({
 			where: { id: item.id },
 			data: {
 				properties: {
 					updateMany: {
-						where: { id: innerRef.id },
-						data: { value: values.join('|') }
+						where: { id: ref.id },
+						data: { value: values.join(DEFAULT_STRING_DELIMITER) }
 					}
 				}
 			}
 		});
 	});
 
-	return await Promise.all(updatePromises.filter((p) => p != null));
+	return await Promise.all(updatePromises.filter(Boolean));
 }
 
-async function getStoredRefValue(itemId: string, refId: string) {
-	const item = await prisma.item.findUniqueOrThrow({ where: { id: itemId } });
+async function getStoredRefValue(id: string, refId: string) {
+	const item = await prisma.item.findUniqueOrThrow({ where: { id } });
 
 	const ref = item.properties.find((ref) => ref.id === refId);
-	if (!ref) throw new Error('Unable to find ref ' + refId);
-
-	return ref.value;
+	return ref ? ref.value : '';
 }
 
-function injectCreatedRef(items: Item[], property: Property) {
-	return items.map((item) =>
-		addRef(item, { id: property.id, value: item.createdAt.toISOString() })
-	);
+function injectCreatedRef(items: Item[], pid: string) {
+	return items.map((item) => addRef(item, { id: pid, value: item.createdAt.toISOString() }));
 }
 
 function getTargetIdsAndMode(storedRefValue: string, receivedRefValue: string) {
-	const storedRefValues = storedRefValue ? storedRefValue.split('|') : [];
-	const receivedRefValues = receivedRefValue ? receivedRefValue.split('|') : [];
+	const storedRefValues = storedRefValue ? storedRefValue.split(DEFAULT_STRING_DELIMITER) : [];
+	const receivedRefValues = receivedRefValue
+		? receivedRefValue.split(DEFAULT_STRING_DELIMITER)
+		: [];
 
 	const storedSet = new Set(storedRefValues);
 	const receivedSet = new Set(receivedRefValues);
