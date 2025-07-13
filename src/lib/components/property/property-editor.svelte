@@ -325,7 +325,6 @@
 						/>
 					</Field>
 					<Field>
-						<pre> {property.options} </pre>
 						<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
 						<Select
 							id={getIdPrefix('property-ext-target-property')}
