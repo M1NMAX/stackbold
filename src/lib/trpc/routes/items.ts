@@ -7,7 +7,7 @@ import {
 	getPropertyRef,
 	hasRef,
 	isBidirectionalRelation,
-	isBundle
+	isBundleValueInjectable
 } from '$lib/trpc/utils';
 import { PropertyType, type Item, type Property, type PropertyRef } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -76,7 +76,7 @@ async function listItems(cid: string) {
 	if (properties.length === 0) return items;
 
 	const createdProperties = properties.filter((prop) => prop.type === PropertyType.CREATED);
-	const bundleProperties = properties.filter((prop) => isBundle(prop));
+	const bundleProperties = properties.filter((prop) => isBundleValueInjectable(prop));
 
 	let updItems = [...items];
 
@@ -163,7 +163,7 @@ async function createItem(args: z.infer<typeof itemCreateSchema>) {
 		}));
 
 	const createdProperties = properties.filter((property) => property.type === PropertyType.CREATED);
-	const bundleProperties = properties.filter((property) => isBundle(property));
+	const bundleProperties = properties.filter((property) => isBundleValueInjectable(property));
 	const bidirectionalProperties = properties.filter((property) =>
 		isBidirectionalRelation(property)
 	);
@@ -311,7 +311,9 @@ async function updateRef(args: z.infer<typeof refUpdateSchema>) {
 	const createdProperties = injectableProperties.filter(
 		(property) => property.type === PropertyType.CREATED
 	);
-	const bundleProperties = injectableProperties.filter((property) => isBundle(property));
+	const bundleProperties = injectableProperties.filter((property) =>
+		isBundleValueInjectable(property)
+	);
 
 	for (const property of createdProperties) {
 		item = injectCreatedRef(item, property.id);

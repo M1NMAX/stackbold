@@ -162,8 +162,8 @@
 		return `${property.id}-${tail}`;
 	}
 
-	function getTargetCollection(properties: Property[]) {
-		const target = properties.find((prop) => prop.id === property.intTargetProperty);
+	function getTargetCollection(properties: Property[], pid: string) {
+		const target = properties.find((prop) => prop.id === pid);
 		return target ? target.targetCollection : '';
 	}
 
@@ -313,17 +313,19 @@
 								icon: prop.type.toLowerCase(),
 								isSelected: prop.id === property.intTargetProperty
 							}))}
-							onselect={(opt) =>
+							onselect={(opt) => {
 								updProperty({
 									id: property.id,
 									intTargetProperty: opt.id,
-									targetCollection: getTargetCollection(relations)
-								})}
+									targetCollection: getTargetCollection(relations, opt.id)
+								});
+							}}
 							placeholder="Empty"
 							searchable
 						/>
 					</Field>
 					<Field>
+						<pre> {property.options} </pre>
 						<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
 						<Select
 							id={getIdPrefix('property-ext-target-property')}
