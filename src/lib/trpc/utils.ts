@@ -22,9 +22,12 @@ export function isBundle(property: Property) {
 	return (
 		property.type === PropertyType.BUNDLE &&
 		property.intTargetProperty !== '' &&
-		property.extTargetProperty !== '' &&
 		property.targetCollection !== ''
 	);
+}
+
+export function isBundleValueInjectable(property: Property) {
+	return isBundle(property) && property.extTargetProperty !== '';
 }
 
 export function hasRef(type: PropertyType) {
