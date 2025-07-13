@@ -24,7 +24,7 @@ const optionSchema = z.object({
 	id: z.string(),
 	value: z.string(),
 	color: colorSchema,
-	extra: z.string()
+	extra: z.string().optional()
 });
 
 const propertyCreateSchema = z.object({
