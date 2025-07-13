@@ -286,30 +286,32 @@ async function injectBundleRefs(item: Item, properties: Property[]) {
 }
 
 async function updateRef(args: z.infer<typeof refUpdateSchema>) {
-	const { id: pid, ...rest } = args.ref;
-
-	let [_, item, properties] = await Promise.all([
-		updBidirectionalRelationRef({ id: args.id, ref: args.ref }),
-		prisma.item.update({
-			where: { id: args.id },
-			data: {
-				properties: {
-					updateMany: { where: { id: pid }, data: rest }
-				}
-			}
-		}),
+	const [targetProperty, injectableProperties] = await Promise.all([
+		prisma.property.findUniqueOrThrow({ where: { id: args.ref.id } }),
 		prisma.property.findMany({
-			where: {
-				collectionId: args.cid,
-				type: { in: PROPERTIES_WITHOUT_REF }
-			}
+			where: { collectionId: args.cid, type: { in: PROPERTIES_WITHOUT_REF } }
 		})
 	]);
 
-	if (properties.length === 0) return item;
+	if (isBidirectionalRelation(targetProperty)) {
+		await updBidirectionalRelationRef(targetProperty, args.id, args.ref.value);
+	}
 
-	const createdProperties = properties.filter((prop) => prop.type === PropertyType.CREATED);
-	const bundleProperties = properties.filter((prop) => isBundle(prop));
+	let item = await prisma.item.update({
+		where: { id: args.id },
+		data: {
+			properties: {
+				updateMany: { where: { id: args.ref.id }, data: { value: args.ref.value } }
+			}
+		}
+	});
+
+	if (injectableProperties.length === 0) return item;
+
+	const createdProperties = injectableProperties.filter(
+		(property) => property.type === PropertyType.CREATED
+	);
+	const bundleProperties = injectableProperties.filter((property) => isBundle(property));
 
 	for (const property of createdProperties) {
 		item = injectCreatedRef(item, property.id);
@@ -320,28 +322,24 @@ async function updateRef(args: z.infer<typeof refUpdateSchema>) {
 	return await injectBundleRefs(item, bundleProperties);
 }
 
-async function updBidirectionalRelationRef(args: { id: string; ref: PropertyRef }) {
-	const property = await prisma.property.findUniqueOrThrow({ where: { id: args.ref.id } });
-	if (!isBidirectionalRelation(property)) return;
+async function updBidirectionalRelationRef(property: Property, id: string, refValue: string) {
+	const storedItem = await prisma.item.findUniqueOrThrow({ where: { id: id } });
+	const ref = storedItem.properties.find((ref) => ref.id === property.id);
+	const storedRefValue = ref ? ref.value : '';
 
-	const storedRefValue = await getStoredRefValue(args.id, args.ref.id);
-
-	const { ids, isDeletion } = getTargetIdsAndMode(storedRefValue, args.ref.value);
+	const { ids, isDeletion } = getTargetIdsAndMode(storedRefValue, refValue);
 	if (ids.length === 0) return;
 
-	const [relatedProperty, items] = await Promise.all([
-		prisma.property.findFirstOrThrow({ where: { id: property.relatedProperty } }),
-		prisma.item.findMany({ where: { id: { in: ids } } })
-	]);
+	const items = await prisma.item.findMany({ where: { id: { in: ids } } });
 
 	const updatePromises = items.map((item) => {
-		const ref = getPropertyRef(item.properties, relatedProperty.id);
+		const ref = getPropertyRef(item.properties, property.relatedProperty);
 		if (!ref) return null;
 
 		let values = ref.value ? ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean) : [];
 
-		if (isDeletion) values = values.filter((v) => v !== args.id);
-		else if (!values.includes(args.id)) values.push(args.id);
+		if (isDeletion) values = values.filter((v) => v !== storedItem.id);
+		else if (!values.includes(storedItem.id)) values.push(storedItem.id);
 
 		return prisma.item.update({
 			where: { id: item.id },
@@ -359,33 +357,28 @@ async function updBidirectionalRelationRef(args: { id: string; ref: PropertyRef 
 	return await Promise.all(updatePromises.filter(Boolean));
 }
 
-async function getStoredRefValue(id: string, refId: string) {
-	const item = await prisma.item.findUniqueOrThrow({ where: { id } });
+function getTargetIdsAndMode(storedValue: string, receivedValue: string) {
+	const storedValues = storedValue
+		? storedValue.split(DEFAULT_STRING_DELIMITER).filter(Boolean)
+		: [];
+	const receivedValues = receivedValue
+		? receivedValue.split(DEFAULT_STRING_DELIMITER).filter(Boolean)
+		: [];
 
-	const ref = item.properties.find((ref) => ref.id === refId);
-	return ref ? ref.value : '';
+	const storedSet = new Set(storedValues);
+	const receivedSet = new Set(receivedValues);
+
+	const isDeletion = storedValues.length > receivedValues.length;
+
+	const ids = isDeletion
+		? storedValues.filter((v) => !receivedSet.has(v))
+		: receivedValues.filter((v) => !storedSet.has(v));
+
+	return { ids, isDeletion };
 }
 
 function injectCreatedRef(item: Item, pid: string) {
 	return addRef(item, { id: pid, value: item.createdAt.toISOString() });
-}
-
-function getTargetIdsAndMode(storedRefValue: string, receivedRefValue: string) {
-	const storedRefValues = storedRefValue ? storedRefValue.split(DEFAULT_STRING_DELIMITER) : [];
-	const receivedRefValues = receivedRefValue
-		? receivedRefValue.split(DEFAULT_STRING_DELIMITER)
-		: [];
-
-	const storedSet = new Set(storedRefValues);
-	const receivedSet = new Set(receivedRefValues);
-
-	const isDeletion = storedRefValues.length > receivedRefValues.length;
-
-	const ids = isDeletion
-		? storedRefValues.filter((v) => !receivedSet.has(v))
-		: receivedRefValues.filter((v) => !storedSet.has(v));
-
-	return { ids, isDeletion };
 }
 
 function addRef(item: Item, ref: PropertyRef) {
