@@ -86,7 +86,9 @@ async function listItems(cid: string) {
 
 	if (bundleProperties.length === 0) return updItems;
 
-	return await injectBundleRefsItems(updItems, bundleProperties);
+	updItems = await injectBundleRefsItems(updItems, bundleProperties);
+
+	return updItems;
 }
 
 async function injectBundleRefsItems(items: Item[], properties: Property[]) {
@@ -99,7 +101,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 	}
 
 	const allReferencedIds = new Set<string>();
-	const bundleProcessingData = properties.map((property) => {
+	const processingData = properties.map((property) => {
 		const itemRefs = items.map((item) => {
 			const ref = getPropertyRef(item.properties, property.intTargetProperty);
 			const ids = ref ? ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean) : [];
@@ -120,21 +122,31 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 		extItemsMap.set(item.id, item);
 	}
 
-	let updItems = [...items];
-	for (const { property, itemRefs } of bundleProcessingData) {
+	const updates = new Map<string, Item>();
+
+	for (const { property, itemRefs } of processingData) {
 		const extProperty = extPropertiesMap.get(property.extTargetProperty);
 		if (!extProperty) continue;
 
-		updItems = itemRefs.map(({ item, ids }) => {
-			if (ids.length === 0) return addRef(item, { id: property.id, value: '' });
+		itemRefs.forEach(({ item, ids }) => {
+			const key = item.id;
 
-			const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
-			const value = aggregatePropertyValue(extItems, property.calculate, extProperty.id);
-			return addRef(item, { id: property.id, value: value.toString() });
+			if (!updates.has(key)) {
+				updates.set(key, item);
+			}
+
+			let ref = { id: property.id, value: '' };
+
+			if (ids.length !== 0) {
+				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
+				ref.value = aggregatePropertyValue(extItems, property.calculate, extProperty.id).toString();
+			}
+
+			updates.set(key, addRef(updates.get(key)!, ref));
 		});
 	}
 
-	return updItems;
+	return Array.from(updates.values());
 }
 
 async function listSearchableItem(userId: string) {
