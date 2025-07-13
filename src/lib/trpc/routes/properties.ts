@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
-import { groupBy, hasRef, isBundle, isRelation } from '$lib/trpc/utils';
+import { groupBy, hasRef, isBidirectionalRelation, isBundle, isRelation } from '$lib/trpc/utils';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -145,10 +145,10 @@ async function listProperties(cid: string) {
 			: Promise.resolve(new Map())
 	]);
 
-	return properties.map((property) => injectPropertyOptionsSync(property, itemsMap, propertiesMap));
+	return properties.map((property) => injectPropertyOptions(property, itemsMap, propertiesMap));
 }
 
-function injectPropertyOptionsSync(
+function injectPropertyOptions(
 	property: Property,
 	itemsMap: Map<string, Item[]>,
 	propsMap: Map<string, Property[]>
@@ -191,10 +191,41 @@ async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
 		data: { ...rest, relatedProperty }
 	});
 
-	return injectPropertyOptionsSingle(property);
+	return injectPropertyOptionsAsync(property);
 }
 
-async function injectPropertyOptionsSingle(property: Property) {
+async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSchema>) {
+	const storedProperty = await prisma.property.findFirstOrThrow({
+		where: { id: args.id },
+		include: { collection: { select: { name: true } } }
+	});
+
+	if (!shouldCreateBidirectionalRef(storedProperty, args)) return;
+
+	const exists = !!(await prisma.property.findFirst({
+		where: {
+			type: PropertyType.RELATION,
+			collectionId: args.targetCollection,
+			targetCollection: storedProperty.collectionId,
+			relatedProperty: storedProperty.id
+		}
+	}));
+
+	if (exists) return;
+
+	const property = await createProperty({
+		name: `Related to ${storedProperty.collection.name}`,
+		type: PropertyType.RELATION,
+		collectionId: args.targetCollection!,
+		targetCollection: storedProperty.collectionId,
+		relatedProperty: storedProperty.id,
+		visibleInViews: []
+	});
+
+	return property.id;
+}
+
+async function injectPropertyOptionsAsync(property: Property) {
 	if (isRelation(property)) {
 		const items = await prisma.item.findMany({
 			where: { collectionId: property.targetCollection }
@@ -228,50 +259,18 @@ async function injectPropertyOptionsSingle(property: Property) {
 	return property;
 }
 
-async function createProperty(property: z.infer<typeof propertyCreateSchema>) {
-	const order = await prisma.property.count({ where: { collectionId: property.collectionId } });
+async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
+	const order = await prisma.property.count({ where: { collectionId: args.collectionId } });
+	const property = await prisma.property.create({ data: { ...args, order: order + 1 } });
 
-	const prop = await prisma.property.create({ data: { ...property, order: order + 1 } });
-
-	if (hasRef(prop.type)) {
+	if (hasRef(property.type)) {
 		await prisma.item.updateMany({
-			where: { collectionId: prop.collectionId },
-			data: { properties: { push: { id: prop.id, value: '' } } }
+			where: { collectionId: property.collectionId },
+			data: { properties: { push: { id: property.id, value: '' } } }
 		});
 	}
 
-	return prop;
-}
-
-async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSchema>) {
-	const storedProperty = await prisma.property.findFirstOrThrow({
-		where: { id: args.id },
-		include: { collection: { select: { name: true } } }
-	});
-
-	if (!args.targetCollection || args.targetCollection === storedProperty.targetCollection) return;
-
-	const exists = !!(await prisma.property.findFirst({
-		where: {
-			type: PropertyType.RELATION,
-			collectionId: args.targetCollection,
-			targetCollection: storedProperty.collectionId,
-			relatedProperty: storedProperty.id
-		}
-	}));
-
-	if (exists) return;
-
-	const property = await createProperty({
-		name: `Related to ${storedProperty.collection.name}`,
-		type: PropertyType.RELATION,
-		collectionId: args.targetCollection,
-		targetCollection: storedProperty.collectionId,
-		relatedProperty: storedProperty.id,
-		visibleInViews: []
-	});
-
-	return property.id;
+	return property;
 }
 
 async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
@@ -308,55 +307,75 @@ async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
 }
 
 async function deleteProperty(id: string, userId: string) {
-	const property = await prisma.property.findFirstOrThrow({
+	const property = await prisma.property.findUniqueOrThrow({
 		where: { id },
 		include: {
 			collection: {
-				select: { id: true, ownerId: true, filterConfigs: true, groupByConfigs: true }
+				select: {
+					id: true,
+					ownerId: true,
+					filterConfigs: true,
+					groupByConfigs: true,
+					_count: { select: { properties: true } }
+				}
 			}
 		}
 	});
 
-	if (property.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
-
-	let promises: Promise<any>[] = [];
-
-	if (hasRef(property.type)) {
-		promises.push(
-			prisma.item.updateMany({
-				where: { collectionId: property.collection.id },
-				data: { properties: { deleteMany: { where: { id } } } }
-			})
-		);
+	if (property.collection.ownerId !== userId) {
+		throw new TRPCError({ code: 'UNAUTHORIZED' });
 	}
 
-	const groupBy = wasGroupBy(property.collection.groupByConfigs, id);
-	const filters = wasFilter(property.collection.filterConfigs, id);
+	await prisma.$transaction(async (tx) => {
+		let promises: Promise<any>[] = [];
 
-	if (groupBy.tainted || filters.tainted) {
+		if (hasRef(property.type)) {
+			promises.push(
+				tx.item.updateMany({
+					where: { collectionId: property.collection.id },
+					data: { properties: { deleteMany: { where: { id } } } }
+				})
+			);
+		}
+
+		const groupBy = wasGroupBy(property.collection.groupByConfigs, id);
+		const filters = wasFilter(property.collection.filterConfigs, id);
+
+		if (groupBy.tainted || filters.tainted) {
+			promises.push(
+				tx.collection.update({
+					where: { id: property.collection.id },
+					data: {
+						groupByConfigs: groupBy.tainted ? groupBy.groupByConfigs : undefined,
+						filterConfigs: filters.tainted ? filters.filterConfigs : undefined
+					}
+				})
+			);
+		}
+
+		if (isBidirectionalRelation(property)) {
+			promises.push(
+				tx.property.updateMany({
+					where: { id: property.relatedProperty, type: PropertyType.RELATION },
+					data: { relatedProperty: '' }
+				})
+			);
+		}
+
+		promises.push(tx.property.delete({ where: { id } }));
+
 		promises.push(
-			prisma.collection.update({
-				where: { id: property.collection.id },
-				data: {
-					groupByConfigs: groupBy.tainted ? groupBy.groupByConfigs : [],
-					filterConfigs: filters.tainted ? filters.filterConfigs : []
-				}
+			tx.property.updateMany({
+				where: {
+					collectionId: property.collectionId,
+					order: { gt: property.order, lte: property.collection._count.properties }
+				},
+				data: { order: { decrement: 1 } }
 			})
 		);
-	}
 
-	if (isRelation(property) && property.relatedProperty) {
-		promises.push(
-			prisma.property.update({
-				where: { id: property.relatedProperty, type: PropertyType.RELATION },
-				data: { relatedProperty: '' }
-			})
-		);
-	}
-
-	promises.push(prisma.property.delete({ where: { id } }));
-
-	await Promise.all(promises);
+		await Promise.all(promises);
+	});
 }
 
 function wasGroupBy(configs: GroupByConfig[], pid: string) {
@@ -392,4 +411,15 @@ function wasFilter(configs: FilterConfig[], pid: string) {
 	}
 
 	return { tainted, filterConfigs };
+}
+
+function shouldCreateBidirectionalRef(
+	property: Property,
+	updData: z.infer<typeof propertyUpdateSchema>
+) {
+	return (
+		property.type === PropertyType.RELATION &&
+		updData.targetCollection &&
+		updData.targetCollection != property.targetCollection
+	);
 }

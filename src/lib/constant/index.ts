@@ -30,6 +30,8 @@ export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];
 
+export const DEFAULT_STRING_DELIMITER = '|';
+
 export const PROPERTY_DEFAULT_VALUE_NOT_DEFINED = 'Not Defined';
 
 export const DEBOUNCE_INTERVAL = 1000;
@@ -83,6 +85,14 @@ export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
 	...PROPERTIES_THAT_USE_SELECTOR,
 	PropertyType.CHECKBOX
 ];
+
+export const PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE: PropertyType[] = [
+	...PROPERTIES_THAT_USE_SELECTOR,
+	PropertyType.CHECKBOX
+];
+
+export const PROPERTIES_WITHOUT_REF: PropertyType[] = [PropertyType.CREATED, PropertyType.BUNDLE];
+
 export const PROPERTY_UNIVERSAL_AGGREGATORS: Aggregator[] = [
 	Aggregator.NONE,
 	Aggregator.COUNT,

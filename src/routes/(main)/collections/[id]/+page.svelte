@@ -11,12 +11,7 @@
 		groupItemsByPropertyValue,
 		setItemState
 	} from '$lib/components/items/index.js';
-	import {
-		getOption,
-		getPropertyColor,
-		getPropertyDefaultValue,
-		getPropertyRef
-	} from '$lib/components/property/index.js';
+	import { getOption, getPropertyColor, getPropertyRef } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
@@ -185,11 +180,7 @@
 
 		itemState.createItem({
 			name: itemName,
-			collectionId: collection.id,
-			properties: propertyState.properties.map((prop) => ({
-				id: prop.id,
-				value: getPropertyDefaultValue(prop)
-			}))
+			collectionId: collection.id
 		});
 		itemName = '';
 	}
@@ -348,11 +339,7 @@
 	async function onClickCreateItemAdvance() {
 		const id = await itemState.createItem({
 			name: '',
-			collectionId: collection.id,
-			properties: propertyState.properties.map((prop) => ({
-				id: prop.id,
-				value: getPropertyDefaultValue(prop)
-			}))
+			collectionId: collection.id
 		});
 		if (!id) return;
 		await clickItem(id);
