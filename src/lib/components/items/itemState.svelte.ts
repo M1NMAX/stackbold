@@ -28,22 +28,13 @@ export class ItemState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			let properties: PropertyRef[] = [];
-
-			if (args.properties) {
-				properties = args.properties.map((property) => ({
-					id: property.id,
-					value: property.value ?? ''
-				}));
-			}
-
 			this.items.push({
 				id: tmpId,
 				collectionId: args.collectionId,
 				name: args.name,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				properties: properties
+				properties: []
 			});
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
