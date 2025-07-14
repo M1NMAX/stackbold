@@ -17,8 +17,7 @@ const refSchema = z.object({ id: z.string(), value: z.string() });
 
 const itemCreateSchema = z.object({
 	name: z.string(),
-	collectionId: z.string(),
-	properties: z.array(refSchema).optional().default([])
+	collectionId: z.string()
 });
 
 const itemUpdateSchema = itemCreateSchema
@@ -176,8 +175,8 @@ async function createItem(args: z.infer<typeof itemCreateSchema>) {
 
 	const createdProperties = properties.filter((property) => property.type === PropertyType.CREATED);
 	const bundleProperties = properties.filter((property) => isBundleValueInjectable(property));
-	const bidirectionalProperties = properties.filter((property) =>
-		isBidirectionalRelation(property)
+	const bidirectionalProperties = properties.filter(
+		(property) => isBidirectionalRelation(property) && property.defaultValue !== ''
 	);
 
 	let item = await prisma.item.create({ data: { ...args, properties: refs } });
