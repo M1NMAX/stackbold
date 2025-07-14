@@ -60,33 +60,11 @@ export class ItemState {
 	}
 
 	async duplicateItem(id: string) {
-		const target = this.getItem(id);
-		if (target == null) {
-			this.#toastState.error();
-			return;
-		}
-		const tmpId = crypto.randomUUID();
 		try {
-			const { id: _, name, ...rest } = target;
-			this.items.push({
-				...rest,
-				name: name + ' copy',
-				id: tmpId,
-				createdAt: new Date(),
-				updatedAt: new Date()
-			});
-
-			const createdItem = await trpc().items.create.mutate({
-				...rest,
-				name: name + ' copy'
-			});
-
-			this.#updItem(tmpId, createdItem);
-
-			this.#toastState.success(`Item [${name}] duplicated successfully `);
+			const createdItem = await trpc().items.duplicate.mutate(id);
+			this.items.push({ ...createdItem });
 		} catch (err) {
 			this.#toastState.error();
-			this.#removeItem(tmpId);
 		}
 	}
 

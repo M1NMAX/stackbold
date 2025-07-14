@@ -1,7 +1,7 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { z } from 'zod';
-import { PropertyType } from '@prisma/client';
+import { PROPERTIES_WITHOUT_REF } from '$lib/constant';
 
 export const templates = createTRPCRouter({
 	list: protectedProcedure.query(() => prisma.template.findMany({ orderBy: { createdAt: 'asc' } })),
@@ -35,7 +35,7 @@ async function turnTemplateIntoCollection(id: string, userId: string) {
 	const properties = await prisma.property.findMany({
 		where: {
 			collectionId: collection.id,
-			type: { notIn: [PropertyType.BUNDLE, PropertyType.CREATED] }
+			type: { notIn: PROPERTIES_WITHOUT_REF }
 		},
 		orderBy: { order: 'asc' }
 	});

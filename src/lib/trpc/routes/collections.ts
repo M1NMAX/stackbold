@@ -76,15 +76,12 @@ export const collections = createTRPCRouter({
 	),
 
 	duplicate: protectedProcedure.input(z.string()).mutation(async ({ input: id }) => {
-		const {
-			id: _,
-			properties,
-			items,
-			...rest
-		} = await prisma.collection.findFirstOrThrow({
+		const target = await prisma.collection.findUniqueOrThrow({
 			where: { id },
 			include: { items: true, properties: true }
 		});
+
+		const { id: _1, createdAt: _2, updatedAt: _3, properties, items, ...rest } = target;
 
 		const collection = await prisma.collection.create({
 			data: { ...rest, name: rest.name + ' copy' }
