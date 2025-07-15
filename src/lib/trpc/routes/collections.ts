@@ -3,6 +3,7 @@ import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { View } from '@prisma/client';
+import { PROPERTIES_WITHOUT_REF } from '$lib/constant';
 
 const viewSchema = z.nativeEnum(View);
 
@@ -84,37 +85,47 @@ export const collections = createTRPCRouter({
 		const { id: _1, createdAt: _2, updatedAt: _3, properties, items, ...rest } = target;
 
 		const collection = await prisma.collection.create({
-			data: { ...rest, name: rest.name + ' copy' }
+			data: {
+				...rest,
+				name: rest.name + ' copy',
+				filterConfigs: undefined,
+				groupByConfigs: undefined
+			}
 		});
 
-		const props = await Promise.all(
-			properties.map(async ({ id, ...rest }) => {
-				const result = await prisma.property.create({
-					data: { ...rest, collectionId: collection.id }
+		const propertiesData = properties.map((property) => {
+			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = property;
+			return {
+				...rest,
+				collectionId: collection.id
+			};
+		});
+
+		await prisma.property.createMany({ data: propertiesData });
+
+		const createdProperies = await prisma.property.findMany({
+			where: {
+				collectionId: collection.id,
+				type: { notIn: PROPERTIES_WITHOUT_REF }
+			},
+			orderBy: { order: 'asc' }
+		});
+
+		const itemData = items.map((item) => {
+			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = item;
+
+			let refs = [];
+			for (let i = 0; i < createdProperies.length; i++) {
+				refs.push({
+					id: createdProperies[i].id,
+					value: rest.properties[i].value
 				});
-				return { ...result, old: id };
-			})
-		);
+			}
 
-		if (items.length > 0) {
-			const collectionItems = items.map(({ id, ...rest }) => {
-				const properties = props
-					.filter((prop) => prop.type !== 'CREATED')
-					.map((prop) => {
-						const ref = rest.properties.find((ref) => ref.id === prop.old);
-						if (!ref) return { id: prop.id, value: '' };
-						return { id: prop.id, value: ref.value };
-					});
+			return { ...rest, collectionId: collection.id, properties: refs };
+		});
 
-				return {
-					...rest,
-					collectionId: collection.id,
-					properties
-				};
-			});
-
-			await prisma.item.createMany({ data: collectionItems });
-		}
+		await prisma.item.createMany({ data: itemData });
 
 		return collection;
 	}),
