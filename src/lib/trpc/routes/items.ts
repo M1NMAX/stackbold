@@ -39,6 +39,10 @@ export const items = createTRPCRouter({
 		.input(itemCreateSchema)
 		.mutation(async ({ input }) => await createItem(input)),
 
+	duplicate: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ input }) => await duplicateItem(input)),
+
 	update: protectedProcedure
 		.input(itemUpdateSchema)
 		.mutation(
@@ -294,6 +298,40 @@ async function injectBundleRefs(item: Item, properties: Property[]) {
 	}
 
 	return item;
+}
+
+async function duplicateItem(id: string) {
+	const target = await prisma.item.findUniqueOrThrow({ where: { id } });
+	const properties = await prisma.property.findMany({
+		where: { collectionId: target.collectionId }
+	});
+
+	const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = target;
+	const createdProperties = properties.filter((property) => property.type === PropertyType.CREATED);
+	const bundleProperties = properties.filter((property) => isBundleValueInjectable(property));
+	const bidirectionalProperties = properties.filter((property) =>
+		isBidirectionalRelation(property)
+	);
+
+	let item = await prisma.item.create({
+		data: {
+			...rest,
+			name: rest.name + ' copy'
+		}
+	});
+
+	for (const property of createdProperties) {
+		item = injectCreatedRef(item, property.id);
+	}
+
+	const [_b, updatedItem] = await Promise.all([
+		bidirectionalProperties.length > 0
+			? addCreatedItemToBidirectionalRefs(bidirectionalProperties, item.id)
+			: Promise.resolve(),
+		bundleProperties.length > 0 ? injectBundleRefs(item, bundleProperties) : Promise.resolve(item)
+	]);
+
+	return updatedItem;
 }
 
 async function updateRef(args: z.infer<typeof refUpdateSchema>) {
