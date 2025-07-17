@@ -1,5 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import type { Item, PropertyRef } from '@prisma/client';
+import type { Item } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
