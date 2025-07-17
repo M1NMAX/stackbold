@@ -74,19 +74,22 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			const { id: _, name, createdAt, ...rest } = target;
+			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = target;
+			const name = rest.name + ' copy';
 
 			this.properties.push({
 				...rest,
-				name: name + ' copy',
+				name,
 				id: tmpId,
 				order: this.properties.length + 1,
-				createdAt: new Date()
+				createdAt: new Date(),
+				updatedAt: new Date()
 			});
 
 			const property = await trpc().properties.create.mutate({
 				...rest,
-				name: name + ' copy'
+				relatedProperty: '',
+				name
 			});
 
 			this.#updProperty(tmpId, property);
