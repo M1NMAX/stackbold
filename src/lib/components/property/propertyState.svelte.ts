@@ -45,10 +45,10 @@ export class PropertyState {
 				options: [],
 				order,
 				collectionId,
-				targetCollection: '',
-				relatedProperty: '',
-				intTargetProperty: '',
-				extTargetProperty: '',
+				targetCollection: null,
+				relatedProperty: null,
+				intTargetProperty: null,
+				extTargetProperty: null,
 				calculate: Aggregator.NONE
 			});
 
@@ -88,7 +88,7 @@ export class PropertyState {
 
 			const property = await trpc().properties.create.mutate({
 				...rest,
-				relatedProperty: '',
+				relatedProperty: null,
 				name
 			});
 

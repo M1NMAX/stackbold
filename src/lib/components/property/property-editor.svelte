@@ -164,7 +164,7 @@
 
 	function getTargetCollection(properties: Property[], pid: string) {
 		const target = properties.find((prop) => prop.id === pid);
-		return target ? target.targetCollection : '';
+		return target ? target.targetCollection : undefined;
 	}
 
 	function getMaxVisisbleOptions() {

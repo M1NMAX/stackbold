@@ -11,23 +11,23 @@ import {
 } from '@prisma/client';
 
 export function isRelation(property: Property) {
-	return property.type === PropertyType.RELATION && property.targetCollection !== '';
+	return property.type === PropertyType.RELATION && property.targetCollection != null;
 }
 
 export function isBidirectionalRelation(property: Property) {
-	return isRelation(property) && property.relatedProperty !== '';
+	return isRelation(property) && property.relatedProperty != null;
 }
 
 export function isBundle(property: Property) {
 	return (
 		property.type === PropertyType.BUNDLE &&
-		property.intTargetProperty !== '' &&
-		property.targetCollection !== ''
+		property.intTargetProperty != null &&
+		property.targetCollection != null
 	);
 }
 
 export function isBundleValueInjectable(property: Property) {
-	return isBundle(property) && property.extTargetProperty !== '';
+	return isBundle(property) && property.extTargetProperty != null;
 }
 
 export function hasRef(type: PropertyType) {

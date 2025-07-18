@@ -2,7 +2,7 @@
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { PROPERTY_COLORS } from '$lib/constant';
-	import type { Color, Option } from '@prisma/client';
+	import { Color, type Option } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
 		AdaptiveWrapper,
@@ -31,7 +31,7 @@
 	let value = $state(option.color as string);
 
 	let selectedKey = $derived.by(() => {
-		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
+		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? Color.GRAY;
 	});
 
 	const propertyState = getPropertyState();
