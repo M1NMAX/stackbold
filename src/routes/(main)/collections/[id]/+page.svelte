@@ -101,7 +101,7 @@
 					if (!ref) return false;
 
 					const values = ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean);
-					return values.some((v) => filter.values.includes(v));
+					if (!values.some((v) => filter.values.includes(v))) return false;
 				}
 				return true;
 			})
