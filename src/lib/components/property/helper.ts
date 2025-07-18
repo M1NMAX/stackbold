@@ -1,7 +1,6 @@
 import {
 	DEFAULT_STRING_DELIMITER,
 	NUMBERICAL_PROPERTY_TYPES,
-	PROPERTIES_THAT_USE_SELECTOR,
 	PROPERTIES_WITH_LISTABLE_OPTIONS
 } from '$lib/constant/index.js';
 import type { SelectOption } from '$lib/types';
