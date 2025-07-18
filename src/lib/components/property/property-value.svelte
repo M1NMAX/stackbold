@@ -104,7 +104,7 @@
 
 	//utils
 	function shouldClose() {
-		return wrapperState.isOpen && property.type === 'DATE';
+		return wrapperState.isOpen && property.type === PropertyType.DATE;
 	}
 
 	function isTableView() {
@@ -127,7 +127,7 @@
 	});
 </script>
 
-{#if property.type === 'CHECKBOX'}
+{#if property.type === PropertyType.CHECKBOX}
 	<label
 		class={tm(
 			'flex justify-center',
@@ -140,7 +140,7 @@
 
 		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
-{:else if property.type === 'SELECT' && (value || isTableView())}
+{:else if property.type === PropertyType.SELECT && (value || isTableView())}
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
@@ -158,7 +158,7 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
-{:else if property.type === 'MULTISELECT' && (value || isTableView())}
+{:else if property.type === PropertyType.MULTISELECT && (value || isTableView())}
 	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
 		id={`${property.id}-value-${item.id}`}
@@ -178,7 +178,7 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
-{:else if property.type === 'RELATION' && (value || isTableView())}
+{:else if property.type === PropertyType.RELATION && (value || isTableView())}
 	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
 		id={`${property.id}-value-${item.id}`}
@@ -199,11 +199,11 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
-{:else if property.type === 'BUNDLE' && (value || isTableView())}
+{:else if property.type === PropertyType.BUNDLE && (value || isTableView())}
 	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
 		{@render tooltipWrapper(value, !!value && isTableView())}
 	</div>
-{:else if property.type === 'DATE' && (value || isTableView())}
+{:else if property.type === PropertyType.DATE && (value || isTableView())}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{#if value}
@@ -219,12 +219,12 @@
 		/>
 		{@render clearBtn()}
 	</AdaptiveWrapper>
-{:else if property.type === 'CREATED'}
+{:else if property.type === PropertyType.CREATED}
 	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
 	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
 		{@render tooltipWrapper(formatted, !!value && isTableView())}
 	</div>
-{:else if property.type === 'TEXT' && (value || isTableView())}
+{:else if property.type === PropertyType.TEXT && (value || isTableView())}
 	{@const content =
 		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
 			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
@@ -259,7 +259,7 @@
 			></textarea>
 		</form>
 	</AdaptiveWrapper>
-{:else if property.type === 'NUMBER' && (value || isTableView())}
+{:else if property.type === PropertyType.NUMBER && (value || isTableView())}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{@render tooltipWrapper(value)}
