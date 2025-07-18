@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Eraser from 'lucide-svelte/icons/eraser';
-	import type { Property } from '@prisma/client';
+	import { PropertyType, type Property } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -68,7 +68,7 @@
 	}
 </script>
 
-{#if property.type === 'CHECKBOX'}
+{#if property.type === PropertyType.CHECKBOX}
 	<div
 		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm bg-secondary text-secondary-foreground"
 	>
@@ -81,7 +81,7 @@
 		/>
 		<Label for={property.id} name={property.name} compact />
 	</div>
-{:else if property.type === 'SELECT'}
+{:else if property.type === PropertyType.SELECT}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
@@ -99,7 +99,7 @@
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
 	</Field>
-{:else if property.type === 'MULTISELECT'}
+{:else if property.type === PropertyType.MULTISELECT}
 	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -119,7 +119,7 @@
 			isMulti
 		/>
 	</Field>
-{:else if property.type === 'RELATION'}
+{:else if property.type === PropertyType.RELATION}
 	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -140,7 +140,7 @@
 			isMulti
 		/>
 	</Field>
-{:else if property.type === 'BUNDLE'}
+{:else if property.type === PropertyType.BUNDLE}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<div
@@ -154,7 +154,7 @@
 			{/if}
 		</div>
 	</Field>
-{:else if property.type === 'DATE'}
+{:else if property.type === PropertyType.DATE}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<AdaptiveWrapper
@@ -183,7 +183,7 @@
 			{@render clearBtn()}
 		</AdaptiveWrapper>
 	</Field>
-{:else if property.type === 'CREATED'}
+{:else if property.type === PropertyType.CREATED}
 	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -200,7 +200,7 @@
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 
-		{#if property.type === 'TEXT'}
+		{#if property.type === PropertyType.TEXT}
 			<textarea
 				use:textareaAutoSize
 				id={property.id}
@@ -210,7 +210,7 @@
 				oninput={handleOnInput}
 				class="textarea textarea-ghost"
 			></textarea>
-		{:else if property.type === 'NUMBER'}
+		{:else if property.type === PropertyType.NUMBER}
 			<input
 				id={property.id}
 				type="text"
