@@ -36,6 +36,7 @@
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
+		DEFAULT_STRING_DELIMITER,
 		FILTERABLE_PROPERTY_TYPES,
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_ITEM_NAME_LENGTH,
@@ -98,7 +99,9 @@
 				for (const filter of filters) {
 					const ref = getPropertyRef(item.properties, filter.id);
 					if (!ref) return false;
-					if (!filter.values.includes(ref.value)) return false;
+
+					const values = ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean);
+					return values.some((v) => filter.values.includes(v));
 				}
 				return true;
 			})

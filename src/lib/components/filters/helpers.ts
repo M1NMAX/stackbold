@@ -1,3 +1,4 @@
+import { FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
 import { PropertyType, type Filter, type FilterConfig, type View } from '@prisma/client';
 
 type Target = {
@@ -23,7 +24,7 @@ export function toggleFilter(filters: Filter[], src: Source) {
 
 	if (type === PropertyType.CHECKBOX) {
 		return filters.map((filter) => (filter.id !== id ? filter : { ...target, values: [value] }));
-	} else if (type === PropertyType.SELECT || type === PropertyType.MULTISELECT) {
+	} else if (FILTERABLE_PROPERTY_TYPES.includes(type)) {
 		if (!target.values.includes(value)) {
 			return filters.map((filter) =>
 				filter.id !== id ? filter : { ...filter, values: [...target.values, value] }
