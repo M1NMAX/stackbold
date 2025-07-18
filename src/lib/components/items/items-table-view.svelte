@@ -2,7 +2,7 @@
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import Settings from 'lucide-svelte/icons/settings-2';
 	import { tm } from '$lib/utils';
-	import { type Property, type Item, View, PropertyType } from '@prisma/client';
+	import { type Property, type Item, View, PropertyType, Aggregator } from '@prisma/client';
 	import { getActiveItemState, getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
@@ -53,26 +53,26 @@
 	}
 
 	function aggregatePropertyValue(property: Property) {
-		if (property.aggregator === 'COUNT') return items.length;
-		else if (property.aggregator === 'COUNT_EMPTY') {
+		if (property.aggregator === Aggregator.COUNT) return items.length;
+		else if (property.aggregator === Aggregator.COUNT_EMPTY) {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
 				if (propertyRef == null || propertyRef.value === '') return acc + 1;
 				return acc;
 			}, 0);
-		} else if (property.aggregator === 'COUNT_NOT_EMPTY') {
+		} else if (property.aggregator === Aggregator.COUNT_NOT_EMPTY) {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
 				if (propertyRef && propertyRef.value !== '') return acc + 1;
 				return acc;
 			}, 0);
-		} else if (property.aggregator === 'SUM' || property.aggregator === 'AVG') {
+		} else if (property.aggregator === Aggregator.SUM || property.aggregator === Aggregator.AVG) {
 			const sum = items.reduce((acc, curr) => {
 				const propertyRef = getPropertyRef(curr.properties, property.id);
 				const inc = propertyRef ? propertyRef.value : 0;
 				return acc + Number(inc);
 			}, 0);
-			if (property.aggregator === 'SUM') return sum.toFixed(2);
+			if (property.aggregator === Aggregator.SUM) return sum.toFixed(2);
 			return (sum / items.length).toFixed(2);
 		}
 
