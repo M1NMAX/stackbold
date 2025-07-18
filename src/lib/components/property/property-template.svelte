@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { CheckSquare2, Square } from 'lucide-svelte';
-	import type { Color, TemplateProperty } from '@prisma/client';
+	import { PropertyType, type Color, type TemplateProperty } from '@prisma/client';
 	import { PROPERTY_COLORS } from '$lib/constant';
 	import { tm, useId } from '$lib/utils';
 	import { getOption, hasOptions, PropertyIcon } from '.';
@@ -15,7 +15,7 @@
 	let { property, color, value }: Props = $props();
 </script>
 
-{#if property.type == 'CHECKBOX'}
+{#if property.type === PropertyType.CHECKBOX}
 	<div
 		class={tm(
 			'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold [&_svg]:size-4',
@@ -39,7 +39,7 @@
 		id={tooltipId}
 		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
-		{#if property.type !== 'TEXT'}
+		{#if property.type !== PropertyType.TEXT}
 			{result}
 		{:else}
 			{result.substring(0, 55)}

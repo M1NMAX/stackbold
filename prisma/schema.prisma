@@ -161,10 +161,10 @@ model Property {
   aggregator        Aggregator   @default(NONE)
   defaultValue      String       @default("")
   order             Int          @default(0)
-  targetCollection  String       @default("") // RELATION AND BUNDLE only
-  relatedProperty   String       @default("") // RELATION only
-  intTargetProperty String       @default("") // BUMDLE only
-  extTargetProperty String       @default("") // BUNDLE only
+  targetCollection  String? // RELATION AND BUNDLE only
+  relatedProperty   String? // RELATION only
+  intTargetProperty String? // BUMDLE only
+  extTargetProperty String? // BUNDLE only
   calculate         Aggregator   @default(NONE) // BUNDLE only
 }
 

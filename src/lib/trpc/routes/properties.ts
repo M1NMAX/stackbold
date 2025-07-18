@@ -36,10 +36,10 @@ const propertyCreateSchema = z.object({
 	visibleInViews: z.array(viewSchema).optional(),
 	order: z.number().optional(),
 	options: z.array(optionSchema).optional(),
-	targetCollection: z.string().optional(),
-	relatedProperty: z.string().optional(),
-	intTargetProperty: z.string().optional(),
-	extTargetProperty: z.string().optional(),
+	targetCollection: z.string().nullish(),
+	relatedProperty: z.string().nullish(),
+	intTargetProperty: z.string().nullish(),
+	extTargetProperty: z.string().nullish(),
 	calculate: aggregatorSchema.optional()
 });
 
@@ -125,8 +125,8 @@ async function listProperties(cid: string) {
 	const bundleTargets = new Set<string>();
 
 	for (const property of properties) {
-		if (isRelation(property)) relationTargets.add(property.targetCollection);
-		else if (isBundle(property)) bundleTargets.add(property.targetCollection);
+		if (isRelation(property)) relationTargets.add(property.targetCollection!);
+		else if (isBundle(property)) bundleTargets.add(property.targetCollection!);
 	}
 
 	if (relationTargets.size === 0 && bundleTargets.size === 0) return properties;
@@ -154,7 +154,7 @@ function injectPropertyOptions(
 	propsMap: Map<string, Property[]>
 ) {
 	if (isRelation(property)) {
-		const items = itemsMap.get(property.targetCollection) || [];
+		const items = itemsMap.get(property.targetCollection!) || [];
 
 		return {
 			...property,
@@ -166,7 +166,7 @@ function injectPropertyOptions(
 			}))
 		};
 	} else if (isBundle(property)) {
-		const properties = propsMap.get(property.targetCollection) || [];
+		const properties = propsMap.get(property.targetCollection!) || [];
 
 		return {
 			...property,
@@ -205,7 +205,7 @@ async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSc
 	const exists = !!(await prisma.property.findFirst({
 		where: {
 			type: PropertyType.RELATION,
-			collectionId: args.targetCollection,
+			collectionId: args.targetCollection!,
 			targetCollection: storedProperty.collectionId,
 			relatedProperty: storedProperty.id
 		}
@@ -228,7 +228,7 @@ async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSc
 async function injectPropertyOptionsAsync(property: Property) {
 	if (isRelation(property)) {
 		const items = await prisma.item.findMany({
-			where: { collectionId: property.targetCollection }
+			where: { collectionId: property.targetCollection! }
 		});
 
 		return {
@@ -242,7 +242,7 @@ async function injectPropertyOptionsAsync(property: Property) {
 		};
 	} else if (isBundle(property)) {
 		const properties = await prisma.property.findMany({
-			where: { collectionId: property.targetCollection }
+			where: { collectionId: property.targetCollection! }
 		});
 
 		return {
@@ -356,7 +356,7 @@ async function deleteProperty(id: string, userId: string) {
 		if (isBidirectionalRelation(property)) {
 			promises.push(
 				tx.property.updateMany({
-					where: { id: property.relatedProperty, type: PropertyType.RELATION },
+					where: { id: property.relatedProperty!, type: PropertyType.RELATION },
 					data: { relatedProperty: '' }
 				})
 			);
@@ -419,7 +419,7 @@ function shouldCreateBidirectionalRef(
 ) {
 	return (
 		property.type === PropertyType.RELATION &&
-		updData.targetCollection &&
+		updData.targetCollection != null &&
 		updData.targetCollection != property.targetCollection
 	);
 }

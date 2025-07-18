@@ -1,5 +1,6 @@
 import { prisma } from '$lib/server/prisma';
 import { adminProcedure, createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
+import { Role } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -17,7 +18,7 @@ export const users = createTRPCRouter({
 		.mutation(async ({ input: id, ctx: { userId, session } }) => {
 			const user = await prisma.user.findUniqueOrThrow({ where: { id } });
 
-			if (session.role !== 'ADMIN' && user.id !== userId) {
+			if (session.role !== Role.ADMIN && user.id !== userId) {
 				throw new TRPCError({ code: 'UNAUTHORIZED' });
 			}
 
