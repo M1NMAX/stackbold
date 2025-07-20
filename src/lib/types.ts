@@ -34,9 +34,9 @@ export type MoveCollectionDetail = {
 	collectionId: string;
 	currentGroupId: string | null;
 };
-export type UpdOption = RouterInputs['collections']['updatePropertyOption']['property']['option'];
+export type UpdOption = RouterInputs['properties']['updateOption']['option'];
 
-export type UpdProperty = RouterInputs['collections']['updateProperty']['property'];
+export type UpdProperty = RouterInputs['properties']['update'];
 
 export type Filter = { id: string; values: string[] };
 

@@ -5,19 +5,20 @@ import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 import { zod } from 'sveltekit-superforms/adapters';
 import { createUser, getUserByEmail } from '$lib/server/user';
+import { Role } from '@prisma/client';
 
 const signUpSchema = z.object({
 	name: z.string().min(4).max(31),
 	email: z.string().email(),
 	password: z.string().min(6).max(255),
-	role: z.enum(['MEMBER', 'ADMIN'])
+	role: z.nativeEnum(Role)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user;
 
 	if (!user) redirect(302, '/signin');
-	if (user.role !== 'ADMIN') redirect(302, '/');
+	if (user.role !== Role.ADMIN) redirect(302, '/');
 
 	const form = await superValidate(zod(signUpSchema));
 

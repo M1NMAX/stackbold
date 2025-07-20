@@ -2,7 +2,7 @@
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { PROPERTY_COLORS } from '$lib/constant';
-	import type { Color, Option } from '@prisma/client';
+	import { Color, type Option } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
 		AdaptiveWrapper,
@@ -17,6 +17,7 @@
 	import debounce from 'debounce';
 	import { getPropertyState } from './propertyState.svelte';
 	import type { UpdOption } from '$lib/types';
+	import { tick } from 'svelte';
 
 	type Props = {
 		propertyId: string;
@@ -30,7 +31,7 @@
 	let value = $state(option.color as string);
 
 	let selectedKey = $derived.by(() => {
-		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? 'GRAY';
+		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? Color.GRAY;
 	});
 
 	const propertyState = getPropertyState();
@@ -44,6 +45,12 @@
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 		updOptionDebounded(propertyId, { id: option.id, value: targetEl.value });
+	}
+
+	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
+		if (e.key !== 'Enter') return;
+		wrapperState.close();
 	}
 
 	function handleSelectColor(selectedKey: string, triggerId?: string) {
@@ -64,6 +71,14 @@
 			}
 		});
 	}
+
+	$effect(() => {
+		if (wrapperState.isOpen) {
+			tick().then(() => {
+				document.getElementById(`${propertyId}-option-${option.id}`)?.focus();
+			});
+		}
+	});
 </script>
 
 <AdaptiveWrapper
@@ -81,14 +96,15 @@
 	{/snippet}
 
 	<div class="px-1 pb-1.5 md:px-0 md:pb-1.5">
-		<Label for={option.id} class="md:sr-only font-semibold text-sm  ">
+		<Label for={`${propertyId}-option-${option.id}`} class="md:sr-only font-semibold text-sm  ">
 			{option.value}
 		</Label>
 		<input
-			id={option.id}
+			id={`${propertyId}-option-${option.id}`}
 			name="option"
 			value={option.value}
 			oninput={handleOnInput}
+			onkeypress={handleKeypress}
 			class="input input-bordered"
 		/>
 	</div>

@@ -45,7 +45,7 @@ export class GroupState {
 	}
 
 	async updGroup(args: RouterInputs['groups']['update']) {
-		const { id, data } = args;
+		const { id, ...rest } = args;
 
 		let target = this.getGroup(id);
 		if (target == null) {
@@ -54,7 +54,7 @@ export class GroupState {
 		}
 
 		try {
-			this.#updGroup(id, { ...target, ...data });
+			this.#updGroup(id, { ...target, ...rest });
 			await trpc().groups.update.mutate({ ...args });
 		} catch (err) {
 			this.#toastState.error();

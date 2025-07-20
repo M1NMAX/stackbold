@@ -8,6 +8,8 @@ import List from 'lucide-svelte/icons/list';
 import Text from 'lucide-svelte/icons/text';
 import Logs from 'lucide-svelte/icons/logs';
 import CalendarClock from 'lucide-svelte/icons/calendar-clock';
+import FolderSymlink from 'lucide-svelte/icons/folder-symlink';
+import Combine from 'lucide-svelte/icons/combine';
 
 // Theme
 import Moon from 'lucide-svelte/icons/moon';
@@ -52,6 +54,9 @@ import Landmark from 'lucide-svelte/icons/landmark';
 import Gem from 'lucide-svelte/icons/gem';
 import Wallet from 'lucide-svelte/icons/wallet';
 
+// Others
+import File from 'lucide-svelte/icons/file';
+
 type IconBundle = {
 	[idx: string]: any;
 };
@@ -65,7 +70,9 @@ export const INPUT_ICONS: IconBundle = {
 	date: Calendar,
 	number: Hash,
 	url: Link,
-	created: CalendarClock
+	created: CalendarClock,
+	relation: FolderSymlink,
+	bundle: Combine
 };
 
 export const THEME_ICONS: IconBundle = {
@@ -115,4 +122,14 @@ export const COLLECTION_ICONS: IconBundle = {
 	wallet: Wallet
 };
 
-export const APP_ICONS = { ...INPUT_ICONS, ...THEME_ICONS, ...SORT_ICONS };
+export const OTHERS_ICONS: IconBundle = {
+	item: File
+};
+
+export const APP_ICONS = {
+	...INPUT_ICONS,
+	...THEME_ICONS,
+	...SORT_ICONS,
+	...COLLECTION_ICONS,
+	...OTHERS_ICONS
+};

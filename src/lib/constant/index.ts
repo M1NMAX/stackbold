@@ -1,4 +1,5 @@
 import type { Colors } from '$lib/types';
+import { Aggregator, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
@@ -28,6 +29,8 @@ export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Recently Added', field: 'createdAt', order: 'desc' },
 	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];
+
+export const DEFAULT_STRING_DELIMITER = '|';
 
 export const PROPERTY_DEFAULT_VALUE_NOT_DEFINED = 'Not Defined';
 
@@ -59,3 +62,44 @@ export const WEEK_DAYS: { [key: number]: string } = {
 };
 
 export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';
+
+export const NUMBERICAL_PROPERTY_TYPES: PropertyType[] = [PropertyType.NUMBER];
+
+export const PROPERTIES_THAT_USE_INPUT: PropertyType[] = [
+	PropertyType.TEXT,
+	PropertyType.NUMBER,
+	PropertyType.URL
+];
+
+export const PROPERTIES_WITH_LISTABLE_OPTIONS: PropertyType[] = [
+	PropertyType.SELECT,
+	PropertyType.MULTISELECT
+];
+
+export const PROPERTIES_THAT_USE_SELECTOR: PropertyType[] = [
+	...PROPERTIES_WITH_LISTABLE_OPTIONS,
+	PropertyType.RELATION
+];
+
+export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
+	...PROPERTIES_THAT_USE_SELECTOR,
+	PropertyType.CHECKBOX
+];
+
+export const PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE: PropertyType[] = [
+	...PROPERTIES_THAT_USE_SELECTOR,
+	PropertyType.CHECKBOX
+];
+
+export const PROPERTIES_WITHOUT_REF: PropertyType[] = [PropertyType.CREATED, PropertyType.BUNDLE];
+
+export const PROPERTY_UNIVERSAL_AGGREGATORS: Aggregator[] = [
+	Aggregator.NONE,
+	Aggregator.COUNT,
+	Aggregator.COUNT_EMPTY,
+	Aggregator.COUNT_NOT_EMPTY
+];
+export const NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS: Aggregator[] = [
+	Aggregator.SUM,
+	Aggregator.AVG
+];

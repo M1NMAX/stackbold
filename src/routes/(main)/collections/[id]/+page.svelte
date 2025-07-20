@@ -4,19 +4,14 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import Settings2 from 'lucide-svelte/icons/settings-2';
 	import Square from 'lucide-svelte/icons/square';
-	import { Color, View, type Property } from '@prisma/client';
+	import { Color, PropertyType, View, type Property } from '@prisma/client';
 	import {
 		Items,
 		getActiveItemState,
 		groupItemsByPropertyValue,
 		setItemState
 	} from '$lib/components/items/index.js';
-	import {
-		getOption,
-		getPropertyColor,
-		getPropertyDefaultValue,
-		getPropertyRef
-	} from '$lib/components/property/index.js';
+	import { getOption, getPropertyColor, getPropertyRef } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
@@ -41,6 +36,8 @@
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		DEFAULT_SORT_OPTIONS,
+		DEFAULT_STRING_DELIMITER,
+		FILTERABLE_PROPERTY_TYPES,
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_ITEM_NAME_LENGTH,
 		PROPERTY_COLORS,
@@ -52,7 +49,7 @@
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import PropertiesPage from './properties/+page.svelte';
 	import { getContext, tick } from 'svelte';
-	import { clickOutside, escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
+	import { escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import {
 		FilterMenu,
@@ -102,7 +99,9 @@
 				for (const filter of filters) {
 					const ref = getPropertyRef(item.properties, filter.id);
 					if (!ref) return false;
-					if (!filter.values.includes(ref.value)) return false;
+
+					const values = ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean);
+					if (!values.some((v) => filter.values.includes(v))) return false;
 				}
 				return true;
 			})
@@ -184,11 +183,7 @@
 
 		itemState.createItem({
 			name: itemName,
-			collectionId: collection.id,
-			properties: propertyState.properties.map((prop) => ({
-				id: prop.id,
-				value: getPropertyDefaultValue(prop)
-			}))
+			collectionId: collection.id
 		});
 		itemName = '';
 	}
@@ -224,8 +219,8 @@
 		else isSmHeadingVisible = false;
 	}
 
-	function includesGroupableProperties() {
-		return propertyState.properties.some(({ type }) => type === 'SELECT' || type === 'CHECKBOX');
+	function includesFilterableProperties() {
+		return propertyState.properties.some((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type));
 	}
 
 	const VIEW_STORAGE_KEY = $derived(`collection-${collection.id}-view`);
@@ -347,11 +342,7 @@
 	async function onClickCreateItemAdvance() {
 		const id = await itemState.createItem({
 			name: '',
-			collectionId: collection.id,
-			properties: propertyState.properties.map((prop) => ({
-				id: prop.id,
-				value: getPropertyDefaultValue(prop)
-			}))
+			collectionId: collection.id
 		});
 		if (!id) return;
 		await clickItem(id);
@@ -424,7 +415,7 @@
 			<SortMenu options={sortOptions} bind:value={sort} />
 
 			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-			{#if includesGroupableProperties()}
+			{#if includesFilterableProperties()}
 				<FilterMenu
 					filters={getFilters(collection.filterConfigs, view)}
 					updFilters={updFilterConfig}
@@ -444,7 +435,7 @@
 				<div class="flex items-center gap-x-1">
 					<SortMenu options={sortOptions} bind:value={sort} />
 
-					{#if includesGroupableProperties()}
+					{#if includesFilterableProperties()}
 						<FilterMenu
 							filters={getFilters(collection.filterConfigs, view)}
 							updFilters={updFilterConfig}
@@ -550,10 +541,7 @@
 	<span
 		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
 	>
-		{#if property.type === 'SELECT'}
-			{@const option = getOption(property.options, key)}
-			{option ? option.value : `No ${property.name}`}
-		{:else if property.type === 'CHECKBOX'}
+		{#if property.type === PropertyType.CHECKBOX}
 			{#if key === 'true'}
 				<CheckSquare2 class="size-4 mr-1.5" />
 			{:else}
@@ -561,6 +549,9 @@
 			{/if}
 
 			{property.name}
+		{:else}
+			{@const option = getOption(property.options, key)}
+			{option ? option.value : `No ${property.name}`}
 		{/if}
 	</span>
 {/snippet}

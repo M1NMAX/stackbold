@@ -62,26 +62,24 @@ export class CollectionState {
 
 	async duplicateCollection(id: string) {
 		const target = this.#getCollection(id);
-		if (!target) {
+
+		if (target == null) {
 			this.#toastState.error();
 			return;
 		}
-
-		const { id: _, ownerId, name, ...rest } = target;
 
 		try {
 			const result = await trpc().collections.duplicate.mutate(id);
 			this.collections.push({ ...result });
 
 			this.#toastState.action({
-				message: `Collection [${name}] duplicated successfully`,
+				message: `Collection [${target.name}] duplicated successfully`,
 				action: {
 					label: 'Go',
 					onclick: () => goto(`/collections/${result.id}`)
 				}
 			});
 		} catch (err) {
-			// TODO: consider possible fallback
 			this.#toastState.error();
 		}
 	}

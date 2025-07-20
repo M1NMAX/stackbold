@@ -361,7 +361,7 @@ async function main() {
 						properties: createdTemplate.properties.map((templateProp, idx) => ({
 							id: templateProp.id,
 							value:
-								templateProp.type !== 'SELECT'
+								templateProp.type !== PropertyType.SELECT
 									? properties[idx].value
 									: findOptionByName(properties[idx].value, templateProp.options)?.id || ''
 						}))

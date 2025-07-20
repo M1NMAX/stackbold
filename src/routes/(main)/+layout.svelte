@@ -2,8 +2,8 @@
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
 	import Dna from 'lucide-svelte/icons/dna';
+	import File from 'lucide-svelte/icons/file';
 	import FolderPlus from 'lucide-svelte/icons/folder-plus';
-	import Hash from 'lucide-svelte/icons/hash';
 	import Home from 'lucide-svelte/icons/home';
 	import PackagePlus from 'lucide-svelte/icons/package-plus';
 	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
@@ -373,7 +373,7 @@
 					globalSearchModal.close();
 				}}
 			>
-				<Hash />
+				<File />
 				<span>
 					{item.name}
 					<span class="text-xs font-light"> - {item.collection.name}</span>
@@ -392,7 +392,7 @@
 			<CommandItem
 				value="collection"
 				onselect={() => {
-					collectionState.updCollection({ id: collectionId, data: { groupId: null } });
+					collectionState.updCollection({ id: collectionId, groupId: null });
 					moveCollectionModal.close();
 				}}
 			>
@@ -405,7 +405,7 @@
 				<CommandItem
 					value={group.name}
 					onselect={() => {
-						collectionState.updCollection({ id: collectionId, data: { groupId: group.id } });
+						collectionState.updCollection({ id: collectionId, groupId: group.id });
 						moveCollectionModal.close();
 					}}
 				>

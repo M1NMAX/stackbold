@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Eraser from 'lucide-svelte/icons/eraser';
-	import type { Property } from '@prisma/client';
+	import { PropertyType, type Property } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -14,10 +14,10 @@
 	import { textareaAutoSize } from '$lib/actions';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
-		separeteMultiselectOptions,
+		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
-		isNumerical
+		isPropertyNumerical
 	} from './index.js';
 	import {
 		AdaptiveWrapper,
@@ -33,10 +33,10 @@
 	type Props = {
 		property: Property;
 		onchange: (value: string) => void;
-		value?: string;
+		value: string;
 	};
 
-	let { property, onchange, value = '' }: Props = $props();
+	let { property, onchange, value }: Props = $props();
 
 	let color = $derived(getPropertyColor(property, value));
 	let wrapperState = new ModalState();
@@ -53,7 +53,7 @@
 		const targetEl = e.target as HTMLInputElement;
 		let value = targetEl.value;
 
-		if (isNumerical(property.type)) {
+		if (isPropertyNumerical(property)) {
 			value = sanitizeNumberInput(targetEl.value);
 			updTargetElValue(targetEl, value);
 		} else if (targetEl.type === 'checkbox') {
@@ -68,7 +68,7 @@
 	}
 </script>
 
-{#if property.type === 'CHECKBOX'}
+{#if property.type === PropertyType.CHECKBOX}
 	<div
 		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm bg-secondary text-secondary-foreground"
 	>
@@ -81,7 +81,7 @@
 		/>
 		<Label for={property.id} name={property.name} compact />
 	</div>
-{:else if property.type === 'SELECT'}
+{:else if property.type === PropertyType.SELECT}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
@@ -99,8 +99,8 @@
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
 	</Field>
-{:else if property.type === 'MULTISELECT'}
-	{@const selectedOptions = separeteMultiselectOptions(value)}
+{:else if property.type === PropertyType.MULTISELECT}
+	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<Select
@@ -119,7 +119,42 @@
 			isMulti
 		/>
 	</Field>
-{:else if property.type === 'DATE'}
+{:else if property.type === PropertyType.RELATION}
+	{@const selectedOptions = separateMultiselectOptions(value)}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Select
+			id={property.id}
+			options={[
+				...property.options.map((option) => ({
+					id: option.id,
+					label: option.value,
+					theme: PROPERTY_COLORS[option.color],
+					icon: 'item',
+					isSelected: selectedOptions.includes(option.id)
+				}))
+			]}
+			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
+			placeholder="Empty"
+			searchable
+			isMulti
+		/>
+	</Field>
+{:else if property.type === PropertyType.BUNDLE}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<div
+			class={buttonVariants({
+				theme: 'ghost',
+				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+			})}
+		>
+			{#if value}
+				{@render miniWrapper(value)}
+			{/if}
+		</div>
+	</Field>
+{:else if property.type === PropertyType.DATE}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<AdaptiveWrapper
@@ -148,7 +183,7 @@
 			{@render clearBtn()}
 		</AdaptiveWrapper>
 	</Field>
-{:else if property.type === 'CREATED'}
+{:else if property.type === PropertyType.CREATED}
 	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -165,7 +200,7 @@
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 
-		{#if property.type === 'TEXT'}
+		{#if property.type === PropertyType.TEXT}
 			<textarea
 				use:textareaAutoSize
 				id={property.id}
@@ -175,7 +210,7 @@
 				oninput={handleOnInput}
 				class="textarea textarea-ghost"
 			></textarea>
-		{:else if property.type === 'NUMBER'}
+		{:else if property.type === PropertyType.NUMBER}
 			<input
 				id={property.id}
 				type="text"

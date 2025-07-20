@@ -74,6 +74,8 @@ enum PropertyType {
   DATE        @map("date")
   NUMBER      @map("number")
   CREATED     @map("created")
+  RELATION    @map("relation")
+  BUNDLE      @map("bundle")
 }
 
 enum Aggregator {
@@ -106,9 +108,10 @@ type GroupByConfig {
 }
 
 type Option {
-  id    String @default(uuid()) @map("_id")
+  id    String  @default(uuid()) @map("_id")
   value String
-  color Color  @default(GRAY)
+  color Color   @default(GRAY)
+  extra String?
 }
 
 type PropertyRef {
@@ -146,18 +149,23 @@ model Collection {
 }
 
 model Property {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  collection     Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId   String       @db.ObjectId
-  name           String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  type           PropertyType @default(TEXT)
-  options        Option[]
-  visibleInViews View[]       @default([LIST, TABLE])
-  aggregator     Aggregator   @default(NONE)
-  defaultValue   String       @default("")
-  order          Int          @default(0)
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  collection        Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId      String       @db.ObjectId
+  name              String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  type              PropertyType @default(TEXT)
+  options           Option[]
+  visibleInViews    View[]       @default([LIST, TABLE])
+  aggregator        Aggregator   @default(NONE)
+  order             Int          @default(0)
+  defaultValue      String?
+  targetCollection  String? // RELATION AND BUNDLE only
+  relatedProperty   String? // RELATION only
+  intTargetProperty String? // BUMDLE only
+  extTargetProperty String? // BUNDLE only
+  calculate         Aggregator   @default(NONE) // BUNDLE only
 }
 
 model Item {
@@ -180,8 +188,8 @@ type TemplateProperty {
   options        Option[]
   visibleInViews View[]       @default([LIST, TABLE])
   aggregator     Aggregator   @default(NONE)
-  defaultValue   String       @default("")
   order          Int          @default(0)
+  defaultValue   String?
 }
 
 type TemplateItem {

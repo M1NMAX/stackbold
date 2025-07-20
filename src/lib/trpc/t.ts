@@ -1,4 +1,5 @@
 import type { Context } from '$lib/trpc/context';
+import { Role } from '@prisma/client';
 import { TRPCError, initTRPC } from '@trpc/server';
 import superjson from 'superjson';
 
@@ -20,7 +21,7 @@ export const authMiddleware = t.middleware(async ({ next, ctx }) => {
 });
 
 export const adminMiddleware = t.middleware(async ({ next, ctx }) => {
-	if (ctx.session?.role !== 'ADMIN') throw new TRPCError({ code: 'UNAUTHORIZED' });
+	if (ctx.session?.role !== Role.ADMIN) throw new TRPCError({ code: 'UNAUTHORIZED' });
 	return next();
 });
 export const createTRPCRouter = t.router;

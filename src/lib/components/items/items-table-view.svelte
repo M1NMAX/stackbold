@@ -2,8 +2,8 @@
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import Settings from 'lucide-svelte/icons/settings-2';
 	import { tm } from '$lib/utils';
-	import { type Property, type Item, type Aggregator, View, PropertyType } from '@prisma/client';
-	import { getActiveItemState, getItemState, ItemMenu } from '.';
+	import { type Property, type Item, View, PropertyType, Aggregator } from '@prisma/client';
+	import { getActiveItemState, getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
 		PropertyIcon,
@@ -11,7 +11,8 @@
 		// helpers
 		getPropertyRef,
 		toggleView,
-		getPropertyState
+		getPropertyState,
+		PropertyAggregatorMenu
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import {
@@ -22,11 +23,7 @@
 		MenuTitle,
 		Switch
 	} from '$lib/components/base/index.js';
-	import {
-		DEBOUNCE_INTERVAL,
-		MAX_ITEM_NAME_LENGTH,
-		PROPERTY_AGGREGATOR_LABELS
-	} from '$lib/constant/index.js';
+	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
 
@@ -55,31 +52,31 @@
 		updItemDebounced({ id, name });
 	}
 
-	function aggregatePropertyValue(property: Property, type: Aggregator) {
-		if (type === 'COUNT') return items.length;
-		if (type === 'COUNT_EMPTY') {
+	function aggregatePropertyValue(property: Property) {
+		if (property.aggregator === Aggregator.COUNT) return items.length;
+		else if (property.aggregator === Aggregator.COUNT_EMPTY) {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
 				if (propertyRef == null || propertyRef.value === '') return acc + 1;
 				return acc;
 			}, 0);
-		}
-		if (type === 'COUNT_NOT_EMPTY') {
+		} else if (property.aggregator === Aggregator.COUNT_NOT_EMPTY) {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
 				if (propertyRef && propertyRef.value !== '') return acc + 1;
 				return acc;
 			}, 0);
-		}
-		if (type === 'SUM' || type === 'AVG') {
+		} else if (property.aggregator === Aggregator.SUM || property.aggregator === Aggregator.AVG) {
 			const sum = items.reduce((acc, curr) => {
 				const propertyRef = getPropertyRef(curr.properties, property.id);
 				const inc = propertyRef ? propertyRef.value : 0;
 				return acc + Number(inc);
 			}, 0);
-			if (type === 'SUM') return sum.toFixed(2);
+			if (property.aggregator === Aggregator.SUM) return sum.toFixed(2);
 			return (sum / items.length).toFixed(2);
 		}
+
+		return '';
 	}
 </script>
 
@@ -161,7 +158,7 @@
 						{#each propertyState.properties as property (property.id)}
 							{#if containsView(property.visibleInViews, View.TABLE)}
 								<td class="border last:border-r-0 px-2">
-									<PropertyValue view={View.TABLE} {property} itemId={item.id} />
+									<PropertyValue view={View.TABLE} {property} {item} />
 								</td>
 							{/if}
 						{/each}
@@ -173,18 +170,17 @@
 
 					{#each propertyState.properties as property (property.id)}
 						{#if containsView(property.visibleInViews, View.TABLE)}
-							{#if property.aggregator === 'NONE'}
-								<td></td>
-							{:else}
-								<td class="text-right text-nowrap px-2">
-									<span class="text-[0.65rem] font-medium">
-										{PROPERTY_AGGREGATOR_LABELS[property.aggregator.toLowerCase()]}
-									</span>
-									<span class="font-semibold">
-										{aggregatePropertyValue(property, property.aggregator)}
-									</span>
-								</td>
-							{/if}
+							<td>
+								<div class="flex w-full justify-end group">
+									<PropertyAggregatorMenu
+										{property}
+										calculated={aggregatePropertyValue(property).toString()}
+										onchange={(aggregator) => {
+											propertyState.updProperty({ id: property.id, aggregator });
+										}}
+									/>
+								</div>
+							</td>
 						{/if}
 					{/each}
 				</tr>

@@ -1,5 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import type { Item, PropertyRef } from '@prisma/client';
+import type { Item } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
@@ -28,22 +28,13 @@ export class ItemState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			let properties: PropertyRef[] = [];
-
-			if (args.properties) {
-				properties = args.properties.map((property) => ({
-					id: property.id,
-					value: property.value ?? ''
-				}));
-			}
-
 			this.items.push({
 				id: tmpId,
 				collectionId: args.collectionId,
 				name: args.name,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				properties: properties
+				properties: []
 			});
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
@@ -69,33 +60,11 @@ export class ItemState {
 	}
 
 	async duplicateItem(id: string) {
-		const target = this.getItem(id);
-		if (target == null) {
-			this.#toastState.error();
-			return;
-		}
-		const tmpId = crypto.randomUUID();
 		try {
-			const { id: _, name, ...rest } = target;
-			this.items.push({
-				...rest,
-				name: name + ' copy',
-				id: tmpId,
-				createdAt: new Date(),
-				updatedAt: new Date()
-			});
-
-			const createdItem = await trpc().items.create.mutate({
-				...rest,
-				name: name + ' copy'
-			});
-
-			this.#updItem(tmpId, createdItem);
-
-			this.#toastState.success(`Item [${name}] duplicated successfully `);
+			const createdItem = await trpc().items.duplicate.mutate(id);
+			this.items.push({ ...createdItem });
 		} catch (err) {
 			this.#toastState.error();
-			this.#removeItem(tmpId);
 		}
 	}
 
@@ -114,7 +83,7 @@ export class ItemState {
 		}
 	}
 
-	async updPropertyRef(id: string, propertyRef: { id: string; value: string }) {
+	async updPropertyRef(id: string, ref: { id: string; value: string }) {
 		const target = this.getItem(id);
 		if (!target) {
 			this.#toastState.error('Invalid property');
@@ -122,13 +91,17 @@ export class ItemState {
 		}
 
 		try {
-			const propertiesRef = target.properties.map((ref) =>
-				ref.id !== propertyRef.id ? ref : { ...ref, value: propertyRef.value }
+			const refs = target.properties.map((ref) =>
+				ref.id !== ref.id ? ref : { ...ref, value: ref.value }
 			);
 
-			this.#updItem(id, { ...target, properties: propertiesRef });
+			const updatedItem = await trpc().items.updateRef.mutate({
+				id,
+				ref,
+				cid: target.collectionId
+			});
 
-			await trpc().items.updateProperty.mutate({ id, property: propertyRef });
+			this.#updItem(id, { ...updatedItem });
 		} catch (err) {
 			this.#toastState.error();
 			this.#updItem(target.id, target);
@@ -137,8 +110,7 @@ export class ItemState {
 
 	async refresh(id: string) {
 		try {
-			const storedItems = await trpc().items.list.query(id);
-			this.items = storedItems;
+			this.items = await trpc().items.list.query(id);
 		} catch (err) {
 			this.#toastState.error();
 		}

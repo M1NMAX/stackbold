@@ -22,18 +22,8 @@ export class PropertyState {
 		this.properties = this.properties.filter((prop) => prop.id !== id);
 	}
 
-	sort() {
-		this.properties = this.properties.sort((a, b) => a.order - b.order);
-	}
-
 	getProperty(id: string) {
 		return this.properties.find((property) => property.id === id);
-	}
-
-	getMostRecentProperty(properties: Property[]) {
-		return properties.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[
-			this.properties.length - 1
-		];
 	}
 
 	async addProperty(type: PropertyType) {
@@ -54,13 +44,17 @@ export class PropertyState {
 				aggregator: Aggregator.NONE,
 				options: [],
 				order,
-				collectionId
+				collectionId,
+				targetCollection: null,
+				relatedProperty: null,
+				intTargetProperty: null,
+				extTargetProperty: null,
+				calculate: Aggregator.NONE
 			});
 
 			const property = await trpc().properties.create.mutate({
 				name,
 				type,
-				order,
 				collectionId
 			});
 			this.#updProperty(tmpId, property);
@@ -80,19 +74,22 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			const { id: _, name, createdAt, ...rest } = target;
+			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = target;
+			const name = rest.name + ' copy';
 
 			this.properties.push({
 				...rest,
-				name: name + ' copy',
+				name,
 				id: tmpId,
 				order: this.properties.length + 1,
-				createdAt: new Date()
+				createdAt: new Date(),
+				updatedAt: new Date()
 			});
 
 			const property = await trpc().properties.create.mutate({
 				...rest,
-				name: name + ' copy'
+				relatedProperty: null,
+				name
 			});
 
 			this.#updProperty(tmpId, property);
@@ -111,9 +108,8 @@ export class PropertyState {
 		}
 
 		try {
-			this.#updProperty(property.id, { ...target, ...property });
-
-			await trpc().properties.update.mutate({ ...property });
+			const updatedProperty = await trpc().properties.update.mutate({ ...property });
+			this.#updProperty(property.id, { ...updatedProperty });
 		} catch (err) {
 			this.#toastState.error();
 			this.#updProperty(property.id, target);
@@ -163,7 +159,8 @@ export class PropertyState {
 			const option = {
 				id: tmpId,
 				color: Color.GRAY,
-				value
+				value,
+				extra: ''
 			};
 
 			this.#updProperty(pid, { ...target, options: [...target.options, option] });
