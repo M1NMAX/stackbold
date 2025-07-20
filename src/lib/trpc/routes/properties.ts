@@ -338,16 +338,20 @@ async function deleteProperty(id: string, userId: string) {
 			);
 		}
 
-		const groupBy = wasGroupBy(property.collection.groupByConfigs, id);
-		const filters = wasFilter(property.collection.filterConfigs, id);
+		const isUsedToGroupBy = isUsedToGroup(property.collection.groupByConfigs, id);
+		const isUsedAsFilter = isFilter(property.collection.filterConfigs, id);
 
-		if (groupBy.tainted || filters.tainted) {
+		if (isUsedToGroupBy || isUsedAsFilter) {
 			promises.push(
 				tx.collection.update({
 					where: { id: property.collection.id },
 					data: {
-						groupByConfigs: groupBy.tainted ? groupBy.groupByConfigs : undefined,
-						filterConfigs: filters.tainted ? filters.filterConfigs : undefined
+						groupByConfigs: isUsedToGroupBy
+							? cleanGroupBy(property.collection.groupByConfigs, id)
+							: undefined,
+						filterConfigs: isUsedAsFilter
+							? cleanFilters(property.collection.filterConfigs, id)
+							: undefined
 					}
 				})
 			);
@@ -378,39 +382,26 @@ async function deleteProperty(id: string, userId: string) {
 	});
 }
 
-function wasGroupBy(configs: GroupByConfig[], pid: string) {
-	let tainted = false;
-	let groupByConfigs: GroupByConfig[] = [];
-
-	for (const config of configs) {
-		if (config.propertyId === pid) {
-			tainted = true;
-			groupByConfigs.push({ ...config, propertyId: '' });
-		}
-	}
-
-	return { tainted, groupByConfigs };
+function isUsedToGroup(configs: GroupByConfig[], pid: string) {
+	return configs.some((config) => config.propertyId === pid);
 }
 
-function wasFilter(configs: FilterConfig[], pid: string) {
-	let tainted = false;
-	let filterConfigs: FilterConfig[] = [];
+function cleanGroupBy(configs: GroupByConfig[], pid: string) {
+	return configs.map((config) => ({
+		...config,
+		propertyId: config.propertyId === pid ? '' : config.propertyId
+	}));
+}
 
-	for (const config of configs) {
-		let filters: Filter[] = [];
-		for (const filter of config.filters) {
-			if (filter.id === pid) {
-				tainted = true;
-				continue;
-			} else {
-				filters.push(filter);
-			}
-		}
+function isFilter(configs: FilterConfig[], pid: string) {
+	return configs.some((config) => config.filters.some((filter) => filter.id === pid));
+}
 
-		filterConfigs.push({ ...config, filters });
-	}
-
-	return { tainted, filterConfigs };
+function cleanFilters(configs: FilterConfig[], pid: string) {
+	return configs.map((config) => ({
+		...config,
+		filters: config.filters.filter((filter) => filter.id !== pid)
+	}));
 }
 
 function shouldCreateBidirectionalRef(
