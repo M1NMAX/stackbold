@@ -164,7 +164,7 @@
 
 	function getTargetCollection(properties: Property[], pid: string) {
 		const target = properties.find((prop) => prop.id === pid);
-		return target ? target.targetCollection : undefined;
+		return target ? target.targetCollection : null;
 	}
 
 	function getMaxVisisbleOptions() {
@@ -291,7 +291,7 @@
 								icon: collection.icon,
 								isSelected: collection.id === property.targetCollection
 							}))}
-							onselect={(opt) => updProperty({ id: property.id, targetCollection: opt.id })}
+							onselect={(opt) => updProperty({ id: property.id, targetCollection: opt.id || null })}
 							placeholder="Empty"
 							searchable
 						/>
@@ -316,7 +316,7 @@
 							onselect={(opt) => {
 								updProperty({
 									id: property.id,
-									intTargetProperty: opt.id,
+									intTargetProperty: opt.id || null,
 									targetCollection: getTargetCollection(relations, opt.id)
 								});
 							}}
@@ -334,7 +334,8 @@
 								icon: opt.extra.toLowerCase(),
 								isSelected: opt.id === property.extTargetProperty
 							}))}
-							onselect={(opt) => updProperty({ id: property.id, extTargetProperty: opt.id })}
+							onselect={(opt) =>
+								updProperty({ id: property.id, extTargetProperty: opt.id || null })}
 							placeholder="Empty"
 							searchable
 						/>
