@@ -8,7 +8,6 @@ import {
 	Color,
 	PropertyType,
 	View,
-	type Filter,
 	type FilterConfig,
 	type GroupByConfig,
 	type Item,
@@ -24,7 +23,7 @@ const optionSchema = z.object({
 	id: z.string(),
 	value: z.string(),
 	color: colorSchema,
-	extra: z.string().optional()
+	extra: z.string().nullish()
 });
 
 const propertyCreateSchema = z.object({
@@ -32,10 +31,10 @@ const propertyCreateSchema = z.object({
 	name: z.string(),
 	type: propertyTypeSchema.optional(),
 	aggregator: aggregatorSchema.optional(),
-	defaultValue: z.string().optional(),
 	visibleInViews: z.array(viewSchema).optional(),
 	order: z.number().optional(),
 	options: z.array(optionSchema).optional(),
+	defaultValue: z.string().nullish(),
 	targetCollection: z.string().nullish(),
 	relatedProperty: z.string().nullish(),
 	intTargetProperty: z.string().nullish(),
@@ -161,8 +160,7 @@ function injectPropertyOptions(
 			options: items.map((item) => ({
 				id: item.id,
 				value: item.name,
-				color: Color.GRAY,
-				extra: ''
+				color: Color.GRAY
 			}))
 		};
 	} else if (isBundle(property)) {
@@ -236,8 +234,7 @@ async function injectPropertyOptionsAsync(property: Property) {
 			options: items.map((item) => ({
 				id: item.id,
 				value: item.name,
-				color: Color.GRAY,
-				extra: ''
+				color: Color.GRAY
 			}))
 		};
 	} else if (isBundle(property)) {

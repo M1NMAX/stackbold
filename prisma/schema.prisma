@@ -108,10 +108,10 @@ type GroupByConfig {
 }
 
 type Option {
-  id    String @default(uuid()) @map("_id")
+  id    String  @default(uuid()) @map("_id")
   value String
-  color Color  @default(GRAY)
-  extra String @default("")
+  color Color   @default(GRAY)
+  extra String?
 }
 
 type PropertyRef {
@@ -159,8 +159,8 @@ model Property {
   options           Option[]
   visibleInViews    View[]       @default([LIST, TABLE])
   aggregator        Aggregator   @default(NONE)
-  defaultValue      String       @default("")
   order             Int          @default(0)
+  defaultValue      String?
   targetCollection  String? // RELATION AND BUNDLE only
   relatedProperty   String? // RELATION only
   intTargetProperty String? // BUMDLE only
@@ -188,8 +188,8 @@ type TemplateProperty {
   options        Option[]
   visibleInViews View[]       @default([LIST, TABLE])
   aggregator     Aggregator   @default(NONE)
-  defaultValue   String       @default("")
   order          Int          @default(0)
+  defaultValue   String?
 }
 
 type TemplateItem {

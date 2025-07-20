@@ -65,7 +65,7 @@ export function getPropertyRef(properties: PropertyRef[], pid: string) {
 }
 
 export function getPropertyDefaultValue(property: Property) {
-	if (!PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE.includes(property.type)) return '';
+	if (!PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE.includes(property.type)) return null;
 	if (property.type === PropertyType.CHECKBOX) return 'false';
 	return property.defaultValue;
 }
