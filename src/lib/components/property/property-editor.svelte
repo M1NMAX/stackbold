@@ -135,7 +135,7 @@
 			id: '',
 			icon: 'text',
 			label: PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
-			isSelected: property.defaultValue === ''
+			isSelected: property.defaultValue == null
 		});
 
 		options.push(
@@ -448,7 +448,7 @@
 		<Select
 			id={getIdPrefix('property-default-value')}
 			options={setupDefaultOptionSelectOptions()}
-			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id })}
+			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id || null })}
 			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
 	</Field>

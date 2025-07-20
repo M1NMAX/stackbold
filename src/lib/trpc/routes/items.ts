@@ -174,13 +174,13 @@ async function createItem(args: z.infer<typeof itemCreateSchema>) {
 		.filter((property) => hasRef(property.type))
 		.map((property) => ({
 			id: property.id,
-			value: getPropertyDefaultValue(property)
+			value: getPropertyDefaultValue(property) || ''
 		}));
 
 	const createdProperties = properties.filter((property) => property.type === PropertyType.CREATED);
 	const bundleProperties = properties.filter((property) => isBundleValueInjectable(property));
 	const bidirectionalProperties = properties.filter(
-		(property) => isBidirectionalRelation(property) && property.defaultValue !== ''
+		(property) => isBidirectionalRelation(property) && property.defaultValue != null
 	);
 
 	let item = await prisma.item.create({ data: { ...args, properties: refs } });
@@ -210,7 +210,7 @@ async function addCreatedItemToBidirectionalRefs(properties: Property[], itemId:
 
 	const allReferencedIds = new Set<string>();
 	const processingData = properties.map((property) => {
-		const defaultValue = getPropertyDefaultValue(property);
+		const defaultValue = getPropertyDefaultValue(property) || '';
 		allReferencedIds.add(defaultValue);
 		return { property, defaultValue };
 	});
