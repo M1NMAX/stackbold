@@ -49,6 +49,10 @@ export const MIN_SEARCHABLE_PROPERTY_SELECT = 2;
 
 export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
 
+export const NAME_FIELD = 'name';
+
+export const DEFAULT_VIEW_SHORT_ID = 1;
+
 export const LOCALE = 'en-US';
 
 export const WEEK_DAYS: { [key: number]: string } = {

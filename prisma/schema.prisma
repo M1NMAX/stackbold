@@ -87,9 +87,14 @@ enum Aggregator {
   AVG             @map("avg")
 }
 
-enum View {
+enum ViewType {
   LIST  @map("list")
   TABLE @map("table")
+}
+
+enum SortType {
+  ASC  @map("asc")
+  DESC @map("desc")
 }
 
 type Filter {
@@ -97,14 +102,24 @@ type Filter {
   values String[]
 }
 
+type Sort {
+  field String
+  order SortType @default(ASC)
+}
+
 type FilterConfig {
-  view    View
+  view    ViewType
   filters Filter[]
 }
 
 type GroupByConfig {
-  view       View
-  propertyId String @default("")
+  view       ViewType
+  propertyId String   @default("")
+}
+
+type ViewProperty {
+  id        String  @db.ObjectId
+  isVisible Boolean @default(true)
 }
 
 type Option {
@@ -146,6 +161,26 @@ model Collection {
   icon           String          @default("folder")
   filterConfigs  FilterConfig[]
   properties     Property[]
+  views          View[]
+}
+
+model View {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  shortId      Int
+  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String         @db.ObjectId
+  name         String
+  type         ViewType       @default(LIST)
+  order        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  properties   ViewProperty[]
+  filters      Filter[]
+  sorts        Sort[]
+  groupBy      String?
+
+  @@unique([collectionId, shortId])
+  @@index([collectionId, order])
 }
 
 model Property {
@@ -157,7 +192,7 @@ model Property {
   updatedAt         DateTime     @updatedAt
   type              PropertyType @default(TEXT)
   options           Option[]
-  visibleInViews    View[]       @default([LIST, TABLE])
+  visibleInViews    ViewType[]   @default([LIST, TABLE])
   aggregator        Aggregator   @default(NONE)
   order             Int          @default(0)
   defaultValue      String?
@@ -166,6 +201,8 @@ model Property {
   intTargetProperty String? // BUMDLE only
   extTargetProperty String? // BUNDLE only
   calculate         Aggregator   @default(NONE) // BUNDLE only
+
+  @@index([collectionId, order])
 }
 
 model Item {
@@ -180,13 +217,15 @@ model Item {
   @@index([properties.id], name: "propertyref_id_index")
 }
 
+// Template
+
 type TemplateProperty {
   id             String       @default(uuid()) @map("_id")
   name           String
   createdAt      DateTime     @default(now())
   type           PropertyType @default(TEXT)
   options        Option[]
-  visibleInViews View[]       @default([LIST, TABLE])
+  visibleInViews ViewType[]   @default([LIST, TABLE])
   aggregator     Aggregator   @default(NONE)
   order          Int          @default(0)
   defaultValue   String?

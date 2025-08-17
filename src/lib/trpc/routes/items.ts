@@ -1,4 +1,8 @@
-import { DEFAULT_STRING_DELIMITER, PROPERTIES_WITHOUT_REF } from '$lib/constant/index.js';
+import {
+	DEFAULT_STRING_DELIMITER,
+	NAME_FIELD,
+	PROPERTIES_WITHOUT_REF
+} from '$lib/constant/index.js';
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import {
@@ -9,11 +13,21 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
-import { PropertyType, type Item, type Property, type PropertyRef } from '@prisma/client';
+import {
+	PropertyType,
+	SortType,
+	type Item,
+	type Property,
+	type PropertyRef,
+	type Sort
+} from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-const refSchema = z.object({ id: z.string(), value: z.string() });
+const itemListSchema = z.object({
+	collectionId: z.string(),
+	viewShortId: z.number()
+});
 
 const itemCreateSchema = z.object({
 	name: z.string(),
@@ -24,10 +38,14 @@ const itemUpdateSchema = itemCreateSchema
 	.merge(z.object({ id: z.string() }))
 	.partial({ name: true, collectionId: true });
 
-const refUpdateSchema = z.object({ id: z.string(), cid: z.string(), ref: refSchema });
+const refUpdateSchema = z.object({
+	id: z.string(),
+	cid: z.string(),
+	ref: z.object({ id: z.string(), value: z.string() })
+});
 
 export const items = createTRPCRouter({
-	list: protectedProcedure.input(z.string()).query(async ({ input }) => await listItems(input)),
+	list: protectedProcedure.input(itemListSchema).query(async ({ input }) => await listItems(input)),
 
 	search: protectedProcedure.query(async ({ ctx: { userId } }) => await listSearchableItem(userId)),
 
@@ -65,18 +83,40 @@ export const items = createTRPCRouter({
 		.mutation(async ({ input }) => await updateRef(input))
 });
 
-async function listItems(cid: string) {
+async function listItems(args: z.infer<typeof itemListSchema>) {
+	const { collectionId, viewShortId } = args;
+
+	const view = await prisma.view.findFirstOrThrow({
+		where: { collectionId, shortId: viewShortId }
+	});
+
 	const [items, properties] = await Promise.all([
-		prisma.item.findMany({ where: { collectionId: cid } }),
+		prisma.item.findMany({
+			where: {
+				collectionId,
+				...(view.filters.length > 0 && {
+					AND: view.filters.map((filter) => ({
+						properties: {
+							some: {
+								id: filter.id,
+								OR: filter.values.map((value) => ({
+									value: { contains: value }
+								}))
+							}
+						}
+					}))
+				})
+			}
+		}),
 		prisma.property.findMany({
 			where: {
-				collectionId: cid,
+				collectionId,
 				type: { in: PROPERTIES_WITHOUT_REF }
 			}
 		})
 	]);
 
-	if (properties.length === 0) return items;
+	if (properties.length === 0) return sortItems(items, view.sorts);
 
 	const createdProperties = properties.filter((prop) => prop.type === PropertyType.CREATED);
 	const bundleProperties = properties.filter((prop) => isBundleValueInjectable(prop));
@@ -87,11 +127,11 @@ async function listItems(cid: string) {
 		updItems = updItems.map((item) => injectCreatedRef(item, property.id));
 	}
 
-	if (bundleProperties.length === 0) return updItems;
+	if (bundleProperties.length === 0) return sortItems(updItems, view.sorts);
 
 	updItems = await injectBundleRefsItems(updItems, bundleProperties);
 
-	return updItems;
+	return sortItems(updItems, view.sorts);
 }
 
 async function injectBundleRefsItems(items: Item[], properties: Property[]) {
@@ -150,6 +190,51 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 	}
 
 	return Array.from(updates.values());
+}
+
+function sortItems(items: Item[], sorts: Sort[]) {
+	if (sorts.length === 0) return items;
+
+	return items.sort((a, b) => {
+		for (const sort of sorts) {
+			let aValue, bValue;
+
+			if (sort.field === NAME_FIELD) {
+				aValue = a.name;
+				bValue = b.name;
+			} else {
+				aValue = getPropertyRef(a.properties, sort.field)?.value || '';
+				bValue = getPropertyRef(b.properties, sort.field)?.value || '';
+			}
+
+			const compare = compareValues(aValue, bValue);
+			if (compare !== 0) return sort.order === SortType.ASC ? compare : -compare;
+		}
+
+		return 0;
+	});
+}
+
+function compareValues(a: string, b: string) {
+	if (a === '' && b === '') return 0;
+	if (a === '') return -1;
+	if (b === '') return 1;
+
+	const aNum = Number(a);
+	const bNum = Number(b);
+
+	if (!isNaN(aNum) && !isNaN(bNum)) {
+		return aNum - bNum;
+	}
+
+	const aDate = new Date(a);
+	const bDate = new Date(b);
+
+	if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+		return aDate.getTime() - bDate.getTime();
+	}
+
+	return String(a).localeCompare(String(b));
 }
 
 async function listSearchableItem(userId: string) {

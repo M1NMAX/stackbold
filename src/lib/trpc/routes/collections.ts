@@ -2,35 +2,7 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { View } from '@prisma/client';
-import { PROPERTIES_WITHOUT_REF } from '$lib/constant';
-
-const viewSchema = z.nativeEnum(View);
-
-const groupByConfigSchema = z.object({
-	view: viewSchema,
-	propertyId: z.string()
-});
-
-const filterConfigsSchema = z.object({
-	view: viewSchema,
-	filters: z.array(
-		z.object({
-			id: z.string(),
-			values: z.array(z.string())
-		})
-	)
-});
-
-const defaultGroupByConfigs = [
-	{ view: View.LIST, propertyId: '' },
-	{ view: View.TABLE, propertyId: '' }
-];
-
-const defaultFilterConfigs = [
-	{ view: View.LIST, filters: [] },
-	{ view: View.TABLE, filters: [] }
-];
+import { PROPERTIES_WITHOUT_REF } from '$lib/constant/index.js';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -38,19 +10,11 @@ const collectionCreateSchema = z.object({
 	isPinned: z.boolean().optional(),
 	description: z.string().optional(),
 	isDescHidden: z.boolean().optional(),
-	groupId: z.string().nullable().optional(),
-	groupByConfigs: z.array(groupByConfigSchema).optional().default(defaultGroupByConfigs),
-	filterConfigs: z.array(filterConfigsSchema).optional().default(defaultFilterConfigs)
+	groupId: z.string().nullable().optional()
 });
 
 const collectionUpdateSchema = collectionCreateSchema
-	.merge(
-		z.object({
-			id: z.string(),
-			groupByConfigs: z.array(groupByConfigSchema).optional(),
-			filterConfigs: z.array(filterConfigsSchema).optional()
-		})
-	)
+	.merge(z.object({ id: z.string() }))
 	.partial({ name: true });
 
 export const collections = createTRPCRouter({
