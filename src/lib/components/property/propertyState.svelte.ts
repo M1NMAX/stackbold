@@ -1,4 +1,4 @@
-import { Aggregator, Color, View, type Property, type PropertyType } from '@prisma/client';
+import { Aggregator, Color, ViewType, type Property, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter } from '$lib/utils';
 import { getContext, setContext } from 'svelte';
@@ -40,7 +40,7 @@ export class PropertyState {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				defaultValue: '',
-				visibleInViews: [View.LIST, View.TABLE],
+				visibleInViews: [ViewType.LIST, ViewType.TABLE],
 				aggregator: Aggregator.NONE,
 				options: [],
 				order,
@@ -118,8 +118,8 @@ export class PropertyState {
 
 	async orderProperty(start: number, end: number) {
 		if (start === end) return;
-		await trpc().properties.order.mutate({ cid: this.collectionId, start, end });
-		await this.refresh(this.collectionId);
+		await trpc().properties.order.mutate({ collectionId: this.collectionId, start, end });
+		await this.refresh();
 	}
 
 	async deleteProperty(id: string) {
@@ -138,9 +138,9 @@ export class PropertyState {
 		}
 	}
 
-	async refresh(id: string) {
+	async refresh() {
 		try {
-			this.properties = await trpc().properties.list.query(id);
+			this.properties = await trpc().properties.list.query(this.collectionId);
 		} catch (err) {
 			this.#toastState.error();
 		}

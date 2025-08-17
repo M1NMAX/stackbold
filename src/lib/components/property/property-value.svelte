@@ -10,7 +10,7 @@
 		PROPERTIES_THAT_USE_SELECTOR,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { type Item, type Property, PropertyType, View } from '@prisma/client';
+	import { type Item, type Property, PropertyType, ViewType } from '@prisma/client';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
@@ -39,10 +39,10 @@
 	type Props = {
 		item: Item;
 		property: Property;
-		view?: View;
+		view?: ViewType;
 	};
 
-	let { item, property, view = View.LIST }: Props = $props();
+	let { item, property, view = ViewType.LIST }: Props = $props();
 
 	const itemState = getItemState();
 
@@ -108,7 +108,7 @@
 	}
 
 	function isTableView() {
-		return view === View.TABLE;
+		return view === ViewType.TABLE;
 	}
 
 	function useInputField(type: PropertyType) {

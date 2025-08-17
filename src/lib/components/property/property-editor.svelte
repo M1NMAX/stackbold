@@ -6,13 +6,11 @@
 	import X from 'lucide-svelte/icons/x';
 	import Trash from 'lucide-svelte/icons/trash';
 	import Settings from 'lucide-svelte/icons/settings';
-	import { Aggregator, PropertyType, View, type Property } from '@prisma/client';
+	import { Aggregator, PropertyType, type Property } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
-		containsView,
 		getPropertyState,
 		hasOptions,
-		toggleView,
 		isPropertyNumerical,
 		PropertyIcon,
 		PropertyOption
@@ -37,8 +35,7 @@
 		Field,
 		HSeparator,
 		Label,
-		Select,
-		Switch
+		Select
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
@@ -66,7 +63,7 @@
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
-		await itemState.refresh(propertyState.collectionId);
+		// await itemState.refresh(propertyState.collectionId);
 	}
 
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
@@ -76,7 +73,7 @@
 
 	async function handleUpdPropertyCalculate(aggregator: Aggregator) {
 		await propertyState.updProperty({ id: property.id, calculate: aggregator });
-		await itemState.refresh(propertyState.collectionId);
+		// await itemState.refresh(propertyState.collectionId);
 	}
 
 	function handleOnInput(e: Event) {
@@ -216,7 +213,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="flex group pr-4 my-0.5"
+	class="flex group pr-4"
 	draggable="true"
 	{ondragstart}
 	{ondrop}
@@ -228,13 +225,13 @@
 		class={tm(
 			'size-4 cursor-pointer invisible group-hover:visible',
 			'opacity-50 hover:opacity-100 transition-opacity',
-			isOpen ? 'mt-5' : 'mt-3.5'
+			'mt-3'
 		)}
 	/>
 	<div
 		class={tm(
-			'grow border-2 ',
-			isOpen ? 'rounded my-2' : 'rounded-sm my-0.5',
+			'grow border-2',
+			isOpen ? 'rounded' : 'rounded-sm',
 			dragover ? 'border-secondary/60' : 'border-2 border-secondary',
 			dragging && 'select-text outline-0 min-w-0'
 		)}
@@ -331,7 +328,7 @@
 							options={property.options.map((opt) => ({
 								id: opt.id,
 								label: opt.value,
-								icon: opt.extra.toLowerCase(),
+								icon: opt.extra ? opt.extra.toLowerCase() : '',
 								isSelected: opt.id === property.extTargetProperty
 							}))}
 							onselect={(opt) =>
@@ -356,43 +353,21 @@
 				{/if}
 
 				<HSeparator />
-				<div class="grid grid-cols-1 md:grid-cols-9 gap-1 py-2">
-					{#each Object.values(View) as view}
-						<div class="w-full md:w-fit col-span-4 flex items-center gap-x-2">
-							<Label
-								for={view}
-								name={`Visible in ${capitalizeFirstLetter(view.toString())} view`}
-							/>
+				<div class="flex justify-end items-center">
+					<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
+						{#snippet trigger()}
+							<Ellipsis />
+						{/snippet}
+						<Button theme="ghost" variant="menu" onclick={() => duplicateProperty()}>
+							<Copy />
+							<span> Duplicate property</span>
+						</Button>
 
-							<Switch
-								id={view}
-								checked={containsView(property.visibleInViews, view)}
-								onchange={() => {
-									updProperty({
-										id: property.id,
-										visibleInViews: toggleView(property.visibleInViews, view)
-									});
-								}}
-							/>
-						</div>
-					{/each}
-
-					<div class="flex justify-end items-center">
-						<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
-							{#snippet trigger()}
-								<Ellipsis />
-							{/snippet}
-							<Button theme="ghost" variant="menu" onclick={() => duplicateProperty()}>
-								<Copy />
-								<span> Duplicate property</span>
-							</Button>
-
-							<Button theme="danger" variant="menu" onclick={() => deleteProperty()}>
-								<Trash />
-								<span> Delete property</span>
-							</Button>
-						</AdaptiveWrapper>
-					</div>
+						<Button theme="danger" variant="menu" onclick={() => deleteProperty()}>
+							<Trash />
+							<span> Delete property</span>
+						</Button>
+					</AdaptiveWrapper>
 				</div>
 			</div>
 		{/if}
