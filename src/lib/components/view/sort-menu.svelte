@@ -5,11 +5,12 @@
 		Label,
 		MenuTitle,
 		RadioGroup,
-		RadioGroupItem
+		RadioGroupItem,
+		Tooltip
 	} from '$lib/components/base/index.js';
 	import type { OrderType, SortOption } from '$lib/utils/sort';
 	import { ModalState } from '$lib/states/index.js';
-	import { useId } from '$lib/utils';
+	import { useId } from '$lib/utils/index.js';
 	import { SORT_ICONS } from '$lib/constant/index.js';
 
 	type Props = {
@@ -18,6 +19,7 @@
 	};
 
 	let { value = $bindable(), options }: Props = $props();
+	const id = useId();
 
 	const valueStr = $derived(joinOptionProperties(value));
 	const CurrentIcon = $derived(SORT_ICONS[joinOptionProperties(value, 1)]);
@@ -45,16 +47,18 @@
 	}
 </script>
 
+<Tooltip triggerBy={id} align="end">
+	<span class="text-sm font-semibold py-1 px-1.5">Sort</span>
+</Tooltip>
+
 <AdaptiveWrapper
+	{id}
 	bind:open={menuState.isOpen}
-	triggerClass={buttonVariants({ theme: 'secondary' })}
+	triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
 	floatingAlign="end"
 >
 	{#snippet trigger()}
 		<CurrentIcon />
-		<span class="hidden md:block">
-			{value.label}
-		</span>
 	{/snippet}
 	<MenuTitle title="Sort by" />
 

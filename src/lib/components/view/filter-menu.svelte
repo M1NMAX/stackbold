@@ -2,7 +2,7 @@
 	import Check from 'lucide-svelte/icons/check';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Eraser from 'lucide-svelte/icons/eraser';
-	import FilterIcon from 'lucide-svelte/icons/filter';
+	import ListFilter from 'lucide-svelte/icons/list-filter';
 	import Minus from 'lucide-svelte/icons/minus';
 	import X from 'lucide-svelte/icons/x';
 	import {
@@ -17,13 +17,14 @@
 		MenuTitle,
 		RadioGroup,
 		RadioGroupItem,
-		Label
+		Label,
+		Tooltip
 	} from '$lib/components/base/index.js';
 	import { getOption, getPropertyState, PropertyIcon } from '$lib/components/property';
 	import { PROPERTY_COLORS, FILTERABLE_PROPERTY_TYPES } from '$lib/constant';
 	import { type Filter, type Property, PropertyType } from '@prisma/client';
 	import { ModalState } from '$lib/states/index.js';
-	import { isFilterSeletect, toggleFilter } from './helpers';
+	import { isFilterSeletect, toggleFilter } from './index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { useId } from '$lib/utils';
 
@@ -79,10 +80,17 @@
 	}
 </script>
 
+<Tooltip triggerBy={id} align="end">
+	<span class="text-sm font-semibold py-1 px-1.5">Filter</span>
+</Tooltip>
 <div>
-	<button {id} onclick={() => menuState.toggle()} class={buttonVariants({ theme: 'secondary' })}>
-		<FilterIcon class="block md:hidden" />
-		<span class="hidden md:block"> Filters </span>
+	<button
+		{id}
+		onclick={() => menuState.toggle()}
+		type="button"
+		class={buttonVariants({ theme: 'secondary', variant: 'icon' })}
+	>
+		<ListFilter />
 	</button>
 
 	{#if isLargeScreen.current}
