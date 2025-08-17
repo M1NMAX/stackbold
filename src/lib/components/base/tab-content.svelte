@@ -1,28 +1,21 @@
 <script lang="ts">
-	import { getTabsState } from '$lib/states';
-	import { useId } from '$lib/utils';
+	import { getTabsState } from '$lib/states/index.js';
+	import { tm, useId } from '$lib/utils/index.js';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
 		value: string;
 		children: Snippet;
+		class?: string;
 	};
 
-	let { value, children }: Props = $props();
+	let { value, children, class: className }: Props = $props();
 	const id = useId();
 	const tabsState = getTabsState();
 </script>
 
 {#if tabsState.isSelected(value)}
-	<div
-		{id}
-		role="tabpanel"
-		tabindex="0"
-		class={[
-			'w-full p-4 rounded-md border bg-background ring-offset-background',
-			'focus-visible:ring-ring mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
-		]}
-	>
+	<div {id} role="tabpanel" tabindex="0" class={tm('w-full', className)}>
 		{@render children()}
 	</div>
 {/if}

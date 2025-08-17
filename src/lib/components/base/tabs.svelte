@@ -19,7 +19,7 @@
 <div class={tm('flex flex-col', className)}>
 	<div
 		role="tablist"
-		class="max-w-fit bg-muted text-muted-foreground inline-flex h-10 items-center justify-center rounded-md p-1"
+		class="w-full bg-transparent text-muted-foreground inline-flex h-10 items-center justify-between px-4"
 	>
 		{@render triggers()}
 	</div>

@@ -6,6 +6,7 @@
 	import type { Align } from '$lib/types';
 
 	type Props = {
+		id?: string;
 		open?: boolean;
 		trigger: Snippet;
 		children: Snippet;
@@ -16,6 +17,7 @@
 	};
 
 	let {
+		id = useId(),
 		open = $bindable(false),
 		trigger,
 		children,
@@ -24,8 +26,6 @@
 		floatingClass,
 		sameWidth
 	}: Props = $props();
-
-	const id = useId();
 
 	const isLargeScreen = new MediaQuery('min-width: 768px', false);
 
