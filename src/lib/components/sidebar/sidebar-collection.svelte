@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Collection } from '@prisma/client';
+	import { ViewType, type Collection } from '@prisma/client';
 	import Copy from 'lucide-svelte/icons/copy';
 	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
@@ -23,6 +23,7 @@
 	import { getCollectionState } from '$lib/components/collection';
 	import {
 		COLLECTION_ICONS,
+		DEFAULT_VIEW_SHORT_ID,
 		MAX_COLLECTION_NAME_LENGTH,
 		SCREEN_MD_MEDIA_QUERY
 	} from '$lib/constant/index.js';
@@ -103,6 +104,12 @@
 			}
 		});
 	}
+
+	function getCollectionView() {
+		const key = `collection-${collection.id}-view`;
+		const stored = localStorage.getItem(key);
+		return stored ? JSON.parse(stored) : DEFAULT_VIEW_SHORT_ID.toString();
+	}
 </script>
 
 <span
@@ -113,7 +120,7 @@
 	]}
 >
 	<a
-		href="/collections/{collection.id}"
+		href="/collections/{collection.id}?view={getCollectionView()}"
 		class="grow flex items-center space-x-1.5"
 		onclick={onClickSidebarItem}
 	>
