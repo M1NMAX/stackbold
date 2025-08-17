@@ -8,22 +8,23 @@
 	import { ItemMenu, getActiveItemState, getItemState } from './index.js';
 	import {
 		PropertyValue,
-		containsView,
 		getPropertyRef,
-		getPropertyState
+		getPropertyState,
+		isPropertyVisible
 	} from '$lib/components/property';
-	import { type Item, View } from '@prisma/client';
+	import { type Item, type View, ViewType } from '@prisma/client';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
 	import debounce from 'debounce';
 	import { Button } from '$lib/components/base/index.js';
 
 	type Props = {
+		view: View;
 		items: Item[];
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { items, clickOpenItem }: Props = $props();
+	let { view, items, clickOpenItem }: Props = $props();
 
 	const activeItem = getActiveItemState();
 	const propertyState = getPropertyState();
@@ -153,10 +154,10 @@
 
 			<div class="flex flex-wrap gap-2">
 				{#each propertyState.properties as property (property.id)}
-					{#if containsView(property.visibleInViews, View.LIST)}
+					{#if isPropertyVisible(view, property.id)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
-							<PropertyValue {item} {property} view={View.LIST} />
+							<PropertyValue {item} {property} view={ViewType.LIST} />
 						{/if}
 					{/if}
 				{/each}

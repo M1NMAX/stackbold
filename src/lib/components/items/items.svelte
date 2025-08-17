@@ -1,23 +1,22 @@
 <script lang="ts">
-	import { type Item, View } from '@prisma/client';
+	import { type Item, type View, ViewType } from '@prisma/client';
 	import { ItemsListView, ItemsTableView } from '.';
 
 	type Props = {
-		items: Item[];
 		view: View;
-
+		items: Item[];
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { items, view, ...rest }: Props = $props();
+	let { view, items, ...rest }: Props = $props();
 </script>
 
 {#if items.length > 0}
 	<div class="grow space-y-2">
-		{#if view === View.TABLE}
-			<ItemsTableView {items} {...rest} />
+		{#if view.type === ViewType.TABLE}
+			<ItemsTableView {view} {items} {...rest} />
 		{:else}
-			<ItemsListView {items} {...rest} />
+			<ItemsListView {view} {items} {...rest} />
 		{/if}
 	</div>
 {/if}

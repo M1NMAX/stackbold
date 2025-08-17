@@ -1,38 +1,37 @@
 <script lang="ts">
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
-	import Settings from 'lucide-svelte/icons/settings-2';
-	import { tm } from '$lib/utils';
-	import { type Property, type Item, View, PropertyType, Aggregator } from '@prisma/client';
+	import { tm } from '$lib/utils/index.js';
+	import {
+		type Property,
+		type Item,
+		ViewType,
+		PropertyType,
+		Aggregator,
+		type View
+	} from '@prisma/client';
 	import { getActiveItemState, getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
 		PropertyIcon,
-		containsView,
 		// helpers
 		getPropertyRef,
-		toggleView,
 		getPropertyState,
-		PropertyAggregatorMenu
+		PropertyAggregatorMenu,
+		isPropertyVisible
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
-	import {
-		AdaptiveWrapper,
-		Button,
-		buttonVariants,
-		Label,
-		MenuTitle,
-		Switch
-	} from '$lib/components/base/index.js';
+	import { Button } from '$lib/components/base/index.js';
 	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
 
 	type Props = {
+		view: View;
 		items: Item[];
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { items, clickOpenItem }: Props = $props();
+	let { view, items, clickOpenItem }: Props = $props();
 
 	const activeItem = getActiveItemState();
 	const propertyState = getPropertyState();
@@ -84,9 +83,6 @@
 	<table class="w-full table-auto">
 		<thead>
 			<tr class="text-muted-foreground text-sm">
-				<th scope="col" class="text-left w-10" title="Row actions">
-					{@render viewVisibilityMenu()}
-				</th>
 				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 					<span class="flex items-center">
 						<PropertyIcon key={PropertyType.TEXT} class="size-4 mr-2" />
@@ -94,7 +90,7 @@
 					</span>
 				</th>
 				{#each propertyState.properties as property (property.id)}
-					{#if containsView(property.visibleInViews, View.TABLE)}
+					{#if isPropertyVisible(view, property.id)}
 						<th
 							scope="col"
 							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
@@ -106,6 +102,8 @@
 						</th>
 					{/if}
 				{/each}
+
+				<th scope="col" class="text-left w-8" title="Row actions"> </th>
 			</tr>
 		</thead>
 		<tbody>
@@ -124,19 +122,7 @@
 							item.id === activeItem.id && 'outline outline-2 outline-primary/70'
 						)}
 					>
-						<td class="min-w-10 px-1 border border-l-0">
-							<div class="flex justify-between items-center space-x-2">
-								<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="start" />
-								<Button
-									theme="secondary"
-									onclick={() => clickOpenItem(item.id)}
-									class="flex md:hidden h-7 py-0.5 px-1.5 rounded"
-								>
-									Open
-								</Button>
-							</div>
-						</td>
-						<td class="flex items-center justify-between pl-2">
+						<td class="flex items-center justify-between pl-2 pr-1">
 							<input
 								data-id={item.id}
 								value={item.name}
@@ -148,28 +134,30 @@
 							<Button
 								theme="secondary"
 								onclick={() => clickOpenItem(item.id)}
-								class="hidden md:flex items-center py-0.5 px-1 gap-x-1 invisible group-hover:visible "
+								class="py-0.5 px-1 gap-x-1 md:invisible md:group-hover:visible "
 							>
+								<PanelLeftOpen class="hidden md:block" />
 								<span> Open </span>
-								<PanelLeftOpen />
 							</Button>
 						</td>
 
 						{#each propertyState.properties as property (property.id)}
-							{#if containsView(property.visibleInViews, View.TABLE)}
+							{#if isPropertyVisible(view, property.id)}
 								<td class="border last:border-r-0 px-2">
-									<PropertyValue view={View.TABLE} {property} {item} />
+									<PropertyValue view={ViewType.TABLE} {property} {item} />
 								</td>
 							{/if}
 						{/each}
+						<td class="pl-1">
+							<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="start" />
+						</td>
 					</tr>
 				{/each}
 				<tr>
 					<td></td>
-					<td></td>
 
 					{#each propertyState.properties as property (property.id)}
-						{#if containsView(property.visibleInViews, View.TABLE)}
+						{#if isPropertyVisible(view, property.id)}
 							<td>
 								<div class="flex w-full justify-end group">
 									<PropertyAggregatorMenu
@@ -183,34 +171,10 @@
 							</td>
 						{/if}
 					{/each}
+
+					<td></td>
 				</tr>
 			{/if}
 		</tbody>
 	</table>
 </div>
-
-{#snippet viewVisibilityMenu()}
-	<AdaptiveWrapper triggerClass={buttonVariants({ theme: 'ghost' })} floatingAlign="start">
-		{#snippet trigger()}
-			<Settings />
-		{/snippet}
-
-		<MenuTitle title="Toggle properties visibility" />
-
-		{#each propertyState.properties as property (property.id)}
-			<div class="flex justify-between items-center pr-1">
-				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-				<Switch
-					id={property.id}
-					checked={containsView(property.visibleInViews, View.TABLE)}
-					onchange={() => {
-						propertyState.updProperty({
-							id: property.id,
-							visibleInViews: toggleView(property.visibleInViews, View.TABLE)
-						});
-					}}
-				/>
-			</div>
-		{/each}
-	</AdaptiveWrapper>
-{/snippet}

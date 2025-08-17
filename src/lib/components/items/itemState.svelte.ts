@@ -3,10 +3,12 @@ import type { Item } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
+import { DEFAULT_VIEW_SHORT_ID } from '$lib/constant/index.js';
 
 export class ItemState {
 	#toastState = getToastState();
 	items = $state<Item[]>([]);
+	collectionId = $state('');
 
 	constructor(items: Item[]) {
 		this.items = items;
@@ -108,9 +110,12 @@ export class ItemState {
 		}
 	}
 
-	async refresh(id: string) {
+	async refresh(viewShortId: number) {
 		try {
-			this.items = await trpc().items.list.query(id);
+			this.items = await trpc().items.list.query({
+				collectionId: this.collectionId,
+				viewShortId
+			});
 		} catch (err) {
 			this.#toastState.error();
 		}
