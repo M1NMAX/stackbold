@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Plus, LibraryBig } from 'lucide-svelte';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { SearchInput, SortMenu } from '$lib/components/filters';
+	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
 	import type { Collection } from '@prisma/client';
-	import { tm } from '$lib/utils';
+	import { tm } from '$lib/utils/index.js';
 	import { getCrtCollectionModalState } from '$lib/states/index.js';
-	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
-	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import { UserMenu } from '$lib/components/user';
+	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
+	import { DEFAULT_SORT_OPTIONS } from '$lib/constant/index.js';
+	import { UserMenu } from '$lib/components/user/index.js';
 	import { Button } from '$lib/components/base/index.js';
 
 	let { data } = $props();

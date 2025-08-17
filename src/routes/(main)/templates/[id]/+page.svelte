@@ -11,7 +11,7 @@
 	import { getContext } from 'svelte';
 	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
 	import { trpc } from '$lib/trpc/client';
-	import { getCollectionState } from '$lib/components/collection/collectionState.svelte.js';
+	import { getCollectionState } from '$lib/components/collection/index.js';
 	import { goto } from '$app/navigation';
 
 	let { data } = $props();
