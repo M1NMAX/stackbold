@@ -16,10 +16,10 @@
 	setTabsState(value);
 </script>
 
-<div class={tm('flex flex-col', className)}>
+<div class={tm('flex flex-col gap-y-1', className)}>
 	<div
 		role="tablist"
-		class="w-full bg-transparent text-muted-foreground inline-flex h-10 items-center justify-between px-4"
+		class="w-full h-10 flex items-center justify-between px-4 text-muted-foreground"
 	>
 		{@render triggers()}
 	</div>
