@@ -18,27 +18,25 @@ const collectionUpdateSchema = collectionCreateSchema
 	.partial({ name: true });
 
 export const collections = createTRPCRouter({
-	list: protectedProcedure.query(({ ctx: { userId } }) =>
-		prisma.collection
-			.findMany({
-				where: { ownerId: userId },
-				orderBy: { createdAt: 'asc' },
-				include: { _count: { select: { items: true } } }
-			})
-			.then((collections) =>
-				collections.map(({ _count: { items }, ...rest }) => ({ nItems: items, ...rest }))
-			)
-	),
-	load: protectedProcedure
-		.input(z.string())
-		.query(({ input }) => prisma.collection.findUniqueOrThrow({ where: { id: input } })),
+	list: protectedProcedure.query(async ({ ctx: { userId } }) => {
+		return await prisma.collection.findMany({
+			where: { ownerId: userId },
+			include: { views: true },
+			orderBy: { createdAt: 'asc' }
+		});
+	}),
+	load: protectedProcedure.input(z.string()).query(async ({ input }) => {
+		return await prisma.collection.findUniqueOrThrow({ where: { id: input } });
+	}),
 
-	create: protectedProcedure.input(collectionCreateSchema).mutation(
-		async ({ input: collectionData, ctx: { userId } }) =>
-			await prisma.collection.create({
-				data: { ownerId: userId, ...collectionData }
-			})
-	),
+	create: protectedProcedure
+		.input(collectionCreateSchema)
+		.mutation(async ({ input: collectionData, ctx: { userId } }) => {
+			return await prisma.collection.create({
+				data: { ownerId: userId, ...collectionData },
+				include: { views: true }
+			});
+		}),
 
 	duplicate: protectedProcedure.input(z.string()).mutation(async ({ input: id }) => {
 		const target = await prisma.collection.findUniqueOrThrow({
@@ -54,7 +52,8 @@ export const collections = createTRPCRouter({
 				name: rest.name + ' copy',
 				filterConfigs: undefined,
 				groupByConfigs: undefined
-			}
+			},
+			include: { views: true }
 		});
 
 		const propertiesData = properties.map((property) => {

@@ -4,12 +4,13 @@ import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { getToastState } from '$lib/states';
+import type { CollectionWithViews } from '$lib/types';
 
 export class CollectionState {
 	#toastState = getToastState();
-	collections = $state<Collection[]>([]);
+	collections = $state<CollectionWithViews[]>([]);
 
-	constructor(collections: Collection[]) {
+	constructor(collections: CollectionWithViews[]) {
 		this.collections = collections;
 	}
 
@@ -17,7 +18,7 @@ export class CollectionState {
 		return this.collections.find((collection) => collection.id === id) || null;
 	}
 
-	#updCollection(id: string, collection: Collection) {
+	#updCollection(id: string, collection: CollectionWithViews) {
 		this.collections = this.collections.map((c) => (c.id !== id ? c : collection));
 	}
 
@@ -40,8 +41,9 @@ export class CollectionState {
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
 				isPinned: args.isPinned || false,
-				groupByConfigs: args.groupByConfigs || [],
-				filterConfigs: args.filterConfigs || []
+				groupByConfigs: [],
+				filterConfigs: [],
+				views: []
 			});
 
 			const result = await trpc().collections.create.mutate({ ...args });
@@ -131,7 +133,7 @@ export class CollectionState {
 
 const COLLECTION_STATE_CTX_KEY = Symbol('COLLECTION_STATE_CTX_KEY');
 
-export function setCollectionState(collections: Collection[]) {
+export function setCollectionState(collections: CollectionWithViews[]) {
 	return setContext(COLLECTION_STATE_CTX_KEY, new CollectionState(collections));
 }
 

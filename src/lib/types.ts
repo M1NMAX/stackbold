@@ -1,4 +1,4 @@
-import type { Color } from '@prisma/client';
+import type { Collection, Color, View } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
 import type {
 	BlurParams,
@@ -72,4 +72,8 @@ export type SelectOption = {
 	isSelected: boolean;
 	icon?: string;
 	theme?: string;
+};
+
+export type CollectionWithViews = Collection & {
+	views: View[];
 };
