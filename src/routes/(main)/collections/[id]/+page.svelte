@@ -344,8 +344,7 @@
 			></textarea>
 		{/if}
 
-		<!-- View -->
-		<div class="sticky -top-1 z-40 flex justify-between space-x-1.5 pb-1.5 bg-card">
+		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">
 			<ViewButtons
 				views={viewState.views}
 				value={view.shortId.toString()}
