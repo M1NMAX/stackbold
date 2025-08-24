@@ -21,7 +21,7 @@
 	{disabled}
 	onclick={() => tabsState.setValue(value)}
 	class={tm(
-		'grow flex items-center justify-center whitespace-nowrap rounded-sm px-2 py-1.5 text-sm font-semibold transition-all',
+		'grow flex items-center justify-center whitespace-nowrap rounded-md px-2 py-1.5 text-sm font-semibold transition-all',
 		'disabled:pointer-events-none disabled:opacity-50',
 		tabsState.isSelected(value) && 'bg-secondary text-secondary-foreground shadow-sm'
 	)}

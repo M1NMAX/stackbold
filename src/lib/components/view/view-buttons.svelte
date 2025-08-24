@@ -14,14 +14,14 @@
 	let { views, value, onchange, class: className }: Props = $props();
 </script>
 
-<RadioGroup {value} {onchange} class={tm('h-9 flex gap-0.5 rounded-sm bg-secondary/50', className)}>
+<RadioGroup {value} {onchange} class={tm('h-9 flex gap-0.5 rounded-md bg-secondary/50', className)}>
 	{#each views as view}
 		{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
 
 		<Label
 			for={`view-${view.id}`}
 			class={tm(
-				'flex items-center justify-center py-1.5 px-2 rounded-sm text-secondary-foreground cursor-pointer',
+				'flex items-center justify-center py-1.5 px-2 rounded-md text-secondary-foreground cursor-pointer',
 				+value === view.shortId && 'bg-secondary border border-secondary'
 			)}
 		>

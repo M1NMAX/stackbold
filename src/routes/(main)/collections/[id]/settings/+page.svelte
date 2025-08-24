@@ -107,8 +107,10 @@
 {#snippet content()}
 	<Tabs value="properties" class="h-full">
 		{#snippet triggers()}
-			<TabTrigger value="properties">Properties</TabTrigger>
-			<TabTrigger value="views">Views</TabTrigger>
+			<div class="w-full flex rounded-md bg-secondary/50">
+				<TabTrigger value="properties">Properties</TabTrigger>
+				<TabTrigger value="views">Views</TabTrigger>
+			</div>
 		{/snippet}
 		<TabContent value="properties" class="grow flex flex-col justify-between overflow-y-hidden">
 			{@render propertiesEditors()}
