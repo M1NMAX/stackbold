@@ -67,7 +67,7 @@
 	<MenuTitle title="Sort by" />
 
 	{#if sorts.length > 0}
-		<p class="w-full text-xs font-semibold px-0.5 py-0.5">Active</p>
+		<p class="w-full text-xs font-semibold px-2 py-0.5">Active</p>
 		<div class="w-full space-y-0.5 px-0.5 pb-0.5">
 			{#each sorts as sort}
 				{#if sort.field === NAME_FIELD}

@@ -32,7 +32,7 @@
 	triggerClass={buttonVariants({
 		theme: 'ghost',
 		variant: 'compact',
-		className: tm(!calculated && 'invisible group-hover:visible')
+		className: tm(!calculated && 'visible md:invisible md:group-hover:visible')
 	})}
 >
 	{#snippet trigger()}
