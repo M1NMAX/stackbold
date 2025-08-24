@@ -232,9 +232,21 @@
 	// View
 	const VIEW_STORAGE_KEY = $derived(`collection-${collection.id}-view`);
 	async function onViewChange(value: string) {
+		if (panelState.isOpen) {
+			await new Promise<void>((resolve) => {
+				const handleNavigation = () => {
+					window.removeEventListener('popstate', handleNavigation);
+					resolve();
+				};
+				window.addEventListener('popstate', handleNavigation);
+				panelState.close();
+				history.back();
+			});
+		}
+
 		localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(value));
 		page.url.searchParams.set('view', value);
-		goto(`?${page.url.searchParams.toString()}`);
+		await goto(`?${page.url.searchParams.toString()}`);
 		await itemState.refresh(+value);
 		viewState.viewShortId = +value;
 	}
@@ -243,8 +255,6 @@
 		await viewState.updView({ ...args, id: view.id });
 		await itemState.refresh(viewState.viewShortId);
 	}
-
-	//EFFECTS
 
 	$effect(() => {
 		data.cid;
@@ -274,10 +284,6 @@
 			document.removeEventListener('keydown', handleKeydown);
 		};
 	});
-
-	// $effect(() => {
-	// 	viewState.viewShortId = viewShortId;
-	// });
 </script>
 
 <svelte:head>
