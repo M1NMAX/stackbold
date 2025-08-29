@@ -134,7 +134,7 @@
 							<Button
 								theme="secondary"
 								onclick={() => clickOpenItem(item.id)}
-								class="py-0.5 px-1 gap-x-1 md:invisible md:group-hover:visible "
+								class="md:invisible md:group-hover:visible"
 							>
 								<PanelLeftOpen class="hidden md:block" />
 								<span> Open </span>
