@@ -3,7 +3,6 @@ import type { Item } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
-import { DEFAULT_VIEW_SHORT_ID } from '$lib/constant/index.js';
 
 export class ItemState {
 	#toastState = getToastState();

@@ -1,4 +1,3 @@
-import { DEFAULT_VIEW_SHORT_ID } from '$lib/constant/index.js';
 import { getToastState } from '$lib/states/index.js';
 import { trpc } from '$lib/trpc/client';
 import type { RouterInputs } from '$lib/trpc/router';
@@ -10,7 +9,7 @@ export class ViewState {
 	#toastState = getToastState();
 	views = $state<View[]>([]);
 	collectionId = $state('');
-	viewShortId = $state(DEFAULT_VIEW_SHORT_ID);
+	viewShortId = $state(1);
 
 	constructor(views: View[]) {
 		this.views = views;
