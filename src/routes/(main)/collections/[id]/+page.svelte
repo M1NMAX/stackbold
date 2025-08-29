@@ -69,11 +69,8 @@
 		return collectionState.collections.find((collection) => collection.id == data.cid)!;
 	}
 
-	let collection = $derived(getCurrentCollection());
-
+	const collection = $derived(getCurrentCollection());
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
-
-	let viewShortId = $state(data.viewShortId);
 	const view = $derived.by(() => viewState.views.find((v) => v.shortId === viewState.viewShortId)!);
 
 	let search = $state('');

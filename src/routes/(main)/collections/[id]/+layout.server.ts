@@ -6,7 +6,7 @@ import type { LayoutServerLoad } from './$types';
 export const load: LayoutServerLoad = async (event) => {
 	const cid = event.params.id;
 	const viewShortIdStr = event.url.searchParams.get('view');
-	const viewShortId = viewShortIdStr ? +viewShortIdStr : null;
+	let viewShortId = viewShortIdStr ? +viewShortIdStr : null;
 
 	const caller = createCaller(await createContext(event));
 
@@ -14,8 +14,7 @@ export const load: LayoutServerLoad = async (event) => {
 	if (!collection) error(404, 'Not found');
 
 	const views = await caller.views.list(cid);
-	if (!viewShortId || !views.some((v) => v.shortId === viewShortId))
-		error(404, 'This view no longer exists');
+	if (!viewShortId || !views.some((v) => v.shortId === viewShortId)) viewShortId = views[0].shortId;
 
 	const [properties, items] = await Promise.all([
 		caller.properties.list(cid),
