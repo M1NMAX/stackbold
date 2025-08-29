@@ -25,7 +25,6 @@
 	import { getViewState } from './index.js';
 	import { useId } from '$lib/utils/index.js';
 	import { FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
-	import { GripVertical } from 'lucide-svelte';
 
 	type Props = {
 		view: View;
@@ -58,6 +57,12 @@
 		content = 'entries';
 		await viewState.updView({ id: view.id, groupBy: value === 'none' ? null : value });
 	}
+
+	$effect(() => {
+		if (!menuState.isOpen) {
+			content = 'entries';
+		}
+	});
 </script>
 
 <Tooltip triggerBy={id} align="end">

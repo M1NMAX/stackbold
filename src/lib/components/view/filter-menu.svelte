@@ -78,6 +78,12 @@
 	function clearAll() {
 		updFilters([]);
 	}
+
+	$effect(() => {
+		if (!menuState.isOpen) {
+			detailViewState.close();
+		}
+	});
 </script>
 
 <Tooltip triggerBy={id} align="end">
