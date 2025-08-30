@@ -34,7 +34,7 @@ export const collections = createTRPCRouter({
 		.mutation(async ({ input: collectionData, ctx: { userId } }) => {
 			return await prisma.collection.create({
 				data: { ownerId: userId, ...collectionData },
-				include: { views: true }
+				include: { views: { select: { shortId: true } } }
 			});
 		}),
 
@@ -160,7 +160,7 @@ async function duplicateCollection(id: string) {
 
 		return await tx.collection.findUniqueOrThrow({
 			where: { id: collection.id },
-			include: { views: true }
+			include: { views: { select: { shortId: true } } }
 		});
 	});
 }

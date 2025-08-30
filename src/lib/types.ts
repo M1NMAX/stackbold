@@ -75,5 +75,5 @@ export type SelectOption = {
 };
 
 export type CollectionWithViews = Collection & {
-	views: View[];
+	views: { shortId: number }[];
 };
