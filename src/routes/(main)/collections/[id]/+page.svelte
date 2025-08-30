@@ -164,20 +164,6 @@
 		return propertyState.properties.some((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type));
 	}
 
-	function sortGroupedItems(a: string, b: string) {
-		const propId = view.groupBy;
-		const actualProp = propertyState.properties.find((prop) => prop.id === propId);
-		if (actualProp == null || actualProp.type !== 'SELECT') return 0;
-
-		const left = actualProp.options.findIndex((opt) => opt.id == a);
-		const right = actualProp.options.findIndex((opt) => opt.id == b);
-
-		if (left < right) return -1;
-		if (left > right) return 1;
-
-		return 0;
-	}
-
 	// Sliding panel
 	async function onClickOpenSettings() {
 		if (panelState.isOpen) history.back();
@@ -363,7 +349,7 @@
 			<Items {view} items={filteredItems} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
 			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
-				{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
+				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 					{@const property = propertyState.getProperty(groupedItems[key].pid)}
 
 					{#if property}
