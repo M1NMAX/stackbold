@@ -1,4 +1,4 @@
-import { Aggregator, Color, ViewType, type Property, type PropertyType } from '@prisma/client';
+import { Color, ViewType, type Property, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter } from '$lib/utils';
 import { getContext, setContext } from 'svelte';
@@ -41,7 +41,7 @@ export class PropertyState {
 				updatedAt: new Date(),
 				defaultValue: '',
 				visibleInViews: [ViewType.LIST, ViewType.TABLE],
-				aggregator: Aggregator.NONE,
+				aggregator: null,
 				options: [],
 				order,
 				collectionId,
@@ -49,7 +49,7 @@ export class PropertyState {
 				relatedProperty: null,
 				intTargetProperty: null,
 				extTargetProperty: null,
-				calculate: Aggregator.NONE
+				calculate: null
 			});
 
 			const property = await trpc().properties.create.mutate({

@@ -27,15 +27,15 @@ const propertyCreateSchema = z.object({
 	collectionId: z.string(),
 	name: z.string(),
 	type: propertyTypeSchema.optional(),
-	aggregator: aggregatorSchema.optional(),
-	order: z.number().optional(),
 	options: z.array(optionSchema).optional(),
+	order: z.number().optional(),
+	aggregator: aggregatorSchema.nullish(),
 	defaultValue: z.string().nullish(),
 	targetCollection: z.string().nullish(),
 	relatedProperty: z.string().nullish(),
 	intTargetProperty: z.string().nullish(),
 	extTargetProperty: z.string().nullish(),
-	calculate: aggregatorSchema.optional()
+	calculate: aggregatorSchema.nullish()
 });
 
 const propertyUpdateSchema = propertyCreateSchema

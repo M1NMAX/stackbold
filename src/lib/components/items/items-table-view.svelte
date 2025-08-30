@@ -52,7 +52,8 @@
 	}
 
 	function aggregatePropertyValue(property: Property) {
-		if (property.aggregator === Aggregator.COUNT) return items.length;
+		if (!property.aggregator) return '';
+		else if (property.aggregator === Aggregator.COUNT) return items.length;
 		else if (property.aggregator === Aggregator.COUNT_EMPTY) {
 			return items.reduce((acc, item) => {
 				const propertyRef = getPropertyRef(item.properties, property.id);
@@ -74,7 +75,6 @@
 			if (property.aggregator === Aggregator.SUM) return sum.toFixed(2);
 			return (sum / items.length).toFixed(2);
 		}
-
 		return '';
 	}
 </script>

@@ -180,7 +180,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 
 			let ref = { id: property.id, value: '' };
 
-			if (ids.length !== 0) {
+			if (ids.length !== 0 && property.calculate) {
 				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
 				ref.value = aggregatePropertyValue(extItems, property.calculate, extProperty.id).toString();
 			}
@@ -372,7 +372,7 @@ async function injectBundleRefs(item: Item, properties: Property[]) {
 		const extProperty = extPropertiesMap.get(property.extTargetProperty!);
 		if (!extProperty) continue;
 
-		if (ids.length === 0) {
+		if (ids.length === 0 || !property.calculate) {
 			item = addRef(item, { id: property.id, value: '' });
 			continue;
 		}

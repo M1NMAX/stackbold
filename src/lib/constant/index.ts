@@ -32,7 +32,8 @@ export const DEFAULT_SORT_OPTIONS = [
 
 export const DEFAULT_STRING_DELIMITER = '|';
 
-export const PROPERTY_DEFAULT_VALUE_NOT_DEFINED = 'Not Defined';
+export const VALUE_NOT_DEFINED = 'Not Defined';
+export const VALUE_NONE = 'None';
 
 export const DEBOUNCE_INTERVAL = 1000;
 
@@ -96,7 +97,6 @@ export const PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE: PropertyType[] = [
 export const PROPERTIES_WITHOUT_REF: PropertyType[] = [PropertyType.CREATED, PropertyType.BUNDLE];
 
 export const PROPERTY_UNIVERSAL_AGGREGATORS: Aggregator[] = [
-	Aggregator.NONE,
 	Aggregator.COUNT,
 	Aggregator.COUNT_EMPTY,
 	Aggregator.COUNT_NOT_EMPTY

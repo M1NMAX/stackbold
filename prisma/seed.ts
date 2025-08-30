@@ -3,7 +3,6 @@ import {
 	Color,
 	PrismaClient,
 	PropertyType,
-	View,
 	ViewType,
 	type Option
 } from '@prisma/client';

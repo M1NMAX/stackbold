@@ -79,7 +79,6 @@ enum PropertyType {
 }
 
 enum Aggregator {
-  NONE            @map("none")
   COUNT           @map("count")
   COUNT_EMPTY     @map("count_empty")
   COUNT_NOT_EMPTY @map("count_not_empty")
@@ -193,14 +192,14 @@ model Property {
   type              PropertyType @default(TEXT)
   options           Option[]
   visibleInViews    ViewType[]   @default([LIST, TABLE])
-  aggregator        Aggregator   @default(NONE)
   order             Int          @default(0)
+  aggregator        Aggregator?
   defaultValue      String?
   targetCollection  String? // RELATION AND BUNDLE only
   relatedProperty   String? // RELATION only
   intTargetProperty String? // BUMDLE only
   extTargetProperty String? // BUNDLE only
-  calculate         Aggregator   @default(NONE) // BUNDLE only
+  calculate         Aggregator? // BUNDLE only
 
   @@index([collectionId, order])
 }
@@ -226,7 +225,7 @@ type TemplateProperty {
   type           PropertyType @default(TEXT)
   options        Option[]
   visibleInViews ViewType[]   @default([LIST, TABLE])
-  aggregator     Aggregator   @default(NONE)
+  aggregator     Aggregator?
   order          Int          @default(0)
   defaultValue   String?
 }

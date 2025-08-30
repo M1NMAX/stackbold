@@ -22,11 +22,12 @@
 		PROPERTIES_WITH_LISTABLE_OPTIONS,
 		PROPERTY_AGGREGATOR_LABELS,
 		PROPERTY_COLORS,
-		PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
-		PROPERTY_UNIVERSAL_AGGREGATORS
+		VALUE_NOT_DEFINED,
+		PROPERTY_UNIVERSAL_AGGREGATORS,
+		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import type { UpdProperty, SelectOption } from '$lib/types';
+	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/items/index.js';
 	import {
@@ -71,7 +72,7 @@
 		await propertyState.updProperty(property);
 	}
 
-	async function handleUpdPropertyCalculate(aggregator: Aggregator) {
+	async function handleUpdPropertyCalculate(aggregator: Nullable<Aggregator>) {
 		await propertyState.updProperty({ id: property.id, calculate: aggregator });
 		// await itemState.refresh(propertyState.collectionId);
 	}
@@ -103,8 +104,14 @@
 		}));
 	}
 
-	function setupAggregatorSelectOptions(isNumerical: boolean, current: Aggregator) {
+	function setupAggregatorSelectOptions(isNumerical: boolean, current: Nullable<Aggregator>) {
 		let options: SelectOption[] = [];
+
+		options.push({
+			id: '',
+			label: VALUE_NONE,
+			isSelected: !current
+		});
 
 		options.push(
 			...PROPERTY_UNIVERSAL_AGGREGATORS.map((aggregator) => ({
@@ -131,8 +138,8 @@
 		options.push({
 			id: '',
 			icon: 'text',
-			label: PROPERTY_DEFAULT_VALUE_NOT_DEFINED,
-			isSelected: property.defaultValue == null
+			label: VALUE_NOT_DEFINED,
+			isSelected: !property.defaultValue
 		});
 
 		options.push(
@@ -345,7 +352,7 @@
 								isPropertyNumerical(property),
 								property.calculate
 							)}
-							onselect={(opt) => handleUpdPropertyCalculate(opt.id as Aggregator)}
+							onselect={(opt) => handleUpdPropertyCalculate(opt.id ? (opt.id as Aggregator) : null)}
 							placeholder="Empty"
 							searchable
 						/>

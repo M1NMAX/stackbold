@@ -1,5 +1,4 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import type { Collection } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';

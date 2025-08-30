@@ -9,6 +9,8 @@ import type {
 	TransitionConfig
 } from 'svelte/transition';
 
+export type Nullable<T> = T | null;
+
 export type Toast =
 	| { id: string; type: 'action'; message: string; action: { label: string; onclick: () => void } }
 	| { id: string; type: 'success' | 'error' | 'warning'; message: string };
