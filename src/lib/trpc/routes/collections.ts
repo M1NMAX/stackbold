@@ -3,6 +3,8 @@ import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { NAME_FIELD } from '$lib/constant/index.js';
+import { ViewType } from '@prisma/client';
+import { capitalizeFirstLetter } from '$lib/utils/index.js';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -31,12 +33,7 @@ export const collections = createTRPCRouter({
 
 	create: protectedProcedure
 		.input(collectionCreateSchema)
-		.mutation(async ({ input: collectionData, ctx: { userId } }) => {
-			return await prisma.collection.create({
-				data: { ownerId: userId, ...collectionData },
-				include: { views: { select: { shortId: true } } }
-			});
-		}),
+		.mutation(async ({ input, ctx: { userId } }) => createCollection(input, userId)),
 
 	duplicate: protectedProcedure
 		.input(z.string())
@@ -49,14 +46,26 @@ export const collections = createTRPCRouter({
 				await prisma.collection.update({ where: { id }, data: { ...rest } })
 		),
 
-	delete: protectedProcedure.input(z.string()).mutation(async ({ input: id, ctx: { userId } }) => {
-		const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
-
-		if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
-
-		await prisma.collection.delete({ where: { id } });
-	})
+	delete: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ input, ctx: { userId } }) => deleteCollection(input, userId))
 });
+
+async function createCollection(args: z.infer<typeof collectionCreateSchema>, userId: string) {
+	const views = Object.values(ViewType).map((v, idx) => ({
+		shortId: idx + 1,
+		order: idx + 1,
+		name: capitalizeFirstLetter(v),
+		properties: [],
+		filters: [],
+		sorts: []
+	}));
+
+	return await prisma.collection.create({
+		data: { ...args, ownerId: userId, views: { create: [...views] } },
+		include: { views: { select: { shortId: true } } }
+	});
+}
 
 async function duplicateCollection(id: string) {
 	const target = await prisma.collection.findUniqueOrThrow({
@@ -163,4 +172,12 @@ async function duplicateCollection(id: string) {
 			include: { views: { select: { shortId: true } } }
 		});
 	});
+}
+
+async function deleteCollection(id: string, userId: string) {
+	const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
+
+	if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+	await prisma.collection.delete({ where: { id } });
 }
