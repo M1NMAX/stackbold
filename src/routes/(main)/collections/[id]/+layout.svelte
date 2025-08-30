@@ -8,7 +8,7 @@
 
 	let { children, data } = $props();
 
-	const viewState = setViewState(data.views);
+	const viewState = setViewState(data.views, data.viewShortId);
 	const propertyState = setPropertyState(data.properties);
 	const itemState = setItemState(data.items);
 

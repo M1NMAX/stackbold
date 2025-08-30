@@ -9,10 +9,11 @@ export class ViewState {
 	#toastState = getToastState();
 	views = $state<View[]>([]);
 	collectionId = $state('');
-	viewShortId = $state(1);
+	viewShortId = $state(0);
 
-	constructor(views: View[]) {
+	constructor(views: View[], viewShortId: number) {
 		this.views = views;
+		this.viewShortId = viewShortId;
 	}
 
 	#getView(id: string) {
@@ -140,8 +141,8 @@ export class ViewState {
 
 const VIEW_STATE_CTX_KEY = Symbol('VIEW_STATE_CTX_KEY');
 
-export function setViewState(views: View[]) {
-	return setContext(VIEW_STATE_CTX_KEY, new ViewState(views));
+export function setViewState(views: View[], viewShortId: number) {
+	return setContext(VIEW_STATE_CTX_KEY, new ViewState(views, viewShortId));
 }
 
 export function getViewState() {
