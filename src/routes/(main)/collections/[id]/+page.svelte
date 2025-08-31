@@ -75,14 +75,9 @@
 
 	let search = $state('');
 
-	let filteredItems = $derived.by(() => {
+	let items = $derived.by(() => {
 		const searchTerm = search.toLowerCase() || '';
-
 		return [...itemState.items].filter((item) => item.name.toLowerCase().includes(searchTerm));
-	});
-
-	let groupedItems = $derived.by(() => {
-		return filteredItems.reduce(groupItemsByPropertyValue(view.groupBy || ''), {});
 	});
 
 	let itemName = $state('');
@@ -346,8 +341,9 @@
 		</div>
 
 		{#if !view.groupBy}
-			<Items {view} items={filteredItems} clickOpenItem={(id) => clickItem(id)} />
+			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
+			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}
 			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
 				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 					{@const property = propertyState.getProperty(groupedItems[key].pid)}
