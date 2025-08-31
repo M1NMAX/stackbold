@@ -65,8 +65,13 @@
 				Settings
 			</h1>
 		</PageHeader>
-		<PageContent class="grow px-0 gap-y-0 hd-scroll" onscroll={handleScroll}>
-			<h1 class={tm('pb-2 px-4 font-semibold text-xl', !isSmHeadingVisible ? 'visible' : 'hidden')}>
+		<PageContent class="grow px-0 md:px-0 gap-y-0 hd-scroll" onscroll={handleScroll}>
+			<h1
+				class={tm(
+					'pb-2 px-2 md:px-4 font-semibold text-xl',
+					!isSmHeadingVisible ? 'visible' : 'hidden'
+				)}
+			>
 				Settings
 			</h1>
 
@@ -105,7 +110,7 @@
 {/snippet}
 
 {#snippet content()}
-	<Tabs value="properties" class="h-full">
+	<Tabs value="properties" class="h-full" triggersClass="px-2 md:px-4">
 		{#snippet triggers()}
 			<div class="w-full flex rounded-md bg-secondary/50">
 				<TabTrigger value="properties">Properties</TabTrigger>
@@ -114,14 +119,14 @@
 		{/snippet}
 		<TabContent value="properties" class="grow flex flex-col justify-between overflow-y-hidden">
 			{@render propertiesEditors()}
-			<div class="p-4">
+			<div class="px-2 md:px-4 pb-2">
 				<AddProperty refresh={data.insidePanel} />
 			</div>
 		</TabContent>
 
 		<TabContent value="views" class="grow flex flex-col justify-between overflow-y-hidden">
 			{@render viewsEditors()}
-			<div class="p-4">
+			<div class="px-2 md:px-4 pb-2">
 				<AddView />
 			</div>
 		</TabContent>

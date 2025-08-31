@@ -9,9 +9,10 @@
 		triggers: Snippet;
 		children: Snippet;
 		class?: ClassValue;
+		triggersClass?: ClassValue;
 	};
 
-	let { value, triggers, children, class: className }: Props = $props();
+	let { value, triggers, children, class: className, triggersClass }: Props = $props();
 
 	setTabsState(value);
 </script>
@@ -19,7 +20,7 @@
 <div class={tm('flex flex-col gap-y-1', className)}>
 	<div
 		role="tablist"
-		class="w-full h-10 flex items-center justify-between px-4 text-muted-foreground"
+		class={tm('w-full h-10 flex items-center justify-between text-muted-foreground', triggersClass)}
 	>
 		{@render triggers()}
 	</div>

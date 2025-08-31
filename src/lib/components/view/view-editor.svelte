@@ -109,7 +109,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="flex group pr-4"
+	class="flex group pr-2 md:pr-4"
 	draggable="true"
 	{ondragstart}
 	{ondrop}
@@ -119,7 +119,7 @@
 >
 	<GripVertical
 		class={tm(
-			'size-4 cursor-pointer invisible group-hover:visible',
+			'size-2 md:size-4 cursor-pointer invisible group-hover:visible',
 			'opacity-50 hover:opacity-100 transition-opacity',
 			'mt-3.5'
 		)}
