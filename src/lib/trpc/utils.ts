@@ -83,3 +83,24 @@ export function groupBy<T>(items: T[], key: keyof T) {
 		return map;
 	}, new Map<string, T[]>());
 }
+export function compareValues(a: string, b: string) {
+	if (a === '' && b === '') return 0;
+	if (a === '') return -1;
+	if (b === '') return 1;
+
+	const aNum = Number(a);
+	const bNum = Number(b);
+
+	if (!isNaN(aNum) && !isNaN(bNum)) {
+		return aNum - bNum;
+	}
+
+	const aDate = new Date(a);
+	const bDate = new Date(b);
+
+	if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+		return aDate.getTime() - bDate.getTime();
+	}
+
+	return String(a).localeCompare(String(b));
+}

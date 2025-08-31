@@ -24,7 +24,7 @@ export const collections = createTRPCRouter({
 		return await prisma.collection.findMany({
 			where: { ownerId: userId },
 			include: { views: true },
-			orderBy: { createdAt: 'asc' }
+			orderBy: { name: 'asc' }
 		});
 	}),
 	load: protectedProcedure.input(z.string()).query(async ({ input }) => {

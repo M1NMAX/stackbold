@@ -7,6 +7,7 @@ import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import {
 	aggregatePropertyValue,
+	compareValues,
 	getPropertyDefaultValue,
 	getPropertyRef,
 	hasRef,
@@ -213,28 +214,6 @@ function sortItems(items: Item[], sorts: Sort[]) {
 
 		return 0;
 	});
-}
-
-function compareValues(a: string, b: string) {
-	if (a === '' && b === '') return 0;
-	if (a === '') return -1;
-	if (b === '') return 1;
-
-	const aNum = Number(a);
-	const bNum = Number(b);
-
-	if (!isNaN(aNum) && !isNaN(bNum)) {
-		return aNum - bNum;
-	}
-
-	const aDate = new Date(a);
-	const bDate = new Date(b);
-
-	if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
-		return aDate.getTime() - bDate.getTime();
-	}
-
-	return String(a).localeCompare(String(b));
 }
 
 async function listSearchableItem(userId: string) {
