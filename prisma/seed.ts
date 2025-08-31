@@ -335,48 +335,66 @@ async function main() {
 	// clean the DB
 	// await prisma.group.deleteMany();
 	// await prisma.collection.deleteMany();
-	// await prisma.item.deleteMany();
-	await prisma.template.deleteMany();
+	await prisma.collection.deleteMany({ where: { isTemplate: true } });
 
 	for (const template of templatesData) {
-		const { icon, name, description, properties, items } = template;
-		const createdTemplate = await prisma.template.create({
+		const { properties, items, ...rest } = template;
+
+		const propertiesData = properties.map((property, idx) => ({
+			...property,
+			order: idx + 1,
+			options: property.options.map(({ value }) => ({
+				value,
+				color: colorsNames[randomIntFromInterval(0, colorsNames.length - 1)] as Color
+			}))
+		}));
+
+		const collection = await prisma.collection.create({
 			data: {
-				icon,
-				name,
-				description,
-				groupByConfigs: [{ view: ViewType.LIST }, { view: ViewType.TABLE }],
-				properties: properties.map(({ name, type, options }, idx) => ({
-					name,
-					type,
-					order: idx + 1,
-					options: options.map(({ value }) => ({
-						color: colorsNames[randomIntFromInterval(0, colorsNames.length - 1)] as Color,
-						value
-					}))
-				}))
-			}
+				...rest,
+				isTemplate: true,
+				properties: {
+					create: [...propertiesData]
+				}
+			},
+			include: { properties: { orderBy: { order: 'asc' } } }
 		});
 
-		console.log(`Created template with id: ${createdTemplate.id}`);
-		await prisma.template.update({
-			where: { id: createdTemplate.id },
-			data: {
-				items: {
-					push: items.map(({ name, properties }) => ({
-						name,
-						properties: createdTemplate.properties.map((templateProp, idx) => ({
-							id: templateProp.id,
-							value:
-								templateProp.type !== PropertyType.SELECT
-									? properties[idx].value
-									: findOptionByName(properties[idx].value, templateProp.options)?.id || ''
-						}))
-					}))
-				}
-			}
-		});
-		console.log(`Added items to template with id: ${createdTemplate.id}`);
+		console.log(`Created template collection with id: ${collection.id}`);
+
+		const viewData = Object.keys(ViewType).map((v, idx) => ({
+			shortId: idx + 1,
+			order: idx + 1,
+			name: v,
+			collectionId: collection.id,
+			filters: [],
+			sorts: [],
+			properties: [
+				...collection.properties.map((property) => ({
+					isVisible: true,
+					id: property.id
+				}))
+			]
+		}));
+
+		const itemData = items.map((item) => ({
+			...item,
+			collectionId: collection.id,
+			properties: collection.properties.map((property, idx) => ({
+				id: property.id,
+				value:
+					property.type !== PropertyType.SELECT
+						? item.properties[idx].value
+						: findOptionByName(item.properties[idx].value, property.options)?.id || ''
+			}))
+		}));
+
+		await Promise.all([
+			prisma.item.createMany({ data: itemData }),
+			prisma.view.createMany({ data: viewData })
+		]);
+
+		console.log(`Added views and items to template collection with id: ${collection.id}`);
 	}
 }
 

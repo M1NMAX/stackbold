@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { CheckSquare2, Square } from 'lucide-svelte';
 	import { PropertyType, type Color, type TemplateProperty } from '@prisma/client';
-	import { PROPERTY_COLORS } from '$lib/constant';
-	import { tm, useId } from '$lib/utils';
-	import { getOption, hasOptions, PropertyIcon } from '.';
+	import { PROPERTY_COLORS } from '$lib/constant/index.js';
+	import { tm, useId } from '$lib/utils/index.js';
+	import { getOption, hasOptions, PropertyIcon } from './index.js';
 	import { Tooltip } from '$lib/components/base/index.js';
 
 	type Props = {

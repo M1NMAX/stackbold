@@ -15,47 +15,6 @@ enum Role {
   MEMBER @map("member")
 }
 
-model User {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String
-  email              String               @unique
-  emailVerified      Boolean              @default(false)
-  role               Role                 @default(MEMBER)
-  password           String
-  sessions           Session[]
-  collections        Collection[]
-  Group              Group[]
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  EmailVerication    EmailVerication[]
-  PasswordResetToken PasswordResetToken[]
-}
-
-model EmailVerication {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  code      String
-  userId    String   @db.ObjectId
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  email     String   @unique
-  expiredAt DateTime
-}
-
-model PasswordResetToken {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  token     String   @unique
-  userId    String   @db.ObjectId
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  expiredAt DateTime
-}
-
-model Session {
-  id        String   @id @map("_id")
-  userId    String   @db.ObjectId
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  expiresAt DateTime
-  role      Role
-}
-
 enum Color {
   GRAY   @map("gray")
   RED    @map("red")
@@ -133,6 +92,47 @@ type PropertyRef {
   value String @default("")
 }
 
+model User {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  email              String               @unique
+  emailVerified      Boolean              @default(false)
+  role               Role                 @default(MEMBER)
+  password           String
+  sessions           Session[]
+  collections        Collection[]
+  Group              Group[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  EmailVerication    EmailVerication[]
+  PasswordResetToken PasswordResetToken[]
+}
+
+model EmailVerication {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  code      String
+  userId    String   @db.ObjectId
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  email     String   @unique
+  expiredAt DateTime
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  token     String   @unique
+  userId    String   @db.ObjectId
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  expiredAt DateTime
+}
+
+model Session {
+  id        String   @id @map("_id")
+  userId    String   @db.ObjectId
+  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  expiresAt DateTime
+  role      Role
+}
+
 model Group {
   id         String       @id @default(auto()) @map("_id") @db.ObjectId
   name       String
@@ -146,21 +146,22 @@ model Group {
 model Collection {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   name           String
+  icon           String          @default("folder")
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   isPinned       Boolean         @default(true)
   description    String          @default("")
   isDescHidden   Boolean         @default(true)
-  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId        String          @db.ObjectId
+  isTemplate     Boolean         @default(false)
+  views          View[]
+  properties     Property[]
   items          Item[]
-  groupByConfigs GroupByConfig[]
+  owner          User?           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId        String?         @db.ObjectId
   group          Group?          @relation(fields: [groupId], references: [id])
   groupId        String?         @db.ObjectId
-  icon           String          @default("folder")
   filterConfigs  FilterConfig[]
-  properties     Property[]
-  views          View[]
+  groupByConfigs GroupByConfig[]
 }
 
 model View {
@@ -214,36 +215,4 @@ model Item {
   properties   PropertyRef[]
 
   @@index([properties.id], name: "propertyref_id_index")
-}
-
-// Template
-
-type TemplateProperty {
-  id             String       @default(uuid()) @map("_id")
-  name           String
-  createdAt      DateTime     @default(now())
-  type           PropertyType @default(TEXT)
-  options        Option[]
-  visibleInViews ViewType[]   @default([LIST, TABLE])
-  aggregator     Aggregator?
-  order          Int          @default(0)
-  defaultValue   String?
-}
-
-type TemplateItem {
-  id         String        @default(uuid()) @map("_id")
-  name       String
-  properties PropertyRef[]
-}
-
-model Template {
-  id             String             @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  description    String             @default("")
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  properties     TemplateProperty[]
-  items          TemplateItem[]
-  groupByConfigs GroupByConfig[]
-  icon           String             @default("folder")
 }

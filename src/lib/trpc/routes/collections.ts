@@ -33,11 +33,11 @@ export const collections = createTRPCRouter({
 
 	create: protectedProcedure
 		.input(collectionCreateSchema)
-		.mutation(async ({ input, ctx: { userId } }) => createCollection(input, userId)),
+		.mutation(async ({ input, ctx: { userId } }) => await createCollection(input, userId)),
 
 	duplicate: protectedProcedure
 		.input(z.string())
-		.mutation(async ({ input }) => await duplicateCollection(input)),
+		.mutation(async ({ input, ctx: { userId } }) => await duplicateCollection(input, userId, true)),
 
 	update: protectedProcedure
 		.input(collectionUpdateSchema)
@@ -67,7 +67,7 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 	});
 }
 
-async function duplicateCollection(id: string) {
+export async function duplicateCollection(id: string, ownerId: string, copy: boolean = false) {
 	const target = await prisma.collection.findUniqueOrThrow({
 		where: { id },
 		include: {
@@ -96,9 +96,9 @@ async function duplicateCollection(id: string) {
 		const collection = await tx.collection.create({
 			data: {
 				...rest,
-				name: rest.name + ' copy',
-				filterConfigs: undefined,
-				groupByConfigs: undefined,
+				ownerId,
+				isTemplate: false,
+				name: copy ? `${rest.name} copy` : rest.name,
 				properties: { create: [...propertiesData] }
 			},
 			include: {
