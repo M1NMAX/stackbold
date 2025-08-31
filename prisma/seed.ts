@@ -331,8 +331,11 @@ function findOptionByName(name: string, options: Option[]) {
 	return options.find((opt) => opt.value === name);
 }
 
+export function capitalizeFirstLetter(text: string) {
+	return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
 async function main() {
-	// clean the DB
 	// await prisma.group.deleteMany();
 	// await prisma.collection.deleteMany();
 	await prisma.collection.deleteMany({ where: { isTemplate: true } });
@@ -365,7 +368,7 @@ async function main() {
 		const viewData = Object.keys(ViewType).map((v, idx) => ({
 			shortId: idx + 1,
 			order: idx + 1,
-			name: v,
+			name: capitalizeFirstLetter(v),
 			collectionId: collection.id,
 			filters: [],
 			sorts: [],

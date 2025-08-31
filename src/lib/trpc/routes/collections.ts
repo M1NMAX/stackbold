@@ -163,8 +163,8 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 		});
 
 		await Promise.all([
-			tx.view.createMany({ data: viewsData }),
-			tx.item.createMany({ data: itemData })
+			viewsData.length !== 0 ? tx.view.createMany({ data: viewsData }) : Promise.resolve(),
+			itemData.length !== 0 ? tx.item.createMany({ data: itemData }) : Promise.resolve()
 		]);
 
 		return await tx.collection.findUniqueOrThrow({
@@ -176,7 +176,6 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 
 async function deleteCollection(id: string, userId: string) {
 	const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
-
 	if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
 	await prisma.collection.delete({ where: { id } });
