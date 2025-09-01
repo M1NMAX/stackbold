@@ -41,6 +41,7 @@
 	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { getCollectionState } from '$lib/components/collection/index.js';
+	import { getViewState } from '$lib/components/view/index.js';
 
 	type Props = {
 		property: Property;
@@ -55,6 +56,7 @@
 
 	const deleteModal = getDeleteModalState();
 	const collectionState = getCollectionState();
+	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	const newOptionInputId = useId(`property-editor-${property.id}`);
@@ -64,7 +66,7 @@
 
 	async function duplicateProperty() {
 		await propertyState.duplicateProperty(property.id);
-		// await itemState.refresh(propertyState.collectionId);
+		await itemState.refresh(viewState.viewShortId);
 	}
 
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
@@ -74,7 +76,7 @@
 
 	async function handleUpdPropertyCalculate(aggregator: Nullable<Aggregator>) {
 		await propertyState.updProperty({ id: property.id, calculate: aggregator });
-		// await itemState.refresh(propertyState.collectionId);
+		await itemState.refresh(viewState.viewShortId);
 	}
 
 	function handleOnInput(e: Event) {
