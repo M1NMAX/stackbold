@@ -56,6 +56,7 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 		shortId: idx + 1,
 		order: idx + 1,
 		name: capitalizeFirstLetter(v),
+		type: v as ViewType,
 		properties: [],
 		filters: [],
 		sorts: []

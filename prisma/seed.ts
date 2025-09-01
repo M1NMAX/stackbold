@@ -369,6 +369,7 @@ async function main() {
 			shortId: idx + 1,
 			order: idx + 1,
 			name: capitalizeFirstLetter(v),
+			type: v as ViewType,
 			collectionId: collection.id,
 			filters: [],
 			sorts: [],
