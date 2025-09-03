@@ -9,7 +9,7 @@
 		Aggregator,
 		type View
 	} from '@prisma/client';
-	import { getActiveItemState, getItemState, ItemMenu } from './index.js';
+	import { getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
 		PropertyIcon,
@@ -33,7 +33,6 @@
 
 	let { view, items, clickOpenItem }: Props = $props();
 
-	const activeItem = getActiveItemState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
@@ -119,7 +118,7 @@
 					<tr
 						class={tm(
 							'font-medium text-base whitespace-nowrap border-y border-secondary hover:bg-muted/40 group',
-							item.id === activeItem.id && 'outline outline-2 outline-primary/70'
+							item.id === itemState.active && 'outline outline-2 outline-primary/70'
 						)}
 					>
 						<td class="flex items-center justify-between pl-2 pr-1">

@@ -5,12 +5,7 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
-	import {
-		Items,
-		getActiveItemState,
-		getItemState,
-		groupItemsByPropertyValue
-	} from '$lib/components/items/index.js';
+	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/items/index.js';
 	import { getOption, getPropertyColor, getPropertyState } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
@@ -94,7 +89,6 @@
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
 	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
-	const activeItemState = getActiveItemState();
 
 	async function updCollection(args: Omit<RouterInputs['collections']['update'], 'id'>) {
 		await collectionState.updCollection({ ...args, id: collection.id });
@@ -181,7 +175,7 @@
 
 	async function clickItem(id: string) {
 		if (panelState.isOpen) history.back();
-		activeItemState.update(id);
+		itemState.active = id;
 		const url = `/collections/${collection.id}/item/${id}`;
 		if (!isLargeScreen.current) {
 			await goto(url);

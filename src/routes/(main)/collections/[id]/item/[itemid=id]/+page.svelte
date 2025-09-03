@@ -5,7 +5,7 @@
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { Button, buttonVariants, Drawer, HSeparator } from '$lib/components/base/index.js';
-	import { getActiveItemState, getItemState } from '$lib/components/items';
+	import { getItemState } from '$lib/components/items/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { getPropertyState, getRefValue, PropertyInput } from '$lib/components/property/index.js';
@@ -31,14 +31,13 @@
 
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
-	const activeItem = getActiveItemState();
 	const nameId = useId();
 
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 	function goBack(forceRename: boolean = true) {
 		if (forceRename) forceItemRename();
 		history.back();
-		activeItem.reset();
+		itemState.active = null;
 		if (data.insidePanel) {
 			panelState.close();
 		}

@@ -2,12 +2,14 @@ import type { RouterInputs } from '$lib/trpc/router';
 import type { Item } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
-import { getToastState } from '$lib/states';
+import { getToastState } from '$lib/states/index.js';
+import type { Nullable } from '$lib/types.js';
 
 export class ItemState {
 	#toastState = getToastState();
 	items = $state<Item[]>([]);
 	collectionId = $state('');
+	active = $state<Nullable<string>>(null);
 
 	constructor(items: Item[]) {
 		this.items = items;

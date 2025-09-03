@@ -5,7 +5,7 @@
 <script lang="ts">
 	import Check from 'lucide-svelte/icons/check';
 	import Pencil from 'lucide-svelte/icons/pencil';
-	import { ItemMenu, getActiveItemState, getItemState } from './index.js';
+	import { ItemMenu, getItemState } from './index.js';
 	import {
 		PropertyValue,
 		getPropertyRef,
@@ -26,7 +26,6 @@
 
 	let { view, items, clickOpenItem }: Props = $props();
 
-	const activeItem = getActiveItemState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
@@ -115,7 +114,7 @@
 			onkeydown={(e) => handleItemKeydownEvent(e, item.id)}
 			class={[
 				'relative flex flex-col items-start p-1.5 gap-y-2 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
-				item.id === activeItem.id && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
+				item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			]}
 		>
 			{#if isCurrentlyEditing(item.id)}
