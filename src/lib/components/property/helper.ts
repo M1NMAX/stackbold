@@ -10,8 +10,7 @@ import {
 	type PropertyRef,
 	type Option,
 	PropertyType,
-	type View,
-	type TemplateProperty
+	type View
 } from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
@@ -23,7 +22,7 @@ export function getRefValue(refs: PropertyRef[], pid: string) {
 	return ref ? ref.value : '';
 }
 
-export function getPropertyColor(property: Property | TemplateProperty, value: string) {
+export function getPropertyColor(property: Property, value: string) {
 	if (!hasOptions(property.type)) return Color.GRAY;
 	const option = property.options.find((opt) => opt.id === value);
 	return option ? option.color : Color.GRAY;

@@ -31,7 +31,7 @@
 		<span> New view </span>
 	{/snippet}
 
-	<MenuTitle title="Property type" class="md:sr-only" divider={false} />
+	<MenuTitle title="View type" class="md:sr-only" divider={false} />
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-1">
 		{#each Object.values(ViewType) as viewType}
 			<Button theme="ghost" variant="menu" onclick={() => addView(viewType)}>

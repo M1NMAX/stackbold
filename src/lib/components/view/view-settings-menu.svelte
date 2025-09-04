@@ -24,7 +24,7 @@
 	} from '$lib/components/property/index.js';
 	import { getViewState } from './index.js';
 	import { useId } from '$lib/utils/index.js';
-	import { FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
+	import { FILTERABLE_PROPERTY_TYPES, VALUE_NONE } from '$lib/constant/index.js';
 
 	type Props = {
 		view: View;
@@ -55,7 +55,7 @@
 	async function updViewGroupBy(value: string) {
 		menuState.close();
 		content = 'entries';
-		await viewState.updView({ id: view.id, groupBy: value === 'none' ? null : value });
+		await viewState.updView({ id: view.id, groupBy: value === '' ? null : value });
 	}
 
 	$effect(() => {
@@ -104,7 +104,7 @@
 	{:else if content === 'groups'}
 		{@render header('Group By')}
 
-		<RadioGroup value={view.groupBy ?? 'none'} onchange={updViewGroupBy}>
+		<RadioGroup value={view.groupBy ?? ''} onchange={updViewGroupBy}>
 			{#each properties as property (property.id)}
 				{@const id = useId(`group-by-${property.id}`)}
 				<Label for={id} compact hoverEffect>
@@ -115,8 +115,8 @@
 			{/each}
 			<Label for="collection-group-by-none" compact hoverEffect>
 				<PropertyIcon key="none" />
-				<span class="grow">None</span>
-				<RadioGroupItem id="collection-group-by-none" value="none" />
+				<span class="grow">{VALUE_NONE}</span>
+				<RadioGroupItem id="collection-group-by-none" value="" />
 			</Label>
 		</RadioGroup>
 	{/if}

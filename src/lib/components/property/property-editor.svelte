@@ -340,8 +340,9 @@
 								icon: opt.extra ? opt.extra.toLowerCase() : '',
 								isSelected: opt.id === property.extTargetProperty
 							}))}
-							onselect={(opt) =>
-								updProperty({ id: property.id, extTargetProperty: opt.id || null })}
+							onselect={(opt) => {
+								updProperty({ id: property.id, extTargetProperty: opt.id || null });
+							}}
 							placeholder="Empty"
 							searchable
 						/>
