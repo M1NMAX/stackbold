@@ -40,13 +40,15 @@
 		<Label
 			for={`view-${view.id}`}
 			class={tm(
-				'flex items-center justify-center py-1.5 px-2 rounded-md text-secondary-foreground cursor-pointer',
+				'flex items-center justify-center py-1.5 px-2 rounded-md text-ellipsis text-secondary-foreground cursor-pointer',
 				+value === view.shortId && 'bg-secondary border border-secondary'
 			)}
 		>
 			<RadioGroupItem value={view.shortId.toString()} id={`view-${view.id}`} class="sr-only" />
 			<Icon />
-			<span class="grow font-semibold"> {view.name} </span>
+			<span class="grow max-w-28 font-semibold text-nowrap text-ellipsis overflow-hidden">
+				{view.name}
+			</span>
 		</Label>
 	{/each}
 </RadioGroup>
@@ -58,7 +60,9 @@
 >
 	{#snippet trigger()}
 		<CurrentIcon />
-		<span>{view.name} </span>
+		<span class="max-w-20 md:max-w-28 font-semibold text-nowrap text-ellipsis overflow-hidden">
+			{view.name}
+		</span>
 	{/snippet}
 
 	<MenuTitle title="Views" />
@@ -73,7 +77,7 @@
 			{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
 			<Label for={view.id} compact hoverEffect>
 				<Icon />
-				<span class="grow">{view.name} </span>
+				<span class="grow text-nowrap text-ellipsis overflow-hidden">{view.name} </span>
 				<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
 			</Label>
 		{/each}
