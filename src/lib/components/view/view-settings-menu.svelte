@@ -1,11 +1,14 @@
 <script lang="ts">
 	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
+	import Check from 'lucide-svelte/icons/check';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import Settings from 'lucide-svelte/icons/settings-2';
+	import Eraser from 'lucide-svelte/icons/eraser';
 	import ListCollapse from 'lucide-svelte/icons/list-collapse';
 	import ListFilter from 'lucide-svelte/icons/list-filter';
+	import Minus from 'lucide-svelte/icons/minus';
 	import MoveDown from 'lucide-svelte/icons/move-down';
 	import MoveUp from 'lucide-svelte/icons/move-up';
+	import Settings from 'lucide-svelte/icons/settings-2';
 	import ToggleRight from 'lucide-svelte/icons/toggle-right';
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
@@ -13,6 +16,7 @@
 		AdaptiveWrapper,
 		Button,
 		buttonVariants,
+		Checkbox,
 		HSeparator,
 		Label,
 		MenuTitle,
@@ -21,15 +25,21 @@
 		Switch,
 		Tooltip
 	} from '$lib/components/base/index.js';
-	import { PropertyType, SortType, type Sort, type View } from '@prisma/client';
+	import { PropertyType, SortType, type Filter, type Sort, type View } from '@prisma/client';
 	import {
+		getOption,
 		getPropertyState,
 		isPropertyVisible,
 		PropertyIcon
 	} from '$lib/components/property/index.js';
-	import { getViewState } from './index.js';
+	import { getViewState, isFilterSeletect, toggleFilter } from './index.js';
 	import { capitalizeFirstLetter, useId } from '$lib/utils/index.js';
-	import { FILTERABLE_PROPERTY_TYPES, NAME_FIELD, VALUE_NONE } from '$lib/constant/index.js';
+	import {
+		FILTERABLE_PROPERTY_TYPES,
+		NAME_FIELD,
+		PROPERTY_COLORS,
+		VALUE_NONE
+	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
 	import { getItemState } from '$lib/components/items/index.js';
 
@@ -37,18 +47,20 @@
 		view: View;
 	};
 
-	type ContentType = Nullable<'filter' | 'sort' | 'group' | 'visibility'>;
+	type ContentType = Nullable<'filter' | 'filter-property' | 'sort' | 'group' | 'visibility'>;
 
 	let { view }: Props = $props();
-	let content = $state<ContentType>(null);
 
 	const id = useId();
 	const menuState = new ModalState();
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
-
 	const properties = $derived.by(getFilterableProperties);
+
+	let content = $state<ContentType>(null);
+	// svelte-ignore state_referenced_locally
+	let filterSelectedProperty = $state(properties[0]);
 
 	function getFilterableProperties() {
 		return propertyState.properties.filter((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type));
@@ -61,6 +73,11 @@
 		await viewState.updView({ id: view.id, properties });
 	}
 
+	async function updViewFilters(filters: Filter[]) {
+		await viewState.updView({ id: view.id, filters });
+		await itemState.refresh(viewState.viewShortId);
+	}
+
 	async function updViewSorts(sorts: Sort[]) {
 		await viewState.updView({ id: view.id, sorts });
 		await itemState.refresh(viewState.viewShortId);
@@ -70,6 +87,30 @@
 		menuState.close();
 		content = null;
 		await viewState.updView({ id: view.id, groupBy: value === '' ? null : value });
+	}
+
+	function getFilterValue(id: string) {
+		const target = view.filters.find((f) => f.id == id);
+		if (!target) return undefined;
+		return target.values.length == 1 ? target.values[0] : undefined;
+	}
+
+	async function onClickFilterOption(id: string, value: string, type: PropertyType) {
+		await updViewFilters(toggleFilter(view.filters, { id, value, type }));
+	}
+
+	function hasFilterValues(id: string) {
+		const target = view.filters.find((filter) => filter.id === id);
+		if (!target) return false;
+		return target.values.length > 0;
+	}
+
+	async function clearFilter(id: string) {
+		await updViewFilters(view.filters.filter((filter) => filter.id !== id));
+	}
+
+	async function clearAllFilter() {
+		await updViewFilters([]);
 	}
 
 	async function addSort(sort: Sort) {
@@ -145,25 +186,68 @@
 				/>
 			</div>
 		{/each}
+	{:else if content === 'filter'}
+		{@render header('Filters')}
+		{@render activeFilters()}
+
+		{#each properties as property}
+			<Button
+				theme="ghost"
+				variant="menu"
+				onclick={() => {
+					filterSelectedProperty = property;
+					content = 'filter-property';
+				}}
+			>
+				<PropertyIcon key={property.type} />
+				{property.name}
+			</Button>
+		{/each}
+	{:else if content === 'filter-property'}
+		{@render header(`${filterSelectedProperty.name} is`, 'filter')}
+		{#if filterSelectedProperty.type === PropertyType.CHECKBOX}
+			{@const currValue = getFilterValue(filterSelectedProperty.id)}
+			{#key currValue}
+				<RadioGroup
+					value={currValue}
+					onchange={(value) => {
+						onClickFilterOption(filterSelectedProperty.id, value, filterSelectedProperty.type);
+					}}
+				>
+					{#each [true, false] as value}
+						{@const filterMenuCheckboxId = useId('filter-menu-checkbox')}
+						<Label for={filterMenuCheckboxId} compact hoverEffect>
+							{@render mockCheckbox(value)}
+							<span class="grow font-semibold"> {value ? 'Checked' : 'Unchecked'} </span>
+
+							<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()}></RadioGroupItem>
+						</Label>
+					{/each}
+				</RadioGroup>
+			{/key}
+		{:else}
+			{#each filterSelectedProperty.options as option}
+				<Checkbox
+					checked={isFilterSeletect(view.filters, {
+						id: filterSelectedProperty.id,
+						value: option.id
+					})}
+					onclick={() => {
+						onClickFilterOption(filterSelectedProperty.id, option.id, filterSelectedProperty.type);
+					}}
+				>
+					<span class={['size-3.5 rounded-sm', PROPERTY_COLORS[option.color]]}></span>
+
+					<span class="grow font-semibold">
+						{option.value}
+					</span>
+				</Checkbox>
+			{/each}
+		{/if}
+		{@render clearBtn(filterSelectedProperty.id)}
 	{:else if content === 'sort'}
 		{@render header('Sort by')}
-		{#if view.sorts.length > 0}
-			<p class="w-full text-xs font-semibold px-2 py-0.5">Active</p>
-			<div class="w-full space-y-0.5 px-0.5 pb-0.5">
-				{#each view.sorts as sort}
-					{#if sort.field === NAME_FIELD}
-						{@render activeSortRow(sort, capitalizeFirstLetter(NAME_FIELD), PropertyType.TEXT)}
-					{:else}
-						{@const property = getProperty(sort.field)}
-						{#if property}
-							{@render activeSortRow(sort, property.name, property.type)}
-						{/if}
-					{/if}
-				{/each}
-			</div>
-
-			<HSeparator />
-		{/if}
+		{@render activeSorts()}
 		{#if !isSort(NAME_FIELD)}
 			<Button
 				theme="ghost"
@@ -208,16 +292,113 @@
 	{/if}
 </AdaptiveWrapper>
 
-{#snippet header(title: string)}
+{#snippet header(title: string, backTo: ContentType = null)}
 	<div class="w-full flex items-center gap-x-0.5 px-1 pt-1">
-		<Button theme="ghost" variant="compact" onclick={() => (content = null)}>
+		<Button theme="ghost" variant="compact" onclick={() => (content = backTo)}>
 			<ChevronLeft />
 		</Button>
-		<span class="pl-0.5 pr-2.5 py-1 font-semibold text-sm">
+		<span class="grow pr-4 py-1 font-semibold text-sm text-center md:text-left">
 			{title}
 		</span>
 	</div>
 	<HSeparator />
+{/snippet}
+
+{#snippet activeFilters()}
+	{#if view.filters.length > 0}
+		<p class="w-full text-xs font-semibold px-2 py-0.5">Active filters</p>
+		<div class="w-full flex flex-wrap gap-1 px-2 pb-0.5">
+			{#each view.filters as filter}
+				{@const property = getProperty(filter.id)}
+				{#if property}
+					{#if property.type === PropertyType.CHECKBOX}
+						{@const value = filter.values[0]}
+						<Button
+							theme="secondary"
+							variant="compact"
+							class="font-semibold"
+							onclick={() => clearFilter(filter.id)}
+						>
+							{@render mockCheckbox(value === 'true')}
+							<span> {property.name} </span>
+							<X />
+						</Button>
+					{:else}
+						{#each filter.values as fv}
+							{@const option = getOption(property.options, fv)}
+							{#if option}
+								<Button
+									theme="secondary"
+									variant="compact"
+									class="font-semibold"
+									onclick={() => onClickFilterOption(filter.id, option.id, property.type)}
+								>
+									<span class={['size-3.5 rounded-sm', PROPERTY_COLORS[option.color]]}></span>
+									<span>
+										{option.value}
+									</span>
+									<X />
+								</Button>
+							{/if}
+						{/each}
+					{/if}
+				{/if}
+			{/each}
+
+			<Button
+				theme="secondary"
+				variant="compact"
+				class="font-semibold"
+				onclick={() => clearAllFilter()}
+			>
+				Clear all
+			</Button>
+		</div>
+
+		<HSeparator />
+	{/if}
+{/snippet}
+
+{#snippet activeSorts()}
+	{#if view.sorts.length > 0}
+		<p class="w-full text-xs font-semibold px-2 py-0.5">Active</p>
+		<div class="w-full space-y-0.5 px-0.5 pb-0.5">
+			{#each view.sorts as sort}
+				{#if sort.field === NAME_FIELD}
+					{@render activeSortRow(sort, capitalizeFirstLetter(NAME_FIELD), PropertyType.TEXT)}
+				{:else}
+					{@const property = getProperty(sort.field)}
+					{#if property}
+						{@render activeSortRow(sort, property.name, property.type)}
+					{/if}
+				{/if}
+			{/each}
+		</div>
+
+		<HSeparator />
+	{/if}
+{/snippet}
+
+{#snippet clearBtn(id: string)}
+	{#if hasFilterValues(id)}
+		<HSeparator />
+		<div class="w-full px-1 pb-1">
+			<Button theme="ghost" class="h-8 w-full justify-start" onclick={() => clearFilter(id)}>
+				<Eraser />
+				Clear
+			</Button>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet mockCheckbox(value: boolean)}
+	<span class="p-[1px] rounded-sm bg-primary">
+		{#if value}
+			<Check class="size-3" />
+		{:else}
+			<Minus class="size-3" />
+		{/if}
+	</span>
 {/snippet}
 
 {#snippet activeSortRow(sort: Sort, name: string, key: PropertyType)}

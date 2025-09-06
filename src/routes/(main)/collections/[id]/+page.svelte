@@ -30,7 +30,6 @@
 		COLLECTION_ICONS,
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
-		FILTERABLE_PROPERTY_TYPES,
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_ITEM_NAME_LENGTH,
 		PROPERTY_COLORS,
@@ -45,7 +44,6 @@
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
-		FilterMenu,
 		SearchInput,
 		ViewButtons,
 		ViewSettingsMenu,
@@ -94,7 +92,6 @@
 	}
 	const updCollectionDebounced = debounce(updCollection, DEBOUNCE_INTERVAL);
 
-	// collection input handlers
 	async function handleOnInputCollectionName(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 
@@ -118,7 +115,6 @@
 		updCollectionDebounced({ description });
 	}
 
-	// Item service functions
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
@@ -148,11 +144,6 @@
 		else isSmHeadingVisible = false;
 	}
 
-	function includesFilterableProperties() {
-		return propertyState.properties.some((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type));
-	}
-
-	// Sliding panel
 	async function onClickOpenSettings() {
 		if (panelState.isOpen) history.back();
 
@@ -220,11 +211,6 @@
 		await goto(`?${page.url.searchParams.toString()}`);
 		await itemState.refresh(+value);
 		viewState.viewShortId = +value;
-	}
-
-	async function updView(args: Omit<RouterInputs['views']['update'], 'id'>) {
-		await viewState.updView({ ...args, id: view.id });
-		await itemState.refresh(viewState.viewShortId);
 	}
 
 	$effect(() => {
@@ -323,10 +309,6 @@
 			/>
 
 			<SearchInput placeholder="Find Item" bind:value={search} />
-
-			{#if includesFilterableProperties()}
-				<FilterMenu filters={view.filters} updFilters={(filters) => updView({ filters })} />
-			{/if}
 
 			<ViewSettingsMenu {view} />
 		</div>
