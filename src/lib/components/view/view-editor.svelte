@@ -16,7 +16,7 @@
 	} from '$lib/components/base/index.js';
 	import { getViewState, ViewIcon } from './index.js';
 	import debounce from 'debounce';
-	import { DEBOUNCE_INTERVAL } from '$lib/constant/index.js';
+	import { DEBOUNCE_INTERVAL, MAX_VIEW_NAME_LENGTH } from '$lib/constant/index.js';
 	import type { UpdView } from '$lib/types.js';
 	import { slide } from 'svelte/transition';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
@@ -146,6 +146,7 @@
 					type="text"
 					class="w-full h-8 pl-7 text-sm rounded-md bg-transparent focus:bg-card placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
 					oninput={handleOnInput}
+					maxlength={MAX_VIEW_NAME_LENGTH}
 				/>
 			</div>
 			<Button

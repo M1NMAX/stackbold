@@ -1,15 +1,15 @@
 <script lang="ts">
 	import type { View } from '@prisma/client';
-	import { tm, useId } from '$lib/utils/index.js';
+	import { tm } from '$lib/utils/index.js';
 	import {
+		AdaptiveWrapper,
 		buttonVariants,
-		Drawer,
 		Label,
 		MenuTitle,
 		RadioGroup,
 		RadioGroupItem
 	} from '$lib/components/base/index.js';
-	import { VIEW_ICONS } from '$lib/constant/index.js';
+	import { MAX_VISIBLE_VIEWS_TAB, VIEW_ICONS } from '$lib/constant/index.js';
 	import { ModalState } from '$lib/states/index.js';
 
 	type Props = {
@@ -22,15 +22,17 @@
 	let { views, value, onchange, class: className }: Props = $props();
 	const view = $derived.by(() => views.find((v) => v.shortId.toString() === value)!);
 	const CurrentIcon = $derived(VIEW_ICONS[view.type.toLowerCase()]);
-
-	const id = useId('collection-views');
 	const menuState = new ModalState();
 </script>
 
 <RadioGroup
 	{value}
 	{onchange}
-	class={tm('hidden md:flex h-9 gap-0.5 rounded-md bg-secondary/50', className)}
+	class={tm(
+		'hidden h-9 gap-0.5 rounded-md bg-secondary/50',
+		views.length <= MAX_VISIBLE_VIEWS_TAB ? 'md:flex' : 'md:hidden',
+		className
+	)}
 >
 	{#each views as view}
 		{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
@@ -48,35 +50,32 @@
 		</Label>
 	{/each}
 </RadioGroup>
-
-<div class="block md:hidden">
-	<button
-		{id}
-		type="button"
-		onclick={() => menuState.toggle()}
-		class={buttonVariants({ theme: 'secondary' })}
-	>
+<AdaptiveWrapper
+	bind:open={menuState.isOpen}
+	triggerClass={buttonVariants({ theme: 'secondary' })}
+	class={tm('block', views.length <= MAX_VISIBLE_VIEWS_TAB ? 'md:hidden' : 'md:block')}
+	floatingAlign="start"
+>
+	{#snippet trigger()}
 		<CurrentIcon />
 		<span>{view.name} </span>
-	</button>
+	{/snippet}
 
-	<Drawer bind:open={menuState.isOpen}>
-		<MenuTitle title="Views" />
-		<RadioGroup
-			{value}
-			onchange={(v) => {
-				menuState.close();
-				onchange(v);
-			}}
-		>
-			{#each views as view}
-				{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
-				<Label for={view.id} compact hoverEffect>
-					<Icon />
-					<span class="grow">{view.name} </span>
-					<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
-				</Label>
-			{/each}
-		</RadioGroup>
-	</Drawer>
-</div>
+	<MenuTitle title="Views" />
+	<RadioGroup
+		{value}
+		onchange={(v) => {
+			menuState.close();
+			onchange(v);
+		}}
+	>
+		{#each views as view}
+			{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
+			<Label for={view.id} compact hoverEffect>
+				<Icon />
+				<span class="grow">{view.name} </span>
+				<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
+			</Label>
+		{/each}
+	</RadioGroup>
+</AdaptiveWrapper>

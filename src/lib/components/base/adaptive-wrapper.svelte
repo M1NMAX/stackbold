@@ -4,12 +4,14 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { useId } from '$lib/utils/index.js';
 	import type { Align } from '$lib/types';
+	import type { ClassValue } from 'svelte/elements';
 
 	type Props = {
 		id?: string;
 		open?: boolean;
 		trigger: Snippet;
 		children: Snippet;
+		class?: ClassValue;
 		triggerClass?: string;
 		floatingAlign?: Align;
 		floatingClass?: string;
@@ -21,6 +23,7 @@
 		open = $bindable(false),
 		trigger,
 		children,
+		class: className,
 		triggerClass,
 		floatingAlign,
 		floatingClass,
@@ -35,12 +38,12 @@
 	}
 </script>
 
-<div>
+<div class={className}>
 	<button
 		{id}
-		onclick={toggle}
 		type="button"
-		class={buttonVariants({ theme: 'ghost', className: triggerClass })}
+		onclick={toggle}
+		class={buttonVariants({ theme: 'ghost', class: triggerClass })}
 	>
 		{@render trigger()}
 	</button>
