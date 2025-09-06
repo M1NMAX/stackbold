@@ -49,7 +49,6 @@
 		SearchInput,
 		ViewButtons,
 		ViewSettingsMenu,
-		ViewSortMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
 
@@ -324,8 +323,6 @@
 			/>
 
 			<SearchInput placeholder="Find Item" bind:value={search} />
-
-			<ViewSortMenu sorts={view.sorts} updSorts={(sorts) => updView({ sorts })} />
 
 			{#if includesFilterableProperties()}
 				<FilterMenu filters={view.filters} updFilters={(filters) => updView({ filters })} />
