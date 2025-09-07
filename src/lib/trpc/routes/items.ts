@@ -1,6 +1,7 @@
 import {
 	DEFAULT_STRING_DELIMITER,
 	NAME_FIELD,
+	PROPERTIES_WITH_LISTABLE_OPTIONS,
 	PROPERTIES_WITHOUT_REF
 } from '$lib/constant/index.js';
 import { prisma } from '$lib/server/prisma';
@@ -9,6 +10,7 @@ import {
 	aggregatePropertyValue,
 	compareValues,
 	getPropertyDefaultValue,
+	getPropertyOption,
 	getPropertyRef,
 	hasRef,
 	isBidirectionalRelation,
@@ -91,6 +93,8 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 		where: { collectionId, shortId: viewShortId }
 	});
 
+	const sortIds = view.sorts.filter((s) => s.field !== NAME_FIELD).map((s) => s.field);
+
 	const [items, properties] = await Promise.all([
 		prisma.item.findMany({
 			where: {
@@ -112,12 +116,12 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 		prisma.property.findMany({
 			where: {
 				collectionId,
-				type: { in: PROPERTIES_WITHOUT_REF }
+				OR: [{ type: { in: PROPERTIES_WITHOUT_REF } }, { id: { in: sortIds } }]
 			}
 		})
 	]);
 
-	if (properties.length === 0) return sortItems(items, view.sorts);
+	if (properties.length === 0) return sortItems(items, view.sorts, properties);
 
 	const createdProperties = properties.filter((prop) => prop.type === PropertyType.CREATED);
 	const bundleProperties = properties.filter((prop) => isBundleValueInjectable(prop));
@@ -128,11 +132,11 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 		updItems = updItems.map((item) => injectCreatedRef(item, property.id));
 	}
 
-	if (bundleProperties.length === 0) return sortItems(updItems, view.sorts);
+	if (bundleProperties.length === 0) return sortItems(updItems, view.sorts, properties);
 
 	updItems = await injectBundleRefsItems(updItems, bundleProperties);
 
-	return sortItems(updItems, view.sorts);
+	return sortItems(updItems, view.sorts, properties);
 }
 
 async function injectBundleRefsItems(items: Item[], properties: Property[]) {
@@ -193,8 +197,10 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 	return Array.from(updates.values());
 }
 
-function sortItems(items: Item[], sorts: Sort[]) {
+function sortItems(items: Item[], sorts: Sort[], properties: Property[]) {
 	if (sorts.length === 0) return items;
+
+	const propertiesMap = new Map<string, Property>(properties.map((p) => [p.id, p]));
 
 	return items.sort((a, b) => {
 		for (const sort of sorts) {
@@ -206,6 +212,11 @@ function sortItems(items: Item[], sorts: Sort[]) {
 			} else {
 				aValue = getPropertyRef(a.properties, sort.field)?.value || '';
 				bValue = getPropertyRef(b.properties, sort.field)?.value || '';
+				const property = propertiesMap.get(sort.field);
+				if (property && PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)) {
+					aValue = getPropertyOption(property.options, aValue)?.value || '';
+					bValue = getPropertyOption(property.options, bValue)?.value || '';
+				}
 			}
 
 			const compare = compareValues(aValue, bValue);
@@ -497,5 +508,5 @@ function injectCreatedRef(item: Item, pid: string) {
 }
 
 function addRef(item: Item, ref: PropertyRef) {
-	return { ...item, properties: [...item.properties, { id: ref.id, value: ref.value }] };
+	return { ...item, properties: [...item.properties, { ...ref }] };
 }

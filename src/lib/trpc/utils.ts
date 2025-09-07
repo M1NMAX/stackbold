@@ -6,6 +6,7 @@ import {
 	Aggregator,
 	PropertyType,
 	type Item,
+	type Option,
 	type Property,
 	type PropertyRef
 } from '@prisma/client';
@@ -62,6 +63,9 @@ export function aggregatePropertyValue(items: Item[], aggregator: Aggregator, pi
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
+}
+export function getPropertyOption(options: Option[], id: string) {
+	return options.find((opt) => opt.id === id) || null;
 }
 
 export function getPropertyDefaultValue(property: Property) {
