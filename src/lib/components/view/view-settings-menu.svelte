@@ -202,6 +202,8 @@
 				<PropertyIcon key={property.type} />
 				{property.name}
 			</Button>
+		{:else}
+			{@render empty('Existing properties do not support filters')}
 		{/each}
 	{:else if content === 'filter-property'}
 		{@render header(`${filterSelectedProperty.name} is`, 'filter')}
@@ -274,21 +276,25 @@
 	{:else if content === 'group'}
 		{@render header('Group By')}
 
-		<RadioGroup value={view.groupBy ?? ''} onchange={updViewGroupBy}>
-			{#each properties as property (property.id)}
-				{@const id = useId(`group-by-${property.id}`)}
-				<Label for={id} compact hoverEffect>
-					<PropertyIcon key={property.type} />
-					<span class="grow"> {property.name} </span>
-					<RadioGroupItem {id} value={property.id} />
+		{#if properties.length > 0}
+			<RadioGroup value={view.groupBy ?? ''} onchange={updViewGroupBy}>
+				{#each properties as property (property.id)}
+					{@const id = useId(`group-by-${property.id}`)}
+					<Label for={id} compact hoverEffect>
+						<PropertyIcon key={property.type} />
+						<span class="grow"> {property.name} </span>
+						<RadioGroupItem {id} value={property.id} />
+					</Label>
+				{/each}
+				<Label for="collection-group-by-none" compact hoverEffect>
+					<PropertyIcon key="none" />
+					<span class="grow">{VALUE_NONE}</span>
+					<RadioGroupItem id="collection-group-by-none" value="" />
 				</Label>
-			{/each}
-			<Label for="collection-group-by-none" compact hoverEffect>
-				<PropertyIcon key="none" />
-				<span class="grow">{VALUE_NONE}</span>
-				<RadioGroupItem id="collection-group-by-none" value="" />
-			</Label>
-		</RadioGroup>
+			</RadioGroup>
+		{:else}
+			{@render empty('Existing properties do not support grouping')}
+		{/if}
 	{/if}
 </AdaptiveWrapper>
 
@@ -417,4 +423,9 @@
 			<X />
 		</Button>
 	</div>
+{/snippet}
+{#snippet empty(text: string)}
+	<span class="text-base text-center font-semibold px-3 py-1">
+		{text}
+	</span>
 {/snippet}

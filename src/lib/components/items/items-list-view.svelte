@@ -106,7 +106,7 @@
 </script>
 
 <div class="h-full space-y-2 grow">
-	{#each items as item}
+	{#each items as item (item.id)}
 		<div
 			tabindex="0"
 			role="button"
