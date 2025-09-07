@@ -16,6 +16,10 @@ export class ViewState {
 		this.viewShortId = viewShortId;
 	}
 
+	getViewByShortId(id: number) {
+		return this.views.find((view) => view.shortId === id);
+	}
+
 	#getView(id: string) {
 		return this.views.find((view) => view.id === id);
 	}

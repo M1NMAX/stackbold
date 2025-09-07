@@ -13,8 +13,8 @@ export class CollectionState {
 		this.collections = collections;
 	}
 
-	#getCollection(id: string) {
-		return this.collections.find((collection) => collection.id === id) || null;
+	getCollection(id: string) {
+		return this.collections.find((collection) => collection.id === id);
 	}
 
 	#updCollection(id: string, collection: CollectionWithViews) {
@@ -40,6 +40,7 @@ export class CollectionState {
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
 				isPinned: args.isPinned || false,
+				isTemplate: false,
 				groupByConfigs: [],
 				filterConfigs: [],
 				views: []
@@ -62,9 +63,9 @@ export class CollectionState {
 	}
 
 	async duplicateCollection(id: string) {
-		const target = this.#getCollection(id);
+		const target = this.getCollection(id);
 
-		if (target == null) {
+		if (!target) {
 			this.#toastState.error();
 			return;
 		}
@@ -87,8 +88,8 @@ export class CollectionState {
 
 	async updCollection(args: RouterInputs['collections']['update']) {
 		const { id, ...rest } = args;
-		let target = this.#getCollection(id);
-		if (target == null) {
+		let target = this.getCollection(id);
+		if (!target) {
 			this.#toastState.error();
 			return;
 		}
@@ -103,8 +104,8 @@ export class CollectionState {
 	}
 
 	async deleteCollection(id: string, redirect: boolean = false) {
-		let target = this.#getCollection(id);
-		if (target == null) {
+		let target = this.getCollection(id);
+		if (!target) {
 			this.#toastState.error();
 			return;
 		}

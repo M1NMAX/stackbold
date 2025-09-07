@@ -67,7 +67,7 @@ export class PropertyState {
 	async duplicateProperty(id: string) {
 		const target = this.getProperty(id);
 
-		if (target == null) {
+		if (!target) {
 			this.#toastState.error('Invalid property');
 			return;
 		}

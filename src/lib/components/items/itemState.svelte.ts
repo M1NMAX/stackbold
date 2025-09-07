@@ -8,8 +8,8 @@ import type { Nullable } from '$lib/types.js';
 export class ItemState {
 	#toastState = getToastState();
 	items = $state<Item[]>([]);
-	collectionId = $state('');
 	active = $state<Nullable<string>>(null);
+	collectionId = $state('');
 
 	constructor(items: Item[]) {
 		this.items = items;
@@ -52,7 +52,7 @@ export class ItemState {
 	async updItem(args: RouterInputs['items']['update']) {
 		const { id, ...rest } = args;
 		const target = this.getItem(id);
-		if (target == null) return;
+		if (!target) return;
 		try {
 			this.#updItem(id, { ...target, ...rest });
 			await trpc().items.update.mutate(args);
@@ -73,7 +73,7 @@ export class ItemState {
 
 	async deleteItem(id: string) {
 		const target = this.getItem(id);
-		if (target == null) return;
+		if (!target) return;
 
 		try {
 			this.#removeItem(id);
@@ -94,10 +94,6 @@ export class ItemState {
 		}
 
 		try {
-			const refs = target.properties.map((ref) =>
-				ref.id !== ref.id ? ref : { ...ref, value: ref.value }
-			);
-
 			const updatedItem = await trpc().items.updateRef.mutate({
 				id,
 				ref,

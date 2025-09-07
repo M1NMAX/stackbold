@@ -31,7 +31,6 @@
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		MAX_COLLECTION_NAME_LENGTH,
-		MAX_ITEM_NAME_LENGTH,
 		PROPERTY_COLORS,
 		SCREEN_MD_MEDIA_QUERY
 	} from '$lib/constant/index.js';
@@ -57,13 +56,9 @@
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
-	function getCurrentCollection() {
-		return collectionState.collections.find((collection) => collection.id == data.cid)!;
-	}
-
-	const collection = $derived(getCurrentCollection());
+	const collection = $derived(collectionState.getCollection(data.cid)!);
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
-	const view = $derived.by(() => viewState.views.find((v) => v.shortId === viewState.viewShortId)!);
+	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 
 	let search = $state('');
 
@@ -73,8 +68,6 @@
 	});
 
 	let itemName = $state('');
-
-	let itemNameError = $state<string | null>(null);
 	let renameCollectionError = $state<string | null>(null);
 
 	let isSmHeadingVisible = $state(false);
@@ -118,19 +111,7 @@
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
-		const parseResult = getNameSchema({
-			label: 'Item name',
-			max: MAX_ITEM_NAME_LENGTH
-		}).safeParse(itemName);
-
-		if (!parseResult.success) {
-			itemNameError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		itemNameError = null;
-
-		itemState.createItem({
+		await itemState.createItem({
 			name: itemName,
 			collectionId: collection.id
 		});

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type Item, type View, ViewType } from '@prisma/client';
-	import { ItemsListView, ItemsTableView } from '.';
+	import { ItemsListView, ItemsTableView } from './index.js';
 
 	type Props = {
 		view: View;
