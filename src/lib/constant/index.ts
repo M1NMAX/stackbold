@@ -48,6 +48,7 @@ export const MAX_PROPERTY_NUMERIC_LENGTH = 10;
 export const MAX_PROPERTY_TEXT_LENGTH = 255;
 export const MAX_PROPERTY_TEXT_OVERVIEW_LENGTH = 30;
 export const MIN_SEARCHABLE_PROPERTY_SELECT = 2;
+export const ITEMS_CHUNK_SIZE = 25;
 
 export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
 

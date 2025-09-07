@@ -1,14 +1,8 @@
 <script lang="ts">
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import { tm } from '$lib/utils/index.js';
-	import {
-		type Property,
-		type Item,
-		ViewType,
-		PropertyType,
-		Aggregator,
-		type View
-	} from '@prisma/client';
+	import { type Property, type Item, PropertyType, Aggregator, type View } from '@prisma/client';
 	import { getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
@@ -20,7 +14,11 @@
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import { Button } from '$lib/components/base/index.js';
-	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
+	import {
+		DEBOUNCE_INTERVAL,
+		ITEMS_CHUNK_SIZE,
+		MAX_ITEM_NAME_LENGTH
+	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
 
@@ -31,6 +29,8 @@
 	};
 
 	let { view, items, clickOpenItem }: Props = $props();
+	let multiplier = $state(1);
+	const renderLimit = $derived(ITEMS_CHUNK_SIZE * multiplier);
 
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
@@ -113,7 +113,7 @@
 				</tr>
 			{/if}
 			{#if items.length > 0}
-				{#each items as item (item.id)}
+				{#each items.slice(0, renderLimit) as item (item.id)}
 					<tr
 						class={tm(
 							'font-medium text-base whitespace-nowrap border-y border-secondary hover:bg-muted/40 group',
@@ -151,6 +151,16 @@
 						</td>
 					</tr>
 				{/each}
+				{#if items.length > renderLimit}
+					<tr>
+						<td colspan={propertyState.properties.length + 3}>
+							<Button theme="ghost" variant="menu" onclick={() => (multiplier += 1)}>
+								<ArrowDown />
+								Load more
+							</Button>
+						</td>
+					</tr>
+				{/if}
 				<tr>
 					<td></td>
 

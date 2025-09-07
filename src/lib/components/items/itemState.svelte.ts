@@ -28,7 +28,7 @@ export class ItemState {
 		return this.items.find((item) => item.id === id);
 	}
 
-	async createItem(args: RouterInputs['items']['create'], refresh: boolean = false) {
+	async createItem(args: RouterInputs['items']['create']) {
 		const tmpId = crypto.randomUUID();
 
 		try {

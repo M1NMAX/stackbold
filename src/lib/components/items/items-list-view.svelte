@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import Check from 'lucide-svelte/icons/check';
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import { ItemMenu, getItemState } from './index.js';
@@ -12,9 +13,13 @@
 		getPropertyState,
 		isPropertyVisible
 	} from '$lib/components/property';
-	import { type Item, type View, ViewType } from '@prisma/client';
+	import { type Item, type View } from '@prisma/client';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { DEBOUNCE_INTERVAL, MAX_ITEM_NAME_LENGTH } from '$lib/constant/index.js';
+	import {
+		DEBOUNCE_INTERVAL,
+		ITEMS_CHUNK_SIZE,
+		MAX_ITEM_NAME_LENGTH
+	} from '$lib/constant/index.js';
 	import debounce from 'debounce';
 	import { Button } from '$lib/components/base/index.js';
 
@@ -26,8 +31,10 @@
 
 	let { view, items, clickOpenItem }: Props = $props();
 
+	let multiplier = $state(1);
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const renderLimit = $derived(ITEMS_CHUNK_SIZE * multiplier);
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 	async function updItem(args: RouterInputs['items']['update']) {
@@ -106,7 +113,7 @@
 </script>
 
 <div class="h-full space-y-2 grow">
-	{#each items as item (item.id)}
+	{#each items.slice(0, renderLimit) as item (item.id)}
 		<div
 			tabindex="0"
 			role="button"
@@ -163,4 +170,11 @@
 			</div>
 		</div>
 	{/each}
+
+	{#if items.length > renderLimit}
+		<Button theme="ghost" variant="menu" class="justify-center" onclick={() => (multiplier += 1)}>
+			<ArrowDown />
+			Load more
+		</Button>
+	{/if}
 </div>

@@ -7,7 +7,7 @@ export function getCollectionView(collection: CollectionWithViews) {
 	const parsed = stored ? JSON.parse(stored) : null;
 
 	if (!parsed || !collection.views.some((v) => v.shortId === parsed)) {
-		const defaultShortId = collection.views[1].shortId;
+		const defaultShortId = collection.views[0].shortId;
 		localStorage.setItem(key, JSON.stringify(defaultShortId));
 		return defaultShortId;
 	}
