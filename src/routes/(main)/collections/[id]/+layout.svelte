@@ -24,6 +24,7 @@
 		propertyState.collectionId = data.cid;
 		itemState.items = data.items;
 		itemState.collectionId = data.cid;
+		itemState.viewShortId = data.viewShortId;
 		itemState.active = null;
 
 		panelState.close();

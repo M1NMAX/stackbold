@@ -192,6 +192,7 @@
 		await goto(`?${page.url.searchParams.toString()}`);
 		await itemState.refresh(+value);
 		viewState.viewShortId = +value;
+		itemState.viewShortId = +value;
 	}
 
 	$effect(() => {

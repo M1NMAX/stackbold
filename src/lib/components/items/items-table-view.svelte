@@ -13,10 +13,9 @@
 	import {
 		PropertyValue,
 		PropertyIcon,
-		// helpers
+		PropertyAggregatorMenu,
 		getPropertyRef,
 		getPropertyState,
-		PropertyAggregatorMenu,
 		isPropertyVisible
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
@@ -143,7 +142,7 @@
 						{#each propertyState.properties as property (property.id)}
 							{#if isPropertyVisible(view, property.id)}
 								<td class="border last:border-r-0 px-2">
-									<PropertyValue view={ViewType.TABLE} {property} {item} />
+									<PropertyValue {view} {property} {item} />
 								</td>
 							{/if}
 						{/each}

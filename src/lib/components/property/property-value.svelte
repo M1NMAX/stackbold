@@ -10,7 +10,7 @@
 		PROPERTIES_THAT_USE_SELECTOR,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { type Item, type Property, PropertyType, ViewType } from '@prisma/client';
+	import { type Item, type Property, PropertyType, type View, ViewType } from '@prisma/client';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
@@ -21,7 +21,7 @@
 		separateMultiselectOptions,
 		getRefValue
 	} from './index.js';
-	import { getItemState } from '$lib/components/items';
+	import { getItemState } from '$lib/components/items/index.js';
 	import debounce from 'debounce';
 	import { textareaAutoSize } from '$lib/actions/index.js';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
@@ -37,12 +37,12 @@
 	import { tick } from 'svelte';
 
 	type Props = {
-		item: Item;
+		view: View;
 		property: Property;
-		view?: ViewType;
+		item: Item;
 	};
 
-	let { item, property, view = ViewType.LIST }: Props = $props();
+	let { item, property, view }: Props = $props();
 
 	const itemState = getItemState();
 
@@ -54,14 +54,14 @@
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(value: string) {
 		if (shouldClose()) wrapperState.close();
-		await itemState.updPropertyRef(item.id, { id: property.id, value });
+		await itemState.updPropertyRef(item.id, { id: property.id, value }, shouldRefresh());
 	}
 
 	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
 		target.value = value;
 	}, DEBOUNCE_INTERVAL);
 
-	function handleOnInput(e: Event) {
+	async function handleOnInput(e: Event) {
 		// TODO: add validation
 		const targetEl = e.target as HTMLInputElement;
 
@@ -69,11 +69,15 @@
 		if (isPropertyNumerical(property)) {
 			value = sanitizeNumberInput(targetEl.value);
 			updTargetElValue(targetEl, value);
-		} else if (targetEl.type === 'checkbox') {
-			value = targetEl.checked.toString();
 		}
+		await updPropertyRefDebounced(value);
+	}
 
-		updPropertyRefDebounced(value);
+	async function handleCheckbox(e: Event) {
+		const targetEl = e.target as HTMLInputElement;
+		if (targetEl.type !== 'checkbox') return;
+
+		await updPropertyRef(targetEl.checked.toString());
 	}
 
 	async function handleEnterKeypress(e: KeyboardEvent) {
@@ -108,7 +112,7 @@
 	}
 
 	function isTableView() {
-		return view === ViewType.TABLE;
+		return view.type === ViewType.TABLE;
 	}
 
 	function useInputField(type: PropertyType) {
@@ -117,6 +121,14 @@
 
 	function useSelector(type: PropertyType) {
 		return PROPERTIES_THAT_USE_SELECTOR.includes(type);
+	}
+
+	function shouldRefresh() {
+		return (
+			view.groupBy === property.id ||
+			view.sorts.some((s) => s.field === property.id) ||
+			view.filters.some((f) => f.id === property.id)
+		);
 	}
 
 	$effect(() => {
@@ -136,7 +148,7 @@
 			!isTableView() && PROPERTY_COLORS[color]
 		)}
 	>
-		<input type="checkbox" checked={value === 'true'} oninput={handleOnInput} class="checkbox" />
+		<input type="checkbox" checked={value === 'true'} onchange={handleCheckbox} class="checkbox" />
 
 		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>

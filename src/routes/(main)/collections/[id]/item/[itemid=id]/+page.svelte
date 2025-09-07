@@ -12,7 +12,8 @@
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
-		MAX_ITEM_NAME_LENGTH
+		MAX_ITEM_NAME_LENGTH,
+		NAME_FIELD
 	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import debounce from 'debounce';
@@ -20,14 +21,16 @@
 	import { textareaAutoSize } from '$lib/actions/index.js';
 	import { tm, useId } from '$lib/utils/index.js';
 	import type { PropertyRef } from '@prisma/client';
+	import { getViewState } from '$lib/components/view/index.js';
 
 	let { data } = $props();
 
+	let isSmHeadingVisible = $state(false);
+	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
-	let item = $derived(getCurrentItem());
-
-	let isSmHeadingVisible = $state(false);
+	const item = $derived(itemState.getItem(data.id)!);
+	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
@@ -38,9 +41,7 @@
 		if (forceRename) forceItemRename();
 		history.back();
 		itemState.active = null;
-		if (data.insidePanel) {
-			panelState.close();
-		}
+		if (data.insidePanel) panelState.close();
 	}
 
 	function handleScroll(e: Event) {
@@ -51,7 +52,7 @@
 	}
 
 	async function updItem(args: Omit<RouterInputs['items']['update'], 'id'>) {
-		await itemState.updItem({ id: item.id, ...args });
+		await itemState.updItem({ id: item.id, ...args }, shouldRefresh(NAME_FIELD));
 	}
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
@@ -61,14 +62,14 @@
 		updItemDebounced({ name: targetEl.value });
 	}
 
-	function forceItemRename() {
+	async function forceItemRename() {
 		if (item.name.trim() !== '') return;
-		updItem({ name: 'Untitled' });
+		await updItem({ name: 'Untitled' });
 	}
 
-	function duplicateItem() {
+	async function duplicateItem() {
 		if (menuState.isOpen) menuState.close();
-		itemState.duplicateItem(item.id);
+		await itemState.duplicateItem(item.id, data.insidePanel);
 	}
 
 	function deleteItem() {
@@ -84,11 +85,17 @@
 		});
 	}
 	async function updPropertyRef(ref: PropertyRef) {
-		await itemState.updPropertyRef(item.id, ref);
+		await itemState.updPropertyRef(item.id, ref, shouldRefresh(ref.id));
 	}
 
-	function getCurrentItem() {
-		return itemState.items.find((item) => item.id === data.id)!;
+	function shouldRefresh(field: string) {
+		if (!data.insidePanel) return false;
+
+		return (
+			view.groupBy === field ||
+			view.sorts.some((s) => s.field === field) ||
+			view.filters.some((f) => f.id === field)
+		);
 	}
 
 	$effect(() => {

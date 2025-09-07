@@ -1,5 +1,5 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import type { Item } from '@prisma/client';
+import type { Item, PropertyRef } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states/index.js';
@@ -10,6 +10,7 @@ export class ItemState {
 	items = $state<Item[]>([]);
 	active = $state<Nullable<string>>(null);
 	collectionId = $state('');
+	viewShortId = $state(0);
 
 	constructor(items: Item[]) {
 		this.items = items;
@@ -27,7 +28,7 @@ export class ItemState {
 		return this.items.find((item) => item.id === id);
 	}
 
-	async createItem(args: RouterInputs['items']['create']) {
+	async createItem(args: RouterInputs['items']['create'], refresh: boolean = false) {
 		const tmpId = crypto.randomUUID();
 
 		try {
@@ -42,6 +43,7 @@ export class ItemState {
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
 			this.#updItem(tmpId, createdItem);
+			await this.refresh(this.viewShortId);
 			return createdItem.id;
 		} catch (err) {
 			this.#toastState.error();
@@ -49,23 +51,25 @@ export class ItemState {
 		}
 	}
 
-	async updItem(args: RouterInputs['items']['update']) {
+	async updItem(args: RouterInputs['items']['update'], refresh: boolean = false) {
 		const { id, ...rest } = args;
 		const target = this.getItem(id);
 		if (!target) return;
 		try {
 			this.#updItem(id, { ...target, ...rest });
 			await trpc().items.update.mutate(args);
+			if (refresh) await this.refresh(this.viewShortId);
 		} catch (err) {
 			this.#toastState.error();
 			this.#updItem(id, target);
 		}
 	}
 
-	async duplicateItem(id: string) {
+	async duplicateItem(id: string, refresh: boolean = false) {
 		try {
 			const createdItem = await trpc().items.duplicate.mutate(id);
 			this.items.push({ ...createdItem });
+			if (refresh) await this.refresh(this.viewShortId);
 		} catch (err) {
 			this.#toastState.error();
 		}
@@ -86,7 +90,7 @@ export class ItemState {
 		}
 	}
 
-	async updPropertyRef(id: string, ref: { id: string; value: string }) {
+	async updPropertyRef(id: string, ref: PropertyRef, refresh: boolean = false) {
 		const target = this.getItem(id);
 		if (!target) {
 			this.#toastState.error('Invalid property');
@@ -101,6 +105,8 @@ export class ItemState {
 			});
 
 			this.#updItem(id, { ...updatedItem });
+
+			if (refresh) await this.refresh(this.viewShortId);
 		} catch (err) {
 			this.#toastState.error();
 			this.#updItem(target.id, target);

@@ -156,7 +156,7 @@
 					{#if isPropertyVisible(view, property.id)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}
 						{#if propertyRef}
-							<PropertyValue {item} {property} view={ViewType.LIST} />
+							<PropertyValue {item} {property} {view} />
 						{/if}
 					{/if}
 				{/each}
