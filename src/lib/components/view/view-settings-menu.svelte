@@ -157,7 +157,7 @@
 
 		<Button theme="ghost" variant="menu" onclick={() => (content = 'visibility')}>
 			<ToggleRight />
-			<span> Property Visibility </span>
+			<span> Property visibility </span>
 		</Button>
 
 		<Button theme="ghost" variant="menu" onclick={() => (content = 'filter')}>

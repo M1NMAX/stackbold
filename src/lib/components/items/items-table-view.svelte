@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
+	import ToggleRight from 'lucide-svelte/icons/toggle-right';
 	import { tm } from '$lib/utils/index.js';
 	import { type Property, type Item, PropertyType, Aggregator, type View } from '@prisma/client';
 	import { getItemState, ItemMenu } from './index.js';
@@ -13,7 +14,14 @@
 		isPropertyVisible
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
-	import { Button } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Button,
+		buttonVariants,
+		Label,
+		MenuTitle,
+		Switch
+	} from '$lib/components/base/index.js';
 	import {
 		DEBOUNCE_INTERVAL,
 		ITEMS_CHUNK_SIZE,
@@ -21,6 +29,7 @@
 	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
+	import { getViewState } from '$lib/components/view/index.js';
 
 	type Props = {
 		view: View;
@@ -31,13 +40,20 @@
 	let { view, items, clickOpenItem }: Props = $props();
 	let multiplier = $state(1);
 	const renderLimit = $derived(ITEMS_CHUNK_SIZE * multiplier);
-
+	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 	async function updItem(args: RouterInputs['items']['update']) {
 		itemState.updItem(args);
+	}
+
+	async function togglePropertyVisibility(pid: string) {
+		const properties = view.properties.map((p) =>
+			p.id !== pid ? p : { ...p, isVisible: !p.isVisible }
+		);
+		await viewState.updView({ id: view.id, properties });
 	}
 
 	//TODO: validate value
@@ -101,7 +117,9 @@
 					{/if}
 				{/each}
 
-				<th scope="col" class="text-left w-8" title="Row actions"> </th>
+				<th scope="col" class="text-left w-8">
+					{@render visibilityMenu()}
+				</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -186,3 +204,24 @@
 		</tbody>
 	</table>
 </div>
+
+{#snippet visibilityMenu()}
+	<AdaptiveWrapper triggerClass={buttonVariants({ theme: 'ghost' })} floatingAlign="start">
+		{#snippet trigger()}
+			<ToggleRight />
+		{/snippet}
+
+		<MenuTitle title="Property visibility" />
+
+		{#each propertyState.properties as property (property.id)}
+			<div class="flex justify-between items-center pr-1">
+				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+				<Switch
+					id={property.id}
+					checked={isPropertyVisible(view, property.id)}
+					onchange={() => togglePropertyVisibility(property.id)}
+				/>
+			</div>
+		{/each}
+	</AdaptiveWrapper>
+{/snippet}
