@@ -43,6 +43,7 @@
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const properties = $derived(getVisibleProperties());
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 	async function updItem(args: RouterInputs['items']['update']) {
@@ -91,6 +92,10 @@
 		}
 		return '';
 	}
+
+	function getVisibleProperties() {
+		return propertyState.properties.filter((property) => isPropertyVisible(view, property.id));
+	}
 </script>
 
 <div class="overflow-x-auto pb-1.5">
@@ -103,18 +108,16 @@
 						Name
 					</span>
 				</th>
-				{#each propertyState.properties as property (property.id)}
-					{#if isPropertyVisible(view, property.id)}
-						<th
-							scope="col"
-							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
-						>
-							<span class="flex items-center">
-								<PropertyIcon key={property.type} class="size-4 mr-2" />
-								{property.name}
-							</span>
-						</th>
-					{/if}
+				{#each properties as property (property.id)}
+					<th
+						scope="col"
+						class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
+					>
+						<span class="flex items-center">
+							<PropertyIcon key={property.type} class="size-4 mr-2" />
+							{property.name}
+						</span>
+					</th>
 				{/each}
 
 				<th scope="col" class="text-left w-8">
@@ -157,12 +160,10 @@
 							</Button>
 						</td>
 
-						{#each propertyState.properties as property (property.id)}
-							{#if isPropertyVisible(view, property.id)}
-								<td class="border last:border-r-0 px-2">
-									<PropertyValue {view} {property} {item} />
-								</td>
-							{/if}
+						{#each properties as property (property.id)}
+							<td class="border last:border-r-0 px-2">
+								<PropertyValue {view} {property} {item} />
+							</td>
 						{/each}
 						<td class="pl-1">
 							<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="start" />
@@ -171,7 +172,7 @@
 				{/each}
 				{#if items.length > renderLimit}
 					<tr>
-						<td colspan={propertyState.properties.length + 3}>
+						<td colspan={properties.length + 3}>
 							<Button theme="ghost" variant="menu" onclick={() => (multiplier += 1)}>
 								<ArrowDown />
 								Load more
@@ -182,20 +183,18 @@
 				<tr>
 					<td></td>
 
-					{#each propertyState.properties as property (property.id)}
-						{#if isPropertyVisible(view, property.id)}
-							<td>
-								<div class="flex w-full justify-end group">
-									<PropertyAggregatorMenu
-										{property}
-										calculated={aggregatePropertyValue(property).toString()}
-										onchange={(aggregator) => {
-											propertyState.updProperty({ id: property.id, aggregator });
-										}}
-									/>
-								</div>
-							</td>
-						{/if}
+					{#each properties as property (property.id)}
+						<td>
+							<div class="flex w-full justify-end group">
+								<PropertyAggregatorMenu
+									{property}
+									calculated={aggregatePropertyValue(property).toString()}
+									onchange={(aggregator) => {
+										propertyState.updProperty({ id: property.id, aggregator });
+									}}
+								/>
+							</div>
+						</td>
 					{/each}
 
 					<td></td>

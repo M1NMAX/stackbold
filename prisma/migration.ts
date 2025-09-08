@@ -31,6 +31,9 @@ async function migrate() {
 		});
 		console.log(`Collection ${collection.name} views created`);
 	}
+
+	console.log('Add template flag');
+	await prisma.collection.updateMany({ data: { isTemplate: false } });
 }
 
 function getGroupByConfig(view: ViewType, collection: Collection) {
