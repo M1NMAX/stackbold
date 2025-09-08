@@ -28,7 +28,10 @@ export const collections = createTRPCRouter({
 		});
 	}),
 	load: protectedProcedure.input(z.string()).query(async ({ input }) => {
-		return await prisma.collection.findUnique({ where: { id: input } });
+		return await prisma.collection.findUnique({
+			where: { id: input },
+			include: { views: { orderBy: [{ order: 'asc' }, { shortId: 'asc' }] } }
+		});
 	}),
 
 	create: protectedProcedure

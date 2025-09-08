@@ -13,7 +13,7 @@ export const load: LayoutServerLoad = async (event) => {
 	const collection = await caller.collections.load(cid);
 	if (!collection) error(404, 'Not found');
 
-	const views = await caller.views.list(cid);
+	const views = collection.views;
 	if (!viewShortId || !views.some((v) => v.shortId === viewShortId)) viewShortId = views[0].shortId;
 
 	const [properties, items] = await Promise.all([
