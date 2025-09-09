@@ -1,4 +1,4 @@
-import { Color, ViewType, type Property, type PropertyType } from '@prisma/client';
+import { Color, type Property, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter } from '$lib/utils';
 import { getContext, setContext } from 'svelte';
@@ -40,7 +40,6 @@ export class PropertyState {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				defaultValue: '',
-				visibleInViews: [ViewType.LIST, ViewType.TABLE],
 				aggregator: null,
 				options: [],
 				order,

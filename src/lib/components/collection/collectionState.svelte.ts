@@ -41,8 +41,6 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || false,
 				isTemplate: false,
-				groupByConfigs: [],
-				filterConfigs: [],
 				views: []
 			});
 

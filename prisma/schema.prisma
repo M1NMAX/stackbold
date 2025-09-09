@@ -65,16 +65,6 @@ type Sort {
   order SortType @default(ASC)
 }
 
-type FilterConfig {
-  view    ViewType
-  filters Filter[]
-}
-
-type GroupByConfig {
-  view       ViewType
-  propertyId String   @default("")
-}
-
 type ViewProperty {
   id        String  @db.ObjectId
   isVisible Boolean @default(true)
@@ -144,24 +134,22 @@ model Group {
 }
 
 model Collection {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  icon           String          @default("folder")
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  isPinned       Boolean         @default(true)
-  description    String          @default("")
-  isDescHidden   Boolean         @default(true)
-  isTemplate     Boolean         @default(false)
-  views          View[]
-  properties     Property[]
-  items          Item[]
-  owner          User?           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId        String?         @db.ObjectId
-  group          Group?          @relation(fields: [groupId], references: [id])
-  groupId        String?         @db.ObjectId
-  filterConfigs  FilterConfig[]
-  groupByConfigs GroupByConfig[]
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  icon         String     @default("folder")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  isPinned     Boolean    @default(true)
+  description  String     @default("")
+  isDescHidden Boolean    @default(true)
+  isTemplate   Boolean    @default(false)
+  views        View[]
+  properties   Property[]
+  items        Item[]
+  owner        User?      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId      String?    @db.ObjectId
+  group        Group?     @relation(fields: [groupId], references: [id])
+  groupId      String?    @db.ObjectId
 }
 
 model View {
@@ -191,9 +179,8 @@ model Property {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   type              PropertyType @default(TEXT)
-  options           Option[]
-  visibleInViews    ViewType[]   @default([LIST, TABLE])
   order             Int          @default(0)
+  options           Option[]
   aggregator        Aggregator?
   defaultValue      String?
   targetCollection  String? // RELATION AND BUNDLE only
@@ -213,6 +200,4 @@ model Item {
   collection   Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   collectionId String        @db.ObjectId
   properties   PropertyRef[]
-
-  @@index([properties.id], name: "propertyref_id_index")
 }
