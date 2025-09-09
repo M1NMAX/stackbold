@@ -1,4 +1,4 @@
-import type { Color } from '@prisma/client';
+import type { Collection, Color, View } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
 import type {
 	BlurParams,
@@ -8,6 +8,8 @@ import type {
 	SlideParams,
 	TransitionConfig
 } from 'svelte/transition';
+
+export type Nullable<T> = T | null;
 
 export type Toast =
 	| { id: string; type: 'action'; message: string; action: { label: string; onclick: () => void } }
@@ -24,7 +26,7 @@ export type DeleteDetail =
 	| { type: null }
 	| { type: 'option'; id: string; option: string; name: string; fun: () => void }
 	| {
-			type: 'user' | 'group' | 'collection' | 'item' | 'property' | 'option';
+			type: 'user' | 'group' | 'collection' | 'view' | 'item' | 'property' | 'option';
 			id: string;
 			name: string;
 			fun: () => Promise<void>;
@@ -34,9 +36,10 @@ export type MoveCollectionDetail = {
 	collectionId: string;
 	currentGroupId: string | null;
 };
-export type UpdOption = RouterInputs['properties']['updateOption']['option'];
 
+export type UpdView = RouterInputs['views']['update'];
 export type UpdProperty = RouterInputs['properties']['update'];
+export type UpdOption = RouterInputs['properties']['updateOption']['option'];
 
 export type Filter = { id: string; values: string[] };
 
@@ -71,4 +74,8 @@ export type SelectOption = {
 	isSelected: boolean;
 	icon?: string;
 	theme?: string;
+};
+
+export type CollectionWithViews = Collection & {
+	views: { shortId: number }[];
 };

@@ -1,11 +1,12 @@
 <script lang="ts">
-	import type { Collection } from '@prisma/client';
 	import dayjs from '$lib/utils/dayjs';
 	import FileClock from 'lucide-svelte/icons/file-clock';
-	import { COLLECTION_ICONS } from '$lib/constant';
+	import { COLLECTION_ICONS } from '$lib/constant/index.js';
+	import { getCollectionView } from './index.js';
+	import type { CollectionWithViews } from '$lib/types';
 
 	type Props = {
-		collection: Collection;
+		collection: CollectionWithViews;
 	};
 
 	let { collection }: Props = $props();
@@ -14,7 +15,7 @@
 </script>
 
 <a
-	href="/collections/{collection.id}"
+	href="/collections/{collection.id}?view={getCollectionView(collection)}"
 	data-testid="collection-overview"
 	class="flex flex-col items-start p-1.5 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60"
 >

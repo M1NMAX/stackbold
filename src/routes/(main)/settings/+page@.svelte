@@ -76,7 +76,10 @@
 					<TabTrigger value="account">Account</TabTrigger>
 					<TabTrigger value="appearance">Appearance</TabTrigger>
 				{/snippet}
-				<TabContent value="account">
+				<TabContent
+					value="account"
+					class="p-4 rounded-md border bg-background ring-offset-background"
+				>
 					<h2 class="text-lg font-semibold">Account</h2>
 
 					<p>Manage your account settings</p>
@@ -137,7 +140,10 @@
 						</Button>
 					</div>
 				</TabContent>
-				<TabContent value="appearance">
+				<TabContent
+					value="appearance"
+					class="p-4 rounded-md border bg-background ring-offset-background"
+				>
 					<h2 class="text-lg font-semibold">Appearance</h2>
 					<p>Customize your app appearance</p>
 

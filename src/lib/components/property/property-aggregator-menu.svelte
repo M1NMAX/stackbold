@@ -11,19 +11,26 @@
 	import {
 		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
 		PROPERTY_AGGREGATOR_LABELS,
-		PROPERTY_UNIVERSAL_AGGREGATORS
+		PROPERTY_UNIVERSAL_AGGREGATORS,
+		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import type { Aggregator, Property } from '@prisma/client';
-	import { isPropertyNumerical } from './helper';
+	import { isPropertyNumerical } from './index.js';
+	import type { Nullable } from '$lib/types.js';
 
 	type Props = {
 		property: Property;
 		calculated: string;
-		onchange: (aggregator: Aggregator) => void;
+		onchange: (aggregator: Nullable<Aggregator>) => void;
 	};
 
 	let { property, calculated, onchange }: Props = $props();
 	const menuState = new ModalState();
+
+	function handleChange(v: string) {
+		onchange(v ? (v as Aggregator) : null);
+		menuState.close();
+	}
 </script>
 
 <AdaptiveWrapper
@@ -32,11 +39,11 @@
 	triggerClass={buttonVariants({
 		theme: 'ghost',
 		variant: 'compact',
-		className: tm(!calculated && 'invisible group-hover:visible')
+		className: tm(!calculated && 'visible md:invisible md:group-hover:visible')
 	})}
 >
 	{#snippet trigger()}
-		{#if !calculated}
+		{#if !calculated || !property.aggregator}
 			<span class="text-sm font-extralight"> Calculate </span>
 		{:else}
 			<span class="text-sm font-extralight">
@@ -48,13 +55,11 @@
 		{/if}
 	{/snippet}
 
-	<RadioGroup
-		value={property.aggregator}
-		onchange={(value) => {
-			onchange(value as Aggregator);
-			menuState.close();
-		}}
-	>
+	<RadioGroup value={property.aggregator ?? ''} onchange={handleChange}>
+		<Label for="property-aggregator-menu-none" compact hoverEffect>
+			<span class="grow"> {VALUE_NONE}</span>
+			<RadioGroupItem id="property-aggregator-menu-none" value=""></RadioGroupItem>
+		</Label>
 		{#each PROPERTY_UNIVERSAL_AGGREGATORS as aggregator}
 			{@const aggregatorId = useId('property-aggregator-menu')}
 			<Label for={aggregatorId} compact hoverEffect>
@@ -66,7 +71,6 @@
 		{#if isPropertyNumerical(property)}
 			{#each NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS as aggregator}
 				{@const aggregatorId = useId('property-aggregator-menu')}
-
 				<Label for={aggregatorId} compact hoverEffect>
 					<span class="grow"> {PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()]} </span>
 					<RadioGroupItem id={aggregatorId} value={aggregator.toString()}></RadioGroupItem>

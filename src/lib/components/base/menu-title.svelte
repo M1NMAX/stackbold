@@ -11,7 +11,12 @@
 	let { title, class: className, divider = true }: Props = $props();
 </script>
 
-<h1 class={tm('py-0.5 px-2 font-bold md:font-semibold text-foreground ', className)}>
+<h1
+	class={tm(
+		'text-center md:text-left py-0.5 px-2 font-bold md:font-semibold text-foreground',
+		className
+	)}
+>
 	{title}
 </h1>
 

@@ -83,10 +83,10 @@
 	<Button theme="ghost" variant="menu" onclick={() => toggleDescState()}>
 		{#if collection.isDescHidden}
 			<Eye />
-			<span> Show collection description </span>
+			<span> Show description </span>
 		{:else}
 			<EyeOff />
-			<span> Hide collection description </span>
+			<span> Hide description </span>
 		{/if}
 	</Button>
 

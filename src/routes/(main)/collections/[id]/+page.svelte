@@ -1,21 +1,16 @@
 <script lang="ts">
+	import Bolt from 'lucide-svelte/icons/bolt';
 	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Plus from 'lucide-svelte/icons/plus';
-	import Settings2 from 'lucide-svelte/icons/settings-2';
 	import Square from 'lucide-svelte/icons/square';
-	import { Color, PropertyType, View, type Property } from '@prisma/client';
-	import {
-		Items,
-		getActiveItemState,
-		groupItemsByPropertyValue,
-		setItemState
-	} from '$lib/components/items/index.js';
-	import { getOption, getPropertyColor, getPropertyRef } from '$lib/components/property/index.js';
+	import { Color, PropertyType, type Property } from '@prisma/client';
+	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/items/index.js';
+	import { getOption, getPropertyColor, getPropertyState } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck, sortFun, type SortOption } from '$lib/utils/index.js';
+	import { tm, noCheck } from '$lib/utils/index.js';
 	import {
 		Accordion,
 		AccordionItem,
@@ -35,113 +30,61 @@
 		COLLECTION_ICONS,
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
-		DEFAULT_SORT_OPTIONS,
-		DEFAULT_STRING_DELIMITER,
-		FILTERABLE_PROPERTY_TYPES,
 		MAX_COLLECTION_NAME_LENGTH,
-		MAX_ITEM_NAME_LENGTH,
 		PROPERTY_COLORS,
 		SCREEN_MD_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
-	import { setPropertyState } from '$lib/components/property';
 	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
-	import PropertiesPage from './properties/+page.svelte';
+	import SettingsPage from './settings/+page.svelte';
 	import { getContext, tick } from 'svelte';
 	import { escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
-	import {
-		FilterMenu,
-		GroupByMenu,
-		SearchInput,
-		SortMenu,
-		ViewButtons,
-		getFilters
-	} from '$lib/components/filters/index.js';
-	import type { Filter } from '$lib/types';
 	import { MediaQuery } from 'svelte/reactivity';
+	import {
+		SearchInput,
+		ViewButtons,
+		ViewSettingsMenu,
+		getViewState
+	} from '$lib/components/view/index.js';
 
 	let { data } = $props();
 
 	const collectionState = getCollectionState();
+	const viewState = getViewState();
+	const propertyState = getPropertyState();
+	const itemState = getItemState();
 
-	let collection = $derived(getCurrentCollection());
-
-	const itemState = setItemState(data.items);
-	const propertyState = setPropertyState(data.properties);
-
-	function getCurrentCollection() {
-		return collectionState.collections.find((collection) => collection.id == data.cid)!;
-	}
-
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
-
+	const collection = $derived(collectionState.getCollection(data.cid)!);
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
-
-	let view = $state<View>(View.LIST);
-
-	let sort = $state(sortOptions[0]);
+	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 
 	let search = $state('');
 
-	let filteredItems = $derived.by(() => {
+	let items = $derived.by(() => {
 		const searchTerm = search.toLowerCase() || '';
-
-		const filters = getFilters(collection.filterConfigs, view);
-
-		return [...itemState.items]
-			.filter((item) => item.name.toLowerCase().includes(searchTerm))
-			.filter((item) => {
-				if (!filters) return true;
-				if (filters.length === 0) return true;
-
-				for (const filter of filters) {
-					const ref = getPropertyRef(item.properties, filter.id);
-					if (!ref) return false;
-
-					const values = ref.value.split(DEFAULT_STRING_DELIMITER).filter(Boolean);
-					if (!values.some((v) => filter.values.includes(v))) return false;
-				}
-				return true;
-			})
-			.sort(sortFun(sort.field, sort.order));
-	});
-
-	$effect(() => {
-		data.cid;
-		search = '';
-		itemState.items = data.items;
-		propertyState.properties = data.properties;
-		propertyState.collectionId = data.cid;
-	});
-
-	let groupedItems = $derived.by(() => {
-		return filteredItems.reduce(groupItemsByPropertyValue(findGroupByConfig(view) || ''), {});
+		return [...itemState.items].filter((item) => item.name.toLowerCase().includes(searchTerm));
 	});
 
 	let itemName = $state('');
-
-	let itemNameError = $state<string | null>(null);
 	let renameCollectionError = $state<string | null>(null);
 
 	let isSmHeadingVisible = $state(false);
 	let isNewItemInputVisible = $state(false);
 
-	type PanelContentType = 'view-item' | 'view-properties' | null;
+	type PanelContentType = 'item' | 'settings' | null;
 
 	let panelContentType = $state<PanelContentType>(null);
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
 	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
-	const activeItemState = getActiveItemState();
 
 	async function updCollection(args: Omit<RouterInputs['collections']['update'], 'id'>) {
 		await collectionState.updCollection({ ...args, id: collection.id });
 	}
 	const updCollectionDebounced = debounce(updCollection, DEBOUNCE_INTERVAL);
 
-	// collection input handlers
 	async function handleOnInputCollectionName(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 
@@ -165,28 +108,97 @@
 		updCollectionDebounced({ description });
 	}
 
-	// Item service functions
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
-		const parseResult = getNameSchema({
-			label: 'Item name',
-			max: MAX_ITEM_NAME_LENGTH
-		}).safeParse(itemName);
-
-		if (!parseResult.success) {
-			itemNameError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		itemNameError = null;
-
-		itemState.createItem({
+		await itemState.createItem({
 			name: itemName,
 			collectionId: collection.id
 		});
 		itemName = '';
 	}
+
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
+
+	async function onClickOpenSettings() {
+		if (panelState.isOpen) history.back();
+
+		const url = `/collections/${collection.id}/settings`;
+		if (!isLargeScreen.current) {
+			goto(url);
+			return;
+		}
+
+		const result = await preloadData(url);
+		if (result.type === 'loaded' && result.status === 200) {
+			pushState(url, { insidePanel: true });
+			panelContentType = 'settings';
+			if (!panelState.isOpen) panelState.open();
+		} else {
+			goto(url);
+		}
+	}
+
+	async function clickItem(id: string) {
+		if (panelState.isOpen) history.back();
+		itemState.active = id;
+		const url = `/collections/${collection.id}/item/${id}`;
+		if (!isLargeScreen.current) {
+			await goto(url);
+			return;
+		}
+
+		const result = await preloadData(url);
+		if (result.type === 'loaded' && result.status === 200) {
+			pushState(url, { id: result.data.id, insidePanel: true });
+			panelContentType = 'item';
+			if (!panelState.isOpen) panelState.open();
+		} else {
+			await goto(url);
+		}
+	}
+
+	async function onClickCreateItemAdvance() {
+		const id = await itemState.createItem({
+			name: '',
+			collectionId: collection.id
+		});
+		if (!id) return;
+		await clickItem(id);
+	}
+
+	// View
+	const VIEW_STORAGE_KEY = $derived(`collection-${collection.id}-view`);
+	async function onViewChange(value: string) {
+		if (panelState.isOpen) {
+			await new Promise<void>((resolve) => {
+				const handleNavigation = () => {
+					window.removeEventListener('popstate', handleNavigation);
+					resolve();
+				};
+				window.addEventListener('popstate', handleNavigation);
+				panelState.close();
+				history.back();
+			});
+		}
+
+		localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(+value));
+		page.url.searchParams.set('view', value);
+		await goto(`?${page.url.searchParams.toString()}`);
+		await itemState.refresh(+value);
+		viewState.viewShortId = +value;
+		itemState.viewShortId = +value;
+	}
+
+	$effect(() => {
+		data.cid;
+		search = '';
+	});
 
 	$effect(() => {
 		if (isNewItemInputVisible) {
@@ -211,142 +223,6 @@
 			document.removeEventListener('keydown', handleKeydown);
 		};
 	});
-
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
-	}
-
-	function includesFilterableProperties() {
-		return propertyState.properties.some((prop) => FILTERABLE_PROPERTY_TYPES.includes(prop.type));
-	}
-
-	const VIEW_STORAGE_KEY = $derived(`collection-${collection.id}-view`);
-
-	$effect(() => {
-		const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
-		if (savedView) view = JSON.parse(savedView);
-	});
-
-	$effect(() => {
-		localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(view));
-	});
-
-	const SORT_STORAGE_KEY = $derived(`collection-${collection.id}-sort`);
-	$effect(() => {
-		const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
-		if (savedSort) sort = JSON.parse(savedSort);
-	});
-
-	$effect(() => {
-		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
-	});
-
-	function sortGroupedItems(a: string, b: string) {
-		const propId = findGroupByConfig(view);
-		const actualProp = propertyState.properties.find((prop) => prop.id === propId);
-		if (actualProp == null || actualProp.type !== 'SELECT') return 0;
-
-		const left = actualProp.options.findIndex((opt) => opt.id == a);
-		const right = actualProp.options.findIndex((opt) => opt.id == b);
-
-		if (left < right) return -1;
-		if (left > right) return 1;
-
-		return 0;
-	}
-
-	function findGroupByConfig(view: View) {
-		const config = collection.groupByConfigs.find((config) => config.view === view);
-		if (!config || config.propertyId === '') return null;
-		return config.propertyId;
-	}
-
-	function updGroupByConfig(view: View, value: string) {
-		const groupByConfigs = collection.groupByConfigs.map((config) => {
-			if (config.view !== view) return config;
-			return {
-				view,
-				propertyId: value
-			};
-		});
-
-		updCollection({ groupByConfigs });
-	}
-
-	//Filters
-	function updFilterConfig(filters: Filter[]) {
-		if (collection.filterConfigs.length === 0) {
-			const baseConfigs = [
-				{
-					view: View.LIST,
-					filters: view === View.LIST ? filters : []
-				},
-				{
-					view: View.TABLE,
-					filters: view === View.TABLE ? filters : []
-				}
-			];
-			updCollection({ filterConfigs: baseConfigs });
-			return;
-		}
-
-		const filterConfigs = collection.filterConfigs.map((config) =>
-			config.view !== view ? config : { ...config, filters }
-		);
-		updCollection({ filterConfigs });
-	}
-
-	// Sliding panel
-	async function onClickOpenProperties() {
-		if (panelState.isOpen) history.back();
-
-		const url = `/collections/${collection.id}/properties`;
-		if (!isLargeScreen.current) {
-			goto(url);
-			return;
-		}
-
-		const result = await preloadData(url);
-		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { insidePanel: true });
-			panelContentType = 'view-properties';
-			if (!panelState.isOpen) panelState.open();
-		} else {
-			goto(url);
-		}
-	}
-
-	async function clickItem(id: string) {
-		if (panelState.isOpen) history.back();
-
-		activeItemState.update(id);
-		const url = `/collections/${collection.id}/item/${id}`;
-		if (!isLargeScreen.current) {
-			goto(url);
-			return;
-		}
-
-		const result = await preloadData(url);
-		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { id: result.data.id, insidePanel: true });
-			panelContentType = 'view-item';
-			if (!panelState.isOpen) panelState.open();
-		} else {
-			goto(url);
-		}
-	}
-
-	async function onClickCreateItemAdvance() {
-		const id = await itemState.createItem({
-			name: '',
-			collectionId: collection.id
-		});
-		if (!id) return;
-		await clickItem(id);
-	}
 </script>
 
 <svelte:head>
@@ -369,10 +245,9 @@
 			</h1>
 		</div>
 		<div class="flex justify-end items-center space-x-1.5">
-			<Button theme="secondary" variant="icon" onclick={() => onClickOpenProperties()}>
-				<Settings2 />
+			<Button theme="secondary" variant="icon" onclick={() => onClickOpenSettings()}>
+				<Bolt />
 			</Button>
-
 			<CollectionMenu {collection} />
 		</div>
 	</PageHeader>
@@ -408,53 +283,24 @@
 			></textarea>
 		{/if}
 
-		<!-- upper navigation handler -->
-		<div class="sticky -top-1 z-10 hidden md:flex justify-between space-x-2 pb-1.5 bg-card">
+		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">
+			<ViewButtons
+				views={viewState.views}
+				value={view.shortId.toString()}
+				onchange={onViewChange}
+			/>
+
 			<SearchInput placeholder="Find Item" bind:value={search} />
 
-			<SortMenu options={sortOptions} bind:value={sort} />
-
-			<!-- Only show groupby btn if collection properties includes a 'SELECT' or 'CHECKBOX' -->
-			{#if includesFilterableProperties()}
-				<FilterMenu
-					filters={getFilters(collection.filterConfigs, view)}
-					updFilters={updFilterConfig}
-				/>
-				<GroupByMenu
-					value={findGroupByConfig(view) || 'none'}
-					updValue={(value) => updGroupByConfig(view, value)}
-				/>
-			{/if}
-
-			<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
+			<ViewSettingsMenu {view} />
 		</div>
-		<div class="flex flex-col md:hidden space-y-1">
-			<SearchInput placeholder="Find Item" bind:value={search} />
 
-			<div class="flex items-center justify-between space-x-1">
-				<div class="flex items-center gap-x-1">
-					<SortMenu options={sortOptions} bind:value={sort} />
-
-					{#if includesFilterableProperties()}
-						<FilterMenu
-							filters={getFilters(collection.filterConfigs, view)}
-							updFilters={updFilterConfig}
-						/>
-						<GroupByMenu
-							value={findGroupByConfig(view) || 'none'}
-							updValue={(value) => updGroupByConfig(view, value)}
-						/>
-					{/if}
-				</div>
-
-				<ViewButtons options={[View.LIST, View.TABLE]} bind:value={view} />
-			</div>
-		</div>
-		{#if !findGroupByConfig(view)}
-			<Items items={filteredItems} {view} clickOpenItem={(id) => clickItem(id)} />
+		{#if !view.groupBy}
+			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
+			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}
 			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
-				{#each Object.keys(groupedItems).sort(sortGroupedItems) as key (`group-item-${key}`)}
+				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 					{@const property = propertyState.getProperty(groupedItems[key].pid)}
 
 					{#if property}
@@ -463,7 +309,7 @@
 							{#snippet header()}
 								{@render groupLabel(key, property, color)}
 							{/snippet}
-							<Items items={groupedItems[key].items} {view} clickOpenItem={(id) => clickItem(id)} />
+							<Items {view} items={groupedItems[key].items} clickOpenItem={(id) => clickItem(id)} />
 						</AccordionItem>
 					{/if}
 				{/each}
@@ -530,10 +376,10 @@
 		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 	)}
 >
-	{#if panelContentType === 'view-item' && page.state.id}
+	{#if panelContentType === 'item' && page.state.id}
 		<ItemPage data={noCheck(page.state)} />
-	{:else if panelContentType === 'view-properties'}
-		<PropertiesPage data={noCheck(page.state)} />
+	{:else if panelContentType === 'settings'}
+		<SettingsPage data={noCheck(page.state)} />
 	{/if}
 </aside>
 

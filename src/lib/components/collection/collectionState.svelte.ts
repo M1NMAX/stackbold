@@ -1,23 +1,23 @@
 import type { RouterInputs } from '$lib/trpc/router';
-import type { Collection } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { getToastState } from '$lib/states';
+import type { CollectionWithViews } from '$lib/types';
 
 export class CollectionState {
 	#toastState = getToastState();
-	collections = $state<Collection[]>([]);
+	collections = $state<CollectionWithViews[]>([]);
 
-	constructor(collections: Collection[]) {
+	constructor(collections: CollectionWithViews[]) {
 		this.collections = collections;
 	}
 
-	#getCollection(id: string) {
-		return this.collections.find((collection) => collection.id === id) || null;
+	getCollection(id: string) {
+		return this.collections.find((collection) => collection.id === id);
 	}
 
-	#updCollection(id: string, collection: Collection) {
+	#updCollection(id: string, collection: CollectionWithViews) {
 		this.collections = this.collections.map((c) => (c.id !== id ? c : collection));
 	}
 
@@ -40,8 +40,8 @@ export class CollectionState {
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
 				isPinned: args.isPinned || false,
-				groupByConfigs: args.groupByConfigs || [],
-				filterConfigs: args.filterConfigs || []
+				isTemplate: false,
+				views: []
 			});
 
 			const result = await trpc().collections.create.mutate({ ...args });
@@ -61,9 +61,9 @@ export class CollectionState {
 	}
 
 	async duplicateCollection(id: string) {
-		const target = this.#getCollection(id);
+		const target = this.getCollection(id);
 
-		if (target == null) {
+		if (!target) {
 			this.#toastState.error();
 			return;
 		}
@@ -86,8 +86,8 @@ export class CollectionState {
 
 	async updCollection(args: RouterInputs['collections']['update']) {
 		const { id, ...rest } = args;
-		let target = this.#getCollection(id);
-		if (target == null) {
+		let target = this.getCollection(id);
+		if (!target) {
 			this.#toastState.error();
 			return;
 		}
@@ -102,8 +102,8 @@ export class CollectionState {
 	}
 
 	async deleteCollection(id: string, redirect: boolean = false) {
-		let target = this.#getCollection(id);
-		if (target == null) {
+		let target = this.getCollection(id);
+		if (!target) {
 			this.#toastState.error();
 			return;
 		}
@@ -131,7 +131,7 @@ export class CollectionState {
 
 const COLLECTION_STATE_CTX_KEY = Symbol('COLLECTION_STATE_CTX_KEY');
 
-export function setCollectionState(collections: Collection[]) {
+export function setCollectionState(collections: CollectionWithViews[]) {
 	return setContext(COLLECTION_STATE_CTX_KEY, new CollectionState(collections));
 }
 

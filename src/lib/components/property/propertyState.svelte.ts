@@ -1,4 +1,4 @@
-import { Aggregator, Color, View, type Property, type PropertyType } from '@prisma/client';
+import { Color, type Property, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter } from '$lib/utils';
 import { getContext, setContext } from 'svelte';
@@ -39,9 +39,8 @@ export class PropertyState {
 				type,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				defaultValue: '',
-				visibleInViews: [View.LIST, View.TABLE],
-				aggregator: Aggregator.NONE,
+				defaultValue: null,
+				aggregator: null,
 				options: [],
 				order,
 				collectionId,
@@ -49,7 +48,7 @@ export class PropertyState {
 				relatedProperty: null,
 				intTargetProperty: null,
 				extTargetProperty: null,
-				calculate: Aggregator.NONE
+				calculate: null
 			});
 
 			const property = await trpc().properties.create.mutate({
@@ -67,7 +66,7 @@ export class PropertyState {
 	async duplicateProperty(id: string) {
 		const target = this.getProperty(id);
 
-		if (target == null) {
+		if (!target) {
 			this.#toastState.error('Invalid property');
 			return;
 		}
@@ -118,8 +117,8 @@ export class PropertyState {
 
 	async orderProperty(start: number, end: number) {
 		if (start === end) return;
-		await trpc().properties.order.mutate({ cid: this.collectionId, start, end });
-		await this.refresh(this.collectionId);
+		await trpc().properties.order.mutate({ collectionId: this.collectionId, start, end });
+		await this.refresh();
 	}
 
 	async deleteProperty(id: string) {
@@ -138,9 +137,9 @@ export class PropertyState {
 		}
 	}
 
-	async refresh(id: string) {
+	async refresh() {
 		try {
-			this.properties = await trpc().properties.list.query(id);
+			this.properties = await trpc().properties.list.query(this.collectionId);
 		} catch (err) {
 			this.#toastState.error();
 		}

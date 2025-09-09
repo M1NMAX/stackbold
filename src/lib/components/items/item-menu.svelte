@@ -4,7 +4,7 @@
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import { getItemState } from '.';
+	import { getItemState } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -40,7 +40,7 @@
 
 	async function duplicateItem() {
 		menuState.close();
-		await itemState.duplicateItem(id);
+		await itemState.duplicateItem(id, true);
 	}
 
 	function openItem() {

@@ -6,7 +6,7 @@
 	import type { User } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, sortFun, type SortOption } from '$lib/utils';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { SearchInput, SortArrow, SortMenu } from '$lib/components/filters';
+	import { SearchInput, SortArrow, SortMenu } from '$lib/components/view/index.js';
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidate, invalidateAll } from '$app/navigation';

@@ -1,5 +1,5 @@
 import { FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
-import { PropertyType, type Filter, type FilterConfig, type View } from '@prisma/client';
+import { PropertyType, type Filter } from '@prisma/client';
 
 type Target = {
 	id: string;
@@ -39,10 +39,4 @@ export function toggleFilter(filters: Filter[], src: Source) {
 	}
 
 	return [];
-}
-
-export function getFilters(filterConfigs: FilterConfig[], view: View) {
-	const config = filterConfigs.find((cfg) => cfg.view === view);
-	if (!config) return [];
-	return config.filters;
 }
