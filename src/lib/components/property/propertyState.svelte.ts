@@ -39,7 +39,7 @@ export class PropertyState {
 				type,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				defaultValue: '',
+				defaultValue: null,
 				aggregator: null,
 				options: [],
 				order,
