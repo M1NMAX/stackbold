@@ -141,7 +141,7 @@
 </script>
 
 <Tooltip triggerBy={id} align="end">
-	<span class="text-sm font-semibold py-1 px-1.5">Settings</span>
+	<span class="text-sm font-semibold py-1 px-1.5">View settings</span>
 </Tooltip>
 <AdaptiveWrapper
 	{id}
