@@ -187,7 +187,7 @@
 			});
 		}
 
-		localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(value));
+		localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(+value));
 		page.url.searchParams.set('view', value);
 		await goto(`?${page.url.searchParams.toString()}`);
 		await itemState.refresh(+value);
