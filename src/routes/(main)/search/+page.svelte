@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import Hash from 'lucide-svelte/icons/hash';
-	import { SearchInput } from '$lib/components/filters';
+	import { SearchInput } from '$lib/components/view/index.js';
 	import type { Searchable } from '$lib/types';
 	import { COLLECTION_ICONS } from '$lib/constant/icons.js';
 
