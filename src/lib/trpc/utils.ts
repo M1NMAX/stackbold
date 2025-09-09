@@ -6,6 +6,7 @@ import {
 	Aggregator,
 	PropertyType,
 	type Item,
+	type Option,
 	type Property,
 	type PropertyRef
 } from '@prisma/client';
@@ -63,6 +64,9 @@ export function aggregatePropertyValue(items: Item[], aggregator: Aggregator, pi
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
+export function getPropertyOption(options: Option[], id: string) {
+	return options.find((opt) => opt.id === id) || null;
+}
 
 export function getPropertyDefaultValue(property: Property) {
 	if (!PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE.includes(property.type)) return null;
@@ -82,4 +86,25 @@ export function groupBy<T>(items: T[], key: keyof T) {
 
 		return map;
 	}, new Map<string, T[]>());
+}
+export function compareValues(a: string, b: string) {
+	if (a === '' && b === '') return 0;
+	if (a === '') return -1;
+	if (b === '') return 1;
+
+	const aNum = Number(a);
+	const bNum = Number(b);
+
+	if (!isNaN(aNum) && !isNaN(bNum)) {
+		return aNum - bNum;
+	}
+
+	const aDate = new Date(a);
+	const bDate = new Date(b);
+
+	if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+		return aDate.getTime() - bDate.getTime();
+	}
+
+	return String(a).localeCompare(String(b));
 }

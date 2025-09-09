@@ -4,6 +4,7 @@ import { items } from '$lib/trpc/routes/items';
 import { properties } from '$lib/trpc/routes/properties';
 import { templates } from '$lib/trpc/routes/templates';
 import { users } from '$lib/trpc/routes/users';
+import { views } from '$lib/trpc/routes/views';
 import { t } from '$lib/trpc/t';
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
@@ -13,7 +14,8 @@ export const router = t.router({
 	items,
 	properties,
 	templates,
-	users
+	users,
+	views
 });
 
 export const createCaller = t.createCallerFactory(router);

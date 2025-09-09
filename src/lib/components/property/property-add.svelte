@@ -1,25 +1,35 @@
 <script lang="ts">
 	import Plus from 'lucide-svelte/icons/plus';
-	import { getPropertyState, PropertyIcon } from '.';
+	import { getPropertyState, PropertyIcon } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
 		buttonVariants,
 		MenuTitle
 	} from '$lib/components/base/index.js';
-	import { capitalizeFirstLetter } from '$lib/utils';
+	import { capitalizeFirstLetter } from '$lib/utils/index.js';
 	import { PropertyType } from '@prisma/client';
 	import { ModalState } from '$lib/states/index.js';
-	import { getItemState } from '$lib/components/items';
+	import { getItemState } from '$lib/components/items/index.js';
+	import { getViewState } from '$lib/components/view/index.js';
+
+	type Props = {
+		refresh: boolean;
+	};
+
+	let { refresh }: Props = $props();
 
 	const wrapper = new ModalState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const viewState = getViewState();
 
 	async function addProperty(propType: PropertyType) {
-		if (wrapper.isOpen) wrapper.close();
+		wrapper.close();
 		await propertyState.addProperty(propType);
-		await itemState.refresh(propertyState.collectionId);
+		if (refresh) {
+			await Promise.all([viewState.refresh(), itemState.refresh(viewState.viewShortId)]);
+		}
 	}
 </script>
 

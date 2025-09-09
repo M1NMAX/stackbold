@@ -9,7 +9,6 @@
 	let { value = $bindable(), placeholder = 'Search', ...rest }: Props = $props();
 </script>
 
-<!-- TODO: turn responsive -->
 <div class="relative w-full">
 	<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none">
 		<Search class="size-4" />

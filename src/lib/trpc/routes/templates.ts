@@ -1,60 +1,25 @@
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { z } from 'zod';
-import { PROPERTIES_WITHOUT_REF } from '$lib/constant';
+import { duplicateCollection } from './collections';
 
 export const templates = createTRPCRouter({
-	list: protectedProcedure.query(() => prisma.template.findMany({ orderBy: { createdAt: 'asc' } })),
-	load: protectedProcedure
-		.input(z.string())
-		.query(({ input }) => prisma.template.findUniqueOrThrow({ where: { id: input } })),
-
-	turn: protectedProcedure
-		.input(z.string())
-		.mutation(async ({ input: id, ctx: { userId } }) => turnTemplateIntoCollection(id, userId))
+	list: protectedProcedure.query(async () => await listTemplates()),
+	load: protectedProcedure.input(z.string()).query(async ({ input }) => await loadTemplate(input)),
+	turn: protectedProcedure.input(z.string()).mutation(async ({ input, ctx: { userId } }) => {
+		return await duplicateCollection(input, userId);
+	})
 });
 
-async function turnTemplateIntoCollection(id: string, userId: string) {
-	const template = await prisma.template.findUniqueOrThrow({
-		where: { id }
+async function listTemplates() {
+	return await prisma.collection.findMany({
+		where: { isTemplate: true },
+		orderBy: { createdAt: 'asc' }
 	});
-
-	const { id: _, items, properties: tProperties, ...rest } = template;
-
-	const collection = await prisma.collection.create({
-		data: { ownerId: userId, ...rest }
+}
+async function loadTemplate(id: string) {
+	return await prisma.collection.findUniqueOrThrow({
+		where: { id },
+		include: { properties: true, items: true }
 	});
-
-	const propertiesData = tProperties.map(({ id, ...rest }) => ({
-		...rest,
-		collectionId: collection.id
-	}));
-
-	await prisma.property.createMany({ data: propertiesData });
-
-	const properties = await prisma.property.findMany({
-		where: {
-			collectionId: collection.id,
-			type: { notIn: PROPERTIES_WITHOUT_REF }
-		},
-		orderBy: { order: 'asc' }
-	});
-
-	const itemData = items.map(({ id, ...rest }) => {
-		let refs = [];
-
-		for (let i = 0; i < properties.length; i++) {
-			refs.push({ id: properties[i].id, value: rest.properties[i].value });
-		}
-
-		return {
-			...rest,
-			collectionId: collection.id,
-			properties: refs
-		};
-	});
-
-	await prisma.item.createMany({ data: itemData });
-
-	return collection;
 }

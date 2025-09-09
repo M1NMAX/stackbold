@@ -15,6 +15,73 @@ enum Role {
   MEMBER @map("member")
 }
 
+enum Color {
+  GRAY   @map("gray")
+  RED    @map("red")
+  BLUE   @map("blue")
+  GREEN  @map("green")
+  YELLOW @map("yellow")
+  ORANGE @map("orange")
+}
+
+enum PropertyType {
+  TEXT        @map("text")
+  SELECT      @map("select")
+  MULTISELECT @map("multiselect")
+  CHECKBOX    @map("checkbox")
+  URL         @map("url")
+  DATE        @map("date")
+  NUMBER      @map("number")
+  CREATED     @map("created")
+  RELATION    @map("relation")
+  BUNDLE      @map("bundle")
+}
+
+enum Aggregator {
+  COUNT           @map("count")
+  COUNT_EMPTY     @map("count_empty")
+  COUNT_NOT_EMPTY @map("count_not_empty")
+  SUM             @map("sum")
+  AVG             @map("avg")
+}
+
+enum ViewType {
+  LIST  @map("list")
+  TABLE @map("table")
+}
+
+enum SortType {
+  ASC  @map("asc")
+  DESC @map("desc")
+}
+
+type Filter {
+  id     String
+  values String[]
+}
+
+type Sort {
+  field String
+  order SortType @default(ASC)
+}
+
+type ViewProperty {
+  id        String  @db.ObjectId
+  isVisible Boolean @default(true)
+}
+
+type Option {
+  id    String  @default(uuid()) @map("_id")
+  value String
+  color Color   @default(GRAY)
+  extra String?
+}
+
+type PropertyRef {
+  id    String @map("_id")
+  value String @default("")
+}
+
 model User {
   id                 String               @id @default(auto()) @map("_id") @db.ObjectId
   name               String
@@ -56,69 +123,6 @@ model Session {
   role      Role
 }
 
-enum Color {
-  GRAY   @map("gray")
-  RED    @map("red")
-  BLUE   @map("blue")
-  GREEN  @map("green")
-  YELLOW @map("yellow")
-  ORANGE @map("orange")
-}
-
-enum PropertyType {
-  TEXT        @map("text")
-  SELECT      @map("select")
-  MULTISELECT @map("multiselect")
-  CHECKBOX    @map("checkbox")
-  URL         @map("url")
-  DATE        @map("date")
-  NUMBER      @map("number")
-  CREATED     @map("created")
-  RELATION    @map("relation")
-  BUNDLE      @map("bundle")
-}
-
-enum Aggregator {
-  NONE            @map("none")
-  COUNT           @map("count")
-  COUNT_EMPTY     @map("count_empty")
-  COUNT_NOT_EMPTY @map("count_not_empty")
-  SUM             @map("sum")
-  AVG             @map("avg")
-}
-
-enum View {
-  LIST  @map("list")
-  TABLE @map("table")
-}
-
-type Filter {
-  id     String
-  values String[]
-}
-
-type FilterConfig {
-  view    View
-  filters Filter[]
-}
-
-type GroupByConfig {
-  view       View
-  propertyId String @default("")
-}
-
-type Option {
-  id    String  @default(uuid()) @map("_id")
-  value String
-  color Color   @default(GRAY)
-  extra String?
-}
-
-type PropertyRef {
-  id    String @map("_id")
-  value String @default("")
-}
-
 model Group {
   id         String       @id @default(auto()) @map("_id") @db.ObjectId
   name       String
@@ -130,22 +134,41 @@ model Group {
 }
 
 model Collection {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  isPinned       Boolean         @default(true)
-  description    String          @default("")
-  isDescHidden   Boolean         @default(true)
-  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId        String          @db.ObjectId
-  items          Item[]
-  groupByConfigs GroupByConfig[]
-  group          Group?          @relation(fields: [groupId], references: [id])
-  groupId        String?         @db.ObjectId
-  icon           String          @default("folder")
-  filterConfigs  FilterConfig[]
-  properties     Property[]
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  icon         String     @default("folder")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  isPinned     Boolean    @default(true)
+  description  String     @default("")
+  isDescHidden Boolean    @default(true)
+  isTemplate   Boolean    @default(false)
+  views        View[]
+  properties   Property[]
+  items        Item[]
+  owner        User?      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId      String?    @db.ObjectId
+  group        Group?     @relation(fields: [groupId], references: [id])
+  groupId      String?    @db.ObjectId
+}
+
+model View {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  shortId      Int
+  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String         @db.ObjectId
+  name         String
+  type         ViewType       @default(LIST)
+  order        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  properties   ViewProperty[]
+  filters      Filter[]
+  sorts        Sort[]
+  groupBy      String?
+
+  @@unique([collectionId, shortId])
+  @@index([collectionId, order])
 }
 
 model Property {
@@ -156,16 +179,17 @@ model Property {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   type              PropertyType @default(TEXT)
-  options           Option[]
-  visibleInViews    View[]       @default([LIST, TABLE])
-  aggregator        Aggregator   @default(NONE)
   order             Int          @default(0)
+  options           Option[]
+  aggregator        Aggregator?
   defaultValue      String?
   targetCollection  String? // RELATION AND BUNDLE only
   relatedProperty   String? // RELATION only
   intTargetProperty String? // BUMDLE only
   extTargetProperty String? // BUNDLE only
-  calculate         Aggregator   @default(NONE) // BUNDLE only
+  calculate         Aggregator? // BUNDLE only
+
+  @@index([collectionId, order])
 }
 
 model Item {
@@ -176,36 +200,4 @@ model Item {
   collection   Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   collectionId String        @db.ObjectId
   properties   PropertyRef[]
-
-  @@index([properties.id], name: "propertyref_id_index")
-}
-
-type TemplateProperty {
-  id             String       @default(uuid()) @map("_id")
-  name           String
-  createdAt      DateTime     @default(now())
-  type           PropertyType @default(TEXT)
-  options        Option[]
-  visibleInViews View[]       @default([LIST, TABLE])
-  aggregator     Aggregator   @default(NONE)
-  order          Int          @default(0)
-  defaultValue   String?
-}
-
-type TemplateItem {
-  id         String        @default(uuid()) @map("_id")
-  name       String
-  properties PropertyRef[]
-}
-
-model Template {
-  id             String             @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  description    String             @default("")
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  properties     TemplateProperty[]
-  items          TemplateItem[]
-  groupByConfigs GroupByConfig[]
-  icon           String             @default("folder")
 }

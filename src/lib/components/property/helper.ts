@@ -10,8 +10,7 @@ import {
 	type PropertyRef,
 	type Option,
 	PropertyType,
-	type View,
-	type TemplateProperty
+	type View
 } from '@prisma/client';
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
@@ -23,7 +22,7 @@ export function getRefValue(refs: PropertyRef[], pid: string) {
 	return ref ? ref.value : '';
 }
 
-export function getPropertyColor(property: Property | TemplateProperty, value: string) {
+export function getPropertyColor(property: Property, value: string) {
 	if (!hasOptions(property.type)) return Color.GRAY;
 	const option = property.options.find((opt) => opt.id === value);
 	return option ? option.color : Color.GRAY;
@@ -33,13 +32,10 @@ export function getOption(options: Option[], id: string) {
 	return options.find((opt) => opt.id === id) || null;
 }
 
-export function containsView(propertyViews: View[], view: View) {
-	return propertyViews.some((v) => v === view);
-}
-
-export function toggleView(propertyViews: View[], view: View) {
-	if (containsView(propertyViews, view)) return propertyViews.filter((v) => v !== view);
-	else return [...propertyViews, view];
+export function isPropertyVisible(view: View, pid: string) {
+	const property = view.properties.find((p) => p.id === pid);
+	if (!property) return false;
+	return property.isVisible;
 }
 
 export function hasOptions(type: PropertyType) {

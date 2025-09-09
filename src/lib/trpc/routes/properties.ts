@@ -7,16 +7,13 @@ import {
 	Aggregator,
 	Color,
 	PropertyType,
-	View,
-	type FilterConfig,
-	type GroupByConfig,
 	type Item,
-	type Property
+	type Property,
+	type View
 } from '@prisma/client';
 
 const colorSchema = z.nativeEnum(Color);
 const propertyTypeSchema = z.nativeEnum(PropertyType);
-const viewSchema = z.nativeEnum(View);
 const aggregatorSchema = z.nativeEnum(Aggregator);
 
 const optionSchema = z.object({
@@ -30,16 +27,15 @@ const propertyCreateSchema = z.object({
 	collectionId: z.string(),
 	name: z.string(),
 	type: propertyTypeSchema.optional(),
-	aggregator: aggregatorSchema.optional(),
-	visibleInViews: z.array(viewSchema).optional(),
-	order: z.number().optional(),
 	options: z.array(optionSchema).optional(),
+	order: z.number().optional(),
+	aggregator: aggregatorSchema.nullish(),
 	defaultValue: z.string().nullish(),
 	targetCollection: z.string().nullish(),
 	relatedProperty: z.string().nullish(),
 	intTargetProperty: z.string().nullish(),
 	extTargetProperty: z.string().nullish(),
-	calculate: aggregatorSchema.optional()
+	calculate: aggregatorSchema.nullish()
 });
 
 const propertyUpdateSchema = propertyCreateSchema
@@ -47,7 +43,7 @@ const propertyUpdateSchema = propertyCreateSchema
 	.partial({ collectionId: true, name: true });
 
 const propertyOrderSchema = z.object({
-	cid: z.string(),
+	collectionId: z.string(),
 	start: z.number(),
 	end: z.number()
 });
@@ -78,7 +74,7 @@ export const properties = createTRPCRouter({
 
 	create: protectedProcedure
 		.input(propertyCreateSchema)
-		.mutation(async ({ input: property }) => await createProperty(property)),
+		.mutation(async ({ input }) => await createProperty(input)),
 
 	update: protectedProcedure
 		.input(propertyUpdateSchema)
@@ -114,9 +110,9 @@ export const properties = createTRPCRouter({
 	)
 });
 
-async function listProperties(cid: string) {
+async function listProperties(collectionId: string) {
 	const properties = await prisma.property.findMany({
-		where: { collectionId: cid },
+		where: { collectionId },
 		orderBy: { order: 'asc' }
 	});
 
@@ -160,7 +156,8 @@ function injectPropertyOptions(
 			options: items.map((item) => ({
 				id: item.id,
 				value: item.name,
-				color: Color.GRAY
+				color: Color.GRAY,
+				extra: ''
 			}))
 		};
 	} else if (isBundle(property)) {
@@ -216,8 +213,7 @@ async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSc
 		type: PropertyType.RELATION,
 		collectionId: args.targetCollection!,
 		targetCollection: storedProperty.collectionId,
-		relatedProperty: storedProperty.id,
-		visibleInViews: []
+		relatedProperty: storedProperty.id
 	});
 
 	return property.id;
@@ -234,7 +230,8 @@ async function injectPropertyOptionsAsync(property: Property) {
 			options: items.map((item) => ({
 				id: item.id,
 				value: item.name,
-				color: Color.GRAY
+				color: Color.GRAY,
+				extra: ''
 			}))
 		};
 	} else if (isBundle(property)) {
@@ -260,19 +257,32 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	const order = await prisma.property.count({ where: { collectionId: args.collectionId } });
 	const property = await prisma.property.create({ data: { ...args, order: order + 1 } });
 
+	let promises: Promise<any>[] = [];
+
 	if (hasRef(property.type)) {
-		await prisma.item.updateMany({
-			where: { collectionId: property.collectionId },
-			data: { properties: { push: { id: property.id, value: '' } } }
-		});
+		promises.push(
+			prisma.item.updateMany({
+				where: { collectionId: property.collectionId },
+				data: { properties: { push: { id: property.id, value: '' } } }
+			})
+		);
 	}
+
+	promises.push(
+		prisma.view.updateMany({
+			where: { collectionId: property.collectionId },
+			data: { properties: { push: { id: property.id, isVisible: true } } }
+		})
+	);
+
+	await Promise.all(promises);
 
 	return property;
 }
 
 async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
 	const property = await prisma.property.findFirstOrThrow({
-		where: { collectionId: args.cid, order: args.start }
+		where: { collectionId: args.collectionId, order: args.start }
 	});
 
 	let promises: Promise<any>[] = [];
@@ -280,14 +290,14 @@ async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
 	if (args.start < args.end) {
 		promises.push(
 			prisma.property.updateMany({
-				where: { collectionId: args.cid, order: { gt: args.start, lte: args.end } },
+				where: { collectionId: args.collectionId, order: { gt: args.start, lte: args.end } },
 				data: { order: { decrement: 1 } }
 			})
 		);
 	} else {
 		promises.push(
 			prisma.property.updateMany({
-				where: { collectionId: args.cid, order: { gte: args.end, lt: args.start } },
+				where: { collectionId: args.collectionId, order: { gte: args.end, lt: args.start } },
 				data: { order: { increment: 1 } }
 			})
 		);
@@ -311,9 +321,7 @@ async function deleteProperty(id: string, userId: string) {
 				select: {
 					id: true,
 					ownerId: true,
-					filterConfigs: true,
-					groupByConfigs: true,
-					_count: { select: { properties: true } }
+					views: true
 				}
 			}
 		}
@@ -335,23 +343,39 @@ async function deleteProperty(id: string, userId: string) {
 			);
 		}
 
-		const isUsedToGroupBy = isUsedToGroup(property.collection.groupByConfigs, id);
-		const isUsedAsFilter = isFilter(property.collection.filterConfigs, id);
+		const viewsGroupedBy = getViewsGroupedBy(property.collection.views, id);
+		const viewsFilteredBy = getViewsFilteredBy(property.collection.views, id);
+		const viewsSortedBy = getViewSortedBy(property.collection.views, id);
 
-		if (isUsedToGroupBy || isUsedAsFilter) {
+		if (viewsGroupedBy.length > 0) {
 			promises.push(
-				tx.collection.update({
-					where: { id: property.collection.id },
-					data: {
-						groupByConfigs: isUsedToGroupBy
-							? cleanGroupBy(property.collection.groupByConfigs, id)
-							: undefined,
-						filterConfigs: isUsedAsFilter
-							? cleanFilters(property.collection.filterConfigs, id)
-							: undefined
-					}
+				tx.view.updateMany({
+					where: { id: { in: viewsGroupedBy.map((v) => v.id) } },
+					data: { groupBy: null }
 				})
 			);
+		}
+
+		if (viewsFilteredBy.length > 0) {
+			for (const view of viewsFilteredBy) {
+				promises.push(
+					tx.view.update({
+						where: { id: view.id },
+						data: { filters: view.filters.filter((f) => f.id !== id) }
+					})
+				);
+			}
+		}
+
+		if (viewsSortedBy.length > 0) {
+			for (const view of viewsSortedBy) {
+				promises.push(
+					tx.view.update({
+						where: { id: view.id },
+						data: { sorts: view.sorts.filter((s) => s.field !== id) }
+					})
+				);
+			}
 		}
 
 		if (isBidirectionalRelation(property)) {
@@ -363,13 +387,20 @@ async function deleteProperty(id: string, userId: string) {
 			);
 		}
 
+		promises.push(
+			tx.view.updateMany({
+				where: { collectionId: property.collection.id },
+				data: { properties: { deleteMany: { where: { id } } } }
+			})
+		);
+
 		promises.push(tx.property.delete({ where: { id } }));
 
 		promises.push(
 			tx.property.updateMany({
 				where: {
 					collectionId: property.collectionId,
-					order: { gt: property.order, lte: property.collection._count.properties }
+					order: { gt: property.order }
 				},
 				data: { order: { decrement: 1 } }
 			})
@@ -379,26 +410,16 @@ async function deleteProperty(id: string, userId: string) {
 	});
 }
 
-function isUsedToGroup(configs: GroupByConfig[], pid: string) {
-	return configs.some((config) => config.propertyId === pid);
+function getViewsGroupedBy(views: View[], pid: string) {
+	return views.filter((view) => view.groupBy === pid);
 }
 
-function cleanGroupBy(configs: GroupByConfig[], pid: string) {
-	return configs.map((config) => ({
-		...config,
-		propertyId: config.propertyId === pid ? '' : config.propertyId
-	}));
+function getViewsFilteredBy(views: View[], pid: string) {
+	return views.filter((view) => view.filters.some((filter) => filter.id === pid));
 }
 
-function isFilter(configs: FilterConfig[], pid: string) {
-	return configs.some((config) => config.filters.some((filter) => filter.id === pid));
-}
-
-function cleanFilters(configs: FilterConfig[], pid: string) {
-	return configs.map((config) => ({
-		...config,
-		filters: config.filters.filter((filter) => filter.id !== pid)
-	}));
+function getViewSortedBy(views: View[], pid: string) {
+	return views.filter((view) => view.sorts.some((sort) => sort.field === pid));
 }
 
 function shouldCreateBidirectionalRef(

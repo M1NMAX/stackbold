@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft, Dna } from 'lucide-svelte';
 	import { goto, preloadData, pushState } from '$app/navigation';
-	import { SearchInput, SortMenu } from '$lib/components/filters';
+	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import {

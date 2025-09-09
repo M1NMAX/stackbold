@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Collection } from '@prisma/client';
 	import Copy from 'lucide-svelte/icons/copy';
 	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
@@ -20,7 +19,7 @@
 		getMoveCollectionModalState,
 		ModalState
 	} from '$lib/states/index.js';
-	import { getCollectionState } from '$lib/components/collection';
+	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
 	import {
 		COLLECTION_ICONS,
 		MAX_COLLECTION_NAME_LENGTH,
@@ -28,11 +27,12 @@
 	} from '$lib/constant/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { tm } from '$lib/utils/index.js';
+	import type { CollectionWithViews } from '$lib/types.js';
 
 	type Props = {
 		active: boolean;
 		asChild?: boolean;
-		collection: Collection;
+		collection: CollectionWithViews;
 	};
 
 	let { active, asChild = false, collection }: Props = $props();
@@ -113,7 +113,7 @@
 	]}
 >
 	<a
-		href="/collections/{collection.id}"
+		href="/collections/{collection.id}?view={getCollectionView(collection)}"
 		class="grow flex items-center space-x-1.5"
 		onclick={onClickSidebarItem}
 	>

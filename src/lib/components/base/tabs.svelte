@@ -9,17 +9,18 @@
 		triggers: Snippet;
 		children: Snippet;
 		class?: ClassValue;
+		triggersClass?: ClassValue;
 	};
 
-	let { value, triggers, children, class: className }: Props = $props();
+	let { value, triggers, children, class: className, triggersClass }: Props = $props();
 
 	setTabsState(value);
 </script>
 
-<div class={tm('flex flex-col', className)}>
+<div class={tm('flex flex-col gap-y-1', className)}>
 	<div
 		role="tablist"
-		class="max-w-fit bg-muted text-muted-foreground inline-flex h-10 items-center justify-center rounded-md p-1"
+		class={tm('w-full h-10 flex items-center justify-between text-muted-foreground', triggersClass)}
 	>
 		{@render triggers()}
 	</div>
