@@ -38,14 +38,14 @@
 </script>
 
 <AdaptiveWrapper
-	floatingAlign="end"
+	floatingAlign="start"
 	triggerClass={buttonVariants({
 		theme: 'secondary',
-		className: 'p-0.5'
+		className: 'h-8 p-0.5'
 	})}
 >
 	{#snippet trigger()}
-		<img src={avatarUrl} class="size-8 object-contain rounded-sm" alt="avatar" />
+		<img src={avatarUrl} class="h-full w-full object-contain rounded-sm" alt="avatar" />
 	{/snippet}
 
 	{#if user.role === 'ADMIN'}
