@@ -65,7 +65,7 @@
 	triggerClass={buttonVariants({
 		theme: 'ghost',
 		variant: 'compact',
-		className: 'invisible group-hover:visible transition-opacity'
+		className: 'absolute top-0 right-1 invisible group-hover:visible transition-opacity'
 	})}
 >
 	{#snippet trigger()}
