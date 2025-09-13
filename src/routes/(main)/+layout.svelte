@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
+	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Dna from 'lucide-svelte/icons/dna';
 	import File from 'lucide-svelte/icons/file';
 	import FolderPlus from 'lucide-svelte/icons/folder-plus';
@@ -39,7 +40,7 @@
 		MAX_COLLECTION_NAME_LENGTH,
 		MAX_GROUP_NAME_LENGTH
 	} from '$lib/constant/index.js';
-	import { tm } from '$lib/utils/style.js';
+	import { tm } from '$lib/utils/index.js';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -142,32 +143,6 @@
 <svelte:window />
 
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">
-	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1">
-		<Button
-			theme="secondary"
-			variant="icon"
-			onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
-		>
-			<PanelLeftInactive />
-		</Button>
-
-		<Button
-			theme="secondary"
-			class="grow h-9 max-w-sm flex justify-between items-center space-x-1 rounded-md"
-			onclick={() => globalSearchModal.open()}
-		>
-			<span class="flex items-center gap-x-1.5">
-				<Search class="size-4" />
-				<span> Search</span>
-			</span>
-			<Shortcut>
-				<span>Ctrl</span>
-				<span>K</span>
-			</Shortcut>
-		</Button>
-
-		<UserMenu {user} />
-	</div>
 	<div
 		class={tm(
 			'w-full h-full md:grow flex md:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background',
@@ -182,6 +157,31 @@
 				sidebarState.isOpen ? 'w-1/6 mr-1.5' : 'w-0'
 			)}
 		>
+			<div class="flex items-start justify-between gap-x-1 px-2">
+				<UserMenu {user} />
+				<Button
+					theme="secondary"
+					class="grow h-8 justify-start"
+					onclick={() => crtCollectionModal.open()}
+				>
+					<Search />
+					<span class="grow text-left">Search</span>
+
+					<Shortcut>
+						<span>Ctrl</span>
+						<span>K</span>
+					</Shortcut>
+				</Button>
+				<Button
+					theme="secondary"
+					class="h-8"
+					onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
+				>
+					<PanelLeftInactive />
+					<span class="sr-only">Toggle sidebar</span>
+				</Button>
+			</div>
+
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					{@const Icon = item.icon}
@@ -192,13 +192,19 @@
 			</div>
 
 			<Accordion value="favorites" class="grow flex flex-col pt-1">
-				<AccordionItem
-					id="favorites"
-					title="Favorites"
-					arrow={false}
-					triggerClass="px-2.5 font-semibold text-sm"
-					contentClass="p-0"
-				>
+				<AccordionItem id="favorites" contentClass="p-0">
+					{#snippet accordionHeader({ isOpen, toggle })}
+						<div class="w-full group hover:bg-secondary">
+							<button
+								onclick={toggle}
+								aria-expanded={isOpen}
+								class="w-full py-0.5 px-2.5 text-sm text-left font-semibold transition-all"
+							>
+								Favorites
+							</button>
+						</div>
+					{/snippet}
+
 					{#each collectionState.collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
 							<SidebarCollection {collection} active={activeCollection(collection.id)} />
@@ -211,14 +217,27 @@
 									collection.groupId && collection.groupId === group.id && collection.isPinned
 							)}
 
-							<AccordionItem
-								id={group.id}
-								title={group.name}
-								triggerClass="px-2.5"
-								contentClass="overflow-visible p-0"
-							>
-								{#snippet extra()}
-									<SidebarGroupMenu id={group.id} />
+							<AccordionItem id={group.id} contentClass="overflow-visible p-0">
+								{#snippet accordionHeader({ isOpen, toggle })}
+									<div class="w-full relative group hover:bg-secondary">
+										<button
+											onclick={toggle}
+											aria-expanded={isOpen}
+											class="w-full flex items-center gap-1.5 px-2.5"
+										>
+											<ChevronRight
+												class={tm(
+													'size-4 shrink-0 transition-transform duration-200',
+													isOpen && 'rotate-90'
+												)}
+											/>
+											<span>
+												{group.name}
+											</span>
+										</button>
+
+										<SidebarGroupMenu id={group.id} />
+									</div>
 								{/snippet}
 								{#each groupCollections as collection}
 									<SidebarCollection
@@ -233,7 +252,7 @@
 				</AccordionItem>
 			</Accordion>
 
-			<div class="flex items-center justify-between gap-x-1 px-3.5 pb-2">
+			<div class="flex items-start justify-between space-x-1 px-2 pb-1">
 				<Button theme="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
 					<FolderPlus />
 					<span> New collection </span>
@@ -241,7 +260,7 @@
 				<Button
 					theme="secondary"
 					variant="icon"
-					class="shrink-0"
+					class="h-9"
 					onclick={() => createGroupModal.open()}
 				>
 					<PackagePlus />
