@@ -23,7 +23,7 @@
 	import {
 		COLLECTION_ICONS,
 		MAX_COLLECTION_NAME_LENGTH,
-		SCREEN_MD_MEDIA_QUERY
+		SCREEN_LG_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { tm } from '$lib/utils/index.js';
@@ -45,7 +45,7 @@
 	const renameModalState = new ModalState();
 	const menuState = new ModalState();
 
-	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY);
 	const sidebarState = getSidebarState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();

@@ -66,7 +66,7 @@ export const WEEK_DAYS: { [key: number]: string } = {
 	6: 'Saturday'
 };
 
-export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';
+export const SCREEN_LG_MEDIA_QUERY = 'min-width: 1024px';
 
 export const NUMBERICAL_PROPERTY_TYPES: PropertyType[] = [PropertyType.NUMBER];
 

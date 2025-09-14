@@ -32,7 +32,7 @@
 		DEBOUNCE_INTERVAL,
 		MAX_COLLECTION_NAME_LENGTH,
 		PROPERTY_COLORS,
-		SCREEN_MD_MEDIA_QUERY
+		SCREEN_LG_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
 	import { ModalState } from '$lib/states/index.js';
@@ -78,7 +78,7 @@
 	let panelContentType = $state<PanelContentType>(null);
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
-	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
 	async function updCollection(args: Omit<RouterInputs['collections']['update'], 'id'>) {
 		await collectionState.updCollection({ ...args, id: collection.id });
@@ -231,9 +231,9 @@
 
 <PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
 	<PageHeader
-		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
+		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between lg:justify-end')}
 	>
-		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
+		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
 		</Button>
 		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>

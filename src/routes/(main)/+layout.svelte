@@ -145,16 +145,16 @@
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">
 	<div
 		class={tm(
-			'w-full h-full md:grow flex md:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background',
+			'w-full h-full lg:grow flex lg:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background',
 			isBottomBarItemActive() && 'flex-col'
 		)}
 	>
 		<!-- SIDEBAR -->
 		<aside
 			class={tm(
-				'hidden md:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
+				'hidden lg:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
 				'overflow-hidden bg-card text-card-foreground transition-all duration-300',
-				sidebarState.isOpen ? 'w-1/6 mr-1.5' : 'w-0'
+				sidebarState.isOpen ? 'w-lg mr-1.5' : 'w-0'
 			)}
 		>
 			<div class="flex items-start justify-between gap-x-1 px-2">
@@ -274,7 +274,7 @@
 
 		<aside
 			class={tm(
-				'flex md:hidden justify-around items-center bg-secondary',
+				'flex lg:hidden justify-around items-center bg-secondary',
 				!isBottomBarItemActive() && 'hidden'
 			)}
 		>

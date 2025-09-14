@@ -7,7 +7,7 @@
 	import {
 		COLLECTION_ICONS,
 		DEFAULT_SORT_OPTIONS,
-		SCREEN_MD_MEDIA_QUERY,
+		SCREEN_LG_MEDIA_QUERY,
 		TEMPLATE_PANEL_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils';
@@ -37,7 +37,7 @@
 	});
 
 	const templatePanel = getContext<ModalState>(TEMPLATE_PANEL_CTX_KEY);
-	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
 	async function clickTemplate(e: MouseEvent, id: string) {
 		active = id;
