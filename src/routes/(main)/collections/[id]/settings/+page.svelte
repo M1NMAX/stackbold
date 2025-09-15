@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import FolderCog from 'lucide-svelte/icons/folder-cog';
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
@@ -10,6 +11,7 @@
 	import { tm } from '$lib/utils/index.js';
 	import { getContext } from 'svelte';
 	import { AddView, getViewState, ViewEditor } from '$lib/components/view/index.js';
+	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
@@ -57,23 +59,23 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+			<SidebarOpenBtn />
+			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
 
-			<h1 class={tm('font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
-				Settings
-			</h1>
+			{#if isSmHeadingVisible}
+				<div class="grow flex items-center space-x-2">
+					<FolderCog class="size-6" />
+					<h1 class="font-semibold text-xl">Settings</h1>
+				</div>
+			{/if}
 		</PageHeader>
 		<PageContent class="grow px-0 md:px-0 gap-y-0 hd-scroll" onscroll={handleScroll}>
-			<h1
-				class={tm(
-					'pb-2 px-2 md:px-4 font-semibold text-xl',
-					!isSmHeadingVisible ? 'visible' : 'hidden'
-				)}
-			>
-				Settings
-			</h1>
+			<div class="flex items-center space-x-2 px-2 md:px-4 pb-2">
+				<FolderCog class="size-7" />
+				<h1 class="font-semibold text-xl">Settings</h1>
+			</div>
 
 			{@render content()}
 		</PageContent>

@@ -41,7 +41,7 @@
 	floatingAlign="start"
 	triggerClass={buttonVariants({
 		theme: 'secondary',
-		className: 'h-8 p-0.5'
+		className: 'h-8 w-8 p-0.5'
 	})}
 >
 	{#snippet trigger()}

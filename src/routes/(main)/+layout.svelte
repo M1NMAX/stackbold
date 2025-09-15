@@ -154,7 +154,7 @@
 			class={tm(
 				'hidden lg:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
 				'overflow-hidden bg-card text-card-foreground transition-all duration-300',
-				sidebarState.isOpen ? 'w-lg mr-1.5' : 'w-0'
+				sidebarState.isOpen ? 'w-lg mr-1.5 shrink-0' : 'w-0'
 			)}
 		>
 			<div class="flex items-start justify-between gap-x-1 px-2">

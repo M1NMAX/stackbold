@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Plus, LibraryBig } from 'lucide-svelte';
+	import Plus from 'lucide-svelte/icons/plus';
+	import LibraryBig from 'lucide-svelte/icons/library-big';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
@@ -10,6 +11,7 @@
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
 	import { Button } from '$lib/components/base/index.js';
+	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
@@ -53,12 +55,13 @@
 
 <PageContainer>
 	<PageHeader>
+		<SidebarOpenBtn />
 		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
 			<LibraryBig class="size-6" />
 			<h1 class="text-xl font-semibold">Collections</h1>
 		</div>
 
-		<div class=" flex md:hidden items-center space-x-2">
+		<div class="flex md:hidden items-center space-x-2">
 			<Button theme="ghost" variant="icon" onclick={() => crtCollectionModal.open()}>
 				<Plus />
 			</Button>
@@ -66,8 +69,8 @@
 		</div>
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
-		<div class=" hidden md:flex items-center space-x-2">
-			<LibraryBig class="size-9" />
+		<div class="hidden md:flex items-center space-x-2">
+			<LibraryBig class="size-7" />
 			<h1 class="font-semibold text-2xl">Collections</h1>
 		</div>
 

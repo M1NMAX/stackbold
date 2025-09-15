@@ -48,6 +48,7 @@
 		ViewSettingsMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
+	import { getSidebarState, SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
@@ -55,6 +56,7 @@
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const sidebarState = getSidebarState();
 
 	const collection = $derived(collectionState.getCollection(data.cid)!);
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
@@ -230,20 +232,22 @@
 </svelte:head>
 
 <PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
-	<PageHeader
-		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between lg:justify-end')}
-	>
+	<PageHeader class={tm(sidebarState.isOpen && 'lg:justify-end')}>
+		<SidebarOpenBtn />
+
 		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
 		</Button>
-		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
-			<Icon class="size-6" />
-			<h1 class="grow font-semibold text-xl text-nowrap">
-				{collection.name.length > 18 && !isLargeScreen.current
-					? collection.name.substring(0, 18) + '...'
-					: collection.name}
-			</h1>
-		</div>
+		{#if isSmHeadingVisible}
+			<div class="grow flex items-center space-x-2">
+				<Icon class="size-6" />
+				<h1 class="grow font-semibold text-xl text-nowrap">
+					{collection.name.length > 18 && !isLargeScreen.current
+						? collection.name.substring(0, 18) + '...'
+						: collection.name}
+				</h1>
+			</div>
+		{/if}
 		<div class="flex justify-end items-center space-x-1.5">
 			<Button theme="secondary" variant="icon" onclick={() => onClickOpenSettings()}>
 				<Bolt />

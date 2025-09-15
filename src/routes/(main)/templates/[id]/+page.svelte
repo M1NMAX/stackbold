@@ -13,6 +13,7 @@
 	import { trpc } from '$lib/trpc/client';
 	import { getCollectionState } from '$lib/components/collection/index.js';
 	import { goto } from '$app/navigation';
+	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 	let template = $derived(data.template);
@@ -56,6 +57,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Template - Stackbold</title>
+</svelte:head>
+
 {#if data.insidePanel}
 	<div class="flex items-center justify-between space-x-1">
 		<div class="flex items-center space-x-2">
@@ -78,11 +83,12 @@
 {:else}
 	<PageContainer>
 		<PageHeader>
-			<Button theme="secondary" variant="icon" onclick={() => history.back()}>
+			<SidebarOpenBtn />
+			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 				<ChevronLeft />
 			</Button>
 			{#if isSmHeadingVisible}
-				<div class="flex items-center space-x-2">
+				<div class="grow flex items-center space-x-2">
 					<Icon clas="size-5" />
 					<h1 class="text-lg font-semibold">
 						{template.name}

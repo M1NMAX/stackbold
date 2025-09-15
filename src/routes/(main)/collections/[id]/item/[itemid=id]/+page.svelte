@@ -22,6 +22,7 @@
 	import { tm, useId } from '$lib/utils/index.js';
 	import type { PropertyRef } from '@prisma/client';
 	import { getViewState } from '$lib/components/view/index.js';
+	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
@@ -106,6 +107,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Collection Item - Stackbold</title>
+</svelte:head>
+
 {#if data.insidePanel}
 	<div
 		class={tm(
@@ -132,13 +137,17 @@
 	{@render bottomMenu()}
 {:else}
 	<PageContainer>
-		<PageHeader class="flex items-center justify-between">
-			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+		<PageHeader>
+			<SidebarOpenBtn />
+			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
-			<h1 class={tm('grow font-semibold text-xl', isSmHeadingVisible ? 'visible' : 'hidden')}>
-				{item.name}
-			</h1>
+
+			{#if isSmHeadingVisible}
+				<h1 class="grow font-semibold text-xl">
+					{item.name}
+				</h1>
+			{/if}
 
 			{@render topMenu()}
 		</PageHeader>
@@ -177,7 +186,7 @@
 {#snippet topMenu()}
 	<button
 		onclick={() => menuState.toggle()}
-		class={buttonVariants({ theme: 'secondary', variant: 'icon', className: 'md:hidden' })}
+		class={buttonVariants({ theme: 'secondary', variant: 'icon', className: 'lg:hidden' })}
 	>
 		<Ellipsis />
 	</button>
@@ -197,7 +206,7 @@
 {/snippet}
 
 {#snippet bottomMenu()}
-	<div class="hidden md:block px-4 pb-4">
+	<div class="hidden lg:block px-4 pb-4">
 		<HSeparator />
 		<div class="flex items-center justify-end gap-x-1.5">
 			<Button theme="secondary" onclick={() => duplicateItem()}>
