@@ -6,9 +6,8 @@
 	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
 	import type { Collection } from '@prisma/client';
 	import { tm } from '$lib/utils/index.js';
-	import { getCrtCollectionModalState } from '$lib/states/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
-	import { DEFAULT_SORT_OPTIONS } from '$lib/constant/index.js';
+	import { DEFAULT_SORT_OPTIONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
 	import { Button } from '$lib/components/base/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
@@ -28,8 +27,6 @@
 			.sort(sortFun(sort.field, sort.order));
 	});
 
-	const crtCollectionModal = getCrtCollectionModalState();
-
 	const SORT_STORAGE_KEY = 'collection-sort';
 	$effect(() => {
 		const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
@@ -47,6 +44,10 @@
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
 	}
+
+	async function createCollection() {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
+	}
 </script>
 
 <svelte:head>
@@ -62,7 +63,7 @@
 		</div>
 
 		<div class="flex md:hidden items-center space-x-2">
-			<Button theme="ghost" variant="icon" onclick={() => crtCollectionModal.open()}>
+			<Button theme="ghost" variant="icon" onclick={() => createCollection()}>
 				<Plus />
 			</Button>
 			<UserMenu user={data.user} />
@@ -79,9 +80,7 @@
 				<SearchInput placeholder="Find Collection" bind:value={search} />
 
 				<SortMenu options={sortOptions} bind:value={sort} />
-				<Button class="hidden md:flex" onclick={() => crtCollectionModal.open()}>
-					New Collection
-				</Button>
+				<Button class="hidden md:flex" onclick={() => createCollection()}>New</Button>
 			</div>
 
 			{#if collections.length > 0}

@@ -54,6 +54,9 @@ export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again'
 
 export const NAME_FIELD = 'name';
 
+export const NEW_COLLECTION_NAME = 'Add a name';
+export const NEW_GROUP_NAME = 'New group';
+
 export const LOCALE = 'en-US';
 
 export const WEEK_DAYS: { [key: number]: string } = {

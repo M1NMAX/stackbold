@@ -9,8 +9,8 @@
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
 	import { UserMenu } from '$lib/components/user';
 	import { Button } from '$lib/components/base/index.js';
-	import { getCrtCollectionModalState } from '$lib/states/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 
 	let { data } = $props();
 
@@ -25,8 +25,6 @@
 			.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 			.slice(0, 8);
 	});
-
-	const crtCollectionModal = getCrtCollectionModalState();
 </script>
 
 <svelte:head>
@@ -83,7 +81,10 @@
 					<p class="text-xl font-medium">Wow, such empty</p>
 				</div>
 
-				<Button onclick={() => crtCollectionModal.open()} class="h-12 w-full">
+				<Button
+					onclick={() => collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true)}
+					class="h-12 w-full"
+				>
 					<FolderPlus />
 					<span> Create Collection</span>
 				</Button>

@@ -25,7 +25,7 @@ export class CollectionState {
 		this.collections = this.collections.filter((collection) => collection.id !== id);
 	}
 
-	async createCollection(args: RouterInputs['collections']['create']) {
+	async createCollection(args: RouterInputs['collections']['create'], autodirect: boolean = false) {
 		const tmpId = crypto.randomUUID();
 
 		try {
@@ -39,7 +39,7 @@ export class CollectionState {
 				icon: args.icon || 'folder',
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
-				isPinned: args.isPinned || false,
+				isPinned: args.isPinned || true,
 				isTemplate: false,
 				views: []
 			});
@@ -47,13 +47,19 @@ export class CollectionState {
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 
-			this.#toastState.action({
-				message: 'New collection created',
-				action: {
-					label: 'Go',
-					onclick: () => goto(`/collections/${result.id}`)
-				}
-			});
+			const url = `/collections/${result.id}`;
+
+			if (autodirect) {
+				await goto(url);
+			} else {
+				this.#toastState.action({
+					message: 'New collection created',
+					action: {
+						label: 'Go',
+						onclick: () => goto(url)
+					}
+				});
+			}
 		} catch (err) {
 			this.#toastState.error();
 			this.#removeCollection(tmpId);

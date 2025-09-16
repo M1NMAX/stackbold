@@ -4,19 +4,16 @@
 	import Trash from 'lucide-svelte/icons/trash';
 	import MoreHorizontal from 'lucide-svelte/icons/more-horizontal';
 	import { AdaptiveWrapper, Button, buttonVariants, Dialog } from '$lib/components/base/index.js';
-	import {
-		getCrtCollectionModalState,
-		getDeleteModalState,
-		ModalState
-	} from '$lib/states/index.js';
+	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { nameSchema } from '$lib/schema';
 	import { getGroupState } from '$lib/components/group';
 
 	type Props = {
 		id: string;
+		createCollection: (id: string) => void;
 	};
 
-	let { id }: Props = $props();
+	let { id, createCollection }: Props = $props();
 
 	const groupState = getGroupState();
 	const group = $derived.by(() => {
@@ -27,7 +24,6 @@
 	const renameGroupModal = new ModalState();
 	const smallScreenDrawer = new ModalState();
 
-	const crtCollectionModal = getCrtCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
 	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
@@ -71,7 +67,7 @@
 	{#snippet trigger()}
 		<MoreHorizontal />
 	{/snippet}
-	<Button theme="ghost" variant="menu" onclick={() => crtCollectionModal.open(id)}>
+	<Button theme="ghost" variant="menu" onclick={() => createCollection(id)}>
 		<Plus />
 		<span>New collection</span>
 	</Button>

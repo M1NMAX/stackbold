@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
@@ -15,8 +16,8 @@
 		SidebarGroupMenu,
 		SidebarItem,
 		setSidebarState
-	} from '$lib/components/sidebar';
-	import { UserMenu } from '$lib/components/user';
+	} from '$lib/components/sidebar/index.js';
+	import { UserMenu } from '$lib/components/user/index.js';
 	import { goto } from '$app/navigation';
 	import {
 		Accordion,
@@ -24,23 +25,14 @@
 		Button,
 		Command,
 		CommandItem,
-		Dialog,
 		Shortcut
 	} from '$lib/components/base/index.js';
-	import {
-		ModalState,
-		setCtrCollectionModalState,
-		setMoveCollectionModalState
-	} from '$lib/states/index.js';
-	import { nameSchema } from '$lib/schema';
-	import { setGroupState } from '$lib/components/group';
-	import { setCollectionState } from '$lib/components/collection';
-	import {
-		COLLECTION_ICONS,
-		MAX_COLLECTION_NAME_LENGTH,
-		MAX_GROUP_NAME_LENGTH
-	} from '$lib/constant/index.js';
+	import { ModalState, setMoveCollectionModalState } from '$lib/states/index.js';
+	import { setGroupState } from '$lib/components/group/index.js';
+	import { setCollectionState } from '$lib/components/collection/index.js';
+	import { COLLECTION_ICONS, NEW_COLLECTION_NAME, NEW_GROUP_NAME } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
+	import type { Nullable } from '$lib/types.js';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -53,13 +45,7 @@
 	const groupState = setGroupState(data.groups);
 
 	const globalSearchModal = new ModalState();
-	const createGroupModal = new ModalState();
-	const crtCollectionModal = setCtrCollectionModalState();
 	const moveCollectionModal = setMoveCollectionModalState();
-
-	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
-	let error = $state<Error>({ type: null });
-
 	const sidebarState = setSidebarState();
 
 	const SIDEBAR_ITEMS = [
@@ -74,43 +60,8 @@
 		{ label: 'Collections', url: '/collections', icon: LibraryBig }
 	];
 
-	// Groups handlers
-	async function handleSubmitNewGroup(e: Event & { currentTarget: HTMLFormElement }) {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-
-		const name = formData.get('name') as string;
-
-		const parseResult = nameSchema.safeParse(name);
-
-		if (!parseResult.success) {
-			error = { type: 'new-group-rename', msg: parseResult.error.issues[0].message };
-			return;
-		}
-
-		error = { type: null };
-		await groupState.createGroup({ name });
-		createGroupModal.close();
-	}
-
-	// collection handlers
-	async function handleSubmitCollection(e: Event & { currentTarget: HTMLFormElement }) {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-		const name = formData.get('name') as string;
-		const group = formData.get('group') as string;
-
-		const parseResult = nameSchema.safeParse(name);
-
-		if (!parseResult.success) {
-			error = { type: 'new-collection-name', msg: parseResult.error.issues[0].message };
-			return;
-		}
-
-		error = { type: null };
-
-		collectionState.createCollection({ name, groupId: group || null });
-		crtCollectionModal.close();
+	async function createCollection(groupId: Nullable<string>) {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME, groupId }, true);
 	}
 
 	function activeCollection(id: string) {
@@ -121,7 +72,7 @@
 		return BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl);
 	}
 
-	$effect(() => {
+	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.shiftKey && e.key === '/')) {
 				e.preventDefault();
@@ -162,7 +113,7 @@
 				<Button
 					theme="secondary"
 					class="grow h-8 justify-start"
-					onclick={() => crtCollectionModal.open()}
+					onclick={() => globalSearchModal.open()}
 				>
 					<Search />
 					<span class="grow text-left">Search</span>
@@ -236,7 +187,7 @@
 											</span>
 										</button>
 
-										<SidebarGroupMenu id={group.id} />
+										<SidebarGroupMenu id={group.id} {createCollection} />
 									</div>
 								{/snippet}
 								{#each groupCollections as collection}
@@ -253,7 +204,7 @@
 			</Accordion>
 
 			<div class="flex items-start justify-between space-x-1 px-2 pb-1">
-				<Button theme="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
+				<Button theme="secondary" class="grow h-9" onclick={() => createCollection(null)}>
 					<FolderPlus />
 					<span> New collection </span>
 				</Button>
@@ -261,7 +212,7 @@
 					theme="secondary"
 					variant="icon"
 					class="h-9"
-					onclick={() => createGroupModal.open()}
+					onclick={() => groupState.createGroup({ name: NEW_GROUP_NAME })}
 				>
 					<PackagePlus />
 					<span class="sr-only">New group</span>
@@ -296,64 +247,13 @@
 	</div>
 </div>
 
-<Dialog bind:open={crtCollectionModal.isOpen} title="New collection">
-	<form onsubmit={handleSubmitCollection} class="flex flex-col space-y-2">
-		<label for="name"> Name </label>
-		<input
-			id="name"
-			type="text"
-			name="name"
-			placeholder="Tasks"
-			class="input"
-			autocomplete="off"
-			maxlength={MAX_COLLECTION_NAME_LENGTH}
-		/>
-		{#if error.type === 'new-collection-name'}
-			<span class="text-error"> {error.msg}</span>
-		{/if}
-
-		<label class="label" for="group"> Group </label>
-		<select id="group" name="group" class="select" value={crtCollectionModal.group}>
-			<option value={undefined}> Without group </option>
-			{#each groupState.groups as group (group.id)}
-				<option value={group.id}>
-					{group.name}
-				</option>
-			{/each}
-		</select>
-
-		<Button type="submit" class="w-full">Create</Button>
-	</form>
-</Dialog>
-
-<!-- Create group dialog -->
-<Dialog bind:open={createGroupModal.isOpen} title="New group">
-	<form onsubmit={handleSubmitNewGroup} class="flex flex-col space-y-2">
-		<label for="group-name"> Name </label>
-		<input
-			id="group-name"
-			type="text"
-			name="name"
-			placeholder="Personal, Work, ..."
-			class="input"
-			maxlength={MAX_GROUP_NAME_LENGTH}
-		/>
-
-		{#if error.type === 'new-group-rename'}
-			<span class="text-error"> {error.msg} </span>
-		{/if}
-
-		<Button type="submit" class="w-full">Create</Button>
-	</form>
-</Dialog>
-
 <!-- Search dialog -->
 <Command bind:open={globalSearchModal.isOpen}>
 	<CommandItem
 		value="new collection"
 		onselect={() => {
 			globalSearchModal.close();
-			crtCollectionModal.open();
+			groupState.createGroup({ name: NEW_GROUP_NAME });
 		}}
 	>
 		<FolderPlus />
@@ -364,7 +264,7 @@
 		value="new group"
 		onselect={() => {
 			globalSearchModal.close();
-			createGroupModal.open();
+			createCollection(null);
 		}}
 	>
 		<PackagePlus />
