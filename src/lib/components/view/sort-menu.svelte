@@ -54,11 +54,14 @@
 <AdaptiveWrapper
 	{id}
 	bind:open={menuState.isOpen}
-	triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
+	triggerClass={buttonVariants({ theme: 'secondary' })}
 	floatingAlign="end"
 >
 	{#snippet trigger()}
 		<CurrentIcon />
+		<span class="hidden md:block">
+			{value.label}
+		</span>
 	{/snippet}
 	<MenuTitle title="Sort by" />
 
