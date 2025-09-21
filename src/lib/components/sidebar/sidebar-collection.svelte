@@ -27,9 +27,7 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { tm } from '$lib/utils/index.js';
 	import type { CollectionWithViews } from '$lib/types.js';
-	import { clickOutside } from '$lib/actions/clickOutside.svelte.js';
-	import { escapeKeydown } from '$lib/actions/escapeKeydown.svelte.js';
-	import { enterKeydown } from '$lib/actions/enterKeydown.svelte.js';
+	import { clickOutside, escapeKeydown, enterKeydown } from '$lib/actions/index.js';
 	import { tick } from 'svelte';
 
 	type Props = {
@@ -82,22 +80,12 @@
 		});
 	}
 
-	function deleteCollection() {
+	async function deleteCollection() {
 		deleteModal.open({
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
-			fun: async () => {
-				await collectionState.deleteCollection(collection.id);
-				if (active) {
-					if (history.length === 1) {
-						// FIXME: maybe use replace state
-						await goto('/collections');
-					} else {
-						history.back();
-					}
-				}
-			}
+			fun: async () => await collectionState.deleteCollection(collection.id, active)
 		});
 	}
 

@@ -119,7 +119,10 @@ export class CollectionState {
 			await trpc().collections.delete.mutate(id);
 			this.#toastState.success(`Collection [${target.name}] deleted successfully`);
 
-			if (redirect) setTimeout(() => goto('/collections'), 500);
+			localStorage.removeItem(`collection-${id}-view`);
+
+			if (history.length === 1) await goto('/collections');
+			else history.back();
 		} catch (err) {
 			this.#toastState.error();
 			this.collections.push({ ...target });

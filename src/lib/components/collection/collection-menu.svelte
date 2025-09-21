@@ -60,15 +60,7 @@
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
-			fun: async () => {
-				await collectionState.deleteCollection(collection.id);
-				if (history.length === 1) {
-					// FIXME: maybe use replace state
-					await goto('/collections');
-				} else {
-					history.back();
-				}
-			}
+			fun: async () => await collectionState.deleteCollection(collection.id, true)
 		});
 	}
 
