@@ -5,6 +5,8 @@
 	import Eye from 'lucide-svelte/icons/eye';
 	import EyeOff from 'lucide-svelte/icons/eye-off';
 	import Trash from 'lucide-svelte/icons/trash';
+	import Star from 'lucide-svelte/icons/star';
+	import StarOff from 'lucide-svelte/icons/star-off';
 	import type { Collection } from '@prisma/client';
 	import {
 		getDeleteModalState,
@@ -32,19 +34,27 @@
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
-	function duplicateCollection() {
+	async function duplicateCollection() {
 		wrapper.close();
-		collectionState.duplicateCollection(collection.id);
+		await collectionState.duplicateCollection(collection.id);
 	}
 
-	function toggleDescState() {
+	async function toggleFavState() {
 		wrapper.close();
-		collectionState.updCollection({
+		await collectionState.updCollection({
+			id: collection.id,
+			isPinned: !collection.isPinned
+		});
+	}
+
+	async function toggleDescState() {
+		wrapper.close();
+		await collectionState.updCollection({
 			id: collection.id,
 			isDescHidden: !collection.isDescHidden
 		});
 	}
-	function deleteCollection() {
+	async function deleteCollection() {
 		wrapper.close();
 		deleteModal.open({
 			type: 'collection',
@@ -79,6 +89,16 @@
 	{#snippet trigger()}
 		<Ellipsis />
 	{/snippet}
+
+	<Button theme="ghost" variant="menu" onclick={() => toggleFavState()}>
+		{#if collection.isPinned}
+			<StarOff />
+			<span> Remove from favorites </span>
+		{:else}
+			<Star />
+			<span> Add to favorites </span>
+		{/if}
+	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => toggleDescState()}>
 		{#if collection.isDescHidden}

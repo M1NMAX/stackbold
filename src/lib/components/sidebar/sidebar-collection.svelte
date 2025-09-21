@@ -4,6 +4,7 @@
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import Trash from 'lucide-svelte/icons/trash';
+	import StarOff from 'lucide-svelte/icons/star-off';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -49,6 +50,10 @@
 	const menuState = new ModalState();
 
 	let isRenaming = $state(false);
+
+	async function removeFromFavorites() {
+		await collectionState.updCollection({ id: collection.id, isPinned: false });
+	}
 
 	async function saveName(name: string) {
 		isRenaming = false;
@@ -159,6 +164,13 @@
 		{#snippet trigger()}
 			<Ellipsis />
 		{/snippet}
+
+		<Button theme="ghost" variant="menu" onclick={() => removeFromFavorites()}>
+			<StarOff />
+			<span> Remove from favorites </span>
+		</Button>
+
+		<HSeparator />
 
 		<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
 			<Pencil />
