@@ -1,6 +1,6 @@
 import type { Action } from 'svelte/action';
 
-export type EscapeKeydownAttributes = { onescapekey?: (event: CustomEvent) => void };
+type EscapeKeydownAttributes = { onescapekey?: (event: CustomEvent) => void };
 type EscapeAction = Action<HTMLElement, any, EscapeKeydownAttributes>;
 
 export const escapeKeydown: EscapeAction = (element) => {

@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
-	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Dna from 'lucide-svelte/icons/dna';
 	import File from 'lucide-svelte/icons/file';
 	import FolderPlus from 'lucide-svelte/icons/folder-plus';
@@ -13,7 +12,7 @@
 	import Search from 'lucide-svelte/icons/search';
 	import {
 		SidebarCollection,
-		SidebarGroupMenu,
+		SidebarGroup,
 		SidebarItem,
 		setSidebarState
 	} from '$lib/components/sidebar/index.js';
@@ -32,7 +31,6 @@
 	import { setCollectionState } from '$lib/components/collection/index.js';
 	import { COLLECTION_ICONS, NEW_COLLECTION_NAME, NEW_GROUP_NAME } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
-	import type { Nullable } from '$lib/types.js';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -60,8 +58,8 @@
 		{ label: 'Collections', url: '/collections', icon: LibraryBig }
 	];
 
-	async function createCollection(groupId: Nullable<string>) {
-		await collectionState.createCollection({ name: NEW_COLLECTION_NAME, groupId }, true);
+	async function createCollection() {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
 	}
 
 	function activeCollection(id: string) {
@@ -170,25 +168,7 @@
 
 							<AccordionItem id={group.id} contentClass="overflow-visible p-0">
 								{#snippet accordionHeader({ isOpen, toggle })}
-									<div class="w-full relative group hover:bg-secondary">
-										<button
-											onclick={toggle}
-											aria-expanded={isOpen}
-											class="w-full flex items-center gap-1.5 px-2.5"
-										>
-											<ChevronRight
-												class={tm(
-													'size-4 shrink-0 transition-transform duration-200',
-													isOpen && 'rotate-90'
-												)}
-											/>
-											<span>
-												{group.name}
-											</span>
-										</button>
-
-										<SidebarGroupMenu id={group.id} {createCollection} />
-									</div>
+									<SidebarGroup {group} {isOpen} {toggle} />
 								{/snippet}
 								{#each groupCollections as collection}
 									<SidebarCollection
@@ -204,7 +184,7 @@
 			</Accordion>
 
 			<div class="flex items-start justify-between space-x-1 px-2 pb-1">
-				<Button theme="secondary" class="grow h-9" onclick={() => createCollection(null)}>
+				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>
 					<FolderPlus />
 					<span> New collection </span>
 				</Button>
@@ -264,7 +244,7 @@
 		value="new group"
 		onselect={() => {
 			globalSearchModal.close();
-			createCollection(null);
+			createCollection();
 		}}
 	>
 		<PackagePlus />
