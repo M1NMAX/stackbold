@@ -8,12 +8,10 @@
 		AdaptiveWrapper,
 		Button,
 		buttonVariants,
-		Dialog,
 		HSeparator
 	} from '$lib/components/base/index.js';
 	import { getSidebarState } from './index.js';
 	import { goto } from '$app/navigation';
-	import { nameSchema } from '$lib/schema.js';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
@@ -28,6 +26,10 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { tm } from '$lib/utils/index.js';
 	import type { CollectionWithViews } from '$lib/types.js';
+	import { clickOutside } from '$lib/actions/clickOutside.svelte.js';
+	import { escapeKeydown } from '$lib/actions/escapeKeydown.svelte.js';
+	import { enterKeydown } from '$lib/actions/enterKeydown.svelte.js';
+	import { tick } from 'svelte';
 
 	type Props = {
 		active: boolean;
@@ -37,36 +39,26 @@
 
 	let { active, asChild = false, collection }: Props = $props();
 
-	let renameError = $state<string | null>(null);
-
 	const collectionState = getCollectionState();
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
-
-	const renameModalState = new ModalState();
-	const menuState = new ModalState();
 
 	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY);
 	const sidebarState = getSidebarState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
+	const menuState = new ModalState();
 
-	function handleSubmitRename(e: Event & { currentTarget: HTMLFormElement }) {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
+	let isRenaming = $state(false);
 
-		const name = formData.get('name') as string;
+	async function saveName(name: string) {
+		isRenaming = false;
+		if (collection.name === name) return;
+		await collectionState.updCollection({ id: collection.id, name });
+	}
 
-		const parseResult = nameSchema.safeParse(name);
-
-		if (!parseResult.success) {
-			renameError = parseResult.error.issues[0].message;
-			return;
-		}
-
-		renameError = null;
-
-		collectionState.updCollection({ id: collection.id, name });
-		renameModalState.close();
+	function startRenaming() {
+		menuState.close();
+		isRenaming = true;
 	}
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
@@ -103,51 +95,57 @@
 			}
 		});
 	}
+
+	$effect(() => {
+		if (!isRenaming) return;
+
+		tick().then(() => {
+			document.getElementById(`collection-${collection.id}-rename`)?.focus();
+		});
+	});
 </script>
 
-<span
-	class={[
-		'group flex items-center py-0.5 pl-2.5 pr-0.5  hover:bg-secondary/90  transition duration-75 text-secondary-foreground',
-		active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
-		asChild && 'pl-8'
-	]}
->
-	<a
-		href="/collections/{collection.id}?view={getCollectionView(collection)}"
-		class="grow flex items-center space-x-1.5"
-		onclick={onClickSidebarItem}
-	>
-		<Icon class={tm('size-5', active && 'text-primary')} />
-		<span class={['font-semibold text-base text-nowrap', active && 'text-primary']}>
-			{collection.name.length > 25 && isLargeScreen.current
-				? collection.name.substring(0, 22) + ' ...'
-				: collection.name}
-		</span>
-	</a>
-	{@render menu()}
-</span>
-
-<Dialog bind:open={renameModalState.isOpen} title="Rename collection">
-	<form onsubmit={handleSubmitRename} class="flex flex-col space-y-2">
-		<label for="collection-name"> Name </label>
+{#if isRenaming}
+	<div class={tm('py-0.5 pr-0.5', asChild ? 'pl-5' : 'pl-2.5')}>
 		<input
-			id="collection-name"
+			use:clickOutside
+			use:escapeKeydown
+			use:enterKeydown
+			id={`collection-${collection.id}-rename`}
 			type="text"
 			name="name"
 			autocomplete="off"
 			value={collection.name}
 			class="input"
 			maxlength={MAX_COLLECTION_NAME_LENGTH}
+			onclickoutside={(e) => saveName((e.target as HTMLInputElement).value)}
+			onescapekey={() => (isRenaming = false)}
+			onenterkey={(e) => saveName((e.target as HTMLInputElement).value)}
 		/>
-
-		{#if renameError}
-			<span class="text-error"> {renameError}</span>
-		{/if}
-
-		<Button type="submit" class="w-full">Save</Button>
-	</form>
-</Dialog>
-
+	</div>
+{:else}
+	<span
+		class={[
+			'group flex items-center py-0.5 pl-2.5 pr-0.5  hover:bg-secondary/90  transition duration-75 text-secondary-foreground',
+			active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
+			asChild && 'pl-8'
+		]}
+	>
+		<a
+			href="/collections/{collection.id}?view={getCollectionView(collection)}"
+			class="grow flex items-center space-x-1.5"
+			onclick={onClickSidebarItem}
+		>
+			<Icon class={tm('size-5', active && 'text-primary')} />
+			<span class={['font-semibold text-base text-nowrap', active && 'text-primary']}>
+				{collection.name.length > 25 && isLargeScreen.current
+					? collection.name.substring(0, 22) + ' ...'
+					: collection.name}
+			</span>
+		</a>
+		{@render menu()}
+	</span>
+{/if}
 {#snippet menu()}
 	<AdaptiveWrapper
 		bind:open={menuState.isOpen}
@@ -162,7 +160,7 @@
 			<Ellipsis />
 		{/snippet}
 
-		<Button theme="ghost" variant="menu" onclick={() => renameModalState.open()}>
+		<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
 			<Pencil />
 			<span> Rename collection </span>
 		</Button>
