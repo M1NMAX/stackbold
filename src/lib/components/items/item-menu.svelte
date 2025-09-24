@@ -12,6 +12,7 @@
 		HSeparator
 	} from '$lib/components/base/index.js';
 	import type { Align } from '$lib/types';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
 		id: string;
@@ -54,8 +55,7 @@
 	floatingAlign={align}
 	triggerClass={buttonVariants({
 		theme: 'ghost',
-		variant: 'compact',
-		class: [menuState.isOpen && 'visible bg-accent']
+		class: tm(menuState.isOpen && 'visible bg-accent')
 	})}
 >
 	{#snippet trigger()}
