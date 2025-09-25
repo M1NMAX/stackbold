@@ -2,6 +2,8 @@
 	import Bolt from 'lucide-svelte/icons/bolt';
 	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import FileMinus from 'lucide-svelte/icons/file-minus';
+	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
@@ -38,7 +40,7 @@
 	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import SettingsPage from './settings/+page.svelte';
-	import { getContext, tick } from 'svelte';
+	import { getContext, onMount, tick } from 'svelte';
 	import { escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -61,6 +63,7 @@
 	const collection = $derived(collectionState.getCollection(data.cid)!);
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
+	const isEmpty = $derived(isCollectionEmpty());
 
 	let search = $state('');
 
@@ -197,19 +200,23 @@
 		itemState.viewShortId = +value;
 	}
 
+	function isCollectionEmpty() {
+		return itemState.items.length === 0 && viewState.views.every((v) => v.filters.length === 0);
+	}
+
 	$effect(() => {
 		data.cid;
 		search = '';
 	});
 
 	$effect(() => {
-		if (isNewItemInputVisible) {
-			const inputEl = document.getElementById('new-item-name') as HTMLInputElement;
-			tick().then(() => inputEl.focus());
-		}
+		if (!isNewItemInputVisible) return;
+
+		const inputEl = document.getElementById('new-item-name') as HTMLInputElement;
+		tick().then(() => inputEl.focus());
 	});
 
-	$effect(() => {
+	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if (e.altKey && e.key === 'n') {
 				e.preventDefault();
@@ -299,7 +306,9 @@
 			<ViewSettingsMenu {view} />
 		</div>
 
-		{#if !view.groupBy}
+		{#if isEmpty || items.length === 0}
+			{@render noItem()}
+		{:else if !view.groupBy}
 			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
 			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}
@@ -404,4 +413,14 @@
 			{option ? option.value : `No ${property.name}`}
 		{/if}
 	</span>
+{/snippet}
+
+{#snippet noItem()}
+	{@const Icon = isEmpty ? FolderMinus : FileMinus}
+	{@const text = isEmpty ? 'This collection has no item' : 'There is item to be presented'}
+
+	<div class="h-full flex flex-col justify-center items-center">
+		<Icon class="size-12" />
+		<span class="text-xl font-semibold"> {text}</span>
+	</div>
 {/snippet}
