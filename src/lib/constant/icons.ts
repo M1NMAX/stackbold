@@ -65,6 +65,7 @@ import Home from 'lucide-svelte/icons/home';
 import Library from 'lucide-svelte/icons/library';
 import Dna from 'lucide-svelte/icons/dna';
 import Bolt from 'lucide-svelte/icons/bolt';
+import Search from 'lucide-svelte/icons/search';
 
 type IconBundle = {
 	[idx: string]: any;
@@ -143,7 +144,8 @@ export const PAGE_ICONS: IconBundle = {
 	collections: Library,
 	templates: Dna,
 	settings: Bolt,
-	item: File
+	item: File,
+	search: Search
 };
 
 export const APP_ICONS = {

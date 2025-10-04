@@ -29,7 +29,12 @@
 	import { ModalState, setMoveCollectionModalState } from '$lib/states/index.js';
 	import { setGroupState } from '$lib/components/group/index.js';
 	import { setCollectionState } from '$lib/components/collection/index.js';
-	import { COLLECTION_ICONS, NEW_COLLECTION_NAME, NEW_GROUP_NAME } from '$lib/constant/index.js';
+	import {
+		COLLECTION_ICONS,
+		NEW_COLLECTION_NAME,
+		NEW_GROUP_NAME,
+		PAGE_ICONS
+	} from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 
 	let { data, children } = $props();
@@ -47,15 +52,15 @@
 	const sidebarState = setSidebarState();
 
 	const SIDEBAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: Home },
-		{ label: 'Templates', url: '/templates', icon: Dna },
-		{ label: 'Collections', url: '/collections', icon: LibraryBig }
+		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Templates', url: '/templates', icon: 'templates' },
+		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
 
 	const BOTTOM_BAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: Home },
-		{ label: 'Search', url: '/search', icon: Search },
-		{ label: 'Collections', url: '/collections', icon: LibraryBig }
+		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Search', url: '/search', icon: 'search' },
+		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
 
 	async function createCollection() {
@@ -133,10 +138,12 @@
 
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
-					{@const Icon = item.icon}
-					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<Icon class={tm('size-5', activeUrl === item.url && 'text-primary')} />
-					</SidebarItem>
+					<SidebarItem
+						icon={item.icon}
+						label={item.label}
+						href={item.url}
+						active={activeUrl === item.url}
+					/>
 				{/each}
 			</div>
 
@@ -210,7 +217,7 @@
 			)}
 		>
 			{#each BOTTOM_BAR_ITEMS as item}
-				{@const Icon = item.icon}
+				{@const Icon = PAGE_ICONS[item.icon]}
 				<Button
 					href={item.url}
 					theme="ghost"
