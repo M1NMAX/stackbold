@@ -1,27 +1,39 @@
 <script lang="ts">
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import FolderCog from 'lucide-svelte/icons/folder-cog';
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import {
+		PageContainer,
+		PageContent,
+		PageFooter,
+		PageHeader,
+		PageTitle
+	} from '$lib/components/page/index.js';
 	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property/index.js';
-	import { Button, TabContent, Tabs, TabTrigger } from '$lib/components/base/index.js';
+	import { Breadcrumb, BreadcrumbItem, Button } from '$lib/components/base/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
-	import { tm } from '$lib/utils/index.js';
+	import { capitalizeFirstLetter, tm } from '$lib/utils/index.js';
 	import { getContext } from 'svelte';
 	import { AddView, getViewState, ViewEditor } from '$lib/components/view/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
+
+	const Tabs = { PROPERTIES: 'PROPERTIES', VIEWS: 'VIEWS' } as const;
+	type Tab = (typeof Tabs)[keyof typeof Tabs];
 
 	let { data } = $props();
 
+	const collectionState = getCollectionState();
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
+	const collection = $derived(collectionState.getCollection(data.cid)!);
 
 	let openedPropertyEditor = $state<string | null>(null);
 	let openedViewEdit = $state<string | null>(null);
 	let isSmHeadingVisible = $state(false);
+	let currentTab = $state<Tab>(Tabs.PROPERTIES);
 
 	function goBack() {
 		history.back();
@@ -36,51 +48,98 @@
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
 	}
+
+	function isTabSelected(tab: Tab) {
+		return currentTab === tab;
+	}
+
+	function selectTab(tab: Tab) {
+		currentTab = tab;
+	}
 </script>
 
 <svelte:head>
 	<title>Collection Settings - Stackbold</title>
 </svelte:head>
 
-{#if data.insidePanel}
-	<div
-		class={tm(
-			'flex items-center justify-between space-x-1 p-4 pb-2',
-			!isSmHeadingVisible && 'justify-end'
-		)}
+<PageContainer>
+	<PageHeader
+		class={tm(!isSmHeadingVisible && data.insidePanel ? 'justify-end' : 'justify-between')}
 	>
-		<h1 class={tm('grow text-xl font-semibold')}>Settings</h1>
-		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
-			<X />
-		</Button>
-	</div>
+		{#if data.insidePanel}
+			<PageTitle
+				small
+				icon="settings"
+				title="Settings"
+				class={tm(isSmHeadingVisible ? 'grow' : 'hidden')}
+			/>
 
-	{@render content()}
-{:else}
-	<PageContainer>
-		<PageHeader>
+			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+				<X />
+			</Button>
+		{:else}
 			<SidebarOpenBtn />
 			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
-
-			{#if isSmHeadingVisible}
-				<div class="grow flex items-center space-x-2">
-					<FolderCog class="size-6" />
-					<h1 class="font-semibold text-xl">Settings</h1>
-				</div>
-			{/if}
-		</PageHeader>
-		<PageContent class="grow px-0 md:px-0 gap-y-0 hd-scroll" onscroll={handleScroll}>
-			<div class="flex items-center space-x-2 px-2 md:px-4 pb-2">
-				<FolderCog class="size-7" />
-				<h1 class="font-semibold text-xl">Settings</h1>
+			<Breadcrumb class="hidden lg:flex">
+				<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
+				<BreadcrumbItem
+					icon={collection.icon}
+					name={collection.name}
+					link={`/collections/${collection.id}?view=${getCollectionView(collection)}`}
+				/>
+				<BreadcrumbItem icon="settings" name="Settings" last />
+			</Breadcrumb>
+			<PageTitle
+				small
+				icon="settings"
+				title="Settings"
+				class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
+			/>
+		{/if}
+	</PageHeader>
+	<PageContent onscroll={handleScroll}>
+		<PageTitle icon="settings" title="Settings" />
+		<div class="flex flex-col gap-y-1">
+			<div role="tablist" class="w-full flex rounded-md mb-2 bg-secondary/50">
+				{#each Object.values(Tabs) as tab (tab)}
+					<button
+						type="button"
+						role="tab"
+						tabindex={isTabSelected(tab) ? 0 : -1}
+						onclick={() => selectTab(tab)}
+						class={tm(
+							'h-10 grow flex items-center justify-center whitespace-nowrap rounded-t-md px-2 py-1.5 font-semibold transition-all',
+							isTabSelected(tab) && 'bg-secondary shadow-sm border-b-2 border-primary'
+						)}
+					>
+						{capitalizeFirstLetter(tab)}
+					</button>
+				{/each}
 			</div>
 
-			{@render content()}
-		</PageContent>
-	</PageContainer>
-{/if}
+			<div
+				tabindex="0"
+				role="tabpanel"
+				class="w-full grow flex flex-col justify-between overflow-y-hidden"
+			>
+				{#if currentTab === Tabs.PROPERTIES}
+					{@render propertiesEditors()}
+				{:else if currentTab === Tabs.VIEWS}
+					{@render viewsEditors()}
+				{/if}
+			</div>
+		</div>
+	</PageContent>
+	<PageFooter>
+		{#if currentTab === Tabs.PROPERTIES}
+			<AddProperty refresh={data.insidePanel} />
+		{:else if currentTab === Tabs.VIEWS}
+			<AddView />
+		{/if}
+	</PageFooter>
+</PageContainer>
 
 {#snippet viewsEditors()}
 	<div class="grow overflow-y-auto space-y-1">
@@ -109,28 +168,4 @@
 			</div>
 		{/each}
 	</div>
-{/snippet}
-
-{#snippet content()}
-	<Tabs value="properties" class="h-full" triggersClass="px-2 md:px-4">
-		{#snippet triggers()}
-			<div class="w-full flex rounded-md bg-secondary/50">
-				<TabTrigger value="properties">Properties</TabTrigger>
-				<TabTrigger value="views">Views</TabTrigger>
-			</div>
-		{/snippet}
-		<TabContent value="properties" class="grow flex flex-col justify-between overflow-y-hidden">
-			{@render propertiesEditors()}
-			<div class="px-2 md:px-4 pb-2">
-				<AddProperty refresh={data.insidePanel} />
-			</div>
-		</TabContent>
-
-		<TabContent value="views" class="grow flex flex-col justify-between overflow-y-hidden">
-			{@render viewsEditors()}
-			<div class="px-2 md:px-4 pb-2">
-				<AddView />
-			</div>
-		</TabContent>
-	</Tabs>
 {/snippet}

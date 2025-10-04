@@ -23,14 +23,14 @@
 <button
 	{onclick}
 	class={tm(
-		'flex items-center gap-x-2 py-1 px-1.5 rounded-md',
+		'flex items-center gap-x-2 py-1 px-1.5 rounded-md max-w-xs',
 		link && 'hover:bg-secondary',
 		last && 'cursor-default',
 		className
 	)}
 >
-	<Icon class="size-4" />
-	<span class="font-semibold text-sm text-nowrap"> {name} </span>
+	<Icon class="shrink-0 size-4" />
+	<span class="font-semibold text-sm truncate"> {name} </span>
 </button>
 {#if !last}
 	<div>/</div>

@@ -5,9 +5,9 @@
 	import FolderClock from 'lucide-svelte/icons/folder-clock';
 	import FolderHeart from 'lucide-svelte/icons/folder-heart';
 	import FolderPlus from 'lucide-svelte/icons/folder-plus';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { CollectionOverview, getCollectionState } from '$lib/components/collection';
-	import { UserMenu } from '$lib/components/user';
+	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
+	import { UserMenu } from '$lib/components/user/index.js';
 	import { Button } from '$lib/components/base/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { NEW_COLLECTION_NAME } from '$lib/constant/index.js';
@@ -32,14 +32,15 @@
 </svelte:head>
 
 <PageContainer>
-	<PageHeader>
+	<PageHeader class="justify-end lg:justify-between">
 		<SidebarOpenBtn />
-		<div class="block md:hidden">
+
+		<div class="block lg:hidden">
 			<UserMenu user={data.user} />
 		</div>
 	</PageHeader>
 
-	<PageContent class="gap-y-5">
+	<PageContent class="md:pt-2">
 		{#if pinnedCollections.length > 0}
 			<section class="space-y-1.5">
 				<div class="flex items-center space-x-1.5">

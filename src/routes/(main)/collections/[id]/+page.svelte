@@ -16,6 +16,8 @@
 	import {
 		Accordion,
 		AccordionItem,
+		Breadcrumb,
+		BreadcrumbItem,
 		Button,
 		IconPicker,
 		Shortcut,
@@ -25,7 +27,8 @@
 		PageContainer,
 		PageContent,
 		PageFooter,
-		PageHeader
+		PageHeader,
+		PageTitle
 	} from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
@@ -242,19 +245,22 @@
 	<PageHeader class={tm(sidebarState.isOpen && 'lg:justify-end')}>
 		<SidebarOpenBtn />
 
-		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
+		<Button theme="ghost" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
 		</Button>
-		{#if isSmHeadingVisible}
-			<div class="grow flex items-center space-x-2">
-				<Icon class="size-6" />
-				<h1 class="grow font-semibold text-xl text-nowrap">
-					{collection.name.length > 18 && !isLargeScreen.current
-						? collection.name.substring(0, 18) + '...'
-						: collection.name}
-				</h1>
-			</div>
-		{/if}
+
+		<Breadcrumb class="hidden lg:flex">
+			<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
+			<BreadcrumbItem icon={collection.icon} name={collection.name} last />
+		</Breadcrumb>
+
+		<PageTitle
+			small
+			icon={collection.icon}
+			title={collection.name}
+			class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
+		/>
+
 		<div class="flex justify-end items-center space-x-1.5">
 			<Button theme="secondary" variant="icon" onclick={() => onClickOpenSettings()}>
 				<Bolt />
@@ -263,7 +269,7 @@
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1" onscroll={handleScroll}>
+	<PageContent class="relative" onscroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -384,7 +390,7 @@
 <!-- Sliding panel -->
 <aside
 	class={tm(
-		'h-full flex flex-col space-y-2 p-0 overflow-hidden',
+		'h-full flex flex-col space-y-2 overflow-hidden',
 		'rounded-md bg-card text-card-foreground transition-all duration-300',
 		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 	)}

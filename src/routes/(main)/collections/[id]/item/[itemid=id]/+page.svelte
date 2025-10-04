@@ -4,10 +4,23 @@
 	import X from 'lucide-svelte/icons/x';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { Button, buttonVariants, Drawer, HSeparator } from '$lib/components/base/index.js';
+	import {
+		AdaptiveWrapper,
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		buttonVariants,
+		HSeparator
+	} from '$lib/components/base/index.js';
 	import { getItemState } from '$lib/components/items/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import {
+		PageContainer,
+		PageContent,
+		PageFooter,
+		PageHeader,
+		PageTitle
+	} from '$lib/components/page/index.js';
 	import { getPropertyState, getRefValue, PropertyInput } from '$lib/components/property/index.js';
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
@@ -23,14 +36,17 @@
 	import type { PropertyRef } from '@prisma/client';
 	import { getViewState } from '$lib/components/view/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
 
 	let { data } = $props();
 
 	let isSmHeadingVisible = $state(false);
+	const collectionState = getCollectionState();
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	const item = $derived(itemState.getItem(data.id)!);
+	const collection = $derived(collectionState.getCollection(item.collectionId)!);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 
 	const menuState = new ModalState();
@@ -111,113 +127,90 @@
 	<title>Collection Item - Stackbold</title>
 </svelte:head>
 
-{#if data.insidePanel}
-	<div
-		class={tm(
-			'flex items-center justify-between space-x-1 p-4 pb-2',
-			!isSmHeadingVisible && 'justify-end'
-		)}
+<PageContainer>
+	<PageHeader
+		class={tm(!isSmHeadingVisible && data.insidePanel ? 'justify-end' : 'justify-between')}
 	>
-		<p class={tm('grow text-xl font-semibold', isSmHeadingVisible ? 'visible' : 'hidden')}>
-			{item.name.length > 44 ? item.name.substring(0, 44) + '...' : item.name}
-		</p>
-
-		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
-			<X />
-		</Button>
-	</div>
-	<div class="grow flex flex-col px-4 overflow-y-auto hd-scroll" onscroll={handleScroll}>
-		{@render nameInput()}
-
-		<div class="space-y-2">
-			{@render properties()}
-		</div>
-	</div>
-
-	{@render bottomMenu()}
-{:else}
-	<PageContainer>
-		<PageHeader>
+		{#if data.insidePanel}
+			<PageTitle
+				small
+				icon="item"
+				title={item.name}
+				class={tm(isSmHeadingVisible ? 'flex-1' : 'hidden')}
+			/>
+			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+				<X />
+			</Button>
+		{:else}
 			<SidebarOpenBtn />
 			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => goBack()}>
 				<ChevronLeft />
 			</Button>
+			<Breadcrumb class="hidden lg:flex">
+				<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
+				<BreadcrumbItem
+					icon={collection.icon}
+					name={collection.name}
+					link={`/collections/${collection.id}?view=${getCollectionView(collection)}`}
+				/>
+				<BreadcrumbItem icon="item" name={item.name} last />
+			</Breadcrumb>
+			<PageTitle
+				icon="item"
+				title={item.name}
+				class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
+				small
+			/>
 
-			{#if isSmHeadingVisible}
-				<h1 class="grow font-semibold text-xl">
-					{item.name}
-				</h1>
-			{/if}
+			{@render menu()}
+		{/if}
+	</PageHeader>
 
-			{@render topMenu()}
-		</PageHeader>
+	<PageContent onscroll={handleScroll}>
+		<textarea
+			id={nameId}
+			use:textareaAutoSize
+			class="textarea textarea-ghost textarea-xl"
+			value={item.name}
+			oninput={handleUpdItemName}
+			maxlength={MAX_ITEM_NAME_LENGTH}
+			spellcheck={false}
+			placeholder="New item"
+		></textarea>
 
-		<PageContent class="grow" onscroll={handleScroll}>
-			{@render nameInput()}
-			{@render properties()}
-		</PageContent>
-		{@render bottomMenu()}
-	</PageContainer>
-{/if}
+		{#each propertyState.properties as property}
+			<PropertyInput
+				{property}
+				value={getRefValue(item.properties, property.id)}
+				onchange={(value) => updPropertyRef({ id: property.id, value })}
+			/>
+		{/each}
+	</PageContent>
+	<PageFooter class={tm(data.insidePanel ? 'flex justify-end' : 'hidden')}>
+		{@render menu()}
+	</PageFooter>
+</PageContainer>
 
-{#snippet nameInput()}
-	<textarea
-		id={nameId}
-		use:textareaAutoSize
-		class="textarea textarea-ghost textarea-xl"
-		value={item.name}
-		oninput={handleUpdItemName}
-		maxlength={MAX_ITEM_NAME_LENGTH}
-		spellcheck={false}
-		placeholder="New item"
-	></textarea>
-{/snippet}
-
-{#snippet properties()}
-	{#each propertyState.properties as property}
-		<PropertyInput
-			{property}
-			value={getRefValue(item.properties, property.id)}
-			onchange={(value) => updPropertyRef({ id: property.id, value })}
-		/>
-	{/each}
-{/snippet}
-
-{#snippet topMenu()}
-	<button
-		onclick={() => menuState.toggle()}
-		class={buttonVariants({ theme: 'secondary', variant: 'icon', className: 'lg:hidden' })}
+{#snippet menu()}
+	<AdaptiveWrapper
+		bind:open={menuState.isOpen}
+		floatingAlign="end"
+		triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
 	>
-		<Ellipsis />
-	</button>
-	<Drawer bind:open={menuState.isOpen}>
+		{#snippet trigger()}
+			<Ellipsis />
+		{/snippet}
+
 		<Button theme="ghost" variant="menu" onclick={() => duplicateItem()}>
 			<Copy />
-			<span>Duplicate item </span>
+			<span>Duplicate </span>
 		</Button>
 
 		<HSeparator />
 
 		<Button theme="danger" variant="menu" onclick={() => deleteItem()}>
 			<Trash />
-			<span>Delete item</span>
+			<span>Delete </span>
 		</Button>
-	</Drawer>
-{/snippet}
-
-{#snippet bottomMenu()}
-	<div class="hidden lg:block px-4 pb-4">
-		<HSeparator />
-		<div class="flex items-center justify-end gap-x-1.5">
-			<Button theme="secondary" onclick={() => duplicateItem()}>
-				<Copy />
-				<span> Duplicate</span>
-			</Button>
-
-			<Button theme="secondary" class="hover:text-red-500" onclick={() => deleteItem()}>
-				<Trash />
-				<span> Delete</span>
-			</Button>
-		</div>
-	</div>
+	</AdaptiveWrapper>
 {/snippet}

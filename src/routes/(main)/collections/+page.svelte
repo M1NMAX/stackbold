@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Plus from 'lucide-svelte/icons/plus';
-	import LibraryBig from 'lucide-svelte/icons/library-big';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
 	import type { Collection } from '@prisma/client';
@@ -57,12 +56,14 @@
 <PageContainer>
 	<PageHeader>
 		<SidebarOpenBtn />
-		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
-			<LibraryBig class="size-6" />
-			<h1 class="text-xl font-semibold">Collections</h1>
-		</div>
+		<PageTitle
+			small
+			icon="collections"
+			title="Collections 1"
+			class={isSmHeadingVisible ? 'flex-1' : 'flex lg:hidden'}
+		/>
 
-		<div class="flex md:hidden items-center space-x-2">
+		<div class="flex lg:hidden items-center space-x-2">
 			<Button theme="ghost" variant="icon" onclick={() => createCollection()}>
 				<Plus />
 			</Button>
@@ -70,10 +71,7 @@
 		</div>
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
-		<div class="hidden md:flex items-center space-x-2">
-			<LibraryBig class="size-7" />
-			<h1 class="font-semibold text-2xl">Collections</h1>
-		</div>
+		<PageTitle icon="collections" title="Collections" class="hidden lg:flex" />
 
 		<div class="space-y-2">
 			<div class="w-full flex justify-between space-x-1 md:space-x-2">

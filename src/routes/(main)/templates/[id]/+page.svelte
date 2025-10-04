@@ -1,23 +1,29 @@
 <script lang="ts">
-	import { Button } from '$lib/components/base/index.js';
+	import { Breadcrumb, BreadcrumbItem, Button } from '$lib/components/base/index.js';
 	import { getToastState, ModalState } from '$lib/states/index.js';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import {
-		COLLECTION_ICONS,
-		DEFAULT_FEEDBACK_ERR_MESSAGE,
-		TEMPLATE_PANEL_CTX_KEY
-	} from '$lib/constant/index.js';
+		PageContainer,
+		PageContent,
+		PageFooter,
+		PageHeader,
+		PageTitle
+	} from '$lib/components/page/index.js';
+	import { DEFAULT_FEEDBACK_ERR_MESSAGE, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import { getPropertyColor, getPropertyRef, PropertyTemplate } from '$lib/components/property';
+	import {
+		getPropertyColor,
+		getPropertyRef,
+		PropertyTemplate
+	} from '$lib/components/property/index.js';
 	import { trpc } from '$lib/trpc/client';
 	import { getCollectionState } from '$lib/components/collection/index.js';
 	import { goto } from '$app/navigation';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { tm } from '$lib/utils/index.js';
 
 	let { data } = $props();
 	let template = $derived(data.template);
-	const Icon = $derived(COLLECTION_ICONS[template.icon]);
 	let isSmHeadingVisible = $state(false);
 
 	const toastState = getToastState();
@@ -61,95 +67,73 @@
 	<title>Template - Stackbold</title>
 </svelte:head>
 
-{#if data.insidePanel}
-	<div class="flex items-center justify-between space-x-1">
-		<div class="flex items-center space-x-2">
-			<Icon class="size-6" />
-			<h1 class="grow text-xl font-semibold">
-				{template.name}
-			</h1>
-		</div>
-
-		<Button theme="secondary" variant="icon" onclick={() => goBack()}>
-			<X />
-		</Button>
-	</div>
-
-	<div class="grow flex flex-col overflow-y-auto hd-scroll" onscroll={handleScroll}>
-		{@render templateData()}
-	</div>
-
-	{@render useTemplateBtn()}
-{:else}
-	<PageContainer>
-		<PageHeader>
+<PageContainer>
+	<PageHeader
+		class={tm(!isSmHeadingVisible && data.insidePanel ? 'justify-end' : 'justify-between')}
+	>
+		{#if data.insidePanel}
+			<PageTitle
+				small
+				icon={template.icon}
+				title={template.name}
+				class={tm(isSmHeadingVisible ? 'flex-1' : 'hidden')}
+			/>
+			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
+				<X />
+			</Button>
+		{:else}
 			<SidebarOpenBtn />
 			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 				<ChevronLeft />
 			</Button>
-			{#if isSmHeadingVisible}
-				<div class="grow flex items-center space-x-2">
-					<Icon clas="size-5" />
-					<h1 class="text-lg font-semibold">
-						{template.name}
-					</h1>
+			<Breadcrumb class="hidden lg:flex">
+				<BreadcrumbItem icon="templates" name="Templates" link="/templates" />
+				<BreadcrumbItem icon={template.icon} name={template.name} last />
+			</Breadcrumb>
+			<PageTitle
+				icon={template.icon}
+				title={template.name}
+				class={isSmHeadingVisible ? 'flex lg:hidden' : 'hidden'}
+				small
+			/>
+		{/if}
+	</PageHeader>
+	<PageContent class={tm(data.insidePanel && 'lg:pt-2')} onscroll={handleScroll}>
+		<PageTitle icon={template.icon} title={template.name} />
+		<p>
+			{template.description}
+		</p>
+		<div class="grow flex flex-col space-y-2">
+			<div class="space-y-2">
+				<h3 class="text-lg font-semibold">Items</h3>
+
+				<div class="flex flex-col space-y-2">
+					{#each template.items as item (item.id)}
+						<div class="w-full flex flex-col space-y-2 p-2 rounded-sm bg-secondary/40">
+							<div class="font-semibold text-lg">
+								{item.name}
+							</div>
+
+							<div class="flex flex-wrap gap-2">
+								{#each template.properties as property (property.id)}
+									{@const propertyRef = getPropertyRef(item.properties, property.id)}
+									{#if propertyRef && propertyRef.value !== ''}
+										{@const color = getPropertyColor(property, propertyRef.value)}
+
+										<PropertyTemplate {property} {color} value={propertyRef.value} />
+									{/if}
+								{/each}
+							</div>
+						</div>
+					{/each}
 				</div>
-			{/if}
-		</PageHeader>
-		<PageContent class="grow" onscroll={handleScroll}>
-			<div class="flex items-center space-x-2 pt-1">
-				<Icon class="size-6" />
-				<h2 class="text-2xl font-semibold">
-					{template.name}
-				</h2>
-			</div>
-			{@render templateData()}
-		</PageContent>
-
-		<div class="p-2">
-			{@render useTemplateBtn()}
-		</div>
-	</PageContainer>
-{/if}
-
-{#snippet templateData()}
-	<p>
-		{template.description}
-	</p>
-	<div class="grow flex flex-col space-y-2">
-		<div class="space-y-2">
-			<h3 class="text-lg font-semibold">Items</h3>
-
-			<div class="flex flex-col space-y-2">
-				{#each template.items as item (item.id)}
-					<div
-						class="w-full flex flex-col py-1 px-2 space-y-2 rounded-sm bg-secondary/40 hover:bg-secondary/50"
-					>
-						<div class="font-semibold text-lg">
-							{item.name}
-						</div>
-
-						<div class="flex flex-wrap gap-2">
-							{#each template.properties as property (property.id)}
-								{@const propertyRef = getPropertyRef(item.properties, property.id)}
-								{#if propertyRef && propertyRef.value !== ''}
-									{@const color = getPropertyColor(property, propertyRef.value)}
-
-									<PropertyTemplate {property} {color} value={propertyRef.value} />
-								{/if}
-							{/each}
-						</div>
-					</div>
-				{/each}
 			</div>
 		</div>
-	</div>
-{/snippet}
+	</PageContent>
 
-{#snippet useTemplateBtn()}
-	<div class="grid justify-items-start">
+	<PageFooter>
 		<Button class="w-full" onclick={() => createCollectionBasedOnTemplate()}>
 			Use this template
 		</Button>
-	</div>
-{/snippet}
+	</PageFooter>
+</PageContainer>

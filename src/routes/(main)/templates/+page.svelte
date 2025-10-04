@@ -1,10 +1,9 @@
 <script lang="ts">
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import Dna from 'lucide-svelte/icons/dna';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import {
 		COLLECTION_ICONS,
 		DEFAULT_SORT_OPTIONS,
@@ -77,19 +76,16 @@
 			<ChevronLeft />
 		</Button>
 
-		{#if isSmHeadingVisible}
-			<div class="grow flex items-center space-x-2">
-				<Dna class="size-6" />
-				<h1 class="font-semibold text-xl">Templates</h1>
-			</div>
-		{/if}
+		<PageTitle
+			icon="templates"
+			title="Templates"
+			small
+			class={isSmHeadingVisible ? 'flex-1' : 'hidden'}
+		/>
 	</PageHeader>
 
-	<PageContent onscroll={handleScroll}>
-		<div class="flex items-center space-x-2">
-			<Dna class="size-7" />
-			<h1 class="font-semibold text-2xl">Templates</h1>
-		</div>
+	<PageContent class="pt-8 hd-scroll" onscroll={handleScroll}>
+		<PageTitle icon="templates" title="Templates" />
 
 		<div class="space-y-2">
 			<div class="w-full flex justify-between space-x-1 md:space-x-2">
@@ -104,7 +100,7 @@
 						href={`/templates/${template.id}`}
 						onclick={(e) => clickTemplate(e, template.id)}
 						class={tm(
-							'w-full flex flex-col items-start py-1 px-2 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/50 dark:hover:bg-secondary/80 overflow-hidden',
+							'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/50 dark:hover:bg-secondary/80 overflow-hidden',
 							template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 						)}
 					>
@@ -128,7 +124,7 @@
 {#if page.state.template}
 	<aside
 		class={tm(
-			'h-full flex flex-col space-y-2 p-4 overflow-hidden',
+			'h-full flex flex-col space-y-2 overflow-hidden',
 			'rounded-md bg-card text-card-foreground transition-all duration-300',
 			templatePanel.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 		)}
