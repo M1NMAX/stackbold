@@ -332,9 +332,12 @@
 			</Accordion>
 		{/if}
 	</PageContent>
-	<PageFooter class="flex ">
+	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="grow relative">
+				<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none [&_svg]:size-4">
+					<Plus />
+				</div>
 				<label for="new-item-name" class="sr-only"> Item name</label>
 				<input
 					bind:value={itemName}
@@ -343,7 +346,7 @@
 					name="new-item-name"
 					placeholder="New item"
 					autocomplete="off"
-					class="h-9 w-full px-2 text-base font-semibold rounded-sm bg-secondary placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					class="h-9 w-full py-2 px-8 text-base font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
 					onfocusout={() => (isNewItemInputVisible = false)}
 					onescapekey={() => (isNewItemInputVisible = false)}
 				/>
@@ -351,12 +354,12 @@
 		{:else}
 			<Button
 				theme="secondary"
-				class="grow flex justify-between items-center text-left font-semibold text-primary"
+				class="grow flex justify-between items-center text-left text-base font-semibold text-muted-foreground"
 				onclick={() => (isNewItemInputVisible = true)}
 			>
 				<Plus />
 				<span class="grow"> New item </span>
-				<Shortcut>
+				<Shortcut class="hidden lg:inline-flex">
 					<span>Alt</span>
 					<span>N</span>
 				</Shortcut>
