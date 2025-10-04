@@ -332,7 +332,7 @@
 			</Accordion>
 		{/if}
 	</PageContent>
-	<PageFooter class="w-full flex gap-x-0.5">
+	<PageFooter class="flex ">
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="grow relative">
 				<label for="new-item-name" class="sr-only"> Item name</label>

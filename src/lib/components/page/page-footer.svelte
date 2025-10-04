@@ -10,7 +10,7 @@
 	let { children, class: className }: Props = $props();
 </script>
 
-<div class={tm('px-2 pb-2', className)}>
+<div class={tm('px-2 md:px-4 pb-2 md:pb-4', className)}>
 	{#if children}
 		{@render children()}
 	{/if}
