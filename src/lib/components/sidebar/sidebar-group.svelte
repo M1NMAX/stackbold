@@ -88,9 +88,16 @@
 			/>
 		</div>
 	{:else}
-		<button onclick={toggle} aria-expanded={isOpen} class="w-full flex items-center gap-1.5 px-2.5">
+		<button
+			onclick={toggle}
+			aria-expanded={isOpen}
+			class="w-full flex items-center gap-1.5 py-0.5 px-4"
+		>
 			<ChevronRight
-				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
+				class={tm(
+					'size-4 shrink-0 transition-transform duration-200',
+					isOpen ? 'rotate-90' : 'rotate-0'
+				)}
 			/>
 			<span>
 				{group.name}

@@ -106,12 +106,12 @@
 		<!-- SIDEBAR -->
 		<aside
 			class={tm(
-				'hidden lg:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
+				'hidden lg:flex h-full flex-col gap-y-2 rounded-md px-0 py-4',
 				'overflow-hidden bg-card text-card-foreground transition-all duration-300',
-				sidebarState.isOpen ? 'w-lg mr-1.5 shrink-0' : 'w-0'
+				sidebarState.isOpen ? 'w-full max-w-[18rem] mr-1.5 shrink-0' : 'w-0'
 			)}
 		>
-			<div class="flex items-start justify-between gap-x-1 px-2">
+			<div class="flex items-start justify-between gap-x-1 px-4">
 				<UserMenu {user} />
 				<Button
 					theme="secondary"
@@ -154,7 +154,7 @@
 							<button
 								onclick={toggle}
 								aria-expanded={isOpen}
-								class="w-full py-0.5 px-2.5 text-sm text-left font-semibold transition-all"
+								class="w-full py-0.5 px-4 text-sm text-left font-semibold transition-all"
 							>
 								Favorites
 							</button>
@@ -190,7 +190,7 @@
 				</AccordionItem>
 			</Accordion>
 
-			<div class="flex items-start justify-between space-x-1 px-2">
+			<div class="flex items-start justify-between space-x-1 px-4">
 				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>
 					<FolderPlus />
 					<span> New collection </span>

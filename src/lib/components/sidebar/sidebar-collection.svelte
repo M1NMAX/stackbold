@@ -118,11 +118,11 @@
 	</div>
 {:else}
 	<span
-		class={[
-			'group flex items-center py-0.5 pl-2.5 pr-0.5 hover:bg-secondary/90 transition-all duration-75 text-secondary-foreground',
+		class={tm(
+			'group flex items-center py-1 pr-1 hover:bg-secondary/90 transition-all duration-75 text-secondary-foreground',
 			active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
-			asChild && 'pl-8'
-		]}
+			asChild ? 'pl-10' : 'pl-4'
+		)}
 	>
 		<a
 			href="/collections/{collection.id}?view={getCollectionView(collection)}"
