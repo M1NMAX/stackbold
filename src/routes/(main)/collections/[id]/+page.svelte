@@ -242,7 +242,7 @@
 	<PageHeader class={tm(sidebarState.isOpen && 'lg:justify-end')}>
 		<SidebarOpenBtn />
 
-		<Button theme="ghost" variant="icon" class="lg:hidden" onclick={() => history.back()}>
+		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
 		</Button>
 
@@ -351,7 +351,7 @@
 		{:else}
 			<Button
 				theme="secondary"
-				class="grow flex justify-between items-center text-left font-semibold text-secondary-foreground"
+				class="grow flex justify-between items-center text-left font-semibold text-primary"
 				onclick={() => (isNewItemInputVisible = true)}
 			>
 				<Plus />
