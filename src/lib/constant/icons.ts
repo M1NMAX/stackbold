@@ -55,12 +55,16 @@ import Gem from 'lucide-svelte/icons/gem';
 import Wallet from 'lucide-svelte/icons/wallet';
 
 //views
-
 import Kanban from 'lucide-svelte/icons/kanban';
 import StretchHorizontal from 'lucide-svelte/icons/stretch-horizontal';
 import Table from 'lucide-svelte/icons/table';
+
 // Others
 import File from 'lucide-svelte/icons/file';
+import Home from 'lucide-svelte/icons/home';
+import Library from 'lucide-svelte/icons/library';
+import Dna from 'lucide-svelte/icons/dna';
+import Bolt from 'lucide-svelte/icons/bolt';
 
 type IconBundle = {
 	[idx: string]: any;
@@ -133,7 +137,12 @@ export const VIEW_ICONS: IconBundle = {
 	board: Kanban
 };
 
-export const OTHERS_ICONS: IconBundle = {
+export const PAGE_ICONS: IconBundle = {
+	...COLLECTION_ICONS,
+	home: Home,
+	collections: Library,
+	templates: Dna,
+	settings: Bolt,
 	item: File
 };
 
@@ -143,5 +152,5 @@ export const APP_ICONS = {
 	...SORT_ICONS,
 	...COLLECTION_ICONS,
 	...VIEW_ICONS,
-	...OTHERS_ICONS
+	...PAGE_ICONS
 };
