@@ -14,7 +14,7 @@
 				danger: 'hover:bg-secondary text-red-500'
 			},
 			variant: {
-				default: 'h-9 py-1 px-2',
+				default: 'h-9 p-2',
 				menu: 'h-9 md:h-7 w-full px-2 justify-start rounded-none md:rounded-sm',
 				icon: 'h-9 w-9',
 				compact: 'h-6 py-0.5 px-1 gap-1 [&_svg]:size-3.5'

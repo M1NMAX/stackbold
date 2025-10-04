@@ -20,8 +20,7 @@
 		BreadcrumbItem,
 		Button,
 		IconPicker,
-		Shortcut,
-		Tooltip
+		Shortcut
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
@@ -32,7 +31,6 @@
 	} from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
-		COLLECTION_ICONS,
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		MAX_COLLECTION_NAME_LENGTH,
@@ -64,7 +62,6 @@
 	const sidebarState = getSidebarState();
 
 	const collection = $derived(collectionState.getCollection(data.cid)!);
-	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 	const isEmpty = $derived(isCollectionEmpty());
 
@@ -336,25 +333,6 @@
 		{/if}
 	</PageContent>
 	<PageFooter class="w-full flex gap-x-0.5">
-		<Tooltip triggerBy="createItemAdvanceBtn" align="start">
-			<div class="flex items-center p-1 gap-x-2">
-				<span class="text-sm font-semibold">Create item advanced</span>
-				<Shortcut>
-					<span> Ctrl </span>
-					<span> Alt </span>
-					<span> M </span>
-				</Shortcut>
-			</div>
-		</Tooltip>
-		<Button
-			id="createItemAdvanceBtn"
-			theme="secondary"
-			variant="icon"
-			class="[&_svg]:text-primary [&_svg]:size-5"
-			onclick={onClickCreateItemAdvance}
-		>
-			<Plus />
-		</Button>
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="grow relative">
 				<label for="new-item-name" class="sr-only"> Item name</label>
@@ -373,11 +351,11 @@
 		{:else}
 			<Button
 				theme="secondary"
-				class="grow flex justify-between items-center"
+				class="grow flex justify-between items-center text-left font-semibold text-secondary-foreground"
 				onclick={() => (isNewItemInputVisible = true)}
 			>
-				<span class="text-base font-semibold text-primary"> New item </span>
-
+				<Plus />
+				<span class="grow"> New item </span>
 				<Shortcut>
 					<span>Alt</span>
 					<span>N</span>
