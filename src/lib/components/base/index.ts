@@ -2,6 +2,8 @@ export { default as AccordionItem } from './accordion-item.svelte';
 export { default as Accordion } from './accordion.svelte';
 export { default as AdaptiveWrapper } from './adaptive-wrapper.svelte';
 export { default as AlertDialog } from './alert-dialog.svelte';
+export { default as Breadcrumb } from './breadcrumb.svelte';
+export { default as BreadcrumbItem } from './breadcrumb-item.svelte';
 export { default as Button } from './button.svelte';
 export { default as Calendar } from './calendar.svelte';
 export { default as Checkbox } from './checkbox.svelte';
