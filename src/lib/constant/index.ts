@@ -42,6 +42,7 @@ export const TEMPLATE_PANEL_CTX_KEY = Symbol('TEMPLATE_PANEL_CTX_KEY');
 export const MAX_VISIBLE_VIEWS_TAB = 3;
 export const MAX_COLLECTION_NAME_LENGTH = 50;
 export const MAX_VIEW_NAME_LENGTH = 50;
+export const MAX_PROPERTY_NAME_LENGTH = 50;
 export const MAX_ITEM_NAME_LENGTH = 200;
 export const MAX_GROUP_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NUMERIC_LENGTH = 10;
