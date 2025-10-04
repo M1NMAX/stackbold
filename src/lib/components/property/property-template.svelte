@@ -37,7 +37,10 @@
 		: value}
 	<span
 		id={tooltipId}
-		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+		class={tm(
+			'h-6 flex items-center p-1.5 rounded-sm font-semibold truncate',
+			PROPERTY_COLORS[color]
+		)}
 	>
 		{#if property.type !== PropertyType.TEXT}
 			{result}
