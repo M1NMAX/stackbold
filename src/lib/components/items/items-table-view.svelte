@@ -165,7 +165,7 @@
 								<PropertyValue {view} {property} {item} />
 							</td>
 						{/each}
-						<td class="pl-1">
+						<td class="px-1">
 							<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="start" />
 						</td>
 					</tr>

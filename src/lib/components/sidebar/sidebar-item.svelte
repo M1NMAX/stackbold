@@ -4,19 +4,19 @@
 	import { getSidebarState } from '.';
 	import { goto } from '$app/navigation';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { SCREEN_MD_MEDIA_QUERY } from '$lib/constant';
-
+	import { PAGE_ICONS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	type Props = {
-		children: Snippet;
-		href?: string;
-		active: boolean;
+		icon: string;
 		label: string;
+		active: boolean;
+		href?: string;
 	};
 
-	let { children, href, active = false, label, ...rest }: Props = $props();
+	let { icon, label, href, active = false, ...rest }: Props = $props();
 
+	const Icon = $derived(PAGE_ICONS[icon]);
 	const sidebarState = getSidebarState();
-	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
 	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
 		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;
@@ -32,13 +32,13 @@
 	onclick={onClickSidebarItem}
 	{...rest}
 	class={tm(
-		'w-full flex items-center space-x-1.5 py-0.5 px-2.5 hover:bg-secondary/95 transition duration-75 text-secondary-foreground',
-		active && 'border-r-2 border-primary bg-secondary'
+		'w-full flex items-center space-x-1.5 py-0.5 px-2.5 [&>svg]:size-5 hover:bg-secondary/95 transition duration-75 text-secondary-foreground',
+		active && 'border-r-2 border-primary bg-secondary text-primary'
 	)}
 >
-	{@render children()}
+	<Icon />
 
-	<span class={tm('font-semibold', active && 'text-primary')}>
+	<span class="font-semibold">
 		{label}
 	</span>
 </a>

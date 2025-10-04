@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
 	import Dna from 'lucide-svelte/icons/dna';
@@ -11,11 +12,11 @@
 	import Search from 'lucide-svelte/icons/search';
 	import {
 		SidebarCollection,
-		SidebarGroupMenu,
+		SidebarGroup,
 		SidebarItem,
 		setSidebarState
-	} from '$lib/components/sidebar';
-	import { UserMenu } from '$lib/components/user';
+	} from '$lib/components/sidebar/index.js';
+	import { UserMenu } from '$lib/components/user/index.js';
 	import { goto } from '$app/navigation';
 	import {
 		Accordion,
@@ -23,23 +24,18 @@
 		Button,
 		Command,
 		CommandItem,
-		Dialog,
 		Shortcut
 	} from '$lib/components/base/index.js';
-	import {
-		ModalState,
-		setCtrCollectionModalState,
-		setMoveCollectionModalState
-	} from '$lib/states/index.js';
-	import { nameSchema } from '$lib/schema';
-	import { setGroupState } from '$lib/components/group';
-	import { setCollectionState } from '$lib/components/collection';
+	import { ModalState, setMoveCollectionModalState } from '$lib/states/index.js';
+	import { setGroupState } from '$lib/components/group/index.js';
+	import { setCollectionState } from '$lib/components/collection/index.js';
 	import {
 		COLLECTION_ICONS,
-		MAX_COLLECTION_NAME_LENGTH,
-		MAX_GROUP_NAME_LENGTH
+		NEW_COLLECTION_NAME,
+		NEW_GROUP_NAME,
+		PAGE_ICONS
 	} from '$lib/constant/index.js';
-	import { tm } from '$lib/utils/style.js';
+	import { tm } from '$lib/utils/index.js';
 
 	let { data, children } = $props();
 	let user = $state(data.user);
@@ -52,64 +48,23 @@
 	const groupState = setGroupState(data.groups);
 
 	const globalSearchModal = new ModalState();
-	const createGroupModal = new ModalState();
-	const crtCollectionModal = setCtrCollectionModalState();
 	const moveCollectionModal = setMoveCollectionModalState();
-
-	type Error = { type: null } | { type: 'new-group-rename' | 'new-collection-name'; msg: string };
-	let error = $state<Error>({ type: null });
-
 	const sidebarState = setSidebarState();
 
 	const SIDEBAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: Home },
-		{ label: 'Templates', url: '/templates', icon: Dna },
-		{ label: 'Collections', url: '/collections', icon: LibraryBig }
+		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Templates', url: '/templates', icon: 'templates' },
+		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
 
 	const BOTTOM_BAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: Home },
-		{ label: 'Search', url: '/search', icon: Search },
-		{ label: 'Collections', url: '/collections', icon: LibraryBig }
+		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Search', url: '/search', icon: 'search' },
+		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
 
-	// Groups handlers
-	async function handleSubmitNewGroup(e: Event & { currentTarget: HTMLFormElement }) {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-
-		const name = formData.get('name') as string;
-
-		const parseResult = nameSchema.safeParse(name);
-
-		if (!parseResult.success) {
-			error = { type: 'new-group-rename', msg: parseResult.error.issues[0].message };
-			return;
-		}
-
-		error = { type: null };
-		await groupState.createGroup({ name });
-		createGroupModal.close();
-	}
-
-	// collection handlers
-	async function handleSubmitCollection(e: Event & { currentTarget: HTMLFormElement }) {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-		const name = formData.get('name') as string;
-		const group = formData.get('group') as string;
-
-		const parseResult = nameSchema.safeParse(name);
-
-		if (!parseResult.success) {
-			error = { type: 'new-collection-name', msg: parseResult.error.issues[0].message };
-			return;
-		}
-
-		error = { type: null };
-
-		collectionState.createCollection({ name, groupId: group || null });
-		crtCollectionModal.close();
+	async function createCollection() {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
 	}
 
 	function activeCollection(id: string) {
@@ -120,7 +75,7 @@
 		return BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl);
 	}
 
-	$effect(() => {
+	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.shiftKey && e.key === '/')) {
 				e.preventDefault();
@@ -142,63 +97,70 @@
 <svelte:window />
 
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">
-	<div class="h-auto w-full hidden md:flex items-center justify-between pt-1 px-1">
-		<Button
-			theme="secondary"
-			variant="icon"
-			onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
-		>
-			<PanelLeftInactive />
-		</Button>
-
-		<Button
-			theme="secondary"
-			class="grow h-9 max-w-sm flex justify-between items-center space-x-1 rounded-md"
-			onclick={() => globalSearchModal.open()}
-		>
-			<span class="flex items-center gap-x-1.5">
-				<Search class="size-4" />
-				<span> Search</span>
-			</span>
-			<Shortcut>
-				<span>Ctrl</span>
-				<span>K</span>
-			</Shortcut>
-		</Button>
-
-		<UserMenu {user} />
-	</div>
 	<div
 		class={tm(
-			'w-full h-full md:grow flex md:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background',
+			'w-full h-full lg:grow flex lg:flex-row gap-0 p-0 md:p-1 overflow-hidden bg-secondary dark:bg-background',
 			isBottomBarItemActive() && 'flex-col'
 		)}
 	>
 		<!-- SIDEBAR -->
 		<aside
 			class={tm(
-				'hidden md:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
+				'hidden lg:flex h-full flex-col space-y-2 rounded-md px-0 py-2.5',
 				'overflow-hidden bg-card text-card-foreground transition-all duration-300',
-				sidebarState.isOpen ? 'w-1/6 mr-1.5' : 'w-0'
+				sidebarState.isOpen ? 'w-lg mr-1.5 shrink-0' : 'w-0'
 			)}
 		>
+			<div class="flex items-start justify-between gap-x-1 px-2">
+				<UserMenu {user} />
+				<Button
+					theme="secondary"
+					class="grow h-8 justify-start"
+					onclick={() => globalSearchModal.open()}
+				>
+					<Search />
+					<span class="grow text-left">Search</span>
+
+					<Shortcut>
+						<span>Ctrl</span>
+						<span>K</span>
+					</Shortcut>
+				</Button>
+				<Button
+					theme="secondary"
+					class="h-8"
+					onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
+				>
+					<PanelLeftInactive />
+					<span class="sr-only">Toggle sidebar</span>
+				</Button>
+			</div>
+
 			<div class="space-y-0.5 px-0">
 				{#each SIDEBAR_ITEMS as item (item.url)}
-					{@const Icon = item.icon}
-					<SidebarItem label={item.label} href={item.url} active={activeUrl === item.url}>
-						<Icon class={tm('size-5', activeUrl === item.url && 'text-primary')} />
-					</SidebarItem>
+					<SidebarItem
+						icon={item.icon}
+						label={item.label}
+						href={item.url}
+						active={activeUrl === item.url}
+					/>
 				{/each}
 			</div>
 
 			<Accordion value="favorites" class="grow flex flex-col pt-1">
-				<AccordionItem
-					id="favorites"
-					title="Favorites"
-					arrow={false}
-					triggerClass="px-2.5 font-semibold text-sm"
-					contentClass="p-0"
-				>
+				<AccordionItem id="favorites" contentClass="p-0">
+					{#snippet accordionHeader({ isOpen, toggle })}
+						<div class="w-full group hover:bg-secondary">
+							<button
+								onclick={toggle}
+								aria-expanded={isOpen}
+								class="w-full py-0.5 px-2.5 text-sm text-left font-semibold transition-all"
+							>
+								Favorites
+							</button>
+						</div>
+					{/snippet}
+
 					{#each collectionState.collections as collection}
 						{#if collection.groupId === null && collection.isPinned}
 							<SidebarCollection {collection} active={activeCollection(collection.id)} />
@@ -211,14 +173,9 @@
 									collection.groupId && collection.groupId === group.id && collection.isPinned
 							)}
 
-							<AccordionItem
-								id={group.id}
-								title={group.name}
-								triggerClass="px-2.5"
-								contentClass="overflow-visible p-0"
-							>
-								{#snippet extra()}
-									<SidebarGroupMenu id={group.id} />
+							<AccordionItem id={group.id} contentClass="overflow-visible p-0">
+								{#snippet accordionHeader({ isOpen, toggle })}
+									<SidebarGroup {group} {isOpen} {toggle} />
 								{/snippet}
 								{#each groupCollections as collection}
 									<SidebarCollection
@@ -233,16 +190,16 @@
 				</AccordionItem>
 			</Accordion>
 
-			<div class="flex items-center justify-between gap-x-1 px-3.5 pb-2">
-				<Button theme="secondary" class="grow h-9" onclick={() => crtCollectionModal.open()}>
+			<div class="flex items-start justify-between space-x-1 px-2">
+				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>
 					<FolderPlus />
 					<span> New collection </span>
 				</Button>
 				<Button
 					theme="secondary"
 					variant="icon"
-					class="shrink-0"
-					onclick={() => createGroupModal.open()}
+					class="h-9"
+					onclick={() => groupState.createGroup({ name: NEW_GROUP_NAME })}
 				>
 					<PackagePlus />
 					<span class="sr-only">New group</span>
@@ -255,12 +212,12 @@
 
 		<aside
 			class={tm(
-				'flex md:hidden justify-around items-center bg-secondary',
+				'flex lg:hidden justify-around items-center bg-secondary',
 				!isBottomBarItemActive() && 'hidden'
 			)}
 		>
 			{#each BOTTOM_BAR_ITEMS as item}
-				{@const Icon = item.icon}
+				{@const Icon = PAGE_ICONS[item.icon]}
 				<Button
 					href={item.url}
 					theme="ghost"
@@ -277,64 +234,13 @@
 	</div>
 </div>
 
-<Dialog bind:open={crtCollectionModal.isOpen} title="New collection">
-	<form onsubmit={handleSubmitCollection} class="flex flex-col space-y-2">
-		<label for="name"> Name </label>
-		<input
-			id="name"
-			type="text"
-			name="name"
-			placeholder="Tasks"
-			class="input"
-			autocomplete="off"
-			maxlength={MAX_COLLECTION_NAME_LENGTH}
-		/>
-		{#if error.type === 'new-collection-name'}
-			<span class="text-error"> {error.msg}</span>
-		{/if}
-
-		<label class="label" for="group"> Group </label>
-		<select id="group" name="group" class="select" value={crtCollectionModal.group}>
-			<option value={undefined}> Without group </option>
-			{#each groupState.groups as group (group.id)}
-				<option value={group.id}>
-					{group.name}
-				</option>
-			{/each}
-		</select>
-
-		<Button type="submit" class="w-full">Create</Button>
-	</form>
-</Dialog>
-
-<!-- Create group dialog -->
-<Dialog bind:open={createGroupModal.isOpen} title="New group">
-	<form onsubmit={handleSubmitNewGroup} class="flex flex-col space-y-2">
-		<label for="group-name"> Name </label>
-		<input
-			id="group-name"
-			type="text"
-			name="name"
-			placeholder="Personal, Work, ..."
-			class="input"
-			maxlength={MAX_GROUP_NAME_LENGTH}
-		/>
-
-		{#if error.type === 'new-group-rename'}
-			<span class="text-error"> {error.msg} </span>
-		{/if}
-
-		<Button type="submit" class="w-full">Create</Button>
-	</form>
-</Dialog>
-
 <!-- Search dialog -->
 <Command bind:open={globalSearchModal.isOpen}>
 	<CommandItem
 		value="new collection"
 		onselect={() => {
 			globalSearchModal.close();
-			crtCollectionModal.open();
+			groupState.createGroup({ name: NEW_GROUP_NAME });
 		}}
 	>
 		<FolderPlus />
@@ -345,7 +251,7 @@
 		value="new group"
 		onselect={() => {
 			globalSearchModal.close();
-			createGroupModal.open();
+			createCollection();
 		}}
 	>
 		<PackagePlus />

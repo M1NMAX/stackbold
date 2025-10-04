@@ -40,8 +40,8 @@
 		<Label
 			for={`view-${view.id}`}
 			class={tm(
-				'flex items-center justify-center py-1.5 px-2 rounded-md text-ellipsis text-secondary-foreground cursor-pointer',
-				+value === view.shortId && 'bg-secondary border border-secondary'
+				'flex items-center justify-center py-1.5 px-2 rounded-t-md text-ellipsis text-secondary-foreground cursor-pointer',
+				+value === view.shortId && 'bg-secondary shadow-sm border-b-2 border-primary'
 			)}
 		>
 			<RadioGroupItem value={view.shortId.toString()} id={`view-${view.id}`} class="sr-only" />

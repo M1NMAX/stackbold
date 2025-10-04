@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import GripVertical from 'lucide-svelte/icons/grip-vertical';
 	import Trash from 'lucide-svelte/icons/trash';
-	import Settings from 'lucide-svelte/icons/settings';
 	import { capitalizeFirstLetter, tm } from '$lib/utils/index.js';
 	import { ViewType, type View } from '@prisma/client';
 	import {
@@ -109,85 +109,75 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="flex group pr-2 md:pr-4"
 	draggable="true"
 	{ondragstart}
 	{ondrop}
 	{ondragend}
 	{ondragover}
 	{ondragleave}
+	class={tm(
+		'grow border-2',
+		isOpen ? 'rounded' : 'rounded-sm',
+		dragover ? 'border-secondary/60' : 'border-2 border-secondary',
+		dragging && 'outline-0 min-w-0'
+	)}
 >
-	<GripVertical
-		class={tm(
-			'size-2 md:size-4 cursor-pointer invisible group-hover:visible',
-			'opacity-50 hover:opacity-100 transition-opacity',
-			'mt-3.5'
-		)}
-	/>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
+		onclick={() => openChange(isOpen ? null : view.id)}
 		class={tm(
-			'grow border-2',
-			isOpen ? 'rounded' : 'rounded-sm',
-			dragover ? 'border-secondary/60' : 'border-2 border-secondary',
-			dragging && 'select-text outline-0 min-w-0'
+			'h-8 flex items-center gap-x-2 py-1 px-1.5 bg-secondary cursor-pointer group',
+			dragover && 'bg-opacity-60'
 		)}
 	>
-		<div class={tm('flex bg-secondary', dragover && 'bg-opacity-60')}>
-			<div class="relative w-full border-r border-card p-0.5">
-				<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
-					<ViewIcon key={view.type} />
-				</div>
+		<ViewIcon key={view.type} class="flex group-hover:hidden" />
+		<GripVertical class="size-5 cursor-grab opacity-80 hidden group-hover:flex" />
 
-				<label for={`${view.id}-name`} class="sr-only"> Name</label>
+		<div class="grow">{view.name}</div>
+
+		<ChevronLeft class={tm('size-4 transition-transform', isOpen ? '-rotate-90' : 'rotate-0')} />
+	</div>
+
+	{#if isOpen}
+		<div class="flex flex-col gap-y-1 p-2" transition:slide>
+			<Field>
+				<Label for={getIdPrefix('view-name')} name="Name" />
 				<input
-					id={`${view.id}-name`}
+					id={getIdPrefix('view-name')}
 					value={view.name}
-					name="name"
 					type="text"
-					class="w-full h-8 pl-7 text-sm rounded-md bg-transparent focus:bg-card placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					name="name"
 					oninput={handleOnInput}
+					class="input input-ghost"
 					maxlength={MAX_VIEW_NAME_LENGTH}
 				/>
+			</Field>
+			<Field>
+				<Label for={getIdPrefix('view-type')} name="Type" />
+				<Select
+					id={getIdPrefix('view-type')}
+					options={setupViewTypeSelectOptions()}
+					onselect={(opt) => updView({ id: view.id, type: opt.id as ViewType })}
+					searchable
+				/>
+			</Field>
+			<HSeparator />
+			<div class="flex justify-end items-center">
+				<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
+					{#snippet trigger()}
+						<Ellipsis />
+					{/snippet}
+					<Button theme="ghost" variant="menu" onclick={() => duplicateView()}>
+						<Copy />
+						<span> Duplicate view</span>
+					</Button>
+
+					<Button theme="danger" variant="menu" onclick={() => deleteView()}>
+						<Trash />
+						<span> Delete view</span>
+					</Button>
+				</AdaptiveWrapper>
 			</div>
-			<Button
-				theme="ghost"
-				variant="icon"
-				class="hover:bg-card hover:text-card-foreground rounded-3xl"
-				onclick={() => openChange(isOpen ? null : view.id)}
-			>
-				<Settings />
-			</Button>
 		</div>
-
-		{#if isOpen}
-			<div class="flex flex-col gap-y-1 p-2" transition:slide>
-				<Field>
-					<Label for={getIdPrefix('view-type')} name="Type" />
-					<Select
-						id={getIdPrefix('view-type')}
-						options={setupViewTypeSelectOptions()}
-						onselect={(opt) => updView({ id: view.id, type: opt.id as ViewType })}
-						searchable
-					/>
-				</Field>
-				<HSeparator />
-				<div class="flex justify-end items-center">
-					<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
-						{#snippet trigger()}
-							<Ellipsis />
-						{/snippet}
-						<Button theme="ghost" variant="menu" onclick={() => duplicateView()}>
-							<Copy />
-							<span> Duplicate view</span>
-						</Button>
-
-						<Button theme="danger" variant="menu" onclick={() => deleteView()}>
-							<Trash />
-							<span> Delete view</span>
-						</Button>
-					</AdaptiveWrapper>
-				</div>
-			</div>
-		{/if}
-	</div>
+	{/if}
 </div>

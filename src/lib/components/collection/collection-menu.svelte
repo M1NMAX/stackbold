@@ -5,14 +5,15 @@
 	import Eye from 'lucide-svelte/icons/eye';
 	import EyeOff from 'lucide-svelte/icons/eye-off';
 	import Trash from 'lucide-svelte/icons/trash';
+	import Star from 'lucide-svelte/icons/star';
+	import StarOff from 'lucide-svelte/icons/star-off';
 	import type { Collection } from '@prisma/client';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
 		ModalState
 	} from '$lib/states/index.js';
-	import { getCollectionState } from '.';
-	import { goto } from '$app/navigation';
+	import { getCollectionState } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -32,33 +33,33 @@
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
-	function duplicateCollection() {
+	async function duplicateCollection() {
 		wrapper.close();
-		collectionState.duplicateCollection(collection.id);
+		await collectionState.duplicateCollection(collection.id);
 	}
 
-	function toggleDescState() {
+	async function toggleFavState() {
 		wrapper.close();
-		collectionState.updCollection({
+		await collectionState.updCollection({
+			id: collection.id,
+			isPinned: !collection.isPinned
+		});
+	}
+
+	async function toggleDescState() {
+		wrapper.close();
+		await collectionState.updCollection({
 			id: collection.id,
 			isDescHidden: !collection.isDescHidden
 		});
 	}
-	function deleteCollection() {
+	async function deleteCollection() {
 		wrapper.close();
 		deleteModal.open({
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
-			fun: async () => {
-				await collectionState.deleteCollection(collection.id);
-				if (history.length === 1) {
-					// FIXME: maybe use replace state
-					await goto('/collections');
-				} else {
-					history.back();
-				}
-			}
+			fun: async () => await collectionState.deleteCollection(collection.id, true)
 		});
 	}
 
@@ -79,6 +80,16 @@
 	{#snippet trigger()}
 		<Ellipsis />
 	{/snippet}
+
+	<Button theme="ghost" variant="menu" onclick={() => toggleFavState()}>
+		{#if collection.isPinned}
+			<StarOff />
+			<span> Remove from favorites </span>
+		{:else}
+			<Star />
+			<span> Add to favorites </span>
+		{/if}
+	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => toggleDescState()}>
 		{#if collection.isDescHidden}

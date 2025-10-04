@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tm } from '$lib/utils';
+	import { tm } from '$lib/utils/index.js';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -10,6 +10,6 @@
 	let { children, class: className }: Props = $props();
 </script>
 
-<div class={tm('flex items-center justify-between gap-x-2 pt-2 px-2 pb-0', className)}>
+<div class={tm('grow flex items-center gap-x-1', className)}>
 	{@render children()}
 </div>

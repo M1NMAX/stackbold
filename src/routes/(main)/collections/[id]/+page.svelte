@@ -2,6 +2,8 @@
 	import Bolt from 'lucide-svelte/icons/bolt';
 	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import FileMinus from 'lucide-svelte/icons/file-minus';
+	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
@@ -14,31 +16,32 @@
 	import {
 		Accordion,
 		AccordionItem,
+		Breadcrumb,
+		BreadcrumbItem,
 		Button,
 		IconPicker,
-		Shortcut,
-		Tooltip
+		Shortcut
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
 		PageContent,
 		PageFooter,
-		PageHeader
+		PageHeader,
+		PageTitle
 	} from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
-		COLLECTION_ICONS,
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		MAX_COLLECTION_NAME_LENGTH,
 		PROPERTY_COLORS,
-		SCREEN_MD_MEDIA_QUERY
+		SCREEN_LG_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
 	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import SettingsPage from './settings/+page.svelte';
-	import { getContext, tick } from 'svelte';
+	import { getContext, onMount, tick } from 'svelte';
 	import { escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -48,6 +51,7 @@
 		ViewSettingsMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
+	import { getSidebarState, SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
@@ -55,10 +59,11 @@
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const sidebarState = getSidebarState();
 
 	const collection = $derived(collectionState.getCollection(data.cid)!);
-	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
+	const isEmpty = $derived(isCollectionEmpty());
 
 	let search = $state('');
 
@@ -78,7 +83,7 @@
 	let panelContentType = $state<PanelContentType>(null);
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 
-	const isLargeScreen = new MediaQuery(SCREEN_MD_MEDIA_QUERY, false);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
 	async function updCollection(args: Omit<RouterInputs['collections']['update'], 'id'>) {
 		await collectionState.updCollection({ ...args, id: collection.id });
@@ -195,19 +200,23 @@
 		itemState.viewShortId = +value;
 	}
 
+	function isCollectionEmpty() {
+		return itemState.items.length === 0 && viewState.views.every((v) => v.filters.length === 0);
+	}
+
 	$effect(() => {
 		data.cid;
 		search = '';
 	});
 
 	$effect(() => {
-		if (isNewItemInputVisible) {
-			const inputEl = document.getElementById('new-item-name') as HTMLInputElement;
-			tick().then(() => inputEl.focus());
-		}
+		if (!isNewItemInputVisible) return;
+
+		const inputEl = document.getElementById('new-item-name') as HTMLInputElement;
+		tick().then(() => inputEl.focus());
 	});
 
-	$effect(() => {
+	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if (e.altKey && e.key === 'n') {
 				e.preventDefault();
@@ -230,20 +239,25 @@
 </svelte:head>
 
 <PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
-	<PageHeader
-		class={tm('flex', isSmHeadingVisible ? 'justify-between' : 'justify-between md:justify-end')}
-	>
-		<Button theme="secondary" variant="icon" class="md:hidden" onclick={() => history.back()}>
+	<PageHeader class={tm(sidebarState.isOpen && 'lg:justify-end')}>
+		<SidebarOpenBtn />
+
+		<Button theme="ghost" variant="icon" class="lg:hidden" onclick={() => history.back()}>
 			<ChevronLeft />
 		</Button>
-		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'hidden')}>
-			<Icon class="size-6" />
-			<h1 class="grow font-semibold text-xl text-nowrap">
-				{collection.name.length > 18 && !isLargeScreen.current
-					? collection.name.substring(0, 18) + '...'
-					: collection.name}
-			</h1>
-		</div>
+
+		<Breadcrumb class="hidden lg:flex">
+			<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
+			<BreadcrumbItem icon={collection.icon} name={collection.name} last />
+		</Breadcrumb>
+
+		<PageTitle
+			small
+			icon={collection.icon}
+			title={collection.name}
+			class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
+		/>
+
 		<div class="flex justify-end items-center space-x-1.5">
 			<Button theme="secondary" variant="icon" onclick={() => onClickOpenSettings()}>
 				<Bolt />
@@ -252,7 +266,7 @@
 		</div>
 	</PageHeader>
 
-	<PageContent class="relative lg:pt-1" onscroll={handleScroll}>
+	<PageContent class="relative" onscroll={handleScroll}>
 		<div class=" flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
@@ -295,7 +309,9 @@
 			<ViewSettingsMenu {view} />
 		</div>
 
-		{#if !view.groupBy}
+		{#if isEmpty || items.length === 0}
+			{@render noItem()}
+		{:else if !view.groupBy}
 			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
 			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}
@@ -317,25 +333,6 @@
 		{/if}
 	</PageContent>
 	<PageFooter class="w-full flex gap-x-0.5">
-		<Tooltip triggerBy="createItemAdvanceBtn" align="start">
-			<div class="flex items-center p-1 gap-x-2">
-				<span class="text-sm font-semibold">Create item advanced</span>
-				<Shortcut>
-					<span> Ctrl </span>
-					<span> Alt </span>
-					<span> M </span>
-				</Shortcut>
-			</div>
-		</Tooltip>
-		<Button
-			id="createItemAdvanceBtn"
-			theme="secondary"
-			variant="icon"
-			class="[&_svg]:text-primary [&_svg]:size-5"
-			onclick={onClickCreateItemAdvance}
-		>
-			<Plus />
-		</Button>
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="grow relative">
 				<label for="new-item-name" class="sr-only"> Item name</label>
@@ -354,11 +351,11 @@
 		{:else}
 			<Button
 				theme="secondary"
-				class="grow flex justify-between items-center"
+				class="grow flex justify-between items-center text-left font-semibold text-secondary-foreground"
 				onclick={() => (isNewItemInputVisible = true)}
 			>
-				<span class="text-base font-semibold text-primary"> New item </span>
-
+				<Plus />
+				<span class="grow"> New item </span>
 				<Shortcut>
 					<span>Alt</span>
 					<span>N</span>
@@ -371,7 +368,7 @@
 <!-- Sliding panel -->
 <aside
 	class={tm(
-		'h-full flex flex-col space-y-2 p-0 overflow-hidden',
+		'h-full flex flex-col space-y-2 overflow-hidden',
 		'rounded-md bg-card text-card-foreground transition-all duration-300',
 		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 	)}
@@ -400,4 +397,14 @@
 			{option ? option.value : `No ${property.name}`}
 		{/if}
 	</span>
+{/snippet}
+
+{#snippet noItem()}
+	{@const Icon = isEmpty ? FolderMinus : FileMinus}
+	{@const text = isEmpty ? 'This collection has no item' : 'There is item to be presented'}
+
+	<div class="h-full flex flex-col justify-center items-center">
+		<Icon class="size-12" />
+		<span class="text-xl font-semibold"> {text}</span>
+	</div>
 {/snippet}

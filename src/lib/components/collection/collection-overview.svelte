@@ -17,7 +17,7 @@
 <a
 	href="/collections/{collection.id}?view={getCollectionView(collection)}"
 	data-testid="collection-overview"
-	class="flex flex-col items-start p-1.5 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60"
+	class="flex flex-col items-start p-1 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60"
 >
 	<div class="w-full flex items-center justify-between space-x-2">
 		<Icon class="size-6" />

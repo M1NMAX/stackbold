@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
+	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import GripVertical from 'lucide-svelte/icons/grip-vertical';
 	import Plus from 'lucide-svelte/icons/plus';
 	import X from 'lucide-svelte/icons/x';
 	import Trash from 'lucide-svelte/icons/trash';
-	import Settings from 'lucide-svelte/icons/settings';
 	import { Aggregator, PropertyType, type Property } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
@@ -24,7 +24,8 @@
 		PROPERTY_COLORS,
 		VALUE_NOT_DEFINED,
 		PROPERTY_UNIVERSAL_AGGREGATORS,
-		VALUE_NONE
+		VALUE_NONE,
+		MAX_PROPERTY_NAME_LENGTH
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
@@ -222,166 +223,157 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="flex group pr-2 md:pr-4"
 	draggable="true"
 	{ondragstart}
 	{ondrop}
 	{ondragend}
 	{ondragover}
 	{ondragleave}
+	class={tm(
+		'grow border-2 ',
+		isOpen ? 'rounded' : 'rounded-sm',
+		dragover ? 'border-secondary/60' : 'border-2 border-secondary',
+		dragging && 'outline-0 min-w-0'
+	)}
 >
-	<GripVertical
-		class={tm(
-			'size-2 md:size-4 cursor-pointer invisible group-hover:visible',
-			'opacity-50 hover:opacity-100 transition-opacity',
-			'mt-3'
-		)}
-	/>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
+		onclick={() => openChange(isOpen ? null : property.id)}
 		class={tm(
-			'grow border-2',
-			isOpen ? 'rounded' : 'rounded-sm',
-			dragover ? 'border-secondary/60' : 'border-2 border-secondary',
-			dragging && 'select-text outline-0 min-w-0'
+			'h-8 flex items-center gap-x-2 py-1 px-1.5 bg-secondary cursor-pointer group',
+			dragover && 'bg-opacity-60'
 		)}
 	>
-		<div class={tm('flex bg-secondary ', dragover && 'bg-opacity-60')}>
-			<div class="relative w-full border-r border-card p-0.5">
-				<div class="absolute inset-y-0 pl-1 flex items-center pointer-events-none">
-					<PropertyIcon key={property.type} />
-				</div>
+		<PropertyIcon key={property.type} class="flex group-hover:hidden" />
+		<GripVertical class="size-5 cursor-grab opacity-80 hidden group-hover:flex" />
 
-				<label for={`${property.id}-name`} class="sr-only"> Name</label>
+		<div class="grow">{property.name}</div>
+
+		<ChevronLeft class={tm('size-4 transition-transform', isOpen ? '-rotate-90' : 'rotate-0')} />
+	</div>
+	{#if isOpen}
+		<div class="flex flex-col gap-y-1 p-2" transition:slide>
+			<Field>
+				<Label for={getIdPrefix('property-name')} name="Name" />
 				<input
-					id={`${property.id}-name`}
+					id={getIdPrefix('property-name')}
 					value={property.name}
-					name="name"
 					type="text"
-					class="w-full h-8 pl-7 text-sm rounded-md bg-transparent focus:bg-card placeholder:text-primary focus:placeholder:text-secondary-foreground focus:outline-none"
+					name="name"
 					oninput={handleOnInput}
+					class="input input-ghost"
+					maxlength={MAX_PROPERTY_NAME_LENGTH}
 				/>
-			</div>
-			<Button
-				theme="ghost"
-				variant="icon"
-				class="hover:bg-card hover:text-card-foreground rounded-3xl"
-				onclick={() => openChange(isOpen ? null : property.id)}
-			>
-				<Settings />
-			</Button>
-		</div>
-		{#if isOpen}
-			<div class="flex flex-col gap-y-1 p-2" transition:slide>
+			</Field>
+			<Field>
+				<Label for={getIdPrefix('property-type')} name="Type" />
+				<Select
+					id={getIdPrefix('property-type')}
+					options={setupPropertyTypeSelectOptions()}
+					onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
+					searchable
+				/>
+			</Field>
+
+			{#if PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)}
+				{@render defaultValueSelector()}
+				<HSeparator />
+				{@render propertyOptions()}
+			{:else if property.type === PropertyType.RELATION}
 				<Field>
-					<Label for={getIdPrefix('property-type')} name="Type" />
+					<Label for={getIdPrefix('property-target-collection')} name="Related to" />
 					<Select
-						id={getIdPrefix('property-type')}
-						options={setupPropertyTypeSelectOptions()}
-						onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
+						id={getIdPrefix('property-target-collection')}
+						options={collectionState.collections.map((collection) => ({
+							id: collection.id,
+							label: collection.name,
+							icon: collection.icon,
+							isSelected: collection.id === property.targetCollection
+						}))}
+						onselect={(opt) => updProperty({ id: property.id, targetCollection: opt.id || null })}
+						placeholder="Empty"
 						searchable
 					/>
 				</Field>
 
-				{#if PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)}
-					{@render defaultValueSelector()}
-					<HSeparator />
-					{@render propertyOptions()}
-				{:else if property.type === PropertyType.RELATION}
-					<Field>
-						<Label for={getIdPrefix('property-target-collection')} name="Related to" />
-						<Select
-							id={getIdPrefix('property-target-collection')}
-							options={collectionState.collections.map((collection) => ({
-								id: collection.id,
-								label: collection.name,
-								icon: collection.icon,
-								isSelected: collection.id === property.targetCollection
-							}))}
-							onselect={(opt) => updProperty({ id: property.id, targetCollection: opt.id || null })}
-							placeholder="Empty"
-							searchable
-						/>
-					</Field>
+				{@render defaultValueSelector()}
+			{:else if property.type === PropertyType.BUNDLE}
+				{@const relations = propertyState.properties.filter(
+					(prop) => prop.type === PropertyType.RELATION
+				)}
 
-					{@render defaultValueSelector()}
-				{:else if property.type === PropertyType.BUNDLE}
-					{@const relations = propertyState.properties.filter(
-						(prop) => prop.type === PropertyType.RELATION
-					)}
+				<Field>
+					<Label for={getIdPrefix('property-target-relation')} name="Relation" />
+					<Select
+						id={getIdPrefix('property-target-relation')}
+						options={relations.map((prop) => ({
+							id: prop.id,
+							label: prop.name,
+							icon: prop.type.toLowerCase(),
+							isSelected: prop.id === property.intTargetProperty
+						}))}
+						onselect={(opt) => {
+							updProperty({
+								id: property.id,
+								intTargetProperty: opt.id || null,
+								targetCollection: getTargetCollection(relations, opt.id)
+							});
+						}}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
+				<Field>
+					<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
+					<Select
+						id={getIdPrefix('property-ext-target-property')}
+						options={property.options.map((opt) => ({
+							id: opt.id,
+							label: opt.value,
+							icon: opt.extra ? opt.extra.toLowerCase() : '',
+							isSelected: opt.id === property.extTargetProperty
+						}))}
+						onselect={(opt) => {
+							updProperty({ id: property.id, extTargetProperty: opt.id || null });
+						}}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
+				<Field>
+					<Label for={getIdPrefix('property-calculate')} name="Calculate" />
+					<Select
+						id={getIdPrefix('property-calculate')}
+						options={setupAggregatorSelectOptions(
+							isPropertyNumerical(property),
+							property.calculate
+						)}
+						onselect={(opt) => handleUpdPropertyCalculate(opt.id ? (opt.id as Aggregator) : null)}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
+			{/if}
 
-					<Field>
-						<Label for={getIdPrefix('property-target-relation')} name="Relation" />
-						<Select
-							id={getIdPrefix('property-target-relation')}
-							options={relations.map((prop) => ({
-								id: prop.id,
-								label: prop.name,
-								icon: prop.type.toLowerCase(),
-								isSelected: prop.id === property.intTargetProperty
-							}))}
-							onselect={(opt) => {
-								updProperty({
-									id: property.id,
-									intTargetProperty: opt.id || null,
-									targetCollection: getTargetCollection(relations, opt.id)
-								});
-							}}
-							placeholder="Empty"
-							searchable
-						/>
-					</Field>
-					<Field>
-						<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
-						<Select
-							id={getIdPrefix('property-ext-target-property')}
-							options={property.options.map((opt) => ({
-								id: opt.id,
-								label: opt.value,
-								icon: opt.extra ? opt.extra.toLowerCase() : '',
-								isSelected: opt.id === property.extTargetProperty
-							}))}
-							onselect={(opt) => {
-								updProperty({ id: property.id, extTargetProperty: opt.id || null });
-							}}
-							placeholder="Empty"
-							searchable
-						/>
-					</Field>
-					<Field>
-						<Label for={getIdPrefix('property-calculate')} name="Calculate" />
-						<Select
-							id={getIdPrefix('property-calculate')}
-							options={setupAggregatorSelectOptions(
-								isPropertyNumerical(property),
-								property.calculate
-							)}
-							onselect={(opt) => handleUpdPropertyCalculate(opt.id ? (opt.id as Aggregator) : null)}
-							placeholder="Empty"
-							searchable
-						/>
-					</Field>
-				{/if}
+			<HSeparator />
+			<div class="flex justify-end items-center">
+				<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
+					{#snippet trigger()}
+						<Ellipsis />
+					{/snippet}
+					<Button theme="ghost" variant="menu" onclick={() => duplicateProperty()}>
+						<Copy />
+						<span> Duplicate property</span>
+					</Button>
 
-				<HSeparator />
-				<div class="flex justify-end items-center">
-					<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
-						{#snippet trigger()}
-							<Ellipsis />
-						{/snippet}
-						<Button theme="ghost" variant="menu" onclick={() => duplicateProperty()}>
-							<Copy />
-							<span> Duplicate property</span>
-						</Button>
-
-						<Button theme="danger" variant="menu" onclick={() => deleteProperty()}>
-							<Trash />
-							<span> Delete property</span>
-						</Button>
-					</AdaptiveWrapper>
-				</div>
+					<Button theme="danger" variant="menu" onclick={() => deleteProperty()}>
+						<Trash />
+						<span> Delete property</span>
+					</Button>
+				</AdaptiveWrapper>
 			</div>
-		{/if}
-	</div>
+		</div>
+	{/if}
 </div>
 
 {#snippet propertyOptions()}
