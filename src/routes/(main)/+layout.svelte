@@ -183,7 +183,7 @@
 				</AccordionItem>
 			</Accordion>
 
-			<div class="flex items-start justify-between space-x-1 px-2 pb-1">
+			<div class="flex items-start justify-between space-x-1 px-2">
 				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>
 					<FolderPlus />
 					<span> New collection </span>

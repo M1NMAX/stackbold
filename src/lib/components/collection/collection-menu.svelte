@@ -13,8 +13,7 @@
 		getMoveCollectionModalState,
 		ModalState
 	} from '$lib/states/index.js';
-	import { getCollectionState } from '.';
-	import { goto } from '$app/navigation';
+	import { getCollectionState } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
