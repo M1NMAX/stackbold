@@ -23,7 +23,6 @@
 	} from './index.js';
 	import { getItemState } from '$lib/components/items/index.js';
 	import debounce from 'debounce';
-	import { textareaAutoSize } from '$lib/actions/index.js';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
 		AdaptiveWrapper,
@@ -32,6 +31,7 @@
 		Calendar,
 		HSeparator,
 		Select,
+		TextareaAutosize,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
@@ -258,17 +258,16 @@
 		<form class="space-y-0.5">
 			<label for={property.id} class={labelClass}> {property.name} </label>
 
-			<textarea
-				use:textareaAutoSize
+			<TextareaAutosize
+				{value}
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="textarea textarea-ghost"
-				{value}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
 				onkeypress={handleEnterKeypress}
-			></textarea>
+				ghost
+			/>
 		</form>
 	</AdaptiveWrapper>
 {:else if property.type === PropertyType.NUMBER && (value || isTableView())}

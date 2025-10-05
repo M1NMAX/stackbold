@@ -10,7 +10,8 @@
 		BreadcrumbItem,
 		Button,
 		buttonVariants,
-		HSeparator
+		HSeparator,
+		TextareaAutosize
 	} from '$lib/components/base/index.js';
 	import { getItemState } from '$lib/components/items/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
@@ -30,9 +31,8 @@
 	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import debounce from 'debounce';
-	import { getContext, tick } from 'svelte';
-	import { textareaAutoSize } from '$lib/actions/index.js';
-	import { tm, useId } from '$lib/utils/index.js';
+	import { getContext } from 'svelte';
+	import { tm } from '$lib/utils/index.js';
 	import type { PropertyRef } from '@prisma/client';
 	import { getViewState } from '$lib/components/view/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
@@ -51,7 +51,6 @@
 
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
-	const nameId = useId();
 
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 	function goBack(forceRename: boolean = true) {
@@ -114,13 +113,6 @@
 			view.filters.some((f) => f.id === field)
 		);
 	}
-
-	$effect(() => {
-		if (panelState.isOpen) {
-			const inputEl = document.getElementById(nameId) as HTMLTextAreaElement;
-			tick().then(() => inputEl.focus());
-		}
-	});
 </script>
 
 <svelte:head>
@@ -167,17 +159,16 @@
 	</PageHeader>
 
 	<PageContent onscroll={handleScroll}>
-		<textarea
-			id={nameId}
-			use:textareaAutoSize
-			class="textarea textarea-ghost textarea-xl"
+		<TextareaAutosize
+			name="name"
 			value={item.name}
 			oninput={handleUpdItemName}
-			maxlength={MAX_ITEM_NAME_LENGTH}
 			spellcheck={false}
+			maxlength={MAX_ITEM_NAME_LENGTH}
 			placeholder="New item"
-		></textarea>
-
+			ghost
+			xl
+		/>
 		{#each propertyState.properties as property}
 			<PropertyInput
 				{property}
