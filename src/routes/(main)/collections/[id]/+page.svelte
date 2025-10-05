@@ -20,7 +20,8 @@
 		BreadcrumbItem,
 		Button,
 		IconPicker,
-		Shortcut
+		Shortcut,
+		TextareaAutosize
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
@@ -42,7 +43,7 @@
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import SettingsPage from './settings/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
-	import { escapeKeydown, textareaAutoSize } from '$lib/actions/index.js';
+	import { escapeKeydown } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
@@ -287,14 +288,13 @@
 		{#if !collection.isDescHidden}
 			<label for="description" class="sr-only"> Collection description </label>
 
-			<textarea
-				use:textareaAutoSize
+			<TextareaAutosize
 				id="description"
 				value={collection.description}
 				oninput={handleOnInputCollectionDesc}
 				spellcheck={false}
-				class="textarea textarea-ghost"
-			></textarea>
+				ghost
+			></TextareaAutosize>
 		{/if}
 
 		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">

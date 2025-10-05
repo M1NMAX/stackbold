@@ -2,10 +2,8 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
-	import Dna from 'lucide-svelte/icons/dna';
 	import File from 'lucide-svelte/icons/file';
 	import FolderPlus from 'lucide-svelte/icons/folder-plus';
-	import Home from 'lucide-svelte/icons/home';
 	import PackagePlus from 'lucide-svelte/icons/package-plus';
 	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
 	import LibraryBig from 'lucide-svelte/icons/library-big';
@@ -106,12 +104,11 @@
 		<!-- SIDEBAR -->
 		<aside
 			class={tm(
-				'hidden lg:flex h-full flex-col gap-y-2 rounded-md px-0 py-4',
-				'overflow-hidden bg-card text-card-foreground transition-all duration-300',
+				'hidden lg:flex h-full flex-col gap-y-2.5 rounded-md py-4 overflow-hidden bg-card text-card-foreground transition-all duration-300',
 				sidebarState.isOpen ? 'w-[18rem] mr-1.5 shrink-0' : 'w-0'
 			)}
 		>
-			<div class="flex items-start justify-between gap-x-1 px-4">
+			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				<UserMenu {user} />
 				<Button
 					theme="secondary"
@@ -136,7 +133,7 @@
 				</Button>
 			</div>
 
-			<div class="space-y-0.5 px-0">
+			<div>
 				{#each SIDEBAR_ITEMS as item (item.url)}
 					<SidebarItem
 						icon={item.icon}
@@ -147,8 +144,8 @@
 				{/each}
 			</div>
 
-			<Accordion value="favorites" class="grow flex flex-col pt-1">
-				<AccordionItem id="favorites" contentClass="p-0">
+			<Accordion value="favorites" class="grow overflow-y-hidden flex flex-col">
+				<AccordionItem id="favorites" contentClass="p-0 grow overflow-y-scroll">
 					{#snippet accordionHeader({ isOpen, toggle })}
 						<div class="w-full group hover:bg-secondary">
 							<button
@@ -166,6 +163,7 @@
 							<SidebarCollection {collection} active={activeCollection(collection.id)} />
 						{/if}
 					{/each}
+
 					<Accordion isMulti value={groupState.groups.map((g) => g.id)}>
 						{#each groupState.groups as group (group.id)}
 							{@const groupCollections = collectionState.collections.filter(
@@ -190,7 +188,7 @@
 				</AccordionItem>
 			</Accordion>
 
-			<div class="flex items-start justify-between space-x-1 px-4">
+			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>
 					<FolderPlus />
 					<span> New collection </span>

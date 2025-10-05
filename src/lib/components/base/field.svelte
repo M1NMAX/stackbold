@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tm } from '$lib/utils';
+	import { tm } from '$lib/utils/index.js';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -8,7 +8,6 @@
 	};
 
 	let { children, class: className }: Props = $props();
-	//TODO: add error visualizer
 </script>
 
 <div

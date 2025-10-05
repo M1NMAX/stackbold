@@ -11,38 +11,28 @@
 		buttonVariants,
 		HSeparator
 	} from '$lib/components/base/index.js';
-	import { getSidebarState } from './index.js';
-	import { goto } from '$app/navigation';
 	import {
 		getDeleteModalState,
 		getMoveCollectionModalState,
 		ModalState
 	} from '$lib/states/index.js';
 	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
-	import {
-		COLLECTION_ICONS,
-		MAX_COLLECTION_NAME_LENGTH,
-		SCREEN_LG_MEDIA_QUERY
-	} from '$lib/constant/index.js';
-	import { MediaQuery } from 'svelte/reactivity';
+	import { COLLECTION_ICONS, MAX_COLLECTION_NAME_LENGTH } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import type { CollectionWithViews } from '$lib/types.js';
 	import { clickOutside, escapeKeydown, enterKeydown } from '$lib/actions/index.js';
 	import { tick } from 'svelte';
 
 	type Props = {
+		collection: CollectionWithViews;
 		active: boolean;
 		asChild?: boolean;
-		collection: CollectionWithViews;
 	};
 
-	let { active, asChild = false, collection }: Props = $props();
+	let { collection, active, asChild = false }: Props = $props();
 
 	const collectionState = getCollectionState();
 	const Icon = $derived(COLLECTION_ICONS[collection.icon]);
-
-	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY);
-	const sidebarState = getSidebarState();
 	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 	const menuState = new ModalState();
@@ -62,14 +52,6 @@
 	function startRenaming() {
 		menuState.close();
 		isRenaming = true;
-	}
-
-	function onClickSidebarItem(e: MouseEvent & { currentTarget: HTMLAnchorElement }) {
-		if (e.metaKey || e.ctrlKey || isLargeScreen.current) return;
-
-		const { href } = e.currentTarget;
-		sidebarState.close();
-		goto(href);
 	}
 
 	function moveCollection() {
@@ -119,21 +101,18 @@
 {:else}
 	<span
 		class={tm(
-			'group flex items-center py-1 pr-1 hover:bg-secondary/90 transition-all duration-75 text-secondary-foreground',
+			'group flex items-center py-1 pr-1 [&_svg]:size-5 [&_svg]:shrink-0 hover:bg-secondary/90 transition-all duration-75 text-secondary-foreground',
 			active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/90',
 			asChild ? 'pl-10' : 'pl-4'
 		)}
 	>
 		<a
 			href="/collections/{collection.id}?view={getCollectionView(collection)}"
-			class="grow flex items-center space-x-1.5"
-			onclick={onClickSidebarItem}
+			class={tm('grow flex items-center space-x-1.5 min-w-0', active && 'text-primary')}
 		>
-			<Icon class={tm('size-5', active && 'text-primary')} />
-			<span class={['font-semibold text-base text-nowrap', active && 'text-primary']}>
-				{collection.name.length > 25 && isLargeScreen.current
-					? collection.name.substring(0, 22) + ' ...'
-					: collection.name}
+			<Icon />
+			<span class="font-semibold text-base truncate">
+				{collection.name}
 			</span>
 		</a>
 		{@render menu()}

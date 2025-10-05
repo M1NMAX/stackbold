@@ -25,6 +25,7 @@ export { default as Switch } from './swicth.svelte';
 export { default as Tabs } from './tabs.svelte';
 export { default as TabTrigger } from './tab-trigger.svelte';
 export { default as TabContent } from './tab-content.svelte';
+export { default as TextareaAutosize } from './textarea-autosize.svelte';
 export { default as Toaster } from './toaster.svelte';
 export { default as Tooltip } from './tooltip.svelte';
 
