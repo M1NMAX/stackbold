@@ -37,6 +37,7 @@ export type MoveCollectionDetail = {
 	currentGroupId: string | null;
 };
 
+export type UpdGroup = RouterInputs['groups']['update'];
 export type UpdView = RouterInputs['views']['update'];
 export type UpdProperty = RouterInputs['properties']['update'];
 export type UpdOption = RouterInputs['properties']['updateOption']['option'];

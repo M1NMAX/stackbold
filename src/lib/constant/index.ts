@@ -42,7 +42,8 @@ export const TEMPLATE_PANEL_CTX_KEY = Symbol('TEMPLATE_PANEL_CTX_KEY');
 export const MAX_VISIBLE_VIEWS_TAB = 3;
 export const MAX_COLLECTION_NAME_LENGTH = 50;
 export const MAX_VIEW_NAME_LENGTH = 50;
-export const MAX_ITEM_NAME_LENGTH = 200;
+export const MAX_PROPERTY_NAME_LENGTH = 50;
+export const MAX_ITEM_NAME_LENGTH = 100;
 export const MAX_GROUP_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NUMERIC_LENGTH = 10;
 export const MAX_PROPERTY_TEXT_LENGTH = 255;
@@ -53,6 +54,9 @@ export const ITEMS_CHUNK_SIZE = 25;
 export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
 
 export const NAME_FIELD = 'name';
+
+export const NEW_COLLECTION_NAME = 'Add a name';
+export const NEW_GROUP_NAME = 'New group';
 
 export const LOCALE = 'en-US';
 
@@ -66,7 +70,7 @@ export const WEEK_DAYS: { [key: number]: string } = {
 	6: 'Saturday'
 };
 
-export const SCREEN_MD_MEDIA_QUERY = 'min-width: 768px';
+export const SCREEN_LG_MEDIA_QUERY = 'min-width: 1024px';
 
 export const NUMBERICAL_PROPERTY_TYPES: PropertyType[] = [PropertyType.NUMBER];
 

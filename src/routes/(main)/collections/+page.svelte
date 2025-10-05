@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { Plus, LibraryBig } from 'lucide-svelte';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import Plus from 'lucide-svelte/icons/plus';
+	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
 	import type { Collection } from '@prisma/client';
 	import { tm } from '$lib/utils/index.js';
-	import { getCrtCollectionModalState } from '$lib/states/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
-	import { DEFAULT_SORT_OPTIONS } from '$lib/constant/index.js';
+	import { DEFAULT_SORT_OPTIONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
 	import { Button } from '$lib/components/base/index.js';
+	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
@@ -25,8 +25,6 @@
 			.filter((collection) => collection.name.toLowerCase().includes(searchTerm))
 			.sort(sortFun(sort.field, sort.order));
 	});
-
-	const crtCollectionModal = getCrtCollectionModalState();
 
 	const SORT_STORAGE_KEY = 'collection-sort';
 	$effect(() => {
@@ -45,6 +43,10 @@
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
 	}
+
+	async function createCollection() {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
+	}
 </script>
 
 <svelte:head>
@@ -53,32 +55,30 @@
 
 <PageContainer>
 	<PageHeader>
-		<div class={tm('grow flex items-center space-x-2', !isSmHeadingVisible && 'md:hidden')}>
-			<LibraryBig class="size-6" />
-			<h1 class="text-xl font-semibold">Collections</h1>
-		</div>
+		<SidebarOpenBtn />
+		<PageTitle
+			small
+			icon="collections"
+			title="Collections 1"
+			class={isSmHeadingVisible ? 'flex-1' : 'flex lg:hidden'}
+		/>
 
-		<div class=" flex md:hidden items-center space-x-2">
-			<Button theme="ghost" variant="icon" onclick={() => crtCollectionModal.open()}>
+		<div class="flex lg:hidden items-center space-x-2">
+			<Button theme="ghost" variant="icon" onclick={() => createCollection()}>
 				<Plus />
 			</Button>
 			<UserMenu user={data.user} />
 		</div>
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
-		<div class=" hidden md:flex items-center space-x-2">
-			<LibraryBig class="size-9" />
-			<h1 class="font-semibold text-2xl">Collections</h1>
-		</div>
+		<PageTitle icon="collections" title="Collections" class="hidden lg:flex" />
 
 		<div class="space-y-2">
 			<div class="w-full flex justify-between space-x-1 md:space-x-2">
 				<SearchInput placeholder="Find Collection" bind:value={search} />
 
 				<SortMenu options={sortOptions} bind:value={sort} />
-				<Button class="hidden md:flex" onclick={() => crtCollectionModal.open()}>
-					New Collection
-				</Button>
+				<Button class="hidden md:flex" onclick={() => createCollection()}>New</Button>
 			</div>
 
 			{#if collections.length > 0}

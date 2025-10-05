@@ -10,10 +10,9 @@
 		title?: string;
 		header?: Snippet;
 		children: Snippet;
-		extra?: Snippet;
-		arrow?: boolean;
 		triggerClass?: string;
 		contentClass?: string;
+		accordionHeader?: Snippet<[accordionItem: { isOpen: boolean; toggle: () => void }]>;
 	};
 
 	let {
@@ -21,10 +20,9 @@
 		title,
 		header,
 		children,
-		arrow = true,
-		extra,
 		triggerClass,
-		contentClass
+		contentClass,
+		accordionHeader
 	}: Props = $props();
 
 	const accordionState = getAccordionState();
@@ -33,36 +31,35 @@
 
 	const isOpen = $derived(accordionState.isOpen(id));
 
-	function handleClick() {
+	function toggle() {
 		if (accordionState.isOpen(id)) accordionState.close(id);
 		else accordionState.open(id);
 	}
 </script>
 
-<div class="flex items-center gap-x-2 rounded-sm hover:bg-secondary group">
-	<button
-		onclick={handleClick}
-		aria-expanded={accordionState.isOpen(id)}
-		class={tm(
-			'grow h-9 md:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
-			triggerClass
-		)}
-	>
-		{#if arrow}
+{#if accordionHeader}
+	{@render accordionHeader({ isOpen, toggle })}
+{:else}
+	<div class="flex items-center gap-x-2 rounded-sm hover:bg-secondary group">
+		<button
+			onclick={toggle}
+			aria-expanded={accordionState.isOpen(id)}
+			class={tm(
+				'grow h-9 md:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
+				triggerClass
+			)}
+		>
 			<ChevronRight
 				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
 			/>
-		{/if}
-
-		{#if title}
-			{title}
-		{:else if header}
-			{@render header()}
-		{/if}
-	</button>
-
-	{@render extra?.()}
-</div>
+			{#if title}
+				{title}
+			{:else if header}
+				{@render header()}
+			{/if}
+		</button>
+	</div>
+{/if}
 {#if isOpen}
 	<div
 		transition:slide={{ delay: 10, duration: 150 }}

@@ -96,6 +96,7 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		e.stopPropagation();
 		if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'j')) {
 			e.preventDefault();
 			highlightNext();

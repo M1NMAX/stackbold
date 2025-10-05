@@ -9,9 +9,8 @@
 		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { tm, sanitizeNumberInput } from '$lib/utils';
+	import { tm, sanitizeNumberInput } from '$lib/utils/index.js';
 	import debounce from 'debounce';
-	import { textareaAutoSize } from '$lib/actions';
 	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
 	import {
 		separateMultiselectOptions,
@@ -27,7 +26,8 @@
 		Label,
 		HSeparator,
 		buttonVariants,
-		Field
+		Field,
+		TextareaAutosize
 	} from '$lib/components/base/index.js';
 
 	type Props = {
@@ -201,15 +201,14 @@
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 
 		{#if property.type === PropertyType.TEXT}
-			<textarea
-				use:textareaAutoSize
+			<TextareaAutosize
 				id={property.id}
 				name={property.name}
 				{value}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
-				class="textarea textarea-ghost"
-			></textarea>
+				ghost
+			></TextareaAutosize>
 		{:else if property.type === PropertyType.NUMBER}
 			<input
 				id={property.id}

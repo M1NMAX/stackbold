@@ -3,7 +3,7 @@
 	import type { Snippet } from 'svelte';
 
 	type Props = {
-		children?: Snippet;
+		children: Snippet;
 		class?: string;
 	};
 
@@ -11,9 +11,7 @@
 </script>
 
 <div
-	class={tm('flex items-center justify-start gap-x-2 pt-2 md:pt-4 px-2 md:px-4 pb-0', className)}
+	class={tm('flex items-center justify-between gap-x-2 pt-2 md:pt-4 px-2 md:px-4 pb-0', className)}
 >
-	{#if children}
-		{@render children()}
-	{/if}
+	{@render children()}
 </div>

@@ -12,7 +12,7 @@
 		getPropertyRef,
 		getPropertyState,
 		isPropertyVisible
-	} from '$lib/components/property';
+	} from '$lib/components/property/index.js';
 	import { type Item, type View } from '@prisma/client';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import {
@@ -22,6 +22,8 @@
 	} from '$lib/constant/index.js';
 	import debounce from 'debounce';
 	import { Button } from '$lib/components/base/index.js';
+	import { escapeKeydown, enterKeydown, clickOutside } from '$lib/actions/index.js';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
 		view: View;
@@ -38,11 +40,11 @@
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 	async function updItem(args: RouterInputs['items']['update']) {
-		itemState.updItem(args);
+		await itemState.updItem(args);
 	}
 
-	//TODO: validate text
 	function handleOnInput(e: Event) {
+		e.stopPropagation();
 		const targetEl = e.target as HTMLInputElement;
 
 		const id = targetEl.dataset.id!;
@@ -53,43 +55,17 @@
 	type ClickItemEvent = MouseEvent & {
 		currentTarget: EventTarget & HTMLDivElement;
 	};
+
 	function onClickItemBody(e: ClickItemEvent, itemId: string) {
 		if (e.target === e.currentTarget || e.target === e.currentTarget.firstChild) {
 			clickOpenItem(itemId);
 		}
 	}
 
-	type ItemKeydownEvent = KeyboardEvent & {
-		currentTarget: EventTarget & HTMLDivElement;
-	};
-
-	function handleItemKeydownEvent(e: ItemKeydownEvent, id: string) {
-		if (e.key !== 'Enter' && e.key !== 'Escape') return;
-
-		if (e.key === 'Escape') {
-			saveAndClose(e.target as HTMLInputElement);
-			return;
-		}
-
-		if (e.key === 'Enter') {
-			if (!isCurrentlyEditing(id)) {
-				clickOpenItem(id);
-				return;
-			}
-			saveAndClose(e.target as HTMLInputElement);
-			return;
-		}
-	}
-
-	function handleFocusOut(e: FocusEvent) {
-		saveAndClose(e.target as HTMLInputElement);
-	}
-
-	//TODO: Value validation
-	function saveAndClose(target: HTMLInputElement) {
+	async function saveAndClose(target: HTMLInputElement) {
 		const id = target.dataset.id!;
 		const name = target.value;
-		updItem({ id, name });
+		await updItem({ id, name });
 		stopEditing();
 	}
 
@@ -114,44 +90,51 @@
 
 <div class="h-full space-y-2 grow">
 	{#each items.slice(0, renderLimit) as item (item.id)}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
+			use:escapeKeydown
+			use:enterKeydown
 			tabindex="0"
 			role="button"
 			onclick={(e) => onClickItemBody(e, item.id)}
-			onkeydown={(e) => handleItemKeydownEvent(e, item.id)}
-			class={[
-				'relative flex flex-col items-start p-1.5 gap-y-2 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
+			onescapekey={(e) => saveAndClose(e.target as HTMLInputElement)}
+			onenterkey={(e) => saveAndClose(e.target as HTMLInputElement)}
+			class={tm(
+				'relative  flex flex-col items-start p-2 gap-y-2 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
 				item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
-			]}
+			)}
 		>
 			{#if isCurrentlyEditing(item.id)}
 				<input
+					use:clickOutside
 					id={item.id}
 					data-id={item.id}
 					value={item.name}
-					oninput={handleOnInput}
-					onfocusout={handleFocusOut}
 					maxlength={MAX_ITEM_NAME_LENGTH}
+					oninput={handleOnInput}
+					onclickoutside={(e) => saveAndClose(e.target as HTMLInputElement)}
+					onclick={(e) => e.stopPropagation()}
 					class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-sm"
 				/>
 
 				<Button
 					theme="ghost"
-					variant="compact"
 					onclick={() => {
 						const target = document.getElementById(item.id) as HTMLInputElement;
 						saveAndClose(target);
 					}}
-					class="absolute right-3 top-0"
+					class="absolute right-1"
 				>
 					<Check />
 				</Button>
 			{:else}
-				<p class="text-lg font-semibold">
+				<p class="text-lg font-semibold max-w-full truncate">
 					{item.name}
 				</p>
-				<div class="absolute right-2 top-0 flex items-center gap-x-0.5 invisible md:visible">
-					<Button theme="ghost" variant="compact" onclick={() => startEditing(item.id)}>
+				<div
+					class="absolute right-1 top-1 flex items-center gap-x-1 lg:invisible lg:group-hover:visible"
+				>
+					<Button theme="ghost" onclick={() => startEditing(item.id)}>
 						<Pencil />
 					</Button>
 					<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />
