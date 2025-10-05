@@ -220,7 +220,7 @@
 					href={item.url}
 					theme="ghost"
 					class={[
-						'grow h-16 flex flex-col items-center justify-center space-x-0 hover:text-primary hover:bg-transparent',
+						'grow h-16 flex flex-col items-center justify-center space-x-0 [&_svg]:size-5 hover:text-primary hover:bg-transparent',
 						activeUrl === item.url && 'text-primary'
 					]}
 				>
