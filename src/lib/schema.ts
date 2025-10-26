@@ -1,14 +1,26 @@
 import { z } from 'zod';
 
-export const signInSchema = z.object({
-	email: z.string().email(),
-	password: z.string().min(6).max(255)
+export const passwordSchema = z.object({
+	password: z
+		.string()
+		.min(8, { message: 'Password must be at least 8 character long' })
+		.max(255, { message: 'Password must be at most 255 characters long' })
 });
 
-export const signUpSchema = z.object({
-	name: z.string().min(6).max(100),
-	email: z.string().email(),
-	password: z.string().min(6).max(255)
+export const signInSchema = passwordSchema.extend({
+	email: z.email()
+});
+
+export const signUpSchema = passwordSchema.extend({
+	email: z.email(),
+	name: z
+		.string()
+		.min(6, { message: 'Name must be at least 6 character long' })
+		.max(100, { message: 'Name must be at most 255 characters long' })
+});
+
+export const codeSchema = z.object({
+	code: z.string().length(8, { message: 'Code exceeds 8 character limit' })
 });
 
 export function getNameSchema({

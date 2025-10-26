@@ -12,9 +12,9 @@ import {
 	type View
 } from '@prisma/client';
 
-const colorSchema = z.nativeEnum(Color);
-const propertyTypeSchema = z.nativeEnum(PropertyType);
-const aggregatorSchema = z.nativeEnum(Aggregator);
+const colorSchema = z.enum(Color);
+const propertyTypeSchema = z.enum(PropertyType);
+const aggregatorSchema = z.enum(Aggregator);
 
 const optionSchema = z.object({
 	id: z.string(),
@@ -39,7 +39,7 @@ const propertyCreateSchema = z.object({
 });
 
 const propertyUpdateSchema = propertyCreateSchema
-	.merge(z.object({ id: z.string() }))
+	.extend({ id: z.string() })
 	.partial({ collectionId: true, name: true });
 
 const propertyOrderSchema = z.object({

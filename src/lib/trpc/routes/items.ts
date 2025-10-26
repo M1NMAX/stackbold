@@ -38,7 +38,7 @@ const itemCreateSchema = z.object({
 });
 
 const itemUpdateSchema = itemCreateSchema
-	.merge(z.object({ id: z.string() }))
+	.extend({ id: z.string() })
 	.partial({ name: true, collectionId: true });
 
 const refUpdateSchema = z.object({

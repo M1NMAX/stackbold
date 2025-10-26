@@ -16,7 +16,7 @@ const collectionCreateSchema = z.object({
 });
 
 const collectionUpdateSchema = collectionCreateSchema
-	.merge(z.object({ id: z.string() }))
+	.extend({ id: z.string() })
 	.partial({ name: true });
 
 export const collections = createTRPCRouter({
