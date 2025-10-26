@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { PAGE_ICONS } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
-	import { fade } from 'svelte/transition';
 
 	type Props = {
 		icon: string;

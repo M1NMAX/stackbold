@@ -5,9 +5,10 @@
 	type Props = {
 		children: Snippet;
 		class?: string;
+		errors?: string[] | undefined;
 	};
 
-	let { children, class: className }: Props = $props();
+	let { children, class: className, errors }: Props = $props();
 </script>
 
 <div
@@ -18,3 +19,7 @@
 >
 	{@render children()}
 </div>
+
+{#if errors}
+	<div class="text-error">{errors}</div>
+{/if}

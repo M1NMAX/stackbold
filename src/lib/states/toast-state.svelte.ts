@@ -21,7 +21,7 @@ export class ToastState {
 		this.#add({ message, type: 'success' }, durationMs);
 	}
 
-	error(message: string | null = null, durationMs = 4500) {
+	error(message: string | null = null, durationMs = 5000) {
 		this.#add({ message: message ?? DEFAULT_FEEDBACK_ERR_MESSAGE, type: 'error' }, durationMs);
 	}
 

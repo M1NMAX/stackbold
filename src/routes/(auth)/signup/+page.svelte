@@ -1,10 +1,18 @@
 <script lang="ts">
-	import logoSrc from '$lib/assets/logo.png';
 	import { superForm } from 'sveltekit-superforms/client';
-	import { Button } from '$lib/components/base/index.js';
+	import { Button, Field, Label } from '$lib/components/base/index.js';
+	import { getToastState } from '$lib/states/index.js';
 
 	let { data } = $props();
-	const { form, message, errors, enhance } = superForm(data.form);
+
+	const toastState = getToastState();
+	const { form, errors, enhance } = superForm(data.form, {
+		onResult: ({ result }) => {
+			if (result.type != 'failure') return;
+			if (result.data == null || result.data.form.errors._errors == null) return;
+			toastState.error(result.data.form.errors._errors);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -12,69 +20,44 @@
 </svelte:head>
 
 <div>
-	<div class="flex justify-center pb-8">
-		<img src={logoSrc} alt="logo" />
-	</div>
-
 	<h1 class="mb-6 text-center text-3xl font-medium">Create an account</h1>
 
-	{#if $message}
-		<div class="msg-error">
-			{$message}
-		</div>
-	{/if}
 	<form method="post" use:enhance class="space-y-4">
-		<div>
-			<label for="name" class="label">Full name</label>
+		<Field class="py-1" errors={$errors.name}>
+			<Label for="name" name="Name" />
 			<input
 				id="name"
 				type="text"
 				name="name"
 				required
 				bind:value={$form.name}
-				class="input input-bordered"
+				class="input input-ghost"
 			/>
+		</Field>
 
-			{#if $errors.name}
-				<span class="mt-2 text-error"> {$errors.name} </span>
-			{/if}
-		</div>
-
-		<div>
-			<label for="email" class="label"> Email </label>
+		<Field class="py-1" errors={$errors.email}>
+			<Label for="email" name="Email" />
 			<input
 				id="email"
 				type="text"
 				name="email"
 				required
 				bind:value={$form.email}
-				class="input input-bordered"
+				class="input input-ghost"
 			/>
-
-			{#if $errors.email}
-				<span class="mt-2 text-error"> {$errors.email} </span>
-			{/if}
-		</div>
-
-		<div>
-			<label for="password" class="label"> Password </label>
+		</Field>
+		<Field class="py-1" errors={$errors.password}>
+			<Label for="password" name="Password" />
 			<input
 				id="password"
 				type="password"
 				name="password"
 				required
 				bind:value={$form.password}
-				class="input input-bordered"
+				class="input input-ghost"
 			/>
-
-			{#if $errors.password}
-				<span class="text-error"> {$errors.password} </span>
-			{/if}
-		</div>
-
-		<div>
-			<Button type="submit" class="w-full">Sign up</Button>
-		</div>
+		</Field>
+		<Button type="submit" class="w-full">Sign up</Button>
 	</form>
 </div>
 <div class="my-8 leading-8 font-medium text-sm">
