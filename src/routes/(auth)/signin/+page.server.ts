@@ -1,16 +1,20 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { message, superValidate } from 'sveltekit-superforms/server';
+import { setError, superValidate } from 'sveltekit-superforms/server';
 import { signInSchema } from '$lib/schema';
-import { zod } from 'sveltekit-superforms/adapters';
+import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { verifyPasswordHash } from '$lib/server/password';
 import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { getUserByEmail } from '$lib/server/user';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
+export const load: PageServerLoad = async (event) => {
+	if (event.locals.session !== null && event.locals.user !== null) {
+		if (!event.locals.user.emailVerified) return redirect(302, '/verify-email');
+		if (!event.locals.user.registered2FA) return redirect(302, '/2fa/setup');
+		if (!event.locals.session.twoFactorVerified) return redirect(302, '/2fa');
 
-	if (user) redirect(302, '/');
+		return redirect(302, '/');
+	}
 
 	const form = await superValidate(zod(signInSchema));
 	return { form };
@@ -19,20 +23,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	default: async (event) => {
 		const form = await superValidate(event.request, zod(signInSchema));
-
 		if (!form.valid) return fail(400, { form });
 
 		const { email, password } = form.data;
 
-		//TODO: Think about brute-force attack
-
 		const user = await getUserByEmail(email);
-
-		if (!user) return message(form, 'Invalid Credentials');
+		if (!user) return setError(form, 'Invalid Credentials');
 
 		const validPassword = await verifyPasswordHash(user.password, password);
-
-		if (!validPassword) return message(form, 'Invalid Credentials');
+		if (!validPassword) return setError(form, 'Invalid Credentials');
 
 		const sessionToken = generateSessionToken();
 		const session = await createSession(sessionToken, {
@@ -41,7 +40,6 @@ export const actions: Actions = {
 		});
 
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
 		if (!user.emailVerified) return redirect(302, '/email-verification');
 
 		return redirect(302, '/');

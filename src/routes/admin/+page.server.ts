@@ -3,15 +3,15 @@ import { z } from 'zod';
 import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
-import { zod } from 'sveltekit-superforms/adapters';
+import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { createUser, getUserByEmail } from '$lib/server/user';
 import { Role } from '@prisma/client';
 
 const signUpSchema = z.object({
 	name: z.string().min(4).max(31),
-	email: z.string().email(),
+	email: z.email(),
 	password: z.string().min(6).max(255),
-	role: z.nativeEnum(Role)
+	role: z.enum(Role)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
