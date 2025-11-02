@@ -16,10 +16,10 @@
 </script>
 
 <div>
-	<h1 class="text-center text-3xl font-medium">Verify your email address</h1>
-	<p class="mb-6 text-center font-medium">We sent an 8-digit code to your email address</p>
+	<h1 class="form-title">Verify your email address</h1>
+	<p class="form-subtitle">We sent an 8-digit code to your email address</p>
 
-	<form method="post" use:enhance class="space-y-4">
+	<form method="post" use:enhance>
 		<Field class="py-1" errors={$errors.code}>
 			<Label for="code" name="Code" />
 			<input
@@ -33,9 +33,4 @@
 		</Field>
 		<Button type="submit" class="w-full">Verify</Button>
 	</form>
-</div>
-<div class="my-8 leading-8 font-medium text-sm">
-	<p class="text-center text-gray-500">
-		<a href="/signin" class="no-underline text-primary hover:text-primary/70"> Back to Sign in </a>
-	</p>
 </div>

@@ -9,6 +9,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 type SessionData = {
 	userId: string;
 	role: Role;
+	twoFactorVerified: boolean;
 };
 
 export function generateSessionToken() {
@@ -24,7 +25,7 @@ export async function createSession(token: string, data: SessionData) {
 			userId: data.userId,
 			role: data.role,
 			expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-			twoFactorVerified: false
+			twoFactorVerified: data.twoFactorVerified
 		}
 	});
 }
@@ -62,6 +63,10 @@ export async function validateSessionToken(token: string) {
 	};
 }
 
+export async function setSessionAs2FAVerified(sessionId: string) {
+	await prisma.session.update({ where: { id: sessionId }, data: { twoFactorVerified: true } });
+}
+
 export async function invalidateSession(sessionId: string): Promise<void> {
 	await prisma.session.delete({ where: { id: sessionId } });
 }
@@ -75,7 +80,7 @@ export type SessionValidationResult =
 	| { session: null; user: null };
 
 // COOKIES
-export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
+export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set('session', token, {
 		httpOnly: true,
 		sameSite: 'lax',
@@ -84,7 +89,7 @@ export function setSessionTokenCookie(event: RequestEvent, token: string, expire
 	});
 }
 
-export function deleteSessionTokenCookie(event: RequestEvent): void {
+export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.set('session', '', {
 		httpOnly: true,
 		sameSite: 'lax',

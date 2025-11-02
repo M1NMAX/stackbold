@@ -49,7 +49,8 @@ export const actions: Actions = {
 		const sessionToken = generateSessionToken();
 		const session = await createSession(sessionToken, {
 			userId: user.id,
-			role: user.role
+			role: user.role,
+			twoFactorVerified: false
 		});
 
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);

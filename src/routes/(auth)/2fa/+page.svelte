@@ -16,20 +16,26 @@
 </script>
 
 <div>
-	<h1 class="form-title mb-6">Reset your password</h1>
+	<h1 class="form-title">Two-factor authentication</h1>
+	<p class="form-subtitle">Enter the code from your authenticator app.</p>
 
 	<form method="post" use:enhance>
-		<Field class="py-1" errors={$errors.password}>
-			<Label for="password" name="Password" />
+		<Field class="py-1" errors={$errors.code}>
+			<Label for="code" name="Code" />
 			<input
-				id="password"
-				type="password"
-				name="password"
+				id="code"
+				type="text"
+				name="code"
 				required
-				bind:value={$form.password}
+				bind:value={$form.code}
 				class="input input-ghost"
+				autocomplete="one-time-code"
 			/>
 		</Field>
-		<Button type="submit" class="w-full">Reset password</Button>
+		<Button type="submit" class="w-full">Verify</Button>
 	</form>
+</div>
+
+<div class="form-link-container">
+	<a class="link" href="/2fa/reset"> Use recovery code </a>
 </div>

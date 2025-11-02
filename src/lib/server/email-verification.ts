@@ -1,29 +1,9 @@
-import type { User } from './user';
 import { prisma } from './prisma';
-import { isWithinExpirationDate } from 'oslo';
 import sendgrid from '@sendgrid/mail';
 import { SENDGRID_API_KEY, SB_EMAIL } from '$env/static/private';
 import { dev } from '$app/environment';
 import type { RequestEvent } from '@sveltejs/kit';
 import { generateRandomOTP } from './utils';
-
-export async function verifyVerificationCode(user: User, code: string): Promise<boolean> {
-	return prisma.$transaction(async (tx) => {
-		const storedVericationCode = await tx.emailVerication.findFirst({
-			where: { userId: user.id }
-		});
-
-		if (!storedVericationCode || storedVericationCode.code !== code) return false;
-
-		await tx.emailVerication.delete({ where: { id: storedVericationCode.id } });
-
-		if (!isWithinExpirationDate(storedVericationCode.expiresAt)) return false;
-
-		if (storedVericationCode.email !== user.email) return false;
-
-		return true;
-	});
-}
 
 export async function sendEmailVerificationCode(email: string, code: string) {
 	const msg = {

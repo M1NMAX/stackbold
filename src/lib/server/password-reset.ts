@@ -47,6 +47,13 @@ export async function setPasswordResetSessionAsEmailVerified(sessionId: string) 
 	});
 }
 
+export async function setPasswordResetSessionAs2FAVerified(sessionId: string) {
+	await prisma.passwordResetSession.update({
+		where: { id: sessionId },
+		data: { twoFactorVerified: true }
+	});
+}
+
 export async function validatePasswordResetSessionRequest(event: RequestEvent) {
 	const token = event.cookies.get('password_reset_session') ?? null;
 	if (token === null) return { session: null, user: null };
@@ -60,7 +67,7 @@ export function setPasswordResetSessionTokenCookie(
 	event: RequestEvent,
 	token: string,
 	expiresAt: Date
-): void {
+) {
 	event.cookies.set('password_reset_session', token, {
 		expires: expiresAt,
 		sameSite: 'lax',
@@ -70,7 +77,7 @@ export function setPasswordResetSessionTokenCookie(
 	});
 }
 
-export function deletePasswordResetSessionTokenCookie(event: RequestEvent): void {
+export function deletePasswordResetSessionTokenCookie(event: RequestEvent) {
 	event.cookies.set('password_reset_session', '', {
 		maxAge: 0,
 		sameSite: 'lax',

@@ -1,14 +1,10 @@
-import {
-	setPasswordResetSessionAs2FAVerified,
-	validatePasswordResetSessionRequest
-} from '$lib/server/password-reset';
+import { validatePasswordResetSessionRequest } from '$lib/server/password-reset';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms/server';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { recoveryCodeSchema } from '$lib/schema';
 import type { Actions, PageServerLoad } from './$types';
-import { getUserTOTPKey } from '$lib/server/user';
-import { verifyTOTP } from '@oslojs/otp';
+import { resetUser2FAWithRecoveryCode } from '$lib/server/2fa';
 
 export const load: PageServerLoad = async (event) => {
 	const { session, user } = await validatePasswordResetSessionRequest(event);
@@ -34,12 +30,9 @@ export const actions: Actions = {
 
 		const { code } = form.data;
 
-		const totpKey = await getUserTOTPKey(session.userId);
-		if (totpKey === null) return fail(403, { message: 'Forbidden' });
+		const isValid = resetUser2FAWithRecoveryCode(session.userId, code);
+		if (!isValid) return fail(400, { message: 'Invalid code' });
 
-		if (!verifyTOTP(totpKey, 30, 6, code)) return fail(400, { message: 'Invalid code' });
-
-		setPasswordResetSessionAs2FAVerified(session.id);
 		return redirect(302, '/reset-password');
 	}
 };

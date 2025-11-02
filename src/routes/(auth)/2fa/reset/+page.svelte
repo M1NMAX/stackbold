@@ -16,20 +16,20 @@
 </script>
 
 <div>
-	<h1 class="form-title mb-6">Reset your password</h1>
+	<h1 class="form-title mb-6">Recover your account</h1>
 
 	<form method="post" use:enhance>
-		<Field class="py-1" errors={$errors.password}>
-			<Label for="password" name="Password" />
+		<Field class="py-1" errors={$errors.code}>
+			<Label for="code" name="Recovery code" />
 			<input
-				id="password"
-				type="password"
-				name="password"
+				id="code"
+				type="text"
+				name="code"
 				required
-				bind:value={$form.password}
+				bind:value={$form.code}
 				class="input input-ghost"
 			/>
 		</Field>
-		<Button type="submit" class="w-full">Reset password</Button>
+		<Button type="submit" class="w-full">Verify</Button>
 	</form>
 </div>

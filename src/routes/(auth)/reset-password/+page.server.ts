@@ -48,7 +48,11 @@ export const actions: Actions = {
 		await updateUserPassword(session.userId, password);
 
 		const sessionToken = generateSessionToken();
-		const createdSession = await createSession(sessionToken, { userId: user.id, role: user.role });
+		const createdSession = await createSession(sessionToken, {
+			userId: user.id,
+			role: user.role,
+			twoFactorVerified: session.twoFactorVerified
+		});
 		setSessionTokenCookie(event, sessionToken, createdSession.expiresAt);
 		deletePasswordResetSessionTokenCookie(event);
 		return redirect(302, '/');

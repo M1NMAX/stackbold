@@ -12,7 +12,7 @@ import {
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 
 import { setUserEmailAsVerified as setUserEmailAsVerified } from '$lib/server/user';
-import { codeSchema } from '$lib/schema';
+import { recoveryCodeSchema } from '$lib/schema';
 import { invalidateUserPasswordResetSessions } from '$lib/server/password-reset';
 
 export const load: PageServerLoad = async (event) => {
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async (event) => {
 		setEmailVerificationRequestCookie(event, verificationRequest);
 	}
 
-	const form = await superValidate(zod(codeSchema));
+	const form = await superValidate(zod(recoveryCodeSchema));
 	return { form };
 };
 
@@ -40,17 +40,16 @@ export const actions: Actions = {
 };
 
 async function verifyCode(event: RequestEvent) {
-	if (event.locals.session === null || event.locals.user === null) {
+	if (event.locals.session === null || event.locals.user === null)
 		return fail(401, { message: 'Not authenticated' });
-	}
-	if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified) {
+
+	if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
 		return fail(403, { message: 'Forbidden' });
-	}
 
 	let verificationRequest = await getUserEmailVerificationRequestFromRequest(event);
 	if (verificationRequest === null) return fail(401, { message: 'Not authenticated' });
 
-	const form = await superValidate(event.request, zod(codeSchema));
+	const form = await superValidate(event.request, zod(recoveryCodeSchema));
 	if (!form.valid) return fail(400, { form });
 
 	const { code } = form.data;

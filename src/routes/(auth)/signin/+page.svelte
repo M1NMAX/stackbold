@@ -21,9 +21,9 @@
 </svelte:head>
 
 <div>
-	<h1 class="mb-6 text-center text-3xl font-medium">Sign in to your account</h1>
+	<h1 class="form-title mb-6">Sign in to your account</h1>
 
-	<form method="post" use:enhance class="space-y-4">
+	<form method="post" use:enhance>
 		<Field class="py-1" errors={$errors.email}>
 			<Label for="email" name="Email" />
 			<input
@@ -61,13 +61,9 @@
 	</form>
 
 	{#if dev}
-		<div class="my-8 leading-8 font-medium text-sm">
-			<p class="text-center text-gray-500">
-				Don't have an account?
-				<a href="/signup" class="no-underline text-primary hover:text-primary/70">
-					Create an account
-				</a>
-			</p>
+		<div class="form-link-container">
+			Don't have an account?
+			<a href="/signup" class="link"> Create an account </a>
 		</div>
 	{/if}
 </div>

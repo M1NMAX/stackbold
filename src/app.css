@@ -27,6 +27,29 @@
 
 /*  Scrollbar */
 
+/* Form */
+form {
+	@apply space-y-4;
+}
+
+.form-title {
+	@apply text-center text-3xl font-medium;
+}
+
+.form-subtitle {
+	@apply mb-6 text-center font-medium;
+}
+
+.form-link-container {
+	@apply my-4 text-center leading-8 font-medium text-sm text-gray-500;
+
+	& > .link {
+		@apply no-underline text-primary hover:text-primary/70;
+	}
+}
+
+/* Form */
+
 /* Number Input */
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,

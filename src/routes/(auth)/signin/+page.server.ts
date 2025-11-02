@@ -5,13 +5,13 @@ import { signInSchema } from '$lib/schema';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { verifyPasswordHash } from '$lib/server/password';
 import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
-import { getUserByEmail } from '$lib/server/user';
+import { getUserByEmail, getUserPasswordHash } from '$lib/server/user';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.session !== null && event.locals.user !== null) {
-		if (!event.locals.user.emailVerified) return redirect(302, '/verify-email');
-		if (!event.locals.user.registered2FA) return redirect(302, '/2fa/setup');
-		if (!event.locals.session.twoFactorVerified) return redirect(302, '/2fa');
+		if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
+		if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
+			redirect(302, '/2fa');
 
 		return redirect(302, '/');
 	}
@@ -30,18 +30,21 @@ export const actions: Actions = {
 		const user = await getUserByEmail(email);
 		if (!user) return setError(form, 'Invalid Credentials');
 
-		const validPassword = await verifyPasswordHash(user.password, password);
-		if (!validPassword) return setError(form, 'Invalid Credentials');
+		const passwordHash = await getUserPasswordHash(user.id);
+		const isPasswordValid = await verifyPasswordHash(passwordHash, password);
+		if (!isPasswordValid) return setError(form, 'Invalid Credentials');
 
 		const sessionToken = generateSessionToken();
 		const session = await createSession(sessionToken, {
 			userId: user.id,
-			role: user.role
+			role: user.role,
+			twoFactorVerified: false
 		});
 
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		if (!user.emailVerified) return redirect(302, '/email-verification');
+		if (!user.emailVerified) redirect(302, '/verify-email');
+		if (user.registered2FA) redirect(302, '/2fa');
 
-		return redirect(302, '/');
+		redirect(302, '/');
 	}
 };
