@@ -2,6 +2,7 @@
 	import CircleAlert from 'lucide-svelte/icons/circle-alert';
 	import CircleCheck from 'lucide-svelte/icons/circle-check';
 	import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
+	import Loader from 'lucide-svelte/icons/loader';
 	import X from 'lucide-svelte/icons/x';
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
@@ -31,7 +32,8 @@
 				toast.type === 'success' && 'bg-green-50 dark:bg-green-800 text-green-500 dark:text-white',
 				toast.type === 'error' && 'bg-red-200 dark:bg-red-800 text-red-600 dark:text-red-100',
 				toast.type === 'warning' && 'bg-amber-100 dark:bg-amber-600 text-amber-600 dark:text-white',
-				toast.type === 'action' && 'bg-background border border-border'
+				toast.type === 'action' && 'bg-background border border-border',
+				toast.type === 'loading' && 'bg-background border border-border'
 			)}
 		>
 			{#if toast.type === 'success'}
@@ -42,12 +44,14 @@
 				<CircleAlert class="size-6" />
 			{:else if toast.type === 'warning'}
 				<TriangleAlert class="size-6 " />
+			{:else if toast.type === 'loading'}
+				<Loader class="size-6 animate-spin" />
 			{/if}
 			<span class="grow text-sm font-medium">
 				{toast.message}
 			</span>
 
-			{#if dismissable || toast.type !== 'action'}
+			{#if dismissable || !['action', 'loading'].includes(toast.type)}
 				<button onclick={() => toastState.remove(toast.id)}>
 					<X class="size-4" />
 				</button>

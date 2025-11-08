@@ -29,6 +29,11 @@ export class ToastState {
 		this.#add({ message, type: 'warning' }, durationMs);
 	}
 
+	loading(message = 'Loading...') {
+		const id = crypto.randomUUID();
+		this.toasts.push({ id, message, type: 'loading' });
+	}
+
 	#add(toast: Omit<Exclude<Toast, { type: 'action' }>, 'id'>, durationMs = 4000) {
 		const id = crypto.randomUUID();
 
@@ -63,6 +68,10 @@ export class ToastState {
 		}
 
 		this.toasts = this.toasts.filter((toast) => toast.id !== id);
+	}
+
+	clear() {
+		this.toasts.forEach((toast) => this.remove(toast.id));
 	}
 }
 
