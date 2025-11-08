@@ -1,5 +1,5 @@
 <script lang="ts">
-	import logoSrc from '$lib/assets/logo.png';
+	import logoSrc from '$lib/assets/logo.svg';
 </script>
 
 <div
@@ -7,7 +7,7 @@
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
 		<div class="flex justify-center pb-8">
-			<img src={logoSrc} alt="logo" />
+			<img src={logoSrc} alt="logo" width="150" />
 		</div>
 
 		<slot />
@@ -15,10 +15,8 @@
 
 	<footer>
 		<p>
-			Stackbold created by <a
-				href="https://github.com/M1NMAX/stackbold"
-				class="text-primary hover:text-primary/70"
-			>
+			Stackbold created by
+			<a href="https://github.com/M1NMAX/stackbold" class="text-primary hover:text-primary/70">
 				M1NMAX
 			</a>
 		</p>
