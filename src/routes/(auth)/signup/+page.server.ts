@@ -16,10 +16,9 @@ import { verifyPasswordStrength } from '$lib/server/password';
 export const load: PageServerLoad = async (event) => {
 	if (!dev) redirect(302, '/');
 
-	if (event.locals.session !== null && event.locals.user !== null) {
-		if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
-		if (!event.locals.user.registered2FA) redirect(302, '/2fa/setup');
-		if (!event.locals.session.twoFactorVerified) redirect(302, '/2fa');
+	const { session, user } = event.locals;
+	if (session !== null && user !== null) {
+		if (!user.emailVerified) redirect(302, '/verify-email');
 
 		redirect(302, '/');
 	}
@@ -38,7 +37,7 @@ export const actions: Actions = {
 		const isPasswordStrong = await verifyPasswordStrength(password);
 		if (!isPasswordStrong) return setError(form, 'password', 'Weak password');
 
-		const user = await createUser(name, email, password);
+		const user = await createUser({ name, email, password });
 		const emailVerificationRequest = await createEmailVerificationRequest(user.id, user.email);
 		await sendEmailVerificationCode(emailVerificationRequest.email, emailVerificationRequest.code);
 		setEmailVerificationRequestCookie(event, {

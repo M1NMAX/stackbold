@@ -1,8 +1,7 @@
 <script lang="ts">
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import { Button, Field, Label } from '$lib/components/base/index.js';
-	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { Breadcrumb, BreadcrumbItem, Button, Field, Label } from '$lib/components/base/index.js';
+	import { PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { getToastState } from '$lib/states/index.js';
 	import { superForm } from 'sveltekit-superforms/client';
 
@@ -16,62 +15,48 @@
 			toastState.error(result.data.form.errors._errors);
 		}
 	});
-
-	let isSmHeadingVisible = $state(false);
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
-	}
 </script>
 
 <svelte:head>
-	<title>2fa Setup - Stackbold</title>
+	<title>Change Password - Stackbold</title>
 </svelte:head>
-<PageContainer>
-	<PageHeader>
-		<SidebarOpenBtn />
-		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
-			<ChevronLeft />
-		</Button>
-		<PageTitle
-			icon="settings"
-			title="Settings"
-			small
-			class={isSmHeadingVisible ? 'grow' : 'hidden'}
-		/>
-	</PageHeader>
+<PageHeader>
+	<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
+		<ChevronLeft />
+	</Button>
+	<Breadcrumb class="hidden lg:flex">
+		<BreadcrumbItem icon="settings" name="Settings" link="/settings" />
+		<BreadcrumbItem icon="security" name="Change password" last />
+	</Breadcrumb>
+</PageHeader>
 
-	<PageContent onscroll={handleScroll}>
-		<PageTitle icon="settings" title="Settings" />
+<PageContent class="justify-center items-center">
+	<h1 class="form-title mb-6">Change password</h1>
+	<form method="post" use:enhance class="form-container">
+		<Field class="py-1" errors={$errors.currentPassword}>
+			<Label for="currentPassword" name="Current password" />
+			<input
+				required
+				id="currentPassword"
+				type="password"
+				name="currentPassword"
+				class="input input-ghost"
+				bind:value={$form.currentPassword}
+			/>
+		</Field>
 
-		<form method="post" use:enhance>
-			<Field class="py-1" errors={$errors.currentPassword}>
-				<Label for="currentPassword" name="Current password" />
-				<input
-					required
-					id="currentPassword"
-					type="password"
-					name="currentPassword"
-					class="input input-ghost"
-					bind:value={$form.currentPassword}
-				/>
-			</Field>
+		<Field class="py-1" errors={$errors.newPassword}>
+			<Label for="newPassword" name="New password" />
+			<input
+				required
+				id="newPassword"
+				type="password"
+				name="newPassword"
+				class="input input-ghost"
+				bind:value={$form.newPassword}
+			/>
+		</Field>
 
-			<Field class="py-1" errors={$errors.newPassword}>
-				<Label for="newPassword" name="New password" />
-				<input
-					required
-					id="newPassword"
-					type="password"
-					name="newPassword"
-					class="input input-ghost"
-					bind:value={$form.newPassword}
-				/>
-			</Field>
-
-			<Button type="submit" class="w-full">Save</Button>
-		</form>
-	</PageContent>
-</PageContainer>
+		<Button type="submit" class="w-full">Save</Button>
+	</form>
+</PageContent>

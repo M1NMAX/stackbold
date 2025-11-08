@@ -13,10 +13,10 @@ import {
 import { getUserPasswordHash, updateUserPassword } from '$lib/server/user';
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.session === null || event.locals.user === null) redirect(302, '/signin');
-	if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
-	if (!event.locals.user.registered2FA) redirect(302, '/settings/2fa-setup');
-	if (!event.locals.session.twoFactorVerified) redirect(302, '/2fa');
+	const { session, user } = event.locals;
+	if (session === null || user === null) redirect(302, '/signin');
+	if (!user.emailVerified) redirect(302, '/verify-email');
+	if (user.registered2FA && !session.twoFactorVerified) redirect(302, '/2fa');
 
 	const form = await superValidate(zod(updPasswordSchema));
 	return { form };
@@ -24,10 +24,10 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	default: async (event) => {
-		if (event.locals.session === null || event.locals.user === null)
-			return fail(401, { message: 'Not authenticated' });
+		const { session, user } = event.locals;
+		if (session === null || user === null) return fail(401, { message: 'Not authenticated' });
 
-		if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
+		if (user.registered2FA && !session.twoFactorVerified)
 			return fail(403, { message: 'Forbidden' });
 
 		const form = await superValidate(event.request, zod(updPasswordSchema));
@@ -38,22 +38,22 @@ export const actions: Actions = {
 		const isPasswordStrong = await verifyPasswordStrength(newPassword);
 		if (!isPasswordStrong) return fail(400, { message: 'Weak password' });
 
-		const passwordHash = await getUserPasswordHash(event.locals.user.id);
+		const passwordHash = await getUserPasswordHash(user.id);
 		const validPassword = await verifyPasswordHash(passwordHash, currentPassword);
 
 		if (!validPassword) return fail(400, { message: 'Incorrect password' });
 
-		invalidateUserSessions(event.locals.user.id);
-		await updateUserPassword(event.locals.user.id, newPassword);
+		invalidateUserSessions(user.id);
+		await updateUserPassword(user.id, newPassword);
 
 		const sessionToken = generateSessionToken();
-		const session = await createSession(sessionToken, {
-			userId: event.locals.user.id,
-			role: event.locals.user.role,
-			twoFactorVerified: event.locals.session.twoFactorVerified
+		const createdSession = await createSession(sessionToken, {
+			userId: user.id,
+			role: user.role,
+			twoFactorVerified: session.twoFactorVerified
 		});
 
-		setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		setSessionTokenCookie(event, sessionToken, createdSession.expiresAt);
 		redirect(302, '/settings');
 	}
 };

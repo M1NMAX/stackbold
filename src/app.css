@@ -48,6 +48,10 @@ form {
 	}
 }
 
+.form-container {
+	@apply mx-auto w-full lg:max-w-md;
+}
+
 /* Form */
 
 /* Number Input */

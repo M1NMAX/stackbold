@@ -1,26 +1,21 @@
 import type { Actions, PageServerLoad } from './$types';
-import { z } from 'zod';
 import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { createUser, getUserByEmail } from '$lib/server/user';
 import { Role } from '@prisma/client';
+import { createUserSchema } from '$lib/schema';
 
-const signUpSchema = z.object({
-	name: z.string().min(4).max(31),
-	email: z.email(),
-	password: z.string().min(6).max(255),
-	role: z.enum(Role)
-});
+export const load: PageServerLoad = async (event) => {
+	if (event.locals.session === null || event.locals.user === null) redirect(302, '/signin');
+	if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
+	if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
+		redirect(302, '/2fa');
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
+	if (event.locals.user.role !== Role.ADMIN) redirect(302, '/');
 
-	if (!user) redirect(302, '/signin');
-	if (user.role !== Role.ADMIN) redirect(302, '/');
-
-	const form = await superValidate(zod(signUpSchema));
+	const form = await superValidate(zod(createUserSchema));
 
 	const users = await prisma.user.findMany({
 		select: {
@@ -35,12 +30,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	});
 
-	return { form, users, user };
+	return { form, users, user: event.locals.user };
 };
 
 export const actions: Actions = {
 	default: async ({ request }) => {
-		const form = await superValidate(request, zod(signUpSchema));
+		const form = await superValidate(request, zod(createUserSchema));
 
 		if (!form.valid) return fail(400, { form });
 
@@ -49,7 +44,7 @@ export const actions: Actions = {
 		const storedUser = await getUserByEmail(email);
 		if (storedUser) return setError(form, 'email', 'E-mail already exists.');
 
-		await createUser(name, email, password, role);
+		await createUser({ name, email, password, role });
 
 		return message(form, 'Feature under revision');
 	}

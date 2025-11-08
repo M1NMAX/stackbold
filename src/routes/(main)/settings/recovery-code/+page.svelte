@@ -1,46 +1,80 @@
 <script lang="ts">
+	import Copy from 'lucide-svelte/icons/copy';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import { Button } from '$lib/components/base/index.js';
-	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { Breadcrumb, BreadcrumbItem, Button } from '$lib/components/base/index.js';
+	import { PageContent, PageHeader } from '$lib/components/page/index.js';
+	import { browser } from '$app/environment';
+	import { getToastState } from '$lib/states/index.js';
+	import { invalidateAll } from '$app/navigation';
+	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
 
 	let { data } = $props();
+	let isLoading = $state(false);
 
-	let isSmHeadingVisible = $state(false);
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
+	const toastState = getToastState();
 
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
+	async function handleEnhanceResult(result: ActionResult) {
+		stopLoading();
+		if (result.type !== 'success') {
+			toastState.error();
+			return;
+		}
+		await invalidateAll();
+	}
+
+	function copyToClipboard() {
+		if (!browser) return;
+		navigator.clipboard.writeText(data.recoveryCode);
+	}
+
+	function startLoading() {
+		isLoading = true;
+		toastState.loading();
+	}
+
+	function stopLoading() {
+		isLoading = false;
+		toastState.clear();
 	}
 </script>
 
 <svelte:head>
-	<title>2fa Setup - Stackbold</title>
+	<title>Recovery code - Stackbold</title>
 </svelte:head>
-<PageContainer>
-	<PageHeader>
-		<SidebarOpenBtn />
-		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
-			<ChevronLeft />
-		</Button>
-		<PageTitle
-			icon="settings"
-			title="Settings"
-			small
-			class={isSmHeadingVisible ? 'grow' : 'hidden'}
-		/>
-	</PageHeader>
+<PageHeader>
+	<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
+		<ChevronLeft />
+	</Button>
+	<Breadcrumb class="hidden lg:flex">
+		<BreadcrumbItem icon="settings" name="Settings" link="/settings" />
+		<BreadcrumbItem icon="security" name="Recovery code" last />
+	</Breadcrumb>
+</PageHeader>
 
-	<PageContent onscroll={handleScroll}>
-		<PageTitle icon="settings" title="Settings" />
+<PageContent class="justify-center items-center">
+	<h1 class="form-title">Recovery code</h1>
 
-		<section class="flex p-2 rounded-sm bg-secondary">
-			<div class="grow">
-				<h3 class="text-base font-semibold">Recovery code</h3>
-				<p>Your recovery code is: {data.recoveryCode}</p>
-				<p>You can use this recovery code if you lose access to your second factors.</p>
-			</div>
-		</section>
-	</PageContent>
-</PageContainer>
+	<p class="text-center">
+		You can use this recovery code if you lose access to your second factors.
+	</p>
+
+	<div class="form-container space-y-4">
+		<div class="flex items-center justify-between p-2 rounded-md bg-secondary">
+			<p class="grow">{data.recoveryCode}</p>
+			<Button variant="icon" theme="outline" disabled={isLoading} onclick={() => copyToClipboard()}>
+				<Copy />
+			</Button>
+		</div>
+
+		<form
+			method="post"
+			use:enhance={() => {
+				startLoading();
+				return async ({ result }) => handleEnhanceResult(result);
+			}}
+		>
+			<Button type="submit" class="w-full" disabled={isLoading}>Generate new code</Button>
+		</form>
+	</div>
+</PageContent>

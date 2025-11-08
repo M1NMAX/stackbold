@@ -31,18 +31,18 @@
 </PageHeader>
 
 <PageContent class="justify-center items-center">
-	<h1 class="form-title">Change email</h1>
+	<h1 class="form-title">Change name</h1>
 
 	<form method="post" use:enhance class="form-container">
-		<Field class="py-1" errors={$errors.email}>
-			<Label for="email" name="New email" />
+		<Field class="py-1" errors={$errors.name}>
+			<Label for="name" name="New name" />
 			<input
 				required
-				id="email"
+				id="name"
 				type="text"
-				name="email"
+				name="name"
 				class="input input-ghost"
-				bind:value={$form.email}
+				bind:value={$form.name}
 			/>
 		</Field>
 

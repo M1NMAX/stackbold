@@ -72,7 +72,6 @@ async function verifyCode(event: RequestEvent) {
 	setUserEmailAsVerified(event.locals.user.id, verificationRequest.email);
 	deleteEmailVerificationRequestCookie(event);
 
-	if (!event.locals.user.registered2FA) redirect(302, '/2fa/setup');
 	return redirect(302, '/');
 }
 

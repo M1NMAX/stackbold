@@ -3,6 +3,8 @@ import { hashPassword } from './password';
 import { prisma } from './prisma';
 import { generateRandomRecoveryCode } from './utils';
 import { decrypt, decryptToString, encrypt, encryptString } from './encryption';
+import type { createUserSchema } from '$lib/schema';
+import type z from 'zod';
 
 export interface User {
 	id: string;
@@ -13,7 +15,9 @@ export interface User {
 	registered2FA: boolean;
 }
 
-export async function createUser(name: string, email: string, password: string) {
+export async function createUser(args: z.infer<typeof createUserSchema>) {
+	const { name, email, password, role } = args;
+
 	const passwordHash = await hashPassword(password);
 	const recoveryCode = generateRandomRecoveryCode();
 	const encryptedCode = encryptString(recoveryCode);
@@ -22,6 +26,7 @@ export async function createUser(name: string, email: string, password: string) 
 		data: {
 			name,
 			email,
+			role,
 			password: passwordHash,
 			recoveryCode: encryptedCode
 		},
@@ -92,6 +97,35 @@ export async function updateUserPassword(userId: string, password: string) {
 	return await prisma.user.update({
 		where: { id: userId },
 		data: { password: passwordHash }
+	});
+}
+
+export async function updateUserName(userId: string, name: string) {
+	await prisma.user.update({
+		where: { id: userId },
+		data: { name }
+	});
+}
+export async function updateUserRecoveryCode(userId: string, recoveryCode: string) {
+	return prisma.$transaction(async (tx) => {
+		const result = await tx.user.findUnique({
+			where: { id: userId },
+			select: { recoveryCode: true }
+		});
+		if (result == null) return false;
+
+		const userRecoveryCode = decryptToString(result.recoveryCode);
+		if (recoveryCode !== userRecoveryCode) return false;
+
+		const newRecoveryCode = generateRandomRecoveryCode();
+		const encryptedNewRecoveryCode = encryptString(newRecoveryCode);
+
+		const user = await tx.user.update({
+			where: { id: userId, recoveryCode: result.recoveryCode },
+			data: { recoveryCode: encryptedNewRecoveryCode }
+		});
+
+		return user != null;
 	});
 }
 

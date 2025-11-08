@@ -8,10 +8,11 @@ import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib
 import { getUserByEmail, getUserPasswordHash } from '$lib/server/user';
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.session !== null && event.locals.user !== null) {
-		if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
-		if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
-			redirect(302, '/2fa');
+	const { session, user } = event.locals;
+
+	if (session !== null && user !== null) {
+		if (!user.emailVerified) redirect(302, '/verify-email');
+		if (user.registered2FA && !session.twoFactorVerified) redirect(302, '/2fa');
 
 		return redirect(302, '/');
 	}
