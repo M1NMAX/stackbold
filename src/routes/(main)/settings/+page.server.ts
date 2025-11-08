@@ -27,7 +27,7 @@ export const actions: Actions = {
 		const { session, user } = event.locals;
 		if (session === null || user === null) return fail(401, { message: 'Not authenticated' });
 
-		if (!user.emailVerified || !user.registered2FA || !session.twoFactorVerified)
+		if (!user.emailVerified || (!user.registered2FA && session.twoFactorVerified))
 			return fail(403, { message: 'Forbidden' });
 
 		await createCaller(await createContext(event)).users.delete(user.id);
