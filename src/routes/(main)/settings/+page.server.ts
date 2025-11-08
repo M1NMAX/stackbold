@@ -1,9 +1,11 @@
 import { getUserRecoverCode } from '$lib/server/user';
 import { superValidate } from 'sveltekit-superforms/server';
-import type { PageServerLoad } from './$types';
-import { redirect } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
+import { fail, redirect } from '@sveltejs/kit';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { updEmailSchema } from '$lib/schema';
+import { createCaller } from '$lib/trpc/router';
+import { createContext } from '$lib/trpc/context';
 
 export const load: PageServerLoad = async (event) => {
 	const { session, user } = event.locals;
@@ -18,4 +20,16 @@ export const load: PageServerLoad = async (event) => {
 	const emailUpdForm = await superValidate(zod(updEmailSchema));
 
 	return { emailUpdForm, recoveryCode, user };
+};
+
+export const actions: Actions = {
+	default: async (event) => {
+		const { session, user } = event.locals;
+		if (session === null || user === null) return fail(401, { message: 'Not authenticated' });
+
+		if (!user.emailVerified || !user.registered2FA || !session.twoFactorVerified)
+			return fail(403, { message: 'Forbidden' });
+
+		await createCaller(await createContext(event)).users.delete(user.id);
+	}
 };

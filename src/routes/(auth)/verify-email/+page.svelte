@@ -8,6 +8,10 @@
 	const toastState = getToastState();
 	const { form, errors, enhance } = superForm(data.form, {
 		onResult: ({ result }) => {
+			if (result.type == 'success' && result.data != null) {
+				toastState.success(result.data.message);
+				return;
+			}
 			if (result.type != 'failure') return;
 			if (result.data == null || result.data.form.errors._errors == null) return;
 			toastState.error(result.data.form.errors._errors);

@@ -53,6 +53,6 @@ export const actions: Actions = {
 		});
 
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		redirect(302, '/email-verification');
+		redirect(302, '/verify-email');
 	}
 };
