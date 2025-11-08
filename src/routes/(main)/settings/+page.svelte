@@ -12,13 +12,13 @@
 	} from '$lib/components/base/index.js';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
-	import { trpc } from '$lib/trpc/client';
 	import { goto } from '$app/navigation';
 	import { capitalizeFirstLetter } from '$lib/utils/index.js';
 	import { getToastState, ModalState } from '$lib/states/index.js';
+	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
 
 	let { data } = $props();
-	let user = $state(data.user);
 	let isSmHeadingVisible = $state(false);
 	let confirmed = $state(false);
 
@@ -31,15 +31,14 @@
 		else isSmHeadingVisible = false;
 	}
 
-	// FIXME:
-	async function handleClickDeleteAccount() {
-		try {
-			await trpc().users.delete.mutate(user.id);
-			toastState.success('Account deleted successfully');
-			goto('/');
-		} catch (error) {
+	async function handleEnhanceResult(result: ActionResult) {
+		toastState.clear();
+		if (result.type !== 'success') {
 			toastState.error('Unable to delete your account, please try again');
+			return;
 		}
+		toastState.success('Account deleted successfully');
+		await goto('/');
 	}
 
 	function setupThemeOptions() {
@@ -49,6 +48,11 @@
 			isSelected: $mode === theme,
 			icon: theme
 		}));
+	}
+
+	function startLoading() {
+		toastState.loading();
+		deleteDialog.close();
 	}
 </script>
 
@@ -146,9 +150,16 @@
 
 	<div class="flex items-center justify-end space-x-2">
 		<Button theme="outline" onclick={() => deleteDialog.close()}>Cancel</Button>
-		<Button theme="destructive" disabled={!confirmed} onclick={handleClickDeleteAccount}>
-			Confirm
-		</Button>
+
+		<form
+			method="post"
+			use:enhance={() => {
+				startLoading();
+				return async ({ result }) => handleEnhanceResult(result);
+			}}
+		>
+			<Button theme="destructive" type="submit" disabled={!confirmed}>Confirm</Button>
+		</form>
 	</div>
 </Dialog>
 
