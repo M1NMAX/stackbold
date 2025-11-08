@@ -1,36 +1,31 @@
 import type { Actions, PageServerLoad } from './$types';
 import { message, setError, superValidate } from 'sveltekit-superforms/server';
 import { fail, redirect } from '@sveltejs/kit';
-import { prisma } from '$lib/server/prisma';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { createUser, getUserByEmail } from '$lib/server/user';
 import { Role } from '@prisma/client';
 import { createUserSchema } from '$lib/schema';
+import { createContext } from '$lib/trpc/context';
+import { createCaller } from '$lib/trpc/router';
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.session === null || event.locals.user === null) redirect(302, '/signin');
-	if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
-	if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
-		redirect(302, '/2fa');
+	const { session, user } = event.locals;
 
-	if (event.locals.user.role !== Role.ADMIN) redirect(302, '/');
+	if (session === null || user === null) redirect(302, '/signin');
+	if (!user.emailVerified) redirect(302, '/verify-email');
+	if (user.registered2FA && !session.twoFactorVerified) redirect(302, '/2fa');
+	if (user.role !== Role.ADMIN) redirect(302, '/');
 
-	const form = await superValidate(zod(createUserSchema));
+	const [form, users] = await Promise.all([
+		superValidate(zod(createUserSchema)),
+		createCaller(await createContext(event)).users.list()
+	]);
 
-	const users = await prisma.user.findMany({
-		select: {
-			id: true,
-			name: true,
-			email: true,
-			emailVerified: true,
-			role: true,
-			createdAt: true,
-			updatedAt: true,
-			password: false
-		}
-	});
+	// const form = await superValidate(zod(createUserSchema)) ;
 
-	return { form, users, user: event.locals.user };
+	// const users = await createCaller(await createContext(event)).users.list();
+
+	return { form, users, user };
 };
 
 export const actions: Actions = {
