@@ -80,3 +80,5 @@ export type SelectOption = {
 export type CollectionWithViews = Collection & {
 	views: { shortId: number }[];
 };
+
+export type OnChangeFn<T> = (value: T) => void;

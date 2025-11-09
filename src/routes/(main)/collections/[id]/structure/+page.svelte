@@ -11,7 +11,14 @@
 		PageTitle
 	} from '$lib/components/page/index.js';
 	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property/index.js';
-	import { Breadcrumb, BreadcrumbItem, Button } from '$lib/components/base/index.js';
+	import {
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		Tabs,
+		TabTrigger,
+		TabContent
+	} from '$lib/components/base/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { capitalizeFirstLetter, tm } from '$lib/utils/index.js';
 	import { getContext } from 'svelte';
@@ -19,8 +26,8 @@
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
 
-	const Tabs = { PROPERTIES: 'PROPERTIES', VIEWS: 'VIEWS' } as const;
-	type Tab = (typeof Tabs)[keyof typeof Tabs];
+	const TABS_OPTIONS = { PROPERTIES: 'PROPERTIES', VIEWS: 'VIEWS' } as const;
+	type Tab = (typeof TABS_OPTIONS)[keyof typeof TABS_OPTIONS];
 
 	let { data } = $props();
 
@@ -33,7 +40,7 @@
 	let openedPropertyEditor = $state<string | null>(null);
 	let openedViewEdit = $state<string | null>(null);
 	let isSmHeadingVisible = $state(false);
-	let currentTab = $state<Tab>(Tabs.PROPERTIES);
+	let currentTab = $state<Tab>(TABS_OPTIONS.PROPERTIES);
 
 	function goBack() {
 		history.back();
@@ -49,12 +56,8 @@
 		else isSmHeadingVisible = false;
 	}
 
-	function isTabSelected(tab: Tab) {
-		return currentTab === tab;
-	}
-
-	function selectTab(tab: Tab) {
-		currentTab = tab;
+	function handleTabChange(value: string) {
+		currentTab = value as Tab;
 	}
 </script>
 
@@ -101,41 +104,32 @@
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
 		<PageTitle icon="structure" title="Structure" />
-		<div class="flex flex-col gap-y-1">
-			<div role="tablist" class="w-full flex rounded-md mb-2 bg-secondary/50">
-				{#each Object.values(Tabs) as tab (tab)}
-					<button
-						type="button"
-						role="tab"
-						tabindex={isTabSelected(tab) ? 0 : -1}
-						onclick={() => selectTab(tab)}
-						class={tm(
-							'h-10 grow flex items-center justify-center whitespace-nowrap rounded-t-md px-2 py-1.5 font-semibold transition-all',
-							isTabSelected(tab) && 'bg-secondary shadow-sm border-b-2 border-primary'
-						)}
-					>
-						{capitalizeFirstLetter(tab)}
-					</button>
-				{/each}
-			</div>
 
-			<div
-				tabindex="0"
-				role="tabpanel"
-				class="w-full grow flex flex-col justify-between overflow-y-hidden"
-			>
-				{#if currentTab === Tabs.PROPERTIES}
-					{@render propertiesEditors()}
-				{:else if currentTab === Tabs.VIEWS}
-					{@render viewsEditors()}
-				{/if}
-			</div>
-		</div>
+		<Tabs value={TABS_OPTIONS.PROPERTIES} onChange={handleTabChange}>
+			{#snippet triggers()}
+				{#each Object.keys(TABS_OPTIONS) as tab}
+					{@const value = TABS_OPTIONS[tab as Tab]}
+					<TabTrigger {value}>{capitalizeFirstLetter(value)}</TabTrigger>
+				{/each}
+			{/snippet}
+
+			{#each Object.keys(TABS_OPTIONS) as tab}
+				{@const value = TABS_OPTIONS[tab as Tab]}
+
+				<TabContent {value}>
+					{#if tab === TABS_OPTIONS.PROPERTIES}
+						{@render propertiesEditors()}
+					{:else if tab === TABS_OPTIONS.VIEWS}
+						{@render viewsEditors()}
+					{/if}
+				</TabContent>
+			{/each}
+		</Tabs>
 	</PageContent>
 	<PageFooter>
-		{#if currentTab === Tabs.PROPERTIES}
+		{#if currentTab === TABS_OPTIONS.PROPERTIES}
 			<AddProperty refresh={data.insidePanel} />
-		{:else if currentTab === Tabs.VIEWS}
+		{:else if currentTab === TABS_OPTIONS.VIEWS}
 			<AddView />
 		{/if}
 	</PageFooter>
