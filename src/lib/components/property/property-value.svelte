@@ -96,8 +96,8 @@
 	const buttonClass = $derived(
 		tm(
 			isTableView()
-				? 'w-full justify-start  rounded-none border-0 bg-transparent hover:bg-transparent'
-				: 'w-fit h-6 md:h-6 p-2 rounded-sm font-semibold hover:bg-current/90 hover:text-white',
+				? 'w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
+				: 'w-fit h-6 p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
 			useSelector(property.type) && 'px-0',
 			!useSelector(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
@@ -144,7 +144,7 @@
 		class={tm(
 			'flex justify-center',
 			!isTableView() &&
-				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-sm text-sm font-semibold',
+				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-md text-sm font-semibold',
 			!isTableView() && PROPERTY_COLORS[color]
 		)}
 	>

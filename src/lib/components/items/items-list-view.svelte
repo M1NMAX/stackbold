@@ -100,7 +100,7 @@
 			onescapekey={(e) => saveAndClose(e.target as HTMLInputElement)}
 			onenterkey={(e) => saveAndClose(e.target as HTMLInputElement)}
 			class={tm(
-				'relative  flex flex-col items-start p-2 gap-y-2 rounded-sm bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
+				'relative flex flex-col items-start p-2 gap-y-2 rounded-md bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
 				item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 			)}
 		>
@@ -141,7 +141,7 @@
 				</div>
 			{/if}
 
-			<div class="flex flex-wrap gap-2">
+			<div class="flex items-end flex-wrap gap-2">
 				{#each propertyState.properties as property (property.id)}
 					{#if isPropertyVisible(view, property.id)}
 						{@const propertyRef = getPropertyRef(item.properties, property.id)}

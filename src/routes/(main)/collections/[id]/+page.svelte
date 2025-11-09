@@ -21,7 +21,8 @@
 		Button,
 		IconPicker,
 		Shortcut,
-		TextareaAutosize
+		TextareaAutosize,
+		Tooltip
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
@@ -260,15 +261,23 @@
 		/>
 
 		<div class="flex justify-end items-center space-x-1.5">
-			<Button theme="secondary" variant="icon" onclick={() => onClickOpenStructure()}>
+			<Button
+				id={`collection-${collection.id}-struct-btn`}
+				theme="secondary"
+				variant="icon"
+				onclick={() => onClickOpenStructure()}
+			>
 				<Layout />
 			</Button>
+			<Tooltip triggerBy={`collection-${collection.id}-struct-btn`} align="end" placement="bottom">
+				Collection structure
+			</Tooltip>
 			<CollectionMenu {collection} />
 		</div>
 	</PageHeader>
 
 	<PageContent class="relative" onscroll={handleScroll}>
-		<div class=" flex items-center space-x-2">
+		<div class="flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
 			<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
@@ -385,7 +394,7 @@
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
-		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+		class={tm('h-5 flex items-center py-1 px-1.5 rounded-md font-semibold', PROPERTY_COLORS[color])}
 	>
 		{#if property.type === PropertyType.CHECKBOX}
 			{#if key === 'true'}

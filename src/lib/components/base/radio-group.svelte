@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { tm, useId } from '$lib/utils/index.js';
 	import { setRadioGroupState } from '$lib/states/index.js';
+	import type { OnChangeFn } from '$lib/types';
 
 	type Props = {
 		id?: string;
@@ -9,7 +10,7 @@
 		value?: string;
 		required?: boolean;
 		disabled?: boolean;
-		onchange?: (value: string) => void;
+		onchange?: OnChangeFn<string>;
 		children: Snippet;
 		class?: string;
 	};

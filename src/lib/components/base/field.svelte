@@ -13,7 +13,7 @@
 
 <div
 	class={tm(
-		'flex flex-col gap-y-0.5 rounded py-1.5 text-secondary-foreground bg-secondary focus-within:bg-secondary/80',
+		'flex flex-col gap-y-0.5 rounded-md py-1.5 text-secondary-foreground bg-secondary focus-within:bg-secondary/80',
 		className
 	)}
 >
