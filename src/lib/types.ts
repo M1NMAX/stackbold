@@ -1,4 +1,4 @@
-import type { Collection, Color, View } from '@prisma/client';
+import type { Collection, Color } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
 import type {
 	BlurParams,
@@ -13,7 +13,7 @@ export type Nullable<T> = T | null;
 
 export type Toast =
 	| { id: string; type: 'action'; message: string; action: { label: string; onclick: () => void } }
-	| { id: string; type: 'success' | 'error' | 'warning'; message: string };
+	| { id: string; type: 'success' | 'error' | 'warning' | 'loading'; message: string };
 
 export type Colors = { [key in Color]?: string };
 
@@ -80,3 +80,5 @@ export type SelectOption = {
 export type CollectionWithViews = Collection & {
 	views: { shortId: number }[];
 };
+
+export type OnChangeFn<T> = (value: T) => void;

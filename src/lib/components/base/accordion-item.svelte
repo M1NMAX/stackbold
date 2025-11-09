@@ -40,12 +40,12 @@
 {#if accordionHeader}
 	{@render accordionHeader({ isOpen, toggle })}
 {:else}
-	<div class="flex items-center gap-x-2 rounded-sm hover:bg-secondary group">
+	<div class="flex items-center gap-x-2 py-0.5 rounded-md hover:bg-secondary group">
 		<button
 			onclick={toggle}
 			aria-expanded={accordionState.isOpen(id)}
 			class={tm(
-				'grow h-9 md:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
+				'grow h-9 lg:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
 				triggerClass
 			)}
 		>

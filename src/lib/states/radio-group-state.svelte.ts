@@ -1,12 +1,13 @@
+import type { OnChangeFn } from '$lib/types';
 import { getContext, setContext } from 'svelte';
 
 class RadioGroupState {
 	value = $state('');
 	hasValue = $derived.by(() => this.value !== '');
 	disabled: boolean;
-	onchange?: (value: string) => void;
+	onchange?: OnChangeFn<string>;
 
-	constructor(value: string, disabled: boolean = false, onchange?: (value: string) => void) {
+	constructor(value: string, disabled: boolean = false, onchange?: OnChangeFn<string>) {
 		this.value = value;
 		this.disabled = disabled;
 		this.onchange = onchange;
@@ -33,7 +34,7 @@ const RADIO_GROUP_CTX_KEY = Symbol('RADIO_GROUP_CTX_KEY');
 export function setRadioGroupState(
 	value: string,
 	disabled: boolean,
-	onchange?: (value: string) => void
+	onchange?: OnChangeFn<string>
 ) {
 	return setContext(RADIO_GROUP_CTX_KEY, new RadioGroupState(value, disabled, onchange));
 }

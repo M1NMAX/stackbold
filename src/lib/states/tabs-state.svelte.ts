@@ -1,14 +1,18 @@
+import type { OnChangeFn } from '$lib/types';
 import { getContext, setContext } from 'svelte';
 
 class TabsState {
 	value = $state('');
+	onchange?: OnChangeFn<string>;
 
-	constructor(value?: string) {
+	constructor(value?: string, onchange?: OnChangeFn<string>) {
 		this.value = value ?? '';
+		this.onchange = onchange;
 	}
 
 	setValue(value: string) {
 		this.value = value;
+		this.onchange?.(value);
 	}
 
 	isSelected(value: string) {
@@ -18,8 +22,8 @@ class TabsState {
 
 const TABS_CTX_KEY = Symbol('TABS_CTX_KEY');
 
-export function setTabsState(value?: string) {
-	return setContext(TABS_CTX_KEY, new TabsState(value));
+export function setTabsState(value?: string, onchange?: OnChangeFn<string>) {
+	return setContext(TABS_CTX_KEY, new TabsState(value, onchange));
 }
 
 export function getTabsState() {

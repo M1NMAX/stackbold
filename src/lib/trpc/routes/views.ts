@@ -11,7 +11,7 @@ const filterSchema = z.object({
 
 const sortSchema = z.object({
 	field: z.string(),
-	order: z.nativeEnum(SortType)
+	order: z.enum(SortType)
 });
 
 const viewPropertySchema = z.object({
@@ -22,14 +22,14 @@ const viewPropertySchema = z.object({
 const viewCreateSchema = z.object({
 	collectionId: z.string(),
 	name: z.string(),
-	type: z.nativeEnum(ViewType).optional(),
+	type: z.enum(ViewType).optional(),
 	properties: z.array(viewPropertySchema).optional(),
 	filters: z.array(filterSchema).optional(),
 	sorts: z.array(sortSchema).optional(),
 	groupBy: z.string().nullish()
 });
 
-const viewUpdateSchema = viewCreateSchema.merge(z.object({ id: z.string() })).partial({
+const viewUpdateSchema = viewCreateSchema.extend({ id: z.string() }).partial({
 	collectionId: true,
 	name: true
 });

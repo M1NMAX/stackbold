@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
 const groupCreateSchema = z.object({ name: z.string() });
-const groupUpdateSchema = groupCreateSchema.merge(z.object({ id: z.string() }));
+const groupUpdateSchema = groupCreateSchema.extend({ id: z.string() });
 
 export const groups = createTRPCRouter({
 	list: protectedProcedure.query(({ ctx: { userId } }) => {

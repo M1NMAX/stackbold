@@ -1,21 +1,26 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms/server';
+import { setError, superValidate } from 'sveltekit-superforms/server';
 import { signUpSchema } from '$lib/schema';
-import { generateEmailVerificationCode, sendEmailVerificationCode } from '$lib/server/email';
-import { zod } from 'sveltekit-superforms/adapters';
+import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { dev } from '$app/environment';
 import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { createUser } from '$lib/server/user';
+import {
+	createEmailVerificationRequest,
+	sendEmailVerificationCode,
+	setEmailVerificationRequestCookie
+} from '$lib/server/email-verification';
+import { verifyPasswordStrength } from '$lib/server/password';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
-	if (user) {
+export const load: PageServerLoad = async (event) => {
+	if (!dev) redirect(302, '/');
+
+	const { session, user } = event.locals;
+	if (session !== null && user !== null) {
+		if (!user.emailVerified) redirect(302, '/verify-email');
+
 		redirect(302, '/');
-	}
-
-	if (!dev) {
-		redirect(302, '/signin');
 	}
 
 	const form = await superValidate(zod(signUpSchema));
@@ -25,26 +30,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	default: async (event) => {
 		const form = await superValidate(event.request, zod(signUpSchema));
-
 		if (!form.valid) return fail(400, { form });
 
 		const { name, email, password } = form.data;
 
-		//TODO: check password strength
-		//TODO: check if username is already used
-		const user = await createUser(name, email, password);
+		const isPasswordStrong = await verifyPasswordStrength(password);
+		if (!isPasswordStrong) return setError(form, 'password', 'Weak password');
 
-		const verficationCode = await generateEmailVerificationCode(user.id, email);
-		await sendEmailVerificationCode(email, verficationCode);
+		const user = await createUser({ name, email, password });
+		const emailVerificationRequest = await createEmailVerificationRequest(user.id, user.email);
+		await sendEmailVerificationCode(emailVerificationRequest.email, emailVerificationRequest.code);
+		setEmailVerificationRequestCookie(event, {
+			id: emailVerificationRequest.id,
+			expiresAt: emailVerificationRequest.expiresAt
+		});
 
 		const sessionToken = generateSessionToken();
 		const session = await createSession(sessionToken, {
 			userId: user.id,
-			role: user.role
+			role: user.role,
+			twoFactorVerified: false
 		});
 
 		setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
-		redirect(302, '/email-verification');
+		redirect(302, '/verify-email');
 	}
 };

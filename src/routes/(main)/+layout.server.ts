@@ -4,10 +4,10 @@ import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async (event) => {
-	const user = event.locals.user;
-
-	if (!user) redirect(302, '/signin');
-	if (!user.emailVerified) redirect(302, '/email-verification');
+	if (event.locals.session === null || event.locals.user === null) redirect(302, '/signin');
+	if (!event.locals.user.emailVerified) redirect(302, '/verify-email');
+	if (event.locals.user.registered2FA && !event.locals.session.twoFactorVerified)
+		redirect(302, '/2fa');
 
 	const caller = createCaller(await createContext(event));
 
@@ -18,6 +18,5 @@ export const load: LayoutServerLoad = async (event) => {
 	]);
 
 	const items = tItems.map((item) => ({ ...item, type: 'item' }));
-
-	return { user, collections, groups, items };
+	return { collections, groups, items, user: event.locals.user };
 };

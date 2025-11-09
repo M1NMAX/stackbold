@@ -27,6 +27,33 @@
 
 /*  Scrollbar */
 
+/* Form */
+form {
+	@apply space-y-4;
+}
+
+.form-title {
+	@apply text-center text-3xl font-medium;
+}
+
+.form-subtitle {
+	@apply mb-6 text-center font-medium;
+}
+
+.form-link-container {
+	@apply my-4 text-center leading-8 font-medium text-sm text-gray-500;
+
+	& > .link {
+		@apply no-underline text-primary hover:text-primary/70;
+	}
+}
+
+.form-container {
+	@apply mx-auto w-full lg:max-w-md;
+}
+
+/* Form */
+
 /* Number Input */
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -82,7 +109,7 @@ input[type='number'] {
 }
 
 .select {
-	@apply h-9 w-full flex items-center justify-between p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 w-full flex items-center justify-between p-1 rounded-md border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
@@ -116,7 +143,7 @@ input[type='number'] {
 }
 
 .textarea {
-	@apply resize-none h-auto w-full flex px-2 rounded-sm border-0 bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+	@apply resize-none h-auto w-full flex px-2 rounded-md border-0 bg-transparent text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {

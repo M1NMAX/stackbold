@@ -3,7 +3,7 @@
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import { APP_ICONS, PROPERTY_COLORS } from '$lib/constant/index.js';
+	import { APP_ICONS, PROPERTY_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { buttonVariants, Drawer, Floating } from './index.js';
@@ -59,7 +59,7 @@
 	const searchInputId = `select-search-${id}`;
 	const contentId = `select-content-${id}`;
 	const menuState = new ModalState();
-	const isLargeScreen = new MediaQuery('min-width: 768px', false);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
 	function resetSearch() {
 		search = '';
@@ -299,7 +299,7 @@
 					tabindex="-1"
 					aria-selected={option.isSelected}
 					class={tm(
-						'w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-sm cursor-pointer',
+						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-none lg:rounded-md cursor-pointer',
 						highlighted == option.id && 'bg-secondary text-secondary-foreground'
 					)}
 					onclick={() => selectOption(option)}
@@ -336,7 +336,7 @@
 
 {#snippet option(opt: SelectOption)}
 	<span
-		class={tm('h-6 flex items-center gap-x-1.5 px-1.5 rounded-sm font-semibold text-sm', opt.theme)}
+		class={tm('h-6 flex items-center gap-x-1.5 px-1.5 rounded-md font-semibold text-sm', opt.theme)}
 	>
 		{#if opt.icon}
 			{@render icon(opt.icon)}

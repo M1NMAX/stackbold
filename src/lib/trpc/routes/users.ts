@@ -5,11 +5,12 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 export const users = createTRPCRouter({
-	list: adminProcedure.query(() =>
-		prisma.user.findMany({
+	list: adminProcedure.query(async () => {
+		return await prisma.user.findMany({
+			select: { id: true, name: true, email: true, role: true, emailVerified: true },
 			orderBy: { name: 'asc' }
-		})
-	),
+		});
+	}),
 	load: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.user.findUniqueOrThrow({ where: { id: input } })),
