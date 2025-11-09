@@ -59,7 +59,7 @@
 </script>
 
 <svelte:head>
-	<title>Collection Settings - Stackbold</title>
+	<title>Collection Structure - Stackbold</title>
 </svelte:head>
 
 <PageContainer>
@@ -69,8 +69,8 @@
 		{#if data.insidePanel}
 			<PageTitle
 				small
-				icon="settings"
-				title="Settings"
+				icon="structure"
+				title="Structure"
 				class={tm(isSmHeadingVisible ? 'grow' : 'hidden')}
 			/>
 
@@ -89,18 +89,18 @@
 					name={collection.name}
 					link={`/collections/${collection.id}?view=${getCollectionView(collection)}`}
 				/>
-				<BreadcrumbItem icon="settings" name="Settings" last />
+				<BreadcrumbItem icon="structure" name="Structure" last />
 			</Breadcrumb>
 			<PageTitle
 				small
-				icon="settings"
-				title="Settings"
+				icon="structure"
+				title="Structure"
 				class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
 			/>
 		{/if}
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
-		<PageTitle icon="settings" title="Settings" />
+		<PageTitle icon="structure" title="Structure" />
 		<div class="flex flex-col gap-y-1">
 			<div role="tablist" class="w-full flex rounded-md mb-2 bg-secondary/50">
 				{#each Object.values(Tabs) as tab (tab)}

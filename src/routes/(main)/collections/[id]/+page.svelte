@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Bolt from 'lucide-svelte/icons/bolt';
+	import Layout from 'lucide-svelte/icons/layout-dashboard';
 	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import FileMinus from 'lucide-svelte/icons/file-minus';
@@ -41,7 +41,7 @@
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
 	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
-	import SettingsPage from './settings/+page.svelte';
+	import StructurePage from './structure/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
 	import { escapeKeydown } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
@@ -79,7 +79,7 @@
 	let isSmHeadingVisible = $state(false);
 	let isNewItemInputVisible = $state(false);
 
-	type PanelContentType = 'item' | 'settings' | null;
+	type PanelContentType = 'item' | 'structure' | null;
 
 	let panelContentType = $state<PanelContentType>(null);
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
@@ -131,10 +131,10 @@
 		else isSmHeadingVisible = false;
 	}
 
-	async function onClickOpenSettings() {
+	async function onClickOpenStructure() {
 		if (panelState.isOpen) history.back();
 
-		const url = `/collections/${collection.id}/settings`;
+		const url = `/collections/${collection.id}/structure`;
 		if (!isLargeScreen.current) {
 			goto(url);
 			return;
@@ -143,7 +143,7 @@
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
 			pushState(url, { insidePanel: true });
-			panelContentType = 'settings';
+			panelContentType = 'structure';
 			if (!panelState.isOpen) panelState.open();
 		} else {
 			goto(url);
@@ -260,8 +260,8 @@
 		/>
 
 		<div class="flex justify-end items-center space-x-1.5">
-			<Button theme="secondary" variant="icon" onclick={() => onClickOpenSettings()}>
-				<Bolt />
+			<Button theme="secondary" variant="icon" onclick={() => onClickOpenStructure()}>
+				<Layout />
 			</Button>
 			<CollectionMenu {collection} />
 		</div>
@@ -378,8 +378,8 @@
 >
 	{#if panelContentType === 'item' && page.state.id}
 		<ItemPage data={noCheck(page.state)} />
-	{:else if panelContentType === 'settings'}
-		<SettingsPage data={noCheck(page.state)} />
+	{:else if panelContentType === 'structure'}
+		<StructurePage data={noCheck(page.state)} />
 	{/if}
 </aside>
 
