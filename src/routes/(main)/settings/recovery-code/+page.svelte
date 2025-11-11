@@ -52,7 +52,7 @@
 	</Breadcrumb>
 </PageHeader>
 
-<PageContent class="justify-center items-center">
+<PageContent class="lg:justify-center items-center">
 	<h1 class="form-title">Recovery code</h1>
 
 	<p class="text-center">

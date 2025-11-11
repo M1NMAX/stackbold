@@ -32,7 +32,7 @@
 	</Breadcrumb>
 </PageHeader>
 
-<PageContent class="justify-center items-center">
+<PageContent class="lg:justify-center items-center">
 	<h1 class="form-title">Two-factor authentication</h1>
 
 	<p class="text-center font-semibold">Scan the QR code into your app.</p>

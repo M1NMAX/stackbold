@@ -30,7 +30,7 @@
 	</Breadcrumb>
 </PageHeader>
 
-<PageContent class="justify-center items-center">
+<PageContent class="lg:justify-center items-center">
 	<h1 class="form-title">Change name</h1>
 
 	<form method="post" use:enhance class="form-container">

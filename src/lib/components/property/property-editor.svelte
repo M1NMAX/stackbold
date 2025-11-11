@@ -383,7 +383,13 @@
 	<div class=" flex flex-col space-y-1.5 pt-1">
 		<div class="flex items-center justify-between space-x-1">
 			<span class="grow text-sm font-semibold">Options</span>
-			<Button theme="secondary" variant="compact" onclick={() => newOptionInputState.toggle()}>
+			<Button
+				id={`property-${property.id}-add-opt-btn`}
+				theme="secondary"
+				variant="compact"
+				class="w-7"
+				onclick={() => newOptionInputState.toggle()}
+			>
 				{#if newOptionInputState.isOpen}
 					<X />
 				{:else}
@@ -391,12 +397,17 @@
 				{/if}
 			</Button>
 
+			<Tooltip triggerBy={`property-${property.id}-add-opt-btn`} align="end" placement="bottom">
+				Add option
+			</Tooltip>
+
 			{#if property.options.length >= 6}
 				{@const tooltipId = useId(`property-editor-toggle-option-list-tooltip-${property.id}`)}
 				<Button
 					id={tooltipId}
 					theme="secondary"
 					variant="compact"
+					class="w-7"
 					onclick={() => showAllOptions.toggle()}
 				>
 					{#if showAllOptions.isOpen}
@@ -430,7 +441,7 @@
 				<Button
 					theme="secondary"
 					variant="menu"
-					class="justify-center"
+					class="justify-center rounded-md"
 					onclick={() => showAllOptions.toggle()}
 				>
 					{showAllOptions.isOpen ? 'Show fewer options' : 'Show all options'}

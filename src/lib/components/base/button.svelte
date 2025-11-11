@@ -15,9 +15,9 @@
 			},
 			variant: {
 				default: 'h-9 p-2',
-				menu: 'h-9 lg:h-6 w-full px-2 justify-start rounded-none lg:rounded-md',
+				menu: 'h-9 lg:h-7 w-full px-2 justify-start rounded-none lg:rounded-md',
 				icon: 'h-9 w-9',
-				compact: 'h-6 py-0.5 px-1 gap-1 [&_svg]:size-3.5'
+				compact: 'h-7 p-1 gap-1'
 			}
 		},
 		defaultVariants: {

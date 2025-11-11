@@ -30,8 +30,8 @@
 	</Breadcrumb>
 </PageHeader>
 
-<PageContent class="justify-center items-center">
-	<h1 class="form-title mb-6">Change password</h1>
+<PageContent class="lg:justify-center items-center">
+	<h1 class="form-title">Change password</h1>
 	<form method="post" use:enhance class="form-container">
 		<Field class="py-1" errors={$errors.currentPassword}>
 			<Label for="currentPassword" name="Current password" />
