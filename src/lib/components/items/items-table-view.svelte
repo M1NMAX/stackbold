@@ -152,6 +152,7 @@
 
 							<Button
 								theme="secondary"
+								variant="compact"
 								onclick={() => clickOpenItem(item.id)}
 								class="md:invisible md:group-hover:visible"
 							>

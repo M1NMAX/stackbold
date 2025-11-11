@@ -7,7 +7,7 @@
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
 		<div class="flex justify-center pb-8">
-			<img src={logoSrc} alt="logo" width="150" />
+			<img src={logoSrc} alt="logo" width="100" />
 		</div>
 
 		<slot />
