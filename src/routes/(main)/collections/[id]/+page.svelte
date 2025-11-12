@@ -343,7 +343,7 @@
 	</PageContent>
 	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
-			<form onsubmit={handleCreateItem} class="grow relative">
+			<form onsubmit={handleCreateItem} class="grow relative space-y-0">
 				<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none [&_svg]:size-4">
 					<Plus />
 				</div>
