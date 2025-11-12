@@ -53,7 +53,7 @@
 		wrapperState.close();
 	}
 
-	function handleSelectColor(selectedKey: string, triggerId?: string) {
+	function handleSelectColor(selectedKey: string) {
 		value = selectedKey;
 		updOptionDebounded(propertyId, { id: option.id, color: value as Color });
 	}
@@ -90,7 +90,7 @@
 	})}
 >
 	{#snippet trigger()}
-		<span class={tm('size-3.5 rounded-sm', PROPERTY_COLORS[selectedKey])}></span>
+		<span class={tm('size-4 rounded-md', PROPERTY_COLORS[selectedKey])}></span>
 		<span class="grow text-start">{option.value}</span>
 		<ChevronRight />
 	{/snippet}
@@ -115,7 +115,7 @@
 			{@const id = useId(`property-option-color`)}
 
 			<Label for={id} compact hoverEffect>
-				<span class={tm('size-4 rounded-sm', colorClasses)}></span>
+				<span class={tm('size-4 rounded-md', colorClasses)}></span>
 				<span class="grow"> {capitalizeFirstLetter(colorName)}</span>
 				<RadioGroupItem {id} value={colorName} />
 			</Label>

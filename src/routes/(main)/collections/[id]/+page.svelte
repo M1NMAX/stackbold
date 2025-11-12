@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Bolt from 'lucide-svelte/icons/bolt';
+	import Layout from 'lucide-svelte/icons/layout-dashboard';
 	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import FileMinus from 'lucide-svelte/icons/file-minus';
@@ -21,7 +21,8 @@
 		Button,
 		IconPicker,
 		Shortcut,
-		TextareaAutosize
+		TextareaAutosize,
+		Tooltip
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
@@ -41,7 +42,7 @@
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
 	import { ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
-	import SettingsPage from './settings/+page.svelte';
+	import StructurePage from './structure/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
 	import { escapeKeydown } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
@@ -79,7 +80,7 @@
 	let isSmHeadingVisible = $state(false);
 	let isNewItemInputVisible = $state(false);
 
-	type PanelContentType = 'item' | 'settings' | null;
+	type PanelContentType = 'item' | 'structure' | null;
 
 	let panelContentType = $state<PanelContentType>(null);
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
@@ -131,10 +132,10 @@
 		else isSmHeadingVisible = false;
 	}
 
-	async function onClickOpenSettings() {
+	async function onClickOpenStructure() {
 		if (panelState.isOpen) history.back();
 
-		const url = `/collections/${collection.id}/settings`;
+		const url = `/collections/${collection.id}/structure`;
 		if (!isLargeScreen.current) {
 			goto(url);
 			return;
@@ -143,7 +144,7 @@
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
 			pushState(url, { insidePanel: true });
-			panelContentType = 'settings';
+			panelContentType = 'structure';
 			if (!panelState.isOpen) panelState.open();
 		} else {
 			goto(url);
@@ -260,15 +261,23 @@
 		/>
 
 		<div class="flex justify-end items-center space-x-1.5">
-			<Button theme="secondary" variant="icon" onclick={() => onClickOpenSettings()}>
-				<Bolt />
+			<Button
+				id={`collection-${collection.id}-struct-btn`}
+				theme="secondary"
+				variant="icon"
+				onclick={() => onClickOpenStructure()}
+			>
+				<Layout />
 			</Button>
+			<Tooltip triggerBy={`collection-${collection.id}-struct-btn`} align="end" placement="bottom">
+				Collection structure
+			</Tooltip>
 			<CollectionMenu {collection} />
 		</div>
 	</PageHeader>
 
 	<PageContent class="relative" onscroll={handleScroll}>
-		<div class=" flex items-center space-x-2">
+		<div class="flex items-center space-x-2">
 			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 
 			<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
@@ -378,14 +387,14 @@
 >
 	{#if panelContentType === 'item' && page.state.id}
 		<ItemPage data={noCheck(page.state)} />
-	{:else if panelContentType === 'settings'}
-		<SettingsPage data={noCheck(page.state)} />
+	{:else if panelContentType === 'structure'}
+		<StructurePage data={noCheck(page.state)} />
 	{/if}
 </aside>
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<span
-		class={tm('h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold', PROPERTY_COLORS[color])}
+		class={tm('h-6 flex items-center py-1 px-1.5 rounded-md font-semibold', PROPERTY_COLORS[color])}
 	>
 		{#if property.type === PropertyType.CHECKBOX}
 			{#if key === 'true'}

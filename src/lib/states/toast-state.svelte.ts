@@ -21,12 +21,17 @@ export class ToastState {
 		this.#add({ message, type: 'success' }, durationMs);
 	}
 
-	error(message: string | null = null, durationMs = 4500) {
+	error(message: string | null = null, durationMs = 5000) {
 		this.#add({ message: message ?? DEFAULT_FEEDBACK_ERR_MESSAGE, type: 'error' }, durationMs);
 	}
 
 	warning(message: string, durationMs = 4000) {
 		this.#add({ message, type: 'warning' }, durationMs);
+	}
+
+	loading(message = 'Loading...') {
+		const id = crypto.randomUUID();
+		this.toasts.push({ id, message, type: 'loading' });
 	}
 
 	#add(toast: Omit<Exclude<Toast, { type: 'action' }>, 'id'>, durationMs = 4000) {
@@ -63,6 +68,10 @@ export class ToastState {
 		}
 
 		this.toasts = this.toasts.filter((toast) => toast.id !== id);
+	}
+
+	clear() {
+		this.toasts.forEach((toast) => this.remove(toast.id));
 	}
 }
 

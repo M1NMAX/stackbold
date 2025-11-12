@@ -70,7 +70,7 @@
 
 {#if property.type === PropertyType.CHECKBOX}
 	<div
-		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-sm bg-secondary text-secondary-foreground"
+		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-md bg-secondary text-secondary-foreground"
 	>
 		<input
 			id={property.id}

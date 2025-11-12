@@ -83,19 +83,21 @@ type PropertyRef {
 }
 
 model User {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  name               String
-  email              String               @unique
-  emailVerified      Boolean              @default(false)
-  role               Role                 @default(MEMBER)
-  password           String
-  sessions           Session[]
-  collections        Collection[]
-  Group              Group[]
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  EmailVerication    EmailVerication[]
-  PasswordResetToken PasswordResetToken[]
+  id                    String                 @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String
+  email                 String                 @unique
+  emailVerified         Boolean                @default(false)
+  role                  Role                   @default(MEMBER)
+  password              String
+  recoveryCode          Bytes
+  totpKey               Bytes?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  sessions              Session[]
+  collections           Collection[]
+  group                 Group[]
+  emailVerication       EmailVerication[]
+  passwordResetSessions PasswordResetSession[]
 }
 
 model EmailVerication {
@@ -104,23 +106,29 @@ model EmailVerication {
   userId    String   @db.ObjectId
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   email     String   @unique
-  expiredAt DateTime
+  expiresAt DateTime
 }
 
-model PasswordResetToken {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  token     String   @unique
-  userId    String   @db.ObjectId
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  expiredAt DateTime
+model PasswordResetSession {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  code              String   @unique
+  email             String   @unique
+  token             String   @unique
+  userId            String   @db.ObjectId
+  user              User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  expiresAt         DateTime
+  emailVerified     Boolean  @default(false)
+  twoFactorVerified Boolean  @default(false)
 }
 
 model Session {
-  id        String   @id @map("_id")
-  userId    String   @db.ObjectId
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
-  expiresAt DateTime
-  role      Role
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  token             String   @unique
+  userId            String   @db.ObjectId
+  user              User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  expiresAt         DateTime
+  role              Role
+  twoFactorVerified Boolean  @default(false)
 }
 
 model Group {
@@ -130,7 +138,7 @@ model Group {
   updatedAt  DateTime     @updatedAt
   owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId    String       @db.ObjectId
-  Collection Collection[]
+  collection Collection[]
 }
 
 model Collection {

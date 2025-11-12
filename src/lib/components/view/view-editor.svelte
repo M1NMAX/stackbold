@@ -117,7 +117,7 @@
 	{ondragleave}
 	class={tm(
 		'grow border-2',
-		isOpen ? 'rounded' : 'rounded-sm',
+		isOpen ? 'rounded' : 'rounded-md',
 		dragover ? 'border-secondary/60' : 'border-2 border-secondary',
 		dragging && 'outline-0 min-w-0'
 	)}

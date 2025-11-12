@@ -10,7 +10,7 @@
 	import { superForm } from 'sveltekit-superforms/client';
 	import { trpc } from '$lib/trpc/client';
 	import { invalidate, invalidateAll } from '$app/navigation';
-	import { Button, buttonVariants, Dialog } from '$lib/components/base/index.js';
+	import { Button, buttonVariants, Dialog, Field, Label } from '$lib/components/base/index.js';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { getDeleteModalState, getToastState, ModalState } from '$lib/states/index.js';
 
@@ -72,7 +72,7 @@
 	function clickHead(head: string) {
 		const field = head as keyof UserWithoutPassword | string;
 		const order = sort.order === 'asc' ? 'desc' : 'asc';
-		// @ts-ignore
+		// @ts-expect-error
 		sort = { ...sort, field, order };
 	}
 
@@ -93,7 +93,6 @@
 	</PageHeader>
 	<PageContent class="h-full relative">
 		<h1 class="hidden md:block font-semibold text-4xl pb-2">Admin</h1>
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="flex justify-between space-x-2">
 			<SearchInput placeholder="Find User" bind:value={search} />
 
@@ -105,14 +104,15 @@
 			<table class="w-full table-auto">
 				<thead>
 					<tr class="text-sm text-muted-foreground">
-						{#each USER_FIELDS as item}
+						{#each USER_FIELDS as field}
 							<th
 								scope="col"
 								class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer"
 							>
-								<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-								<div class="flex justify-between items-center" onclick={() => clickHead(item)}>
-									<span>{capitalizeFirstLetter(item)}</span>
+								<!-- svelte-ignore a11y_click_events_have_key_events  -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
+								<div class="flex justify-between items-center" onclick={() => clickHead(field)}>
+									<span>{capitalizeFirstLetter(field)}</span>
 
 									<SortArrow bind:order={sort.order} />
 								</div>
@@ -123,20 +123,17 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each users as user (user.email)}
-						<tr
-							class={tm(
-								'text-nowrap font-medium text-base border-y border-secondary hover:bg-muted'
-							)}
-						>
+					{#each users as user (user.id)}
+						<tr class="text-nowrap font-medium text-base border-y border-secondary hover:bg-muted">
 							{#each USER_FIELDS as field}
-								<td>
-									{user[field as keyof UserWithoutPassword]}
-								</td>
+								{@const value = user[field as keyof typeof user]}
+
+								<td>{field === 'role' ? capitalizeFirstLetter(value.toString()) : value}</td>
 							{/each}
 
 							<td>
-								<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
 								<div
 									title="Delete"
 									onclick={() => {
@@ -185,9 +182,9 @@
 			{$message}
 		</div>
 	{/if}
-	<form method="post" use:enhance class="space-y-4">
-		<div>
-			<label for="name" class="label"> Name </label>
+	<form method="post" use:enhance>
+		<Field errors={$errors.name}>
+			<Label for="name" name="Name" />
 			<input
 				id="name"
 				type="text"
@@ -196,14 +193,10 @@
 				bind:value={$form.name}
 				class="input input-ghost"
 			/>
+		</Field>
 
-			{#if $errors.name}
-				<span class="text-error"> {$errors.name} </span>
-			{/if}
-		</div>
-
-		<div>
-			<label for="email" class="label"> Email </label>
+		<Field errors={$errors.email}>
+			<Label for="email" name="Email" />
 			<input
 				id="email"
 				type="text"
@@ -212,30 +205,21 @@
 				bind:value={$form.email}
 				class="input input-ghost"
 			/>
-
-			{#if $errors.email}
-				<span class="text-error"> {$errors.email} </span>
-			{/if}
-		</div>
-
-		<div>
-			<label for="password" class="label"> Password </label>
+		</Field>
+		<Field errors={$errors.password}>
+			<Label for="password" name="Password" />
 			<input
 				id="password"
-				type="text"
+				type="password"
 				name="password"
 				required
 				bind:value={$form.password}
 				class="input input-ghost"
 			/>
+		</Field>
 
-			{#if $errors.password}
-				<span class="text-error"> {$errors.password} </span>
-			{/if}
-		</div>
-
-		<div>
-			<h3>Role</h3>
+		<div class="flex gap-x-2">
+			<h3>Role:</h3>
 
 			<label>
 				<input id="role" type="radio" name="role" value="MEMBER" bind:group={$form.role} />

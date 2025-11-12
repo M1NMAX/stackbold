@@ -5,6 +5,7 @@
 	import { useId } from '$lib/utils/index.js';
 	import type { Align } from '$lib/types';
 	import type { ClassValue } from 'svelte/elements';
+	import { SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 
 	type Props = {
 		id?: string;
@@ -30,7 +31,7 @@
 		sameWidth
 	}: Props = $props();
 
-	const isLargeScreen = new MediaQuery('min-width: 768px', false);
+	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
 	function toggle() {
 		if (open) open = false;

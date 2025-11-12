@@ -1,50 +1,35 @@
-import { prisma } from '$lib/server/prisma';
-import { zod } from 'sveltekit-superforms/adapters';
+import { getUserRecoverCode } from '$lib/server/user';
+import { superValidate } from 'sveltekit-superforms/server';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { message, superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
-import { deleteSessionTokenCookie, invalidateSession } from '$lib/server/session';
+import { zod4 as zod } from 'sveltekit-superforms/adapters';
+import { updEmailSchema } from '$lib/schema';
+import { createCaller } from '$lib/trpc/router';
+import { createContext } from '$lib/trpc/context';
 
-const updUserSchema = z.object({
-	name: z.string().min(4).max(31),
-	email: z.string().email()
-});
+export const load: PageServerLoad = async (event) => {
+	const { session, user } = event.locals;
 
-export const load: PageServerLoad = async ({ locals }) => {
-	const user = locals.user;
+	if (session === null || user === null) redirect(302, '/signin');
+	if (!user.emailVerified) redirect(302, '/verify-email');
+	if (user.registered2FA && !session.twoFactorVerified) redirect(302, '/2fa');
 
-	if (!user) redirect(302, '/signin');
+	let recoveryCode: string | null = null;
+	if (user.registered2FA) recoveryCode = await getUserRecoverCode(user.id);
 
-	const form = await superValidate(user, zod(updUserSchema));
+	const emailUpdForm = await superValidate(zod(updEmailSchema));
 
-	return { user, form };
+	return { emailUpdForm, recoveryCode, user };
 };
+
 export const actions: Actions = {
-	logout: async (event) => {
-		if (!event.locals.session) {
-			return fail(401);
-		}
+	default: async (event) => {
+		const { session, user } = event.locals;
+		if (session === null || user === null) return fail(401, { message: 'Not authenticated' });
 
-		await invalidateSession(event.locals.session.id);
-		deleteSessionTokenCookie(event);
+		if (!user.emailVerified || (!user.registered2FA && session.twoFactorVerified))
+			return fail(403, { message: 'Forbidden' });
 
-		redirect(302, '/signin');
-	},
-	updUserData: async ({ request, locals }) => {
-		const user = locals.user;
-		if (!user) return fail(400);
-
-		const form = await superValidate(request, zod(updUserSchema));
-
-		if (!form.valid) return fail(400, { form });
-		const { name } = form.data;
-
-		try {
-			await prisma.user.update({ where: { id: user.id }, data: { name } });
-			return message(form, 'Accout data updated successfully');
-		} catch {
-			return message(form, 'Unable to update account data');
-		}
+		await createCaller(await createContext(event)).users.delete(user.id);
 	}
 };

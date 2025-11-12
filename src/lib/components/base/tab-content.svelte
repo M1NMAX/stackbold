@@ -15,7 +15,12 @@
 </script>
 
 {#if tabsState.isSelected(value)}
-	<div {id} role="tabpanel" tabindex="0" class={tm('w-full', className)}>
+	<div
+		{id}
+		role="tabpanel"
+		tabindex="0"
+		class={tm('w-full grow flex flex-col justify-between overflow-y-hidden', className)}
+	>
 		{@render children()}
 	</div>
 {/if}

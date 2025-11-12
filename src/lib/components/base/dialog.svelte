@@ -36,7 +36,7 @@
 	>
 		<div
 			class={tm(
-				'relative w-full max-w-md max-h-full z-50 p-4 border rounded-md shadow-lg bg-background',
+				'relative w-full max-w-md max-h-full z-50 p-4 flex flex-col gap-y-2 border rounded-md shadow-lg bg-background',
 				className
 			)}
 			use:clickOutside
@@ -44,14 +44,13 @@
 			use:escapeKeydown
 			onescapekey={close}
 		>
+			{#if title}
+				<h3 class="text-xl font-semibold leading-none tracking-tight pb-2">{title}</h3>
+			{/if}
 			{#if dismissable}
 				<Button theme="ghost" variant="compact" class="absolute right-4 top-4" onclick={close}>
 					<X />
 				</Button>
-			{/if}
-
-			{#if title}
-				<h3 class="text-lg font-semibold leading-none tracking-tight">{title}</h3>
 			{/if}
 
 			{@render children()}

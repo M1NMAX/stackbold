@@ -36,7 +36,7 @@
 		bind:value
 		{...rest}
 		class={tm(
-			'absolute top-0 h-full w-full flex p-2 box-border border-0 resize-none overflow-hidden rounded-sm text-base shadow-sm bg-transparent leading-[1.2] placeholder:text-muted-foreground',
+			'absolute top-0 h-full w-full flex p-2 box-border border-0 resize-none overflow-hidden rounded-md text-base shadow-sm bg-transparent leading-[1.2] placeholder:text-muted-foreground',
 			'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
 			'focus:outline focus:outline-primary focus:outline-offset-0 focus:shadow-none',
 			ghost && 'bg-opacity-10 focus:outline-none focus-visible:ring-0',

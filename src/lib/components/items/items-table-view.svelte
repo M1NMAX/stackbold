@@ -138,7 +138,7 @@
 					<tr
 						class={tm(
 							'font-medium text-base whitespace-nowrap border-y border-secondary hover:bg-muted/40 group',
-							item.id === itemState.active && 'outline outline-2 outline-primary/70'
+							item.id === itemState.active && 'border-r-2 border-r-primary bg-secondary/70'
 						)}
 					>
 						<td class="flex items-center justify-between pl-2 pr-1">
@@ -152,6 +152,7 @@
 
 							<Button
 								theme="secondary"
+								variant="compact"
 								onclick={() => clickOpenItem(item.id)}
 								class="md:invisible md:group-hover:visible"
 							>

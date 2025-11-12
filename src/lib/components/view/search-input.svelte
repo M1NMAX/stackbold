@@ -14,7 +14,7 @@
 		<Search class="size-4" />
 	</div>
 	<input
-		class="w-full h-9 px-8 text-base font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
+		class="w-full h-9 px-8 text-base font-semibold rounded-md bg-secondary focus-within:bg-secondary/80 focus:placeholder:text-secondary-foreground focus:outline-none"
 		{placeholder}
 		{...rest}
 		bind:value
