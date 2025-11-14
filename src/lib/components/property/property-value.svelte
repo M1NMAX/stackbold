@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Copy from 'lucide-svelte/icons/copy';
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -23,7 +24,12 @@
 	} from './index.js';
 	import { getItemState } from '$lib/components/items/index.js';
 	import debounce from 'debounce';
-	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
+	import {
+		fullDateFormat,
+		fullDateTimeFormat,
+		getToastState,
+		ModalState
+	} from '$lib/states/index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -35,6 +41,7 @@
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
+	import { browser } from '$app/environment';
 
 	type Props = {
 		view: View;
@@ -45,6 +52,7 @@
 	let { item, property, view }: Props = $props();
 
 	const itemState = getItemState();
+	const toastState = getToastState();
 
 	let wrapperState = new ModalState();
 
@@ -129,6 +137,12 @@
 			view.sorts.some((s) => s.field === property.id) ||
 			view.filters.some((f) => f.id === property.id)
 		);
+	}
+
+	function copyUrl() {
+		if (!browser || property.type !== PropertyType.URL) return;
+		navigator.clipboard.writeText(value);
+		toastState.success('Url Copied to clipboard.');
 	}
 
 	$effect(() => {
@@ -296,9 +310,32 @@
 		</form>
 	</AdaptiveWrapper>
 {:else if value || isTableView()}
-	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
-		{#snippet trigger()}
-			{@render tooltipWrapper(value)}
+	{@const content =
+		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
+			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
+			: value}
+	<AdaptiveWrapper
+		bind:open={wrapperState.isOpen}
+		floatingAlign="start"
+		triggerClass={buttonClass}
+		floatingClass={tm(
+			'relative w-full max-w-lg p-1',
+			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
+		)}
+	>
+		{#snippet customTrigger({ toggle })}
+			<div class={tm(buttonClass, 'flex items-center gap-x-1.5 pl-1')}>
+				<button
+					onclick={() => copyUrl()}
+					class="pl-1 pr-1.5 border-r-[1.5px] border-secondary-foreground"
+				>
+					<Copy class="size-4" />
+				</button>
+
+				<button onclick={() => toggle()}>
+					{@render tooltipWrapper(content)}
+				</button>
+			</div>
 		{/snippet}
 
 		<form class="space-y-0.5">

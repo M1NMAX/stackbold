@@ -10,13 +10,14 @@
 	type Props = {
 		id?: string;
 		open?: boolean;
-		trigger: Snippet;
+		trigger?: Snippet;
 		children: Snippet;
 		class?: ClassValue;
 		triggerClass?: string;
 		floatingAlign?: Align;
 		floatingClass?: string;
 		sameWidth?: boolean;
+		customTrigger?: Snippet<[opts: { toggle: () => void }]>;
 	};
 
 	let {
@@ -28,7 +29,8 @@
 		triggerClass,
 		floatingAlign,
 		floatingClass,
-		sameWidth
+		sameWidth,
+		customTrigger
 	}: Props = $props();
 
 	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
@@ -40,15 +42,22 @@
 </script>
 
 <div class={className}>
-	<button
-		{id}
-		type="button"
-		onclick={toggle}
-		class={buttonVariants({ theme: 'ghost', class: triggerClass })}
-	>
-		{@render trigger()}
-	</button>
-
+	{#if customTrigger}
+		{@render customTrigger({ toggle })}
+	{:else}
+		<button
+			{id}
+			type="button"
+			onclick={toggle}
+			class={buttonVariants({ theme: 'ghost', class: triggerClass })}
+		>
+			{#if trigger}
+				{@render trigger()}
+			{:else}
+				Trigger
+			{/if}
+		</button>
+	{/if}
 	{#if isLargeScreen.current}
 		<Floating
 			bind:visible={open}
