@@ -355,7 +355,7 @@
 					name="new-item-name"
 					placeholder="New item"
 					autocomplete="off"
-					class="h-9 w-full py-2 px-8 text-base font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
+					class="h-9 w-full py-2 px-8 text-base lg:text-sm font-semibold rounded-md bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
 					onfocusout={() => (isNewItemInputVisible = false)}
 					onescapekey={() => (isNewItemInputVisible = false)}
 				/>
