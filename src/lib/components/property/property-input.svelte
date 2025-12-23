@@ -16,7 +16,8 @@
 		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
-		isPropertyNumerical
+		isPropertyNumerical,
+		PropertyFile
 	} from './index.js';
 	import {
 		AdaptiveWrapper,
@@ -34,9 +35,10 @@
 		property: Property;
 		onchange: (value: string) => void;
 		value: string;
+		itemId: string;
 	};
 
-	let { property, onchange, value }: Props = $props();
+	let { property, onchange, value, itemId }: Props = $props();
 
 	let color = $derived(getPropertyColor(property, value));
 	let wrapperState = new ModalState();
@@ -195,6 +197,11 @@
 		>
 			{@render miniWrapper(formatted)}
 		</div>
+	</Field>
+{:else if property.type === PropertyType.FILE}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<PropertyFile {property} {value} {itemId} />
 	</Field>
 {:else}
 	<Field>

@@ -174,6 +174,7 @@
 				{property}
 				value={getRefValue(item.properties, property.id)}
 				onchange={(value) => updPropertyRef({ id: property.id, value })}
+				itemId={item.id}
 			/>
 		{/each}
 	</PageContent>

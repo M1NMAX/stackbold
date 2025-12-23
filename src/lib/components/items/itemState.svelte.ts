@@ -123,6 +123,18 @@ export class ItemState {
 			this.#toastState.error();
 		}
 	}
+
+	async generatePresignedUrl(id: string, pid: string, fileName: string) {
+		return await trpc().items.fileUploadUrl.mutate({ id, pid, fileName });
+	}
+
+	async getDownloadUrl(id: string, pid: string, fileName: string) {
+		return await trpc().items.fileDownloadUrl.mutate({ id, pid, fileName });
+	}
+
+	async deleteFile(id: string, pid: string, fileName: string) {
+		return await trpc().items.deleteFile.mutate({ id, pid, fileName });
+	}
 }
 
 const ITEM_STATE_CTX_KEY = Symbol('ITEM_STATE_CTX_KEY');

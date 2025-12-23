@@ -1,9 +1,15 @@
+import { getRefValue } from '$lib/components/property';
 import {
 	DEFAULT_STRING_DELIMITER,
 	NAME_FIELD,
 	PROPERTIES_WITH_LISTABLE_OPTIONS,
 	PROPERTIES_WITHOUT_REF
 } from '$lib/constant/index.js';
+import {
+	getFilePresignedDownloadUrl,
+	getFilePresignedUploadUrl,
+	deleteFile
+} from '$lib/server/minio';
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import {
@@ -47,6 +53,12 @@ const refUpdateSchema = z.object({
 	ref: z.object({ id: z.string(), value: z.string() })
 });
 
+const fileUploadSchema = z.object({
+	id: z.string(),
+	pid: z.string(),
+	fileName: z.string()
+});
+
 export const items = createTRPCRouter({
 	list: protectedProcedure.input(itemListSchema).query(async ({ input }) => await listItems(input)),
 
@@ -83,7 +95,58 @@ export const items = createTRPCRouter({
 
 	updateRef: protectedProcedure
 		.input(refUpdateSchema)
-		.mutation(async ({ input }) => await updateRef(input))
+		.mutation(async ({ input }) => await updateRef(input)),
+
+	fileUploadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
+		const [property, item] = await Promise.all([
+			prisma.property.findUnique({ where: { id: input.pid } }),
+			prisma.item.findUnique({ where: { id: input.id } })
+		]);
+
+		if (!item || !property || property.type !== PropertyType.FILE)
+			throw new TRPCError({ code: 'BAD_REQUEST' });
+
+		const ref = getRefValue(item.properties, input.pid);
+		let generateName = input.fileName;
+
+		if (ref) {
+			generateName = incrementFileName(generateName, ref.split(DEFAULT_STRING_DELIMITER));
+		}
+
+		const name = `collections/property-${property.id}/item-${input.id}/${generateName}`;
+		return await getFilePresignedUploadUrl(name);
+	}),
+
+	fileDownloadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
+		const [property, item] = await Promise.all([
+			prisma.property.findUnique({ where: { id: input.pid } }),
+			prisma.item.findUnique({ where: { id: input.id } })
+		]);
+
+		if (!item || !property || property.type !== PropertyType.FILE)
+			throw new TRPCError({ code: 'BAD_REQUEST' });
+
+		const ref = getRefValue(item.properties, input.pid);
+
+		if (!ref.split(DEFAULT_STRING_DELIMITER).includes(input.fileName))
+			throw new TRPCError({ code: 'BAD_REQUEST' });
+
+		const path = `collections/property-${property.id}/item-${input.id}/${input.fileName}`;
+		return await getFilePresignedDownloadUrl(path);
+	}),
+
+	deleteFile: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
+		const [property, item] = await Promise.all([
+			prisma.property.findUnique({ where: { id: input.pid } }),
+			prisma.item.findUnique({ where: { id: input.id } })
+		]);
+
+		if (!item || !property || property.type !== PropertyType.FILE)
+			throw new TRPCError({ code: 'BAD_REQUEST' });
+
+		const path = `collections/property-${property.id}/item-${input.id}/${input.fileName}`;
+		return deleteFile(path);
+	})
 });
 
 async function listItems(args: z.infer<typeof itemListSchema>) {
@@ -128,13 +191,13 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 
 	let updItems = [...items];
 
-	for (const property of createdProperties) {
-		updItems = updItems.map((item) => injectCreatedRef(item, property.id));
+	if (createdProperties.length > 0) {
+		for (const property of createdProperties) {
+			updItems = updItems.map((item) => injectCreatedRef(item, property.id));
+		}
+	} else if (bundleProperties.length > 0) {
+		updItems = await injectBundleRefsItems(updItems, bundleProperties);
 	}
-
-	if (bundleProperties.length === 0) return sortItems(updItems, view.sorts, properties);
-
-	updItems = await injectBundleRefsItems(updItems, bundleProperties);
 
 	return sortItems(updItems, view.sorts, properties);
 }
@@ -183,7 +246,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 				updates.set(key, item);
 			}
 
-			let ref = { id: property.id, value: '' };
+			const ref = { id: property.id, value: '' };
 
 			if (ids.length !== 0 && property.calculate) {
 				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
@@ -297,7 +360,7 @@ async function addCreatedItemToBidirectionalRefs(properties: Property[], itemId:
 		itemsMap.set(refItem.id, refItem);
 	}
 
-	const promises: Promise<any>[] = [];
+	const promises: Promise<unknown>[] = [];
 
 	for (const { property, defaultValue } of processingData) {
 		const relatedProperty = extPropertiesMap.get(property.relatedProperty!);
@@ -509,4 +572,24 @@ function injectCreatedRef(item: Item, pid: string) {
 
 function addRef(item: Item, ref: PropertyRef) {
 	return { ...item, properties: [...item.properties, { ...ref }] };
+}
+
+function incrementFileName(originalName: string, existingNames: string[]) {
+	const lastDotIndex = originalName.lastIndexOf('.');
+	const hasExtension = lastDotIndex > 0;
+
+	const name = hasExtension ? originalName.slice(0, lastDotIndex) : originalName;
+	const ext = hasExtension ? originalName.slice(lastDotIndex) : '';
+
+	if (!existingNames.includes(originalName)) return originalName;
+
+	let counter = 1;
+	let fileName;
+
+	do {
+		fileName = `${name} (${counter})${ext}`;
+		counter++;
+	} while (existingNames.includes(fileName));
+
+	return fileName;
 }
