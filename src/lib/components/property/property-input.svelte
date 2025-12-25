@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Copy from 'lucide-svelte/icons/copy';
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import { PropertyType, type Property } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
@@ -9,15 +10,21 @@
 		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { tm, sanitizeNumberInput } from '$lib/utils/index.js';
+	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import debounce from 'debounce';
-	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
+	import {
+		fullDateFormat,
+		fullDateTimeFormat,
+		getToastState,
+		ModalState
+	} from '$lib/states/index.js';
 	import {
 		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
 		isPropertyNumerical,
-		PropertyFile
+		PropertyFile,
+		PropertyIcon
 	} from './index.js';
 	import {
 		AdaptiveWrapper,
@@ -28,7 +35,8 @@
 		HSeparator,
 		buttonVariants,
 		Field,
-		TextareaAutosize
+		TextareaAutosize,
+		Tooltip
 	} from '$lib/components/base/index.js';
 
 	type Props = {
@@ -42,6 +50,8 @@
 
 	let color = $derived(getPropertyColor(property, value));
 	let wrapperState = new ModalState();
+
+	const toastState = getToastState();
 
 	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
 	const updTargetElValue = debounce(updInputEl, DEBOUNCE_INTERVAL);
@@ -67,6 +77,12 @@
 	function onClickClear() {
 		onchange('');
 		wrapperState.close();
+	}
+
+	function copyValueToClipboard() {
+		if (property.type !== PropertyType.URL && property.type !== PropertyType.TEXT && !value) return;
+		navigator.clipboard.writeText(value);
+		toastState.success('Copied to clipboard');
 	}
 </script>
 
@@ -203,6 +219,26 @@
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
 		<PropertyFile {property} {value} {itemId} />
 	</Field>
+{:else if property.type === PropertyType.URL}
+	{@const tooltipId = useId(`property-url-copy-btn-tooltip-${property.id}-value-${itemId}`)}
+	<Field>
+		<Label for={property.id} icon={property.type.toLowerCase()} class="justify-between">
+			<PropertyIcon key={property.type} />
+			<span class="grow font-semibold text-sm"> {property.name} </span>
+			<Button id={tooltipId} theme="secondary" class="h-6 w-6" onclick={copyValueToClipboard}>
+				<Copy />
+			</Button>
+			<Tooltip triggerBy={tooltipId} class="p-1">Copy Url</Tooltip>
+		</Label>
+		<input
+			id={property.id}
+			type={property.type.toLowerCase()}
+			{value}
+			oninput={handleOnInput}
+			maxlength={MAX_PROPERTY_TEXT_LENGTH}
+			class="input input-ghost"
+		/>
+	</Field>
 {:else}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -224,15 +260,6 @@
 				{value}
 				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 				oninput={handleOnInput}
-				class="input input-ghost"
-			/>
-		{:else}
-			<input
-				id={property.id}
-				type={property.type.toLowerCase()}
-				{value}
-				oninput={handleOnInput}
-				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				class="input input-ghost"
 			/>
 		{/if}

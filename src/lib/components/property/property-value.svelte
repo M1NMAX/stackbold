@@ -159,7 +159,7 @@
 	function copyUrl() {
 		if (property.type !== PropertyType.URL || !value) return;
 		navigator.clipboard.writeText(value);
-		toastState.success('Url Copied to clipboard.');
+		toastState.success('Copied to clipboard');
 	}
 
 	$effect(() => {
@@ -336,25 +336,22 @@
 		{#snippet customTrigger({ id, toggle })}
 			{@const copyBtnTooltipId = useId(`select-trigger-${property.id}-value-${item.id}`)}
 
-			<div class={tm(buttonClass, 'w-full flex items-center gap-x-1.5 pl-1.5')}>
-				{#if value}
-					<button
-						id={copyBtnTooltipId}
-						onclick={copyUrl}
-						class="pr-1.5 border-r-[1.5px] border-secondary-foreground"
-					>
-						<Copy class="size-4" />
-					</button>
-					<Tooltip triggerBy={copyBtnTooltipId} align="start" class="p-1">Copy</Tooltip>
-				{/if}
-
+			<div class={tm(buttonClass, 'flex items-center gap-x-2')}>
 				<button
 					{id}
 					onclick={() => toggle()}
-					class={tm('grow flex justify-start', !value && 'h-full')}
+					class={tm('flex justify-start', value ? '' : 'h-full')}
 				>
 					{content}
 				</button>
+				{#if value}
+					<span class="h-3 w-[1.5px] bg-secondary-foreground"> </span>
+
+					<button id={copyBtnTooltipId} onclick={copyUrl}>
+						<Copy class="size-4" />
+					</button>
+					<Tooltip triggerBy={copyBtnTooltipId} class="p-1">Copy</Tooltip>
+				{/if}
 			</div>
 
 			{@render tooltipContent(id)}
