@@ -12,7 +12,7 @@
 
 <span
 	class={tm(
-		'h-6 max-w-52 flex items-center gap-x-1.5 px-1 rounded-md font-semibold text-sm [&_svg]:size-4',
+		'h-6 flex items-center gap-x-1.5 px-1 rounded-md font-semibold text-sm [&_svg]:size-4',
 		className
 	)}
 >

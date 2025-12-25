@@ -19,7 +19,13 @@
 		type View,
 		ViewType
 	} from '@prisma/client';
-	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
+	import {
+		tm,
+		sanitizeNumberInput,
+		useId,
+		truncateDomain,
+		truncateTextEnd
+	} from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		getPropertyColor,
@@ -111,8 +117,8 @@
 	const buttonClass = $derived(
 		tm(
 			isTableView()
-				? 'w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
-				: 'w-fit h-6 p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
+				? 'h-6 w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
+				: 'h-6 w-fit p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
 			useSelector(property.type) && 'px-0 lg:h-6 py-0',
 			hasUnifiedBgColor() && `${PROPERTY_COLORS[Color.GRAY]}`
@@ -262,11 +268,7 @@
 		{@render tooltipWrapper(formatted, !!value && isTableView())}
 	</div>
 {:else if property.type === PropertyType.TEXT && shouldShowTrigger()}
-	{@const content =
-		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
-			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
-			: value}
-
+	{@const content = truncateTextEnd(value, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH)}
 	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
 		floatingAlign="start"
@@ -321,32 +323,41 @@
 		</form>
 	</AdaptiveWrapper>
 {:else if property.type === PropertyType.URL && shouldShowTrigger()}
-	{@const content =
-		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
-			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
-			: value || ''}
+	{@const content = truncateDomain(value, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH)}
 	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
 		floatingAlign="start"
 		triggerClass={buttonClass}
 		floatingClass={tm(
-			'relative w-full max-w-lg p-1',
+			'w-full max-w-lg p-1',
 			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
 		)}
 	>
-		{#snippet customTrigger({ toggle })}
-			<div class={tm(buttonClass, 'flex items-center gap-x-1.5 pl-1')}>
-				<button
-					onclick={() => copyUrl()}
-					class="pl-1 pr-1.5 border-r-[1.5px] border-secondary-foreground"
-				>
-					<Copy class="size-4" />
-				</button>
+		{#snippet customTrigger({ id, toggle })}
+			{@const copyBtnTooltipId = useId(`select-trigger-${property.id}-value-${item.id}`)}
 
-				<button onclick={() => toggle()}>
-					{@render tooltipWrapper(content)}
+			<div class={tm(buttonClass, 'w-full flex items-center gap-x-1.5 pl-1.5')}>
+				{#if value}
+					<button
+						id={copyBtnTooltipId}
+						onclick={copyUrl}
+						class="pr-1.5 border-r-[1.5px] border-secondary-foreground"
+					>
+						<Copy class="size-4" />
+					</button>
+					<Tooltip triggerBy={copyBtnTooltipId} align="start" class="p-1">Copy</Tooltip>
+				{/if}
+
+				<button
+					{id}
+					onclick={() => toggle()}
+					class={tm('grow flex justify-start', !value && 'h-full')}
+				>
+					{content}
 				</button>
 			</div>
+
+			{@render tooltipContent(id)}
 		{/snippet}
 
 		<form class="space-y-0.5">

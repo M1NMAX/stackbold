@@ -17,7 +17,7 @@
 		floatingAlign?: Align;
 		floatingClass?: string;
 		sameWidth?: boolean;
-		customTrigger?: Snippet<[opts: { toggle: () => void }]>;
+		customTrigger?: Snippet<[opts: { id: string; toggle: () => void }]>;
 	};
 
 	let {
@@ -43,7 +43,7 @@
 
 <div class={className}>
 	{#if customTrigger}
-		{@render customTrigger({ toggle })}
+		{@render customTrigger({ id, toggle })}
 	{:else}
 		<button
 			{id}

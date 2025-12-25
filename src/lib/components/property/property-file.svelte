@@ -141,8 +141,9 @@
 	)}
 >
 	{#snippet trigger()}
+		{@const cls = tm(PROPERTY_COLORS[Color.GRAY])}
 		{#each files.slice(0, 3) as file (file)}
-			<Badge class={PROPERTY_COLORS[Color.GRAY]}>
+			<Badge class={cls}>
 				{@render icon(file)}
 				<span class="overflow-hidden whitespace-nowrap text-ellipsis">
 					{file}
@@ -151,7 +152,7 @@
 		{/each}
 
 		{#if files.length > 3}
-			<Badge class={PROPERTY_COLORS[Color.GRAY]}>
+			<Badge class={cls}>
 				+{files.length - 3} More
 			</Badge>
 		{/if}
