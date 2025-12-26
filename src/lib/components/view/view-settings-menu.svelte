@@ -298,7 +298,7 @@
 
 {#snippet header(title: string, backTo: ContentType = null)}
 	<div class="w-full flex items-center gap-x-1">
-		<Button theme="ghost" variant="compact" class="w-7" onclick={() => (content = backTo)}>
+		<Button theme="ghost" variant="cicon" onclick={() => (content = backTo)}>
 			<ChevronLeft />
 		</Button>
 		<span class="grow pr-4 py-1 font-semibold text-sm text-center md:text-left">
