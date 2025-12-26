@@ -36,7 +36,7 @@
 		PropertyIcon,
 		PropertyFile
 	} from './index.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 	import debounce from 'debounce';
 	import {
 		fullDateFormat,

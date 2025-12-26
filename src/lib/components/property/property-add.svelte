@@ -10,7 +10,7 @@
 	import { capitalizeFirstLetter } from '$lib/utils/index.js';
 	import { PropertyType } from '@prisma/client';
 	import { ModalState } from '$lib/states/index.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 	import { getViewState } from '$lib/components/view/index.js';
 
 	type Props = {

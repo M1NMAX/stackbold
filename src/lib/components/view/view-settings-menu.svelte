@@ -41,7 +41,7 @@
 		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 
 	type Props = {
 		view: View;

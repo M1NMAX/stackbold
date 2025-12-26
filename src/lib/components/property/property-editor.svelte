@@ -32,7 +32,7 @@
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
 	import debounce from 'debounce';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
