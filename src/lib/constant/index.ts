@@ -52,8 +52,11 @@ export const MIN_SEARCHABLE_PROPERTY_SELECT = 2;
 export const ITEMS_CHUNK_SIZE = 25;
 export const MAX_PROPERTY_FILE_COUNT = 5;
 export const MAX_FILE_SIZE = 20 * 1024 * 1024;
+export const MAX_VISIBLE_FILES = 3;
+export const MAX_FILE_NAME_OVERVIEW_LENGTH = 60;
 
 export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
+export const DEFAULT_COPY_TO_CLIPBOARD_MESSAGE = 'Copied to clipboard';
 export const NAME_FIELD = 'name';
 export const NEW_COLLECTION_NAME = 'Add a name';
 export const NEW_GROUP_NAME = 'New group';

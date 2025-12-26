@@ -5,9 +5,11 @@
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
+		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
+		PROPERTIES_THAT_USE_INPUT,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
 	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
@@ -80,9 +82,9 @@
 	}
 
 	function copyValueToClipboard() {
-		if (property.type !== PropertyType.URL && property.type !== PropertyType.TEXT && !value) return;
+		if (!PROPERTIES_THAT_USE_INPUT.includes(property.type) && !value) return;
 		navigator.clipboard.writeText(value);
-		toastState.success('Copied to clipboard');
+		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
 </script>
 
@@ -164,7 +166,7 @@
 		<div
 			class={buttonVariants({
 				theme: 'ghost',
-				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+				className: 'bg-transparent'
 			})}
 		>
 			{#if value}
@@ -181,7 +183,7 @@
 			triggerClass={buttonVariants({
 				theme: 'ghost',
 				variant: 'menu',
-				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+				className: 'bg-transparent'
 			})}
 		>
 			{#snippet trigger()}
@@ -225,10 +227,12 @@
 		<Label for={property.id} icon={property.type.toLowerCase()} class="justify-between">
 			<PropertyIcon key={property.type} />
 			<span class="grow font-semibold text-sm"> {property.name} </span>
-			<Button id={tooltipId} theme="secondary" class="h-6 w-6" onclick={copyValueToClipboard}>
-				<Copy />
-			</Button>
-			<Tooltip triggerBy={tooltipId} class="p-1">Copy Url</Tooltip>
+			{#if value}
+				<Button id={tooltipId} theme="secondary" variant="cicon" onclick={copyValueToClipboard}>
+					<Copy />
+				</Button>
+				<Tooltip triggerBy={tooltipId}>Copy Url</Tooltip>
+			{/if}
 		</Label>
 		<input
 			id={property.id}

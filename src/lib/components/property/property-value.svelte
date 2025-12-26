@@ -3,6 +3,7 @@
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import {
 		DEBOUNCE_INTERVAL,
+		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
@@ -66,8 +67,7 @@
 
 	const itemState = getItemState();
 	const toastState = getToastState();
-
-	let wrapperState = new ModalState();
+	const wrapperState = new ModalState();
 
 	let value = $derived(getRefValue(item.properties, property.id));
 	let color = $derived(getPropertyColor(property, value));
@@ -120,8 +120,9 @@
 				? 'h-6 w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'h-6 w-fit p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
-			useSelector(property.type) && 'px-0 lg:h-6 py-0',
-			hasUnifiedBgColor() && `${PROPERTY_COLORS[Color.GRAY]}`
+			allowMultipleValues(property.type) && ' lg:h-6 p-0',
+			hasUnifiedBgColor() && `${PROPERTY_COLORS[Color.GRAY]}`,
+			allowMultipleValues(property.type) && !isTableView() && 'bg-gray-200/40 dark:bg-gray-700/40'
 		)
 	);
 
@@ -140,12 +141,12 @@
 		return value || isTableView();
 	}
 
-	function useSelector(type: PropertyType) {
-		return PROPERTIES_THAT_USE_SELECTOR.includes(type);
+	function allowMultipleValues(type: PropertyType) {
+		return PROPERTIES_THAT_USE_SELECTOR.includes(type) || type === PropertyType.FILE;
 	}
 
 	function hasUnifiedBgColor() {
-		return !isTableView() && !useSelector(property.type) && property.type !== PropertyType.FILE;
+		return !isTableView() && !allowMultipleValues(property.type);
 	}
 
 	function shouldRefresh() {
@@ -157,9 +158,9 @@
 	}
 
 	function copyUrl() {
-		if (property.type !== PropertyType.URL || !value) return;
+		if (!PROPERTIES_THAT_USE_INPUT.includes(property.type) && !value) return;
 		navigator.clipboard.writeText(value);
-		toastState.success('Copied to clipboard');
+		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
 
 	$effect(() => {
@@ -374,7 +375,10 @@
 		</form>
 	</AdaptiveWrapper>
 {:else if property.type === PropertyType.FILE && shouldShowTrigger()}
-	<PropertyFile buttonClass={tm(buttonClass, 'px-0')} {property} {value} itemId={item.id} />
+	{@const tooltipId = `property-file-trigger-${property.id}-value-${item.id}`}
+	<PropertyFile {property} {value} itemId={item.id} id={tooltipId} {buttonClass} />
+
+	{@render tooltipContent(tooltipId)}
 {:else if shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}

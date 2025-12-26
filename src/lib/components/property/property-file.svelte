@@ -14,24 +14,35 @@
 	import {
 		DEFAULT_STRING_DELIMITER,
 		FILE_ICONS,
+		MAX_FILE_NAME_OVERVIEW_LENGTH,
 		MAX_FILE_SIZE,
 		MAX_PROPERTY_FILE_COUNT,
+		MAX_VISIBLE_FILES,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
 	import { Color, type Property } from '@prisma/client';
 	import { getToastState, ModalState } from '$lib/states/index.js';
-	import { isAudioFile, isImageFile, isVideoFile, tm, uploadFileToUrl } from '$lib/utils/index.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import {
+		isAudioFile,
+		isImageFile,
+		isVideoFile,
+		tm,
+		truncateTextMiddle,
+		uploadFileToUrl,
+		useId
+	} from '$lib/utils/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 
 	type Props = {
+		id?: string;
 		itemId: string;
 		value: string;
 		property: Property;
 		buttonClass?: string;
 	};
 
-	let { itemId, value, property, buttonClass }: Props = $props();
+	let { id = useId(), itemId, value, property, buttonClass }: Props = $props();
 	let files = $derived(separateMultiselectOptions(value));
 	let input = $state<HTMLInputElement | null>(null);
 	let selected = $state<Nullable<string>>(null);
@@ -128,6 +139,7 @@
 </script>
 
 <AdaptiveWrapper
+	{id}
 	sameWidth
 	bind:open={wrapperState.isOpen}
 	floatingAlign="start"
@@ -142,11 +154,13 @@
 >
 	{#snippet trigger()}
 		{@const cls = tm(PROPERTY_COLORS[Color.GRAY])}
-		{#each files.slice(0, 3) as file (file)}
+		{@const filesToRender = files.slice(0, MAX_VISIBLE_FILES)}
+		{@const truncateLength = Math.floor(MAX_FILE_NAME_OVERVIEW_LENGTH / filesToRender.length)}
+		{#each filesToRender as file (file)}
 			<Badge class={cls}>
 				{@render icon(file)}
 				<span class="overflow-hidden whitespace-nowrap text-ellipsis">
-					{file}
+					{truncateTextMiddle(file, truncateLength)}
 				</span>
 			</Badge>
 		{/each}
@@ -172,7 +186,7 @@
 {#snippet content()}
 	{#if selected}
 		<div class="w-full flex items-center gap-x-1">
-			<Button theme="ghost" variant="compact" class="w-7" onclick={() => (selected = null)}>
+			<Button theme="ghost" variant="cicon" onclick={() => (selected = null)}>
 				<ChevronLeft />
 			</Button>
 			<span class="grow pr-4 py-1 font-semibold text-sm text-center md:text-left">
