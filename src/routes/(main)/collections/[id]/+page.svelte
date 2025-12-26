@@ -49,7 +49,7 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
 		SearchInput,
-		ViewButtons,
+		ViewSelector,
 		ViewSettingsMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
@@ -307,7 +307,7 @@
 		{/if}
 
 		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">
-			<ViewButtons
+			<ViewSelector
 				views={viewState.views}
 				value={view.shortId.toString()}
 				onchange={onViewChange}
