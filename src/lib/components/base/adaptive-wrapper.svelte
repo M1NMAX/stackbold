@@ -4,7 +4,6 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { useId } from '$lib/utils/index.js';
 	import type { Align } from '$lib/types';
-	import type { ClassValue } from 'svelte/elements';
 	import { SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 
 	type Props = {
@@ -12,7 +11,6 @@
 		open?: boolean;
 		trigger?: Snippet;
 		children: Snippet;
-		class?: ClassValue;
 		triggerClass?: string;
 		floatingAlign?: Align;
 		floatingClass?: string;
@@ -25,7 +23,6 @@
 		open = $bindable(false),
 		trigger,
 		children,
-		class: className,
 		triggerClass,
 		floatingAlign,
 		floatingClass,
@@ -41,36 +38,34 @@
 	}
 </script>
 
-<div class={className}>
-	{#if customTrigger}
-		{@render customTrigger({ id, toggle })}
-	{:else}
-		<button
-			{id}
-			type="button"
-			onclick={toggle}
-			class={buttonVariants({ theme: 'ghost', class: triggerClass })}
-		>
-			{#if trigger}
-				{@render trigger()}
-			{:else}
-				Trigger
-			{/if}
-		</button>
-	{/if}
-	{#if isLargeScreen.current}
-		<Floating
-			bind:visible={open}
-			triggerBy={id}
-			align={floatingAlign}
-			class={floatingClass}
-			{sameWidth}
-		>
-			{@render children()}
-		</Floating>
-	{:else}
-		<Drawer bind:open>
-			{@render children()}
-		</Drawer>
-	{/if}
-</div>
+{#if customTrigger}
+	{@render customTrigger({ id, toggle })}
+{:else}
+	<button
+		{id}
+		type="button"
+		onclick={toggle}
+		class={buttonVariants({ theme: 'ghost', class: triggerClass })}
+	>
+		{#if trigger}
+			{@render trigger()}
+		{:else}
+			Trigger
+		{/if}
+	</button>
+{/if}
+{#if isLargeScreen.current}
+	<Floating
+		bind:visible={open}
+		triggerBy={id}
+		align={floatingAlign}
+		class={floatingClass}
+		{sameWidth}
+	>
+		{@render children()}
+	</Floating>
+{:else}
+	<Drawer bind:open>
+		{@render children()}
+	</Drawer>
+{/if}
