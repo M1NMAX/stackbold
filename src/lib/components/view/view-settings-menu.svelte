@@ -140,9 +140,7 @@
 	});
 </script>
 
-<Tooltip triggerBy={id} align="end">
-	<span class="text-sm font-semibold py-1 px-1.5">View settings</span>
-</Tooltip>
+<Tooltip triggerBy={id} align="end">View settings</Tooltip>
 <AdaptiveWrapper
 	{id}
 	bind:open={menuState.isOpen}

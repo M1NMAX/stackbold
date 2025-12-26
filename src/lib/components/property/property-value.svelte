@@ -350,7 +350,7 @@
 					<button id={copyBtnTooltipId} onclick={copyUrl}>
 						<Copy class="size-4" />
 					</button>
-					<Tooltip triggerBy={copyBtnTooltipId} class="p-1">Copy</Tooltip>
+					<Tooltip triggerBy={copyBtnTooltipId}>Copy</Tooltip>
 				{/if}
 			</div>
 
@@ -416,10 +416,8 @@
 {#snippet tooltipContent(id: string)}
 	{#if !isTableView()}
 		<Tooltip triggerBy={id}>
-			<div class="flex items-center p-1 gap-x-1.5">
-				<PropertyIcon key={property.type} class="size-4" />
-				<span class="text-sm font-semibold">{property.name}</span>
-			</div>
+			<PropertyIcon key={property.type} class="size-4" />
+			<span>{property.name}</span>
 		</Tooltip>
 	{/if}
 {/snippet}

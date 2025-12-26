@@ -50,9 +50,7 @@
 	</span>
 
 	<Tooltip triggerBy={tooltipId}>
-		<div class="flex items-center p-1">
-			<PropertyIcon key={property.type} class="size-4 mr-1" />
-			<span class="text-sm font-semibold">{property.name}</span>
-		</div>
+		<PropertyIcon key={property.type} class="size-4" />
+		<span>{property.name}</span>
 	</Tooltip>
 {/if}
