@@ -8,7 +8,9 @@ import {
 import {
 	getFilePresignedDownloadUrl,
 	getFilePresignedUploadUrl,
-	deleteFile
+	deleteFile,
+	listObjects,
+	removeObjects
 } from '$lib/server/minio';
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
@@ -56,7 +58,7 @@ const refUpdateSchema = z.object({
 const fileUploadSchema = z.object({
 	id: z.string(),
 	pid: z.string(),
-	fileName: z.string()
+	filename: z.string()
 });
 
 export const items = createTRPCRouter({
@@ -90,6 +92,9 @@ export const items = createTRPCRouter({
 		});
 		if (item.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
+		const objectsList = await listObjects(`collections/item-${id}/`);
+		await removeObjects(objectsList);
+
 		await prisma.item.delete({ where: { id } });
 	}),
 
@@ -107,14 +112,13 @@ export const items = createTRPCRouter({
 			throw new TRPCError({ code: 'BAD_REQUEST' });
 
 		const ref = getRefValue(item.properties, input.pid);
-		let generateName = input.fileName;
+		let generateName = input.filename;
 
 		if (ref) {
 			generateName = incrementFileName(generateName, ref.split(DEFAULT_STRING_DELIMITER));
 		}
 
-		const name = `collections/property-${property.id}/item-${input.id}/${generateName}`;
-		return await getFilePresignedUploadUrl(name);
+		return await getFilePresignedUploadUrl(getFilePath(input.id, input.pid, generateName));
 	}),
 
 	fileDownloadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
@@ -128,11 +132,10 @@ export const items = createTRPCRouter({
 
 		const ref = getRefValue(item.properties, input.pid);
 
-		if (!ref.split(DEFAULT_STRING_DELIMITER).includes(input.fileName))
+		if (!ref.split(DEFAULT_STRING_DELIMITER).includes(input.filename))
 			throw new TRPCError({ code: 'BAD_REQUEST' });
 
-		const path = `collections/property-${property.id}/item-${input.id}/${input.fileName}`;
-		return await getFilePresignedDownloadUrl(path);
+		return await getFilePresignedDownloadUrl(getFilePath(input.id, input.pid, input.filename));
 	}),
 
 	deleteFile: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
@@ -144,8 +147,7 @@ export const items = createTRPCRouter({
 		if (!item || !property || property.type !== PropertyType.FILE)
 			throw new TRPCError({ code: 'BAD_REQUEST' });
 
-		const path = `collections/property-${property.id}/item-${input.id}/${input.fileName}`;
-		return deleteFile(path);
+		return deleteFile(getFilePath(input.id, input.pid, input.filename));
 	})
 });
 
@@ -572,6 +574,10 @@ function injectCreatedRef(item: Item, pid: string) {
 
 function addRef(item: Item, ref: PropertyRef) {
 	return { ...item, properties: [...item.properties, { ...ref }] };
+}
+
+function getFilePath(itemId: string, pid: string, filename: string) {
+	return `collections/item-${itemId}/property-${pid}/${filename}`;
 }
 
 function incrementFileName(originalName: string, existingNames: string[]) {

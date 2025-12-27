@@ -124,16 +124,16 @@ export class ItemState {
 		}
 	}
 
-	async generatePresignedUrl(id: string, pid: string, fileName: string) {
-		return await trpc().items.fileUploadUrl.mutate({ id, pid, fileName });
+	async generatePresignedUrl(id: string, pid: string, filename: string) {
+		return await trpc().items.fileUploadUrl.mutate({ id, pid, filename });
 	}
 
-	async getDownloadUrl(id: string, pid: string, fileName: string) {
-		return await trpc().items.fileDownloadUrl.mutate({ id, pid, fileName });
+	async getDownloadUrl(id: string, pid: string, filename: string) {
+		return await trpc().items.fileDownloadUrl.mutate({ id, pid, filename });
 	}
 
-	async deleteFile(id: string, pid: string, fileName: string) {
-		return await trpc().items.deleteFile.mutate({ id, pid, fileName });
+	async deleteFile(id: string, pid: string, filename: string) {
+		return await trpc().items.deleteFile.mutate({ id, pid, filename });
 	}
 }
 

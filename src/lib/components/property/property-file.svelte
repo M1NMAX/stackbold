@@ -3,7 +3,7 @@
 	import Download from 'lucide-svelte/icons/download';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { extractFileNameFromUrl, joinFilesName, separateMultiselectOptions } from './index.js';
+	import { extractFilenameFromUrl, joinFilesName, separateMultiselectOptions } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Badge,
@@ -79,7 +79,7 @@
 
 			await itemState.updPropertyRef(itemId, {
 				id: property.id,
-				value: joinFilesName(files, extractFileNameFromUrl(uploadUrl))
+				value: joinFilesName(files, extractFilenameFromUrl(uploadUrl))
 			});
 		} catch (_) {
 			toastState.error();
@@ -126,10 +126,10 @@
 			toastState.remove(tid);
 		}
 	}
-	function getIconKey(fileName: string) {
-		if (isImageFile(fileName)) return 'image';
-		else if (isVideoFile(fileName)) return 'video';
-		else if (isAudioFile(fileName)) return 'audio';
+	function getIconKey(filename: string) {
+		if (isImageFile(filename)) return 'image';
+		else if (isVideoFile(filename)) return 'video';
+		else if (isAudioFile(filename)) return 'audio';
 		else return 'text';
 	}
 
@@ -230,7 +230,7 @@
 	{/if}
 {/snippet}
 
-{#snippet icon(fileName: string)}
-	{@const Icon = FILE_ICONS[getIconKey(fileName)]}
+{#snippet icon(filename: string)}
+	{@const Icon = FILE_ICONS[getIconKey(filename)]}
 	<Icon class="size-4 shrink-0" aria-level="File type icon" />
 {/snippet}

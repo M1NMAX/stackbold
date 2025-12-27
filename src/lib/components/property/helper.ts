@@ -65,6 +65,6 @@ export function joinFilesName(currentFiles: string[], newFile: string) {
 	return [...currentFiles, newFile].join(DEFAULT_STRING_DELIMITER);
 }
 
-export function extractFileNameFromUrl(url: string) {
+export function extractFilenameFromUrl(url: string) {
 	return decodeURIComponent(url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('?')));
 }
