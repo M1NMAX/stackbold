@@ -1,7 +1,11 @@
 import * as Minio from 'minio';
-import { MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY } from '$env/static/private';
 import {
 	APP_BUCKET,
+	MINIO_ENDPOINT,
+	MINIO_ACCESS_KEY,
+	MINIO_SECRET_KEY
+} from '$env/static/private';
+import {
 	DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION,
 	DEFAULT_PRESIGNED_URL_UPLOAD_DURATION
 } from '$lib/constant/index.js';

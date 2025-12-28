@@ -333,7 +333,10 @@ async function deleteProperty(id: string, userId: string) {
 	}
 
 	if (property.type === PropertyType.FILE) {
-		const objectsList = await listObjects('collections/', `/property-${id}/`);
+		const objectsList = await listObjects(
+			`collections/collection-${property.collectionId}`,
+			`/property-${id}/`
+		);
 		await removeObjects(objectsList);
 	}
 

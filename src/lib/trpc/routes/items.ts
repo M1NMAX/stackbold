@@ -92,7 +92,9 @@ export const items = createTRPCRouter({
 		});
 		if (item.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
-		const objectsList = await listObjects(`collections/item-${id}/`);
+		const objectsList = await listObjects(
+			`collections/collection-${item.collection.id}/item-${id}/`
+		);
 		await removeObjects(objectsList);
 
 		await prisma.item.delete({ where: { id } });
@@ -118,7 +120,9 @@ export const items = createTRPCRouter({
 			generateName = incrementFileName(generateName, ref.split(DEFAULT_STRING_DELIMITER));
 		}
 
-		return await getFilePresignedUploadUrl(getFilePath(input.id, input.pid, generateName));
+		return await getFilePresignedUploadUrl(
+			getFilePath(property.collectionId, input.id, input.pid, generateName)
+		);
 	}),
 
 	fileDownloadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
@@ -135,7 +139,9 @@ export const items = createTRPCRouter({
 		if (!ref.split(DEFAULT_STRING_DELIMITER).includes(input.filename))
 			throw new TRPCError({ code: 'BAD_REQUEST' });
 
-		return await getFilePresignedDownloadUrl(getFilePath(input.id, input.pid, input.filename));
+		return await getFilePresignedDownloadUrl(
+			getFilePath(property.collectionId, input.id, input.pid, input.filename)
+		);
 	}),
 
 	deleteFile: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
@@ -147,7 +153,7 @@ export const items = createTRPCRouter({
 		if (!item || !property || property.type !== PropertyType.FILE)
 			throw new TRPCError({ code: 'BAD_REQUEST' });
 
-		return deleteFile(getFilePath(input.id, input.pid, input.filename));
+		return deleteFile(getFilePath(property.collectionId, input.id, input.pid, input.filename));
 	})
 });
 
@@ -576,8 +582,8 @@ function addRef(item: Item, ref: PropertyRef) {
 	return { ...item, properties: [...item.properties, { ...ref }] };
 }
 
-function getFilePath(itemId: string, pid: string, filename: string) {
-	return `collections/item-${itemId}/property-${pid}/${filename}`;
+function getFilePath(cid: string, iid: string, pid: string, filename: string) {
+	return `collections/collection-${cid}/item-${iid}/property-${pid}/${filename}`;
 }
 
 function incrementFileName(originalName: string, existingNames: string[]) {
