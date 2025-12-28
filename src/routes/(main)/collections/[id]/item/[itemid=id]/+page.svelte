@@ -13,7 +13,7 @@
 		HSeparator,
 		TextareaAutosize
 	} from '$lib/components/base/index.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import {
 		PageContainer,
@@ -174,6 +174,7 @@
 				{property}
 				value={getRefValue(item.properties, property.id)}
 				onchange={(value) => updPropertyRef({ id: property.id, value })}
+				itemId={item.id}
 			/>
 		{/each}
 	</PageContent>

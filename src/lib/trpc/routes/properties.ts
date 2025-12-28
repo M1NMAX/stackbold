@@ -11,6 +11,7 @@ import {
 	type Property,
 	type View
 } from '@prisma/client';
+import { listObjects, removeObjects } from '$lib/server/minio';
 
 const colorSchema = z.enum(Color);
 const propertyTypeSchema = z.enum(PropertyType);
@@ -257,7 +258,7 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	const order = await prisma.property.count({ where: { collectionId: args.collectionId } });
 	const property = await prisma.property.create({ data: { ...args, order: order + 1 } });
 
-	let promises: Promise<any>[] = [];
+	const promises: Promise<unknown>[] = [];
 
 	if (hasRef(property.type)) {
 		promises.push(
@@ -285,7 +286,7 @@ async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
 		where: { collectionId: args.collectionId, order: args.start }
 	});
 
-	let promises: Promise<any>[] = [];
+	const promises: Promise<unknown>[] = [];
 
 	if (args.start < args.end) {
 		promises.push(
@@ -331,8 +332,16 @@ async function deleteProperty(id: string, userId: string) {
 		throw new TRPCError({ code: 'UNAUTHORIZED' });
 	}
 
+	if (property.type === PropertyType.FILE) {
+		const objectsList = await listObjects(
+			`collections/collection-${property.collectionId}`,
+			`/property-${id}/`
+		);
+		await removeObjects(objectsList);
+	}
+
 	await prisma.$transaction(async (tx) => {
-		let promises: Promise<any>[] = [];
+		const promises: Promise<unknown>[] = [];
 
 		if (hasRef(property.type)) {
 			promises.push(

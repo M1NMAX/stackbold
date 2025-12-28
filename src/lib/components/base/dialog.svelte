@@ -48,7 +48,7 @@
 				<h3 class="text-xl font-semibold leading-none tracking-tight pb-2">{title}</h3>
 			{/if}
 			{#if dismissable}
-				<Button theme="ghost" variant="compact" class="absolute right-4 top-4" onclick={close}>
+				<Button theme="ghost" variant="cicon" class="absolute right-4 top-4" onclick={close}>
 					<X />
 				</Button>
 			{/if}

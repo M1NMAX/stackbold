@@ -1,22 +1,32 @@
 <script lang="ts">
+	import Copy from 'lucide-svelte/icons/copy';
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import { PropertyType, type Property } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
+		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
+		PROPERTIES_THAT_USE_INPUT,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { tm, sanitizeNumberInput } from '$lib/utils/index.js';
+	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
 	import debounce from 'debounce';
-	import { fullDateFormat, fullDateTimeFormat, ModalState } from '$lib/states/index.js';
+	import {
+		fullDateFormat,
+		fullDateTimeFormat,
+		getToastState,
+		ModalState
+	} from '$lib/states/index.js';
 	import {
 		separateMultiselectOptions,
 		getPropertyColor,
 		joinMultiselectOptions,
-		isPropertyNumerical
+		isPropertyNumerical,
+		PropertyFile,
+		PropertyIcon
 	} from './index.js';
 	import {
 		AdaptiveWrapper,
@@ -27,19 +37,23 @@
 		HSeparator,
 		buttonVariants,
 		Field,
-		TextareaAutosize
+		TextareaAutosize,
+		Tooltip
 	} from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
 		onchange: (value: string) => void;
 		value: string;
+		itemId: string;
 	};
 
-	let { property, onchange, value }: Props = $props();
+	let { property, onchange, value, itemId }: Props = $props();
 
 	let color = $derived(getPropertyColor(property, value));
 	let wrapperState = new ModalState();
+
+	const toastState = getToastState();
 
 	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
 	const updTargetElValue = debounce(updInputEl, DEBOUNCE_INTERVAL);
@@ -65,6 +79,12 @@
 	function onClickClear() {
 		onchange('');
 		wrapperState.close();
+	}
+
+	function copyValueToClipboard() {
+		if (!PROPERTIES_THAT_USE_INPUT.includes(property.type) && !value) return;
+		navigator.clipboard.writeText(value);
+		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
 </script>
 
@@ -146,7 +166,7 @@
 		<div
 			class={buttonVariants({
 				theme: 'ghost',
-				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+				className: 'bg-transparent'
 			})}
 		>
 			{#if value}
@@ -163,7 +183,7 @@
 			triggerClass={buttonVariants({
 				theme: 'ghost',
 				variant: 'menu',
-				className: 'w-full justify-start bg-transparent hover:bg-transparent'
+				className: 'bg-transparent'
 			})}
 		>
 			{#snippet trigger()}
@@ -196,6 +216,33 @@
 			{@render miniWrapper(formatted)}
 		</div>
 	</Field>
+{:else if property.type === PropertyType.FILE}
+	<Field>
+		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<PropertyFile {property} {value} {itemId} />
+	</Field>
+{:else if property.type === PropertyType.URL}
+	{@const tooltipId = useId(`property-url-copy-btn-tooltip-${property.id}-value-${itemId}`)}
+	<Field>
+		<Label for={property.id} icon={property.type.toLowerCase()} class="justify-between">
+			<PropertyIcon key={property.type} />
+			<span class="grow font-semibold text-sm"> {property.name} </span>
+			{#if value}
+				<Button id={tooltipId} theme="secondary" variant="cicon" onclick={copyValueToClipboard}>
+					<Copy />
+				</Button>
+				<Tooltip triggerBy={tooltipId}>Copy Url</Tooltip>
+			{/if}
+		</Label>
+		<input
+			id={property.id}
+			type={property.type.toLowerCase()}
+			{value}
+			oninput={handleOnInput}
+			maxlength={MAX_PROPERTY_TEXT_LENGTH}
+			class="input input-ghost"
+		/>
+	</Field>
 {:else}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -217,15 +264,6 @@
 				{value}
 				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 				oninput={handleOnInput}
-				class="input input-ghost"
-			/>
-		{:else}
-			<input
-				id={property.id}
-				type={property.type.toLowerCase()}
-				{value}
-				oninput={handleOnInput}
-				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				class="input input-ghost"
 			/>
 		{/if}

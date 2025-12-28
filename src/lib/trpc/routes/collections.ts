@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server';
 import { NAME_FIELD } from '$lib/constant/index.js';
 import { ViewType } from '@prisma/client';
 import { capitalizeFirstLetter } from '$lib/utils/index.js';
+import { listObjects, removeObjects } from '$lib/server/minio';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -110,7 +111,7 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 			}
 		});
 
-		let propertyIdsMap = new Map<string, string>();
+		const propertyIdsMap = new Map<string, string>();
 		for (const property of collection.properties) {
 			const oldId = oldPropertyIdToOrder.get(property.order);
 			if (oldId) propertyIdsMap.set(oldId, property.id);
@@ -181,6 +182,9 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 async function deleteCollection(id: string, userId: string) {
 	const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
 	if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+	const objectsList = await listObjects(`collections/collection-${collection.id}/`);
+	await removeObjects(objectsList);
 
 	await prisma.collection.delete({ where: { id } });
 }

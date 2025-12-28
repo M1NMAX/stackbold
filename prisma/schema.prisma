@@ -35,6 +35,7 @@ enum PropertyType {
   CREATED     @map("created")
   RELATION    @map("relation")
   BUNDLE      @map("bundle")
+  FILE        @map("file")
 }
 
 enum Aggregator {

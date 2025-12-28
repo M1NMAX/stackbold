@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setItemState } from '$lib/components/items/index.js';
+	import { setItemState } from '$lib/components/item/index.js';
 	import { ModalState } from '$lib/states/index.js';
 	import { setPropertyState } from '$lib/components/property/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';

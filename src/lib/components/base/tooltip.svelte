@@ -168,7 +168,7 @@
 		bind:this={tooltipEl}
 		transition:fade={{ duration: 200, easing: linear }}
 		class={tm(
-			'fixed z-50 p-0.5 rounded-md bg-background transition-opacity',
+			'fixed z-50 flex items-center gap-1.5 py-1 px-1.5 text-sm font-semibold rounded-md bg-background transition-opacity',
 			positioned ? 'visible opacity-100' : 'invisible opacity-0',
 			className
 		)}

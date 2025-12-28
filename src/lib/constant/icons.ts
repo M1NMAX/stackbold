@@ -10,6 +10,7 @@ import Logs from 'lucide-svelte/icons/logs';
 import CalendarClock from 'lucide-svelte/icons/calendar-clock';
 import FolderSymlink from 'lucide-svelte/icons/folder-symlink';
 import Combine from 'lucide-svelte/icons/combine';
+import Paperclip from 'lucide-svelte/icons/paperclip';
 
 // Theme
 import Moon from 'lucide-svelte/icons/moon';
@@ -59,6 +60,12 @@ import Kanban from 'lucide-svelte/icons/kanban';
 import StretchHorizontal from 'lucide-svelte/icons/stretch-horizontal';
 import Table from 'lucide-svelte/icons/table';
 
+// files
+import FileVolume from 'lucide-svelte/icons/file-volume';
+import FileVideo from 'lucide-svelte/icons/file-video';
+import FileImage from 'lucide-svelte/icons/file-image';
+import FileText from 'lucide-svelte/icons/file-text';
+
 // Others
 import File from 'lucide-svelte/icons/file';
 import Home from 'lucide-svelte/icons/home';
@@ -70,6 +77,7 @@ import Shield from 'lucide-svelte/icons/shield';
 import Layout from 'lucide-svelte/icons/layout-dashboard';
 
 type IconBundle = {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[idx: string]: any;
 };
 
@@ -84,7 +92,8 @@ export const INPUT_ICONS: IconBundle = {
 	url: Link,
 	created: CalendarClock,
 	relation: FolderSymlink,
-	bundle: Combine
+	bundle: Combine,
+	file: Paperclip
 };
 
 export const THEME_ICONS: IconBundle = {
@@ -138,6 +147,13 @@ export const VIEW_ICONS: IconBundle = {
 	list: StretchHorizontal,
 	table: Table,
 	board: Kanban
+};
+
+export const FILE_ICONS: IconBundle = {
+	audio: FileVolume,
+	video: FileVideo,
+	image: FileImage,
+	text: FileText
 };
 
 export const PAGE_ICONS: IconBundle = {
