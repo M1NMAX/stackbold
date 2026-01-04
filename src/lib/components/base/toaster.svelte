@@ -19,9 +19,7 @@
 	const toastState = getToastState();
 </script>
 
-<div
-	class="fixed bottom-10 md:bottom-auto md:top-10 z-50 flex flex-col flex-wrap content-center gap-2 w-full"
->
+<div class="fixed top-10 z-[100] flex flex-col flex-wrap content-center gap-2 w-full">
 	{#each toastState.toasts as toast (toast.id)}
 		<div
 			in:slide={{ duration: 150 }}
