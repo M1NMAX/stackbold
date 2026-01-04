@@ -177,7 +177,7 @@
 	</p>
 
 	<div
-		class="flex flex-col p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground"
+		class="flex flex-col lg:p-1 lg:rounded-md lg:shadow-md lg:outline-none lg:bg-popover lg:text-popover-foreground"
 	>
 		{@render content()}
 	</div>
