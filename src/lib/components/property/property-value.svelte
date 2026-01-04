@@ -337,18 +337,20 @@
 		{#snippet customTrigger({ id, toggle })}
 			{@const copyBtnTooltipId = useId(`select-trigger-${property.id}-value-${item.id}`)}
 
-			<div class={tm(buttonClass, 'flex items-center gap-x-2')}>
+			<div class={tm(buttonClass, 'flex items-center px-0.5')}>
 				<button
 					{id}
 					onclick={() => toggle()}
-					class={tm('flex justify-start', value ? '' : 'h-full')}
+					class={tm('w-full flex justify-start', value ? '' : 'h-full')}
 				>
 					{content}
 				</button>
 				{#if value}
-					<span class="h-3 w-[1.5px] bg-secondary-foreground"> </span>
+					{#if !isTableView()}
+						<span class="h-3 w-[1px] ml-2 bg-secondary-foreground"> </span>
+					{/if}
 
-					<button id={copyBtnTooltipId} onclick={copyUrl}>
+					<button id={copyBtnTooltipId} onclick={copyUrl} class="ml-2">
 						<Copy class="size-4" />
 					</button>
 					<Tooltip triggerBy={copyBtnTooltipId}>Copy</Tooltip>

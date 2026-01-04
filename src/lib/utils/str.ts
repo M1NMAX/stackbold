@@ -22,11 +22,11 @@ export function truncateTextMiddle(text: string, maxLength: number) {
 export function truncateDomain(url: string, maxLength: number) {
 	try {
 		const urlObj = new URL(url);
-		const domain = urlObj.hostname.substring(4, urlObj.hostname.length);
+		const domain = urlObj.hostname;
 		const path = urlObj.pathname + urlObj.search;
 
-		if ((domain + path).length <= maxLength) return domain + path;
-		return truncateTextMiddle(domain + path, maxLength);
+		if (path.length <= maxLength) return domain + path;
+		return domain + truncateTextMiddle(path, maxLength);
 	} catch {
 		return truncateTextEnd(url, maxLength);
 	}
