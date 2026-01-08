@@ -182,11 +182,11 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 
 	let updItems = [...items];
 
-	if (createdProperties.length > 0) {
-		for (const property of createdProperties) {
-			updItems = updItems.map((item) => injectCreatedRef(item, property.id));
-		}
-	} else if (bundleProperties.length > 0) {
+	for (const property of createdProperties) {
+		updItems = updItems.map((item) => injectCreatedRef(item, property.id));
+	}
+
+	if (bundleProperties.length > 0) {
 		updItems = await injectBundleRefsItems(updItems, bundleProperties);
 	}
 
