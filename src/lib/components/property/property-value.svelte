@@ -4,6 +4,7 @@
 	import {
 		DEBOUNCE_INTERVAL,
 		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
+		MAX_PROPERTY_LINK_OVERVIEW_LENGTH,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
@@ -324,14 +325,14 @@
 		</form>
 	</AdaptiveWrapper>
 {:else if property.type === PropertyType.URL && shouldShowTrigger()}
-	{@const content = truncateDomain(value, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH)}
+	{@const content = truncateDomain(value, MAX_PROPERTY_LINK_OVERVIEW_LENGTH)}
 	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
 		floatingAlign="start"
 		triggerClass={buttonClass}
 		floatingClass={tm(
 			'w-full max-w-lg p-1',
-			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
+			value && value.length < MAX_PROPERTY_LINK_OVERVIEW_LENGTH && 'max-w-xs'
 		)}
 	>
 		{#snippet customTrigger({ id, toggle })}
