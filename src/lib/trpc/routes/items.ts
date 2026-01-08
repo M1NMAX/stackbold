@@ -24,6 +24,7 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
+import { incrementFileName } from '$lib/utils/index.js';
 import {
 	PropertyType,
 	SortType,
@@ -105,13 +106,7 @@ export const items = createTRPCRouter({
 		.mutation(async ({ input }) => await updateRef(input)),
 
 	fileUploadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
-		const [property, item] = await Promise.all([
-			prisma.property.findUnique({ where: { id: input.pid } }),
-			prisma.item.findUnique({ where: { id: input.id } })
-		]);
-
-		if (!item || !property || property.type !== PropertyType.FILE)
-			throw new TRPCError({ code: 'BAD_REQUEST' });
+		const [property, item] = await getFilePropertyAndItem(input.pid, input.id);
 
 		const ref = getRefValue(item.properties, input.pid);
 		let generateName = input.filename;
@@ -126,13 +121,7 @@ export const items = createTRPCRouter({
 	}),
 
 	fileDownloadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
-		const [property, item] = await Promise.all([
-			prisma.property.findUnique({ where: { id: input.pid } }),
-			prisma.item.findUnique({ where: { id: input.id } })
-		]);
-
-		if (!item || !property || property.type !== PropertyType.FILE)
-			throw new TRPCError({ code: 'BAD_REQUEST' });
+		const [property, item] = await getFilePropertyAndItem(input.pid, input.id);
 
 		const ref = getRefValue(item.properties, input.pid);
 
@@ -145,13 +134,7 @@ export const items = createTRPCRouter({
 	}),
 
 	deleteFile: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
-		const [property, item] = await Promise.all([
-			prisma.property.findUnique({ where: { id: input.pid } }),
-			prisma.item.findUnique({ where: { id: input.id } })
-		]);
-
-		if (!item || !property || property.type !== PropertyType.FILE)
-			throw new TRPCError({ code: 'BAD_REQUEST' });
+		const [property, _] = await getFilePropertyAndItem(input.pid, input.id);
 
 		return deleteFile(getFilePath(property.collectionId, input.id, input.pid, input.filename));
 	})
@@ -554,6 +537,18 @@ async function updBidirectionalRelationRef(property: Property, id: string, refVa
 	return await Promise.all(updatePromises.filter(Boolean));
 }
 
+async function getFilePropertyAndItem(pid: string, id: string) {
+	const [property, item] = await Promise.all([
+		prisma.property.findUnique({ where: { id: pid } }),
+		prisma.item.findUnique({ where: { id: id } })
+	]);
+
+	if (!item || !property || property.type !== PropertyType.FILE)
+		throw new TRPCError({ code: 'BAD_REQUEST' });
+
+	return [property, item] as const;
+}
+
 function getTargetIdsAndMode(storedValue: string, receivedValue: string) {
 	const storedValues = storedValue
 		? storedValue.split(DEFAULT_STRING_DELIMITER).filter(Boolean)
@@ -584,24 +579,4 @@ function addRef(item: Item, ref: PropertyRef) {
 
 function getFilePath(cid: string, iid: string, pid: string, filename: string) {
 	return `collections/collection-${cid}/item-${iid}/property-${pid}/${filename}`;
-}
-
-function incrementFileName(originalName: string, existingNames: string[]) {
-	const lastDotIndex = originalName.lastIndexOf('.');
-	const hasExtension = lastDotIndex > 0;
-
-	const name = hasExtension ? originalName.slice(0, lastDotIndex) : originalName;
-	const ext = hasExtension ? originalName.slice(lastDotIndex) : '';
-
-	if (!existingNames.includes(originalName)) return originalName;
-
-	let counter = 1;
-	let fileName;
-
-	do {
-		fileName = `${name} (${counter})${ext}`;
-		counter++;
-	} while (existingNames.includes(fileName));
-
-	return fileName;
 }
