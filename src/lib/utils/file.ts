@@ -19,3 +19,23 @@ export async function uploadFileToUrl(url: string, file: File) {
 		}
 	});
 }
+
+export function incrementFileName(originalName: string, existingNames: string[]) {
+	const lastDotIndex = originalName.lastIndexOf('.');
+	const hasExtension = lastDotIndex > 0;
+
+	const name = hasExtension ? originalName.slice(0, lastDotIndex) : originalName;
+	const ext = hasExtension ? originalName.slice(lastDotIndex) : '';
+
+	if (!existingNames.includes(originalName)) return originalName;
+
+	let counter = 1;
+	let fileName;
+
+	do {
+		fileName = `${name} (${counter})${ext}`;
+		counter++;
+	} while (existingNames.includes(fileName));
+
+	return fileName;
+}
