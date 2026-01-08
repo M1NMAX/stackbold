@@ -63,6 +63,7 @@
 		"dayjs": "^1.11.11",
 		"debounce": "^2.2.0",
 		"dotenv": "^16.4.1",
+		"minio": "^8.0.6",
 		"oslo": "^1.2.0",
 		"superjson": "^2.2.0",
 		"trpc-sveltekit": "^3.6.2",

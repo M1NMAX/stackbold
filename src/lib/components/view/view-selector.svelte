@@ -15,12 +15,12 @@
 	type Props = {
 		views: View[];
 		value: string;
-		class?: string;
 		onchange: (v: string) => void;
 	};
 
-	let { views, value, onchange, class: className }: Props = $props();
+	let { views, value, onchange }: Props = $props();
 	const view = $derived.by(() => views.find((v) => v.shortId.toString() === value)!);
+	const showTabBtns = $derived(views.length <= MAX_VISIBLE_VIEWS_TAB);
 	const CurrentIcon = $derived(VIEW_ICONS[view.type.toLowerCase()]);
 	const menuState = new ModalState();
 </script>
@@ -29,9 +29,8 @@
 	{value}
 	{onchange}
 	class={tm(
-		'hidden h-9 gap-0.5 rounded-md bg-secondary/50',
-		views.length <= MAX_VISIBLE_VIEWS_TAB ? 'md:flex' : 'md:hidden',
-		className
+		'h-9 hidden gap-0.5 rounded-md bg-secondary/50',
+		showTabBtns ? 'lg:flex' : ' lg:hidden'
 	)}
 >
 	{#each views as view}
@@ -52,34 +51,36 @@
 		</Label>
 	{/each}
 </RadioGroup>
-<AdaptiveWrapper
-	bind:open={menuState.isOpen}
-	triggerClass={buttonVariants({ theme: 'secondary' })}
-	class={tm('block', views.length <= MAX_VISIBLE_VIEWS_TAB ? 'md:hidden' : 'md:block')}
-	floatingAlign="start"
->
-	{#snippet trigger()}
-		<CurrentIcon />
-		<span class="max-w-20 md:max-w-28 font-semibold text-nowrap text-ellipsis overflow-hidden">
-			{view.name}
-		</span>
-	{/snippet}
 
-	<MenuTitle title="Views" />
-	<RadioGroup
-		{value}
-		onchange={(v) => {
-			menuState.close();
-			onchange(v);
-		}}
+<div class={tm('block', showTabBtns ? 'lg:hidden' : 'lg:block')}>
+	<AdaptiveWrapper
+		bind:open={menuState.isOpen}
+		triggerClass={buttonVariants({ theme: 'secondary' })}
+		floatingAlign="start"
 	>
-		{#each views as view}
-			{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
-			<Label for={view.id} compact hoverEffect>
-				<Icon />
-				<span class="grow text-nowrap text-ellipsis overflow-hidden">{view.name} </span>
-				<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
-			</Label>
-		{/each}
-	</RadioGroup>
-</AdaptiveWrapper>
+		{#snippet trigger()}
+			<CurrentIcon />
+			<span class="max-w-20 md:max-w-28 font-semibold text-nowrap text-ellipsis overflow-hidden">
+				{view.name}
+			</span>
+		{/snippet}
+
+		<MenuTitle title="Views" />
+		<RadioGroup
+			{value}
+			onchange={(v) => {
+				menuState.close();
+				onchange(v);
+			}}
+		>
+			{#each views as view}
+				{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
+				<Label for={view.id} compact hoverEffect>
+					<Icon />
+					<span class="grow text-nowrap text-ellipsis overflow-hidden">{view.name} </span>
+					<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
+				</Label>
+			{/each}
+		</RadioGroup>
+	</AdaptiveWrapper>
+</div>

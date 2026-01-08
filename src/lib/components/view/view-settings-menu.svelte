@@ -41,7 +41,7 @@
 		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 
 	type Props = {
 		view: View;
@@ -140,9 +140,7 @@
 	});
 </script>
 
-<Tooltip triggerBy={id} align="end">
-	<span class="text-sm font-semibold py-1 px-1.5">View settings</span>
-</Tooltip>
+<Tooltip triggerBy={id} align="end">View settings</Tooltip>
 <AdaptiveWrapper
 	{id}
 	bind:open={menuState.isOpen}
@@ -299,8 +297,8 @@
 </AdaptiveWrapper>
 
 {#snippet header(title: string, backTo: ContentType = null)}
-	<div class="w-full flex items-center gap-x-0.5 px-1 pt-1">
-		<Button theme="ghost" variant="compact" onclick={() => (content = backTo)}>
+	<div class="w-full flex items-center gap-x-1">
+		<Button theme="ghost" variant="cicon" onclick={() => (content = backTo)}>
 			<ChevronLeft />
 		</Button>
 		<span class="grow pr-4 py-1 font-semibold text-sm text-center md:text-left">

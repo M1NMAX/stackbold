@@ -1,9 +1,17 @@
+import { getRefValue } from '$lib/components/property';
 import {
 	DEFAULT_STRING_DELIMITER,
 	NAME_FIELD,
 	PROPERTIES_WITH_LISTABLE_OPTIONS,
 	PROPERTIES_WITHOUT_REF
 } from '$lib/constant/index.js';
+import {
+	getFilePresignedDownloadUrl,
+	getFilePresignedUploadUrl,
+	deleteFile,
+	listObjects,
+	removeObjects
+} from '$lib/server/minio';
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import {
@@ -16,6 +24,7 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
+import { incrementFileName } from '$lib/utils/index.js';
 import {
 	PropertyType,
 	SortType,
@@ -45,6 +54,12 @@ const refUpdateSchema = z.object({
 	id: z.string(),
 	cid: z.string(),
 	ref: z.object({ id: z.string(), value: z.string() })
+});
+
+const fileUploadSchema = z.object({
+	id: z.string(),
+	pid: z.string(),
+	filename: z.string()
 });
 
 export const items = createTRPCRouter({
@@ -78,12 +93,51 @@ export const items = createTRPCRouter({
 		});
 		if (item.collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
 
+		const objectsList = await listObjects(
+			`collections/collection-${item.collection.id}/item-${id}/`
+		);
+		await removeObjects(objectsList);
+
 		await prisma.item.delete({ where: { id } });
 	}),
 
 	updateRef: protectedProcedure
 		.input(refUpdateSchema)
-		.mutation(async ({ input }) => await updateRef(input))
+		.mutation(async ({ input }) => await updateRef(input)),
+
+	fileUploadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
+		const [property, item] = await getFilePropertyAndItem(input.pid, input.id);
+
+		const ref = getRefValue(item.properties, input.pid);
+		let generateName = input.filename;
+
+		if (ref) {
+			generateName = incrementFileName(generateName, ref.split(DEFAULT_STRING_DELIMITER));
+		}
+
+		return await getFilePresignedUploadUrl(
+			getFilePath(property.collectionId, input.id, input.pid, generateName)
+		);
+	}),
+
+	fileDownloadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
+		const [property, item] = await getFilePropertyAndItem(input.pid, input.id);
+
+		const ref = getRefValue(item.properties, input.pid);
+
+		if (!ref.split(DEFAULT_STRING_DELIMITER).includes(input.filename))
+			throw new TRPCError({ code: 'BAD_REQUEST' });
+
+		return await getFilePresignedDownloadUrl(
+			getFilePath(property.collectionId, input.id, input.pid, input.filename)
+		);
+	}),
+
+	deleteFile: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
+		const [property, _] = await getFilePropertyAndItem(input.pid, input.id);
+
+		return deleteFile(getFilePath(property.collectionId, input.id, input.pid, input.filename));
+	})
 });
 
 async function listItems(args: z.infer<typeof itemListSchema>) {
@@ -132,9 +186,9 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 		updItems = updItems.map((item) => injectCreatedRef(item, property.id));
 	}
 
-	if (bundleProperties.length === 0) return sortItems(updItems, view.sorts, properties);
-
-	updItems = await injectBundleRefsItems(updItems, bundleProperties);
+	if (bundleProperties.length > 0) {
+		updItems = await injectBundleRefsItems(updItems, bundleProperties);
+	}
 
 	return sortItems(updItems, view.sorts, properties);
 }
@@ -183,7 +237,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 				updates.set(key, item);
 			}
 
-			let ref = { id: property.id, value: '' };
+			const ref = { id: property.id, value: '' };
 
 			if (ids.length !== 0 && property.calculate) {
 				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
@@ -297,7 +351,7 @@ async function addCreatedItemToBidirectionalRefs(properties: Property[], itemId:
 		itemsMap.set(refItem.id, refItem);
 	}
 
-	const promises: Promise<any>[] = [];
+	const promises: Promise<unknown>[] = [];
 
 	for (const { property, defaultValue } of processingData) {
 		const relatedProperty = extPropertiesMap.get(property.relatedProperty!);
@@ -483,6 +537,18 @@ async function updBidirectionalRelationRef(property: Property, id: string, refVa
 	return await Promise.all(updatePromises.filter(Boolean));
 }
 
+async function getFilePropertyAndItem(pid: string, id: string) {
+	const [property, item] = await Promise.all([
+		prisma.property.findUnique({ where: { id: pid } }),
+		prisma.item.findUnique({ where: { id: id } })
+	]);
+
+	if (!item || !property || property.type !== PropertyType.FILE)
+		throw new TRPCError({ code: 'BAD_REQUEST' });
+
+	return [property, item] as const;
+}
+
 function getTargetIdsAndMode(storedValue: string, receivedValue: string) {
 	const storedValues = storedValue
 		? storedValue.split(DEFAULT_STRING_DELIMITER).filter(Boolean)
@@ -509,4 +575,8 @@ function injectCreatedRef(item: Item, pid: string) {
 
 function addRef(item: Item, ref: PropertyRef) {
 	return { ...item, properties: [...item.properties, { ...ref }] };
+}
+
+function getFilePath(cid: string, iid: string, pid: string, filename: string) {
+	return `collections/collection-${cid}/item-${iid}/property-${pid}/${filename}`;
 }

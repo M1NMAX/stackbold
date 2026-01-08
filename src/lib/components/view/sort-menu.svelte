@@ -47,9 +47,7 @@
 	}
 </script>
 
-<Tooltip triggerBy={id} align="end">
-	<span class="text-sm font-semibold py-1 px-1.5">Sort</span>
-</Tooltip>
+<Tooltip triggerBy={id}>Sort</Tooltip>
 
 <AdaptiveWrapper
 	{id}

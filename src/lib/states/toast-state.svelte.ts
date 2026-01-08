@@ -32,6 +32,7 @@ export class ToastState {
 	loading(message = 'Loading...') {
 		const id = crypto.randomUUID();
 		this.toasts.push({ id, message, type: 'loading' });
+		return id;
 	}
 
 	#add(toast: Omit<Exclude<Toast, { type: 'action' }>, 'id'>, durationMs = 4000) {

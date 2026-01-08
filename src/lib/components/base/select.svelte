@@ -257,7 +257,7 @@
 			</div>
 			<input
 				id={searchInputId}
-				class="w-full h-9 px-8 text-base font-semibold rounded-sm bg-popover focus:outline-none"
+				class="w-full h-9 px-8 text-base font-semibold rounded-md bg-popover focus:outline-none"
 				placeholder="Search for an option"
 				bind:value={search}
 				type="text"

@@ -32,7 +32,7 @@
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
 	import debounce from 'debounce';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -386,8 +386,7 @@
 			<Button
 				id={`property-${property.id}-add-opt-btn`}
 				theme="secondary"
-				variant="compact"
-				class="w-7"
+				variant="cicon"
 				onclick={() => newOptionInputState.toggle()}
 			>
 				{#if newOptionInputState.isOpen}
@@ -397,17 +396,18 @@
 				{/if}
 			</Button>
 
-			<Tooltip triggerBy={`property-${property.id}-add-opt-btn`} align="end" placement="bottom">
-				Add option
-			</Tooltip>
+			{#if !newOptionInputState.isOpen}
+				<Tooltip triggerBy={`property-${property.id}-add-opt-btn`} align="end" placement="bottom">
+					Add option
+				</Tooltip>
+			{/if}
 
 			{#if property.options.length >= 6}
 				{@const tooltipId = useId(`property-editor-toggle-option-list-tooltip-${property.id}`)}
 				<Button
 					id={tooltipId}
 					theme="secondary"
-					variant="compact"
-					class="w-7"
+					variant="cicon"
 					onclick={() => showAllOptions.toggle()}
 				>
 					{#if showAllOptions.isOpen}

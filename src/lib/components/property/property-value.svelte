@@ -3,6 +3,8 @@
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import {
 		DEBOUNCE_INTERVAL,
+		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
+		MAX_PROPERTY_LINK_OVERVIEW_LENGTH,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
@@ -11,18 +13,32 @@
 		PROPERTIES_THAT_USE_SELECTOR,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { type Item, type Property, PropertyType, type View, ViewType } from '@prisma/client';
-	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
+	import {
+		Color,
+		type Item,
+		type Property,
+		PropertyType,
+		type View,
+		ViewType
+	} from '@prisma/client';
+	import {
+		tm,
+		sanitizeNumberInput,
+		useId,
+		truncateDomain,
+		truncateTextEnd
+	} from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		getPropertyColor,
 		isPropertyNumerical,
 		joinMultiselectOptions,
-		PropertyIcon,
 		separateMultiselectOptions,
-		getRefValue
+		getRefValue,
+		PropertyIcon,
+		PropertyFile
 	} from './index.js';
-	import { getItemState } from '$lib/components/items/index.js';
+	import { getItemState } from '$lib/components/item/index.js';
 	import debounce from 'debounce';
 	import {
 		fullDateFormat,
@@ -41,7 +57,6 @@
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
-	import { browser } from '$app/environment';
 
 	type Props = {
 		view: View;
@@ -53,8 +68,7 @@
 
 	const itemState = getItemState();
 	const toastState = getToastState();
-
-	let wrapperState = new ModalState();
+	const wrapperState = new ModalState();
 
 	let value = $derived(getRefValue(item.properties, property.id));
 	let color = $derived(getPropertyColor(property, value));
@@ -104,11 +118,12 @@
 	const buttonClass = $derived(
 		tm(
 			isTableView()
-				? 'w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
-				: 'w-fit h-6 p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
+				? 'h-6 w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
+				: 'h-6 w-fit p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
-			useSelector(property.type) && 'px-0 lg:h-6 py-0',
-			!useSelector(property.type) && !isTableView() && `${PROPERTY_COLORS['GRAY']}`
+			allowMultipleValues(property.type) && ' lg:h-6 p-0',
+			hasUnifiedBgColor() && `${PROPERTY_COLORS[Color.GRAY]}`,
+			allowMultipleValues(property.type) && !isTableView() && 'bg-gray-200/40 dark:bg-gray-700/40'
 		)
 	);
 
@@ -123,12 +138,16 @@
 		return view.type === ViewType.TABLE;
 	}
 
-	function useInputField(type: PropertyType) {
-		return PROPERTIES_THAT_USE_INPUT.includes(type);
+	function shouldShowTrigger() {
+		return value || isTableView();
 	}
 
-	function useSelector(type: PropertyType) {
-		return PROPERTIES_THAT_USE_SELECTOR.includes(type);
+	function allowMultipleValues(type: PropertyType) {
+		return PROPERTIES_THAT_USE_SELECTOR.includes(type) || type === PropertyType.FILE;
+	}
+
+	function hasUnifiedBgColor() {
+		return !isTableView() && !allowMultipleValues(property.type);
 	}
 
 	function shouldRefresh() {
@@ -140,13 +159,13 @@
 	}
 
 	function copyUrl() {
-		if (!browser || property.type !== PropertyType.URL) return;
+		if (!PROPERTIES_THAT_USE_INPUT.includes(property.type) && !value) return;
 		navigator.clipboard.writeText(value);
-		toastState.success('Url Copied to clipboard.');
+		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
 
 	$effect(() => {
-		if (wrapperState.isOpen && useInputField(property.type)) {
+		if (wrapperState.isOpen && PROPERTIES_THAT_USE_INPUT.includes(property.type)) {
 			const inputEl = document.getElementById(property.id) as HTMLInputElement;
 			tick().then(() => inputEl.focus());
 		}
@@ -166,7 +185,7 @@
 
 		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
-{:else if property.type === PropertyType.SELECT && (value || isTableView())}
+{:else if property.type === PropertyType.SELECT && shouldShowTrigger()}
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
@@ -184,7 +203,7 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
-{:else if property.type === PropertyType.MULTISELECT && (value || isTableView())}
+{:else if property.type === PropertyType.MULTISELECT && shouldShowTrigger()}
 	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
 		id={`${property.id}-value-${item.id}`}
@@ -204,7 +223,7 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
-{:else if property.type === PropertyType.RELATION && (value || isTableView())}
+{:else if property.type === PropertyType.RELATION && shouldShowTrigger()}
 	{@const selectedOptions = separateMultiselectOptions(value)}
 	<Select
 		id={`${property.id}-value-${item.id}`}
@@ -229,7 +248,7 @@
 	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
 		{@render tooltipWrapper(value, !!value && isTableView())}
 	</div>
-{:else if property.type === PropertyType.DATE && (value || isTableView())}
+{:else if property.type === PropertyType.DATE && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{#if value}
@@ -250,12 +269,8 @@
 	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
 		{@render tooltipWrapper(formatted, !!value && isTableView())}
 	</div>
-{:else if property.type === PropertyType.TEXT && (value || isTableView())}
-	{@const content =
-		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
-			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
-			: value}
-
+{:else if property.type === PropertyType.TEXT && shouldShowTrigger()}
+	{@const content = truncateTextEnd(value, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH)}
 	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
 		floatingAlign="start"
@@ -284,7 +299,7 @@
 			/>
 		</form>
 	</AdaptiveWrapper>
-{:else if property.type === PropertyType.NUMBER && (value || isTableView())}
+{:else if property.type === PropertyType.NUMBER && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{@render tooltipWrapper(value)}
@@ -309,33 +324,68 @@
 			/>
 		</form>
 	</AdaptiveWrapper>
-{:else if value || isTableView()}
-	{@const content =
-		value.length > MAX_PROPERTY_TEXT_OVERVIEW_LENGTH
-			? value.substring(0, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH - 3) + '...'
-			: value}
+{:else if property.type === PropertyType.URL && shouldShowTrigger()}
+	{@const content = truncateDomain(value, MAX_PROPERTY_LINK_OVERVIEW_LENGTH)}
 	<AdaptiveWrapper
 		bind:open={wrapperState.isOpen}
 		floatingAlign="start"
 		triggerClass={buttonClass}
 		floatingClass={tm(
-			'relative w-full max-w-lg p-1',
-			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
+			'w-full max-w-lg p-1',
+			value && value.length < MAX_PROPERTY_LINK_OVERVIEW_LENGTH && 'max-w-xs'
 		)}
 	>
-		{#snippet customTrigger({ toggle })}
-			<div class={tm(buttonClass, 'flex items-center gap-x-1.5 pl-1')}>
-				<button
-					onclick={() => copyUrl()}
-					class="pl-1 pr-1.5 border-r-[1.5px] border-secondary-foreground"
-				>
-					<Copy class="size-4" />
-				</button>
+		{#snippet customTrigger({ id, toggle })}
+			{@const copyBtnTooltipId = useId(`select-trigger-${property.id}-value-${item.id}`)}
 
-				<button onclick={() => toggle()}>
-					{@render tooltipWrapper(content)}
+			<div class={tm(buttonClass, 'flex items-center px-0.5')}>
+				<button
+					{id}
+					onclick={() => toggle()}
+					class={tm('w-full flex justify-start', value ? '' : 'h-full')}
+				>
+					{content}
 				</button>
+				{#if value}
+					{#if !isTableView()}
+						<span class="h-3 w-[1px] ml-2 bg-secondary-foreground"> </span>
+					{/if}
+
+					<button id={copyBtnTooltipId} onclick={copyUrl} class="ml-2">
+						<Copy class="size-4" />
+					</button>
+					<Tooltip triggerBy={copyBtnTooltipId}>Copy</Tooltip>
+				{/if}
 			</div>
+
+			{@render tooltipContent(id)}
+		{/snippet}
+
+		<form class="space-y-0.5">
+			<label for={property.id} class={labelClass}>
+				{property.name}
+			</label>
+
+			<input
+				id={property.id}
+				name={property.name}
+				placeholder="Empty"
+				class="w-full input input-ghost px-1 font-semibold text-sm"
+				type="url"
+				{value}
+				oninput={handleOnInput}
+			/>
+		</form>
+	</AdaptiveWrapper>
+{:else if property.type === PropertyType.FILE && shouldShowTrigger()}
+	{@const tooltipId = `property-file-trigger-${property.id}-value-${item.id}`}
+	<PropertyFile {property} {value} itemId={item.id} id={tooltipId} {buttonClass} />
+
+	{@render tooltipContent(tooltipId)}
+{:else if shouldShowTrigger()}
+	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
+		{#snippet trigger()}
+			{@render tooltipWrapper(value)}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -373,10 +423,8 @@
 {#snippet tooltipContent(id: string)}
 	{#if !isTableView()}
 		<Tooltip triggerBy={id}>
-			<div class="flex items-center p-1 gap-x-1.5">
-				<PropertyIcon key={property.type} class="size-4" />
-				<span class="text-sm font-semibold">{property.name}</span>
-			</div>
+			<PropertyIcon key={property.type} class="size-4" />
+			<span>{property.name}</span>
 		</Tooltip>
 	{/if}
 {/snippet}

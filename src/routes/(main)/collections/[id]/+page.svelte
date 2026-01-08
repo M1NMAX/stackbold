@@ -7,7 +7,7 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
-	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/items/index.js';
+	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
 	import { getOption, getPropertyColor, getPropertyState } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
@@ -49,7 +49,7 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
 		SearchInput,
-		ViewButtons,
+		ViewSelector,
 		ViewSettingsMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
@@ -307,7 +307,7 @@
 		{/if}
 
 		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">
-			<ViewButtons
+			<ViewSelector
 				views={viewState.views}
 				value={view.shortId.toString()}
 				onchange={onViewChange}
