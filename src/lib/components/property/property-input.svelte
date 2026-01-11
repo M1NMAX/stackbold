@@ -12,7 +12,7 @@
 		PROPERTIES_THAT_USE_INPUT,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { tm, sanitizeNumberInput, useId } from '$lib/utils/index.js';
+	import { tm, useId, sanitizeNumbericInput } from '$lib/utils/index.js';
 	import debounce from 'debounce';
 	import {
 		fullDateFormat,
@@ -56,11 +56,6 @@
 	const toastState = getToastState();
 
 	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
-	const updTargetElValue = debounce(updInputEl, DEBOUNCE_INTERVAL);
-
-	function updInputEl(target: HTMLInputElement, value: string) {
-		target.value = value;
-	}
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
@@ -68,9 +63,9 @@
 		let value = targetEl.value;
 
 		if (isPropertyNumerical(property)) {
-			value = sanitizeNumberInput(targetEl.value);
-			updTargetElValue(targetEl, value);
-		} else if (targetEl.type === 'checkbox') {
+			value = sanitizeNumbericInput(targetEl);
+		}
+		if (targetEl.type === 'checkbox') {
 			value = targetEl.checked.toString();
 		}
 		onchangeDebounced(value);

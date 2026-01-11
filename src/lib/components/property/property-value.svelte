@@ -23,10 +23,11 @@
 	} from '@prisma/client';
 	import {
 		tm,
-		sanitizeNumberInput,
 		useId,
 		truncateDomain,
-		truncateTextEnd
+		truncateTextEnd,
+		sanitizeNumbericInput,
+		sanitizeNumber
 	} from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
@@ -79,18 +80,13 @@
 		await itemState.updPropertyRef(item.id, { id: property.id, value }, shouldRefresh());
 	}
 
-	const updTargetElValue = debounce(function (target: HTMLInputElement, value: string) {
-		target.value = value;
-	}, DEBOUNCE_INTERVAL);
-
 	async function handleOnInput(e: Event) {
 		// TODO: add validation
 		const targetEl = e.target as HTMLInputElement;
 
 		let value = targetEl.value;
 		if (isPropertyNumerical(property)) {
-			value = sanitizeNumberInput(targetEl.value);
-			updTargetElValue(targetEl, value);
+			value = sanitizeNumbericInput(targetEl);
 		}
 		await updPropertyRefDebounced(value);
 	}
@@ -107,9 +103,7 @@
 		if (e.key !== 'Enter') return;
 		e.preventDefault();
 		const targetEl = e.target as HTMLInputElement;
-		const value = isPropertyNumerical(property)
-			? sanitizeNumberInput(targetEl.value)
-			: targetEl.value;
+		const value = isPropertyNumerical(property) ? sanitizeNumber(targetEl.value) : targetEl.value;
 
 		wrapperState.close();
 		await updPropertyRef(value);
