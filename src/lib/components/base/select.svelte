@@ -13,7 +13,7 @@
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;
 
-	type Props<T extends boolean = false> = {
+	type Props = {
 		id: string;
 		options: SelectOption[];
 		noOptionText?: string;
@@ -21,8 +21,8 @@
 		searchable?: boolean;
 		disabled?: boolean;
 		triggerClass?: string;
-		isMulti?: T;
-		onselect: T extends true ? MultiSelect : SingleSelect;
+		isMulti?: IsMulti;
+		onselect: IsMulti extends true ? MultiSelect : SingleSelect;
 	};
 
 	let {
@@ -35,7 +35,7 @@
 		triggerClass,
 		isMulti = false as IsMulti,
 		onselect
-	}: Props<IsMulti> = $props();
+	}: Props = $props();
 
 	let highlighted = $state('');
 	let selectedOptions = $derived.by(() => {
