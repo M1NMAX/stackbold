@@ -2,7 +2,7 @@
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import ToggleRight from 'lucide-svelte/icons/toggle-right';
-	import { tm } from '$lib/utils/index.js';
+	import { formatNumber, tm } from '$lib/utils/index.js';
 	import { type Property, type Item, PropertyType, Aggregator, type View } from '@prisma/client';
 	import { getItemState, ItemMenu } from './index.js';
 	import {
@@ -87,8 +87,10 @@
 				const inc = propertyRef ? propertyRef.value : 0;
 				return acc + Number(inc);
 			}, 0);
-			if (property.aggregator === Aggregator.SUM) return sum.toFixed(2);
-			return (sum / items.length).toFixed(2);
+			if (property.aggregator === Aggregator.SUM) {
+				return formatNumber(sum, property.format, property.decimals);
+			}
+			return formatNumber(sum / items.length, property.format, property.decimals);
 		}
 		return '';
 	}

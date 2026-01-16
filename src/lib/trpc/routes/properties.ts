@@ -12,6 +12,7 @@ import {
 	type View
 } from '@prisma/client';
 import { listObjects, removeObjects } from '$lib/server/minio';
+import { NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS } from '$lib/constant';
 
 const colorSchema = z.enum(Color);
 const propertyTypeSchema = z.enum(PropertyType);
@@ -36,7 +37,9 @@ const propertyCreateSchema = z.object({
 	relatedProperty: z.string().nullish(),
 	intTargetProperty: z.string().nullish(),
 	extTargetProperty: z.string().nullish(),
-	calculate: aggregatorSchema.nullish()
+	calculate: aggregatorSchema.nullish(),
+	format: z.string().nullish(),
+	decimals: z.number().min(0).max(5).nullish()
 });
 
 const propertyUpdateSchema = propertyCreateSchema
@@ -152,6 +155,8 @@ function injectPropertyOptions(
 	if (isRelation(property)) {
 		const items = itemsMap.get(property.targetCollection!) || [];
 
+		console.log('Here');
+
 		return {
 			...property,
 			options: items.map((item) => ({
@@ -163,9 +168,23 @@ function injectPropertyOptions(
 		};
 	} else if (isBundle(property)) {
 		const properties = propsMap.get(property.targetCollection!) || [];
+		const extTargetProperty = properties.find((p) => p.id === property.extTargetProperty);
+		let format = property.format;
+		let decimals = property.decimals;
+
+		if (
+			extTargetProperty &&
+			property.calculate &&
+			NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS.includes(property.calculate)
+		) {
+			format = extTargetProperty.format;
+			decimals = extTargetProperty.decimals;
+		}
 
 		return {
 			...property,
+			format: format,
+			decimals: decimals,
 			options: properties.map((prop) => ({
 				id: prop.id,
 				value: prop.name,
@@ -240,8 +259,23 @@ async function injectPropertyOptionsAsync(property: Property) {
 			where: { collectionId: property.targetCollection! }
 		});
 
+		const extTargetProperty = properties.find((p) => p.id === property.extTargetProperty);
+		let format = property.format;
+		let decimals = property.decimals;
+
+		if (
+			extTargetProperty &&
+			property.calculate &&
+			NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS.includes(property.calculate)
+		) {
+			format = extTargetProperty.format;
+			decimals = extTargetProperty.decimals;
+		}
+
 		return {
 			...property,
+			format,
+			decimals,
 			options: properties.map((prop) => ({
 				id: prop.id,
 				value: prop.name,

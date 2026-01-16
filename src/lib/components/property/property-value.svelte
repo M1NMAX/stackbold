@@ -15,11 +15,11 @@
 	} from '$lib/constant/index.js';
 	import {
 		Color,
+		PropertyType,
+		ViewType,
 		type Item,
 		type Property,
-		PropertyType,
-		type View,
-		ViewType
+		type View
 	} from '@prisma/client';
 	import {
 		tm,
@@ -27,7 +27,8 @@
 		truncateDomain,
 		truncateTextEnd,
 		sanitizeNumbericInput,
-		sanitizeNumber
+		sanitizeNumber,
+		formatNumber
 	} from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
@@ -239,8 +240,10 @@
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
 {:else if property.type === PropertyType.BUNDLE && (value || isTableView())}
+	{@const formatted = formatNumber(+value, property.format, property.decimals)}
+
 	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
-		{@render tooltipWrapper(value, !!value && isTableView())}
+		{@render tooltipWrapper(formatted, !!value && isTableView())}
 	</div>
 {:else if property.type === PropertyType.DATE && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
@@ -296,7 +299,7 @@
 {:else if property.type === PropertyType.NUMBER && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
-			{@render tooltipWrapper(value)}
+			{@render tooltipWrapper(formatNumber(+value, property.format, property.decimals))}
 		{/snippet}
 
 		<form class="space-y-0.5">

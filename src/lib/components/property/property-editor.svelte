@@ -27,7 +27,9 @@
 		VALUE_NOT_DEFINED,
 		PROPERTY_UNIVERSAL_AGGREGATORS,
 		VALUE_NONE,
-		MAX_PROPERTY_NAME_LENGTH
+		MAX_PROPERTY_NAME_LENGTH,
+		NUMBER_FORMATS,
+		NUMBER_FORMAT_LABELS
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
@@ -160,6 +162,42 @@
 		return options;
 	}
 
+	function setupNumberFormatOptions() {
+		const options: SelectOption[] = [];
+
+		options.push({
+			id: '',
+			label: NUMBER_FORMAT_LABELS['NUMBER'],
+			isSelected: !property.format
+		});
+
+		options.push(
+			...NUMBER_FORMATS.map((format) => ({
+				id: format,
+				label: NUMBER_FORMAT_LABELS[format],
+				isSelected: property.format === format
+			}))
+		);
+		return options;
+	}
+
+	function setupNumberDecimalOptions() {
+		const decimalCounts = [0, 1, 2, 3, 4, 5];
+
+		return [
+			{
+				id: '',
+				label: 'Default',
+				isSelected: !property.decimals
+			},
+			...decimalCounts.map((n) => ({
+				id: n.toString(),
+				label: n.toString(),
+				isSelected: n === property.decimals
+			}))
+		];
+	}
+
 	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
 		e.stopPropagation();
 		if (e.key !== 'Enter') return;
@@ -282,6 +320,27 @@
 				{@render defaultValueSelector()}
 				<HSeparator />
 				{@render propertyOptions()}
+			{:else if property.type === PropertyType.NUMBER}
+				<Field>
+					<Label for={getIdPrefix('property-format')} name="Format" />
+					<Select
+						id={getIdPrefix('property-format')}
+						options={setupNumberFormatOptions()}
+						onselect={(opt) => updProperty({ id: property.id, format: opt.id || null })}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
+				<Field>
+					<Label for={getIdPrefix('property-decimals')} name="Decimals" />
+					<Select
+						id={getIdPrefix('property-decimals')}
+						options={setupNumberDecimalOptions()}
+						onselect={(opt) => updProperty({ id: property.id, decimals: +opt.id || null })}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
 			{:else if property.type === PropertyType.RELATION}
 				<Field>
 					<Label for={getIdPrefix('property-target-collection')} name="Related to" />

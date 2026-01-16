@@ -12,7 +12,7 @@ export const PROPERTY_COLORS: Colors = {
 	ORANGE: 'bg-orange-500 text-white dark:bg-orange-700 dark:text-orange-100'
 };
 
-export const PROPERTY_AGGREGATOR_LABELS: { [key: string]: string } = {
+export const PROPERTY_AGGREGATOR_LABELS: Record<string, string> = {
 	none: 'None',
 	count: 'Count all',
 	count_empty: 'Count empty',
@@ -29,6 +29,18 @@ export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Recently Added', field: 'createdAt', order: 'desc' },
 	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];
+
+export const DEFAULT_NUMBER_DECIMALS = 2;
+export const NUMBER_FORMATS = ['PERCENTAGE', 'EUR', 'USD', 'GBP', 'JPY', 'CNY'];
+export const NUMBER_FORMAT_LABELS: Record<string, string> = {
+	NUMBER: 'Number',
+	PERCENTAGE: 'Percentage',
+	EUR: 'Euro (€)',
+	USD: 'US Dollar ($)',
+	GBP: 'British Pound (£)',
+	JPY: 'Japanese Yen (¥)',
+	CNY: 'Chinese Yuan (¥)'
+};
 
 export const DEFAULT_STRING_DELIMITER = '|';
 

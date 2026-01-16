@@ -197,6 +197,8 @@ model Property {
   intTargetProperty String? // BUMDLE only
   extTargetProperty String? // BUNDLE only
   calculate         Aggregator? // BUNDLE only
+  format            String? // NUMBER only
+  decimals          Int? // NUMBER only
 
   @@index([collectionId, order])
 }

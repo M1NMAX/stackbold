@@ -12,7 +12,7 @@
 		PROPERTIES_THAT_USE_INPUT,
 		PROPERTY_COLORS
 	} from '$lib/constant/index.js';
-	import { tm, useId, sanitizeNumbericInput } from '$lib/utils/index.js';
+	import { tm, useId, sanitizeNumbericInput, formatNumber } from '$lib/utils/index.js';
 	import debounce from 'debounce';
 	import {
 		fullDateFormat,
@@ -158,14 +158,10 @@
 {:else if property.type === PropertyType.BUNDLE}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<div
-			class={buttonVariants({
-				theme: 'ghost',
-				className: 'bg-transparent'
-			})}
-		>
+		<div class={buttonVariants({ theme: 'ghost', className: 'bg-transparent' })}>
 			{#if value}
-				{@render miniWrapper(value)}
+				{@const formatted = formatNumber(+value, property.format, property.decimals)}
+				{@render miniWrapper(formatted)}
 			{/if}
 		</div>
 	</Field>

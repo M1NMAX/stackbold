@@ -35,28 +35,32 @@ export function hasRef(type: PropertyType) {
 	return !PROPERTIES_WITHOUT_REF.includes(type);
 }
 
-export function aggregatePropertyValue(items: Item[], aggregator: Aggregator, pid: string) {
+export function aggregatePropertyValue(
+	aggregator: Aggregator,
+	targetProperty: Property,
+	items: Item[]
+) {
 	if (aggregator === Aggregator.COUNT) return items.length;
 	else if (aggregator === Aggregator.COUNT_EMPTY) {
 		return items.reduce((acc, item) => {
-			const propertyRef = getPropertyRef(item.properties, pid);
+			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
 			if (propertyRef == null || propertyRef.value === '') return acc + 1;
 			return acc;
 		}, 0);
 	} else if (aggregator === Aggregator.COUNT_NOT_EMPTY) {
 		return items.reduce((acc, item) => {
-			const propertyRef = getPropertyRef(item.properties, pid);
+			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
 			if (propertyRef && propertyRef.value !== '') return acc + 1;
 			return acc;
 		}, 0);
 	} else if (aggregator === Aggregator.SUM || aggregator === Aggregator.AVG) {
 		const sum = items.reduce((acc, curr) => {
-			const propertyRef = getPropertyRef(curr.properties, pid);
+			const propertyRef = getPropertyRef(curr.properties, targetProperty.id);
 			const inc = propertyRef ? propertyRef.value : 0;
 			return acc + Number(inc);
 		}, 0);
-		if (aggregator === Aggregator.SUM) return sum.toFixed(2);
-		return (sum / items.length).toFixed(2);
+		if (aggregator === Aggregator.SUM) return sum;
+		return sum / items.length;
 	}
 	return '';
 }

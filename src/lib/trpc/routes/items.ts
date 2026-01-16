@@ -241,7 +241,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 
 			if (ids.length !== 0 && property.calculate) {
 				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
-				ref.value = aggregatePropertyValue(extItems, property.calculate, extProperty.id).toString();
+				ref.value = aggregatePropertyValue(property.calculate, extProperty, extItems).toString();
 			}
 
 			updates.set(key, addRef(updates.get(key)!, ref));
@@ -422,7 +422,8 @@ async function injectBundleRefs(item: Item, properties: Property[]) {
 		}
 
 		const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
-		const value = aggregatePropertyValue(extItems, property.calculate, extProperty.id);
+
+		const value = aggregatePropertyValue(property.calculate, extProperty, extItems);
 		item = addRef(item, { id: property.id, value: value.toString() });
 	}
 
