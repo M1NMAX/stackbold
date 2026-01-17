@@ -3,7 +3,7 @@ import { Aggregator, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
-export const PROPERTY_COLORS: Colors = {
+export const THEME_COLORS: Colors = {
 	GRAY: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-100',
 	RED: 'bg-red-500 text-white dark:bg-red-800 dark:text-red-100',
 	GREEN: 'bg-green-500 text-white dark:bg-green-800 dark:text-green-100',

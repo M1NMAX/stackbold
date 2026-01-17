@@ -23,7 +23,7 @@
 		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
 		PROPERTIES_WITH_LISTABLE_OPTIONS,
 		PROPERTY_AGGREGATOR_LABELS,
-		PROPERTY_COLORS,
+		THEME_COLORS,
 		VALUE_NOT_DEFINED,
 		PROPERTY_UNIVERSAL_AGGREGATORS,
 		VALUE_NONE,
@@ -155,7 +155,7 @@
 				id: option.id,
 				label: option.value,
 				isSelected: property.defaultValue === option.id,
-				theme: PROPERTY_COLORS[option.color]
+				theme: THEME_COLORS[option.color]
 			}))
 		);
 

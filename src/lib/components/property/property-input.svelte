@@ -10,9 +10,9 @@
 		MAX_PROPERTY_TEXT_LENGTH,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTIES_THAT_USE_INPUT,
-		PROPERTY_COLORS
+		THEME_COLORS
 	} from '$lib/constant/index.js';
-	import { tm, useId, sanitizeNumbericInput, formatNumber } from '$lib/utils/index.js';
+	import { useId, sanitizeNumbericInput, formatNumber } from '$lib/utils/index.js';
 	import debounce from 'debounce';
 	import {
 		fullDateFormat,
@@ -22,7 +22,6 @@
 	} from '$lib/states/index.js';
 	import {
 		separateMultiselectOptions,
-		getPropertyColor,
 		joinMultiselectOptions,
 		isPropertyNumerical,
 		PropertyFile,
@@ -38,7 +37,8 @@
 		buttonVariants,
 		Field,
 		TextareaAutosize,
-		Tooltip
+		Tooltip,
+		Badge
 	} from '$lib/components/base/index.js';
 
 	type Props = {
@@ -50,8 +50,7 @@
 
 	let { property, onchange, value, itemId }: Props = $props();
 
-	let color = $derived(getPropertyColor(property, value));
-	let wrapperState = new ModalState();
+	const wrapperState = new ModalState();
 
 	const toastState = getToastState();
 
@@ -106,7 +105,7 @@
 					id: option.id,
 					label: option.value,
 					isSelected: option.id === value,
-					theme: PROPERTY_COLORS[option.color]
+					theme: THEME_COLORS[option.color]
 				}))
 			]}
 			onselect={(opt) => onchange(opt.id)}
@@ -125,7 +124,7 @@
 					id: option.id,
 					label: option.value,
 					isSelected: selectedOptions.includes(option.id),
-					theme: PROPERTY_COLORS[option.color]
+					theme: THEME_COLORS[option.color]
 				}))
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
@@ -144,7 +143,7 @@
 				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
-					theme: PROPERTY_COLORS[option.color],
+					theme: THEME_COLORS[option.color],
 					icon: 'item',
 					isSelected: selectedOptions.includes(option.id)
 				}))
@@ -158,10 +157,10 @@
 {:else if property.type === PropertyType.BUNDLE}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<div class={buttonVariants({ theme: 'ghost', className: 'bg-transparent' })}>
+		<div class={buttonVariants({ theme: 'ghost', variant: 'menu', className: 'bg-transparent' })}>
 			{#if value}
 				{@const formatted = formatNumber(+value, property.format, property.decimals)}
-				{@render miniWrapper(formatted)}
+				<Badge>{formatted}</Badge>
 			{/if}
 		</div>
 	</Field>
@@ -180,7 +179,7 @@
 			{#snippet trigger()}
 				{#if value}
 					{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-					{@render miniWrapper(formatted)}
+					<Badge>{formatted}</Badge>
 				{/if}
 			{/snippet}
 
@@ -198,13 +197,8 @@
 	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<div
-			class={buttonVariants({
-				theme: 'ghost',
-				className: 'w-full justify-start bg-transparent hover:bg-transparent'
-			})}
-		>
-			{@render miniWrapper(formatted)}
+		<div class={buttonVariants({ theme: 'ghost', variant: 'menu', className: 'bg-transparent' })}>
+			<Badge>{formatted}</Badge>
 		</div>
 	</Field>
 {:else if property.type === PropertyType.FILE}
@@ -260,17 +254,6 @@
 		{/if}
 	</Field>
 {/if}
-
-{#snippet miniWrapper(content: string)}
-	{@const wrapperClass = tm(
-		'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
-		PROPERTY_COLORS[color]
-	)}
-
-	<span class={wrapperClass}>
-		{content}
-	</span>
-{/snippet}
 
 {#snippet clearBtn()}
 	<HSeparator class="my-0.5" />

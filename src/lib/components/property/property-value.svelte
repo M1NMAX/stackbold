@@ -11,7 +11,7 @@
 		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTIES_THAT_USE_INPUT,
 		PROPERTIES_THAT_USE_SELECTOR,
-		PROPERTY_COLORS
+		THEME_COLORS
 	} from '$lib/constant/index.js';
 	import {
 		Color,
@@ -32,7 +32,6 @@
 	} from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
-		getPropertyColor,
 		isPropertyNumerical,
 		joinMultiselectOptions,
 		separateMultiselectOptions,
@@ -50,8 +49,8 @@
 	} from '$lib/states/index.js';
 	import {
 		AdaptiveWrapper,
+		Badge,
 		Button,
-		buttonVariants,
 		Calendar,
 		HSeparator,
 		Select,
@@ -73,7 +72,6 @@
 	const wrapperState = new ModalState();
 
 	let value = $derived(getRefValue(item.properties, property.id));
-	let color = $derived(getPropertyColor(property, value));
 
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(value: string) {
@@ -113,11 +111,11 @@
 	const buttonClass = $derived(
 		tm(
 			isTableView()
-				? 'h-6 w-full justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
-				: 'h-6 w-fit p-2 rounded-md font-semibold hover:bg-current/90 hover:text-white',
+				? 'h-6 w-full p-0 justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
+				: 'h-6 w-fit p-0 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
 			allowMultipleValues(property.type) && ' lg:h-6 p-0',
-			hasUnifiedBgColor() && `${PROPERTY_COLORS[Color.GRAY]}`,
+			hasUnifiedBgColor() && `${THEME_COLORS[Color.GRAY]}`,
 			allowMultipleValues(property.type) && !isTableView() && 'bg-gray-200/40 dark:bg-gray-700/40'
 		)
 	);
@@ -167,16 +165,25 @@
 	});
 </script>
 
-{#if property.type === PropertyType.CHECKBOX}
+{#if property.type === PropertyType.CREATED}
+	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
+	{@render tooltipWrapper(formatted)}
+{:else if property.type === PropertyType.BUNDLE && shouldShowTrigger()}
+	{@const formatted = formatNumber(+value, property.format, property.decimals)}
+
+	<div class={tm(isTableView() && 'w-full flex justify-end')}>
+		{@render tooltipWrapper(formatted, !isTableView())}
+	</div>
+{:else if property.type === PropertyType.CHECKBOX}
 	<label
 		class={tm(
 			'flex justify-center',
 			!isTableView() &&
-				'inline-flex items-center justify-center space-x-1 py-0.5 px-1 rounded-md text-sm font-semibold',
-			!isTableView() && PROPERTY_COLORS[color]
+				'inline-flex items-center justify-center gap-x-1.5 py-0.5 px-1 rounded-md text-sm font-semibold',
+			!isTableView() && THEME_COLORS[Color.GRAY]
 		)}
 	>
-		<input type="checkbox" checked={value === 'true'} onchange={handleCheckbox} class="checkbox" />
+		<input type="checkbox" class="checkbox" checked={value === 'true'} onchange={handleCheckbox} />
 
 		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
 	</label>
@@ -188,7 +195,7 @@
 				id: option.id,
 				label: option.value,
 				isSelected: option.id === value,
-				theme: PROPERTY_COLORS[option.color]
+				theme: THEME_COLORS[option.color]
 			}))
 		]}
 		onselect={(opt) => updPropertyRef(opt.id)}
@@ -206,7 +213,7 @@
 			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
-				theme: PROPERTY_COLORS[option.color],
+				theme: THEME_COLORS[option.color],
 				isSelected: selectedOptions.includes(option.id)
 			}))
 		]}
@@ -226,7 +233,7 @@
 			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
-				theme: PROPERTY_COLORS[option.color],
+				theme: THEME_COLORS[option.color],
 				icon: 'item',
 				isSelected: selectedOptions.includes(option.id)
 			}))
@@ -239,18 +246,12 @@
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
-{:else if property.type === PropertyType.BUNDLE && (value || isTableView())}
-	{@const formatted = formatNumber(+value, property.format, property.decimals)}
-
-	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
-		{@render tooltipWrapper(formatted, !!value && isTableView())}
-	</div>
 {:else if property.type === PropertyType.DATE && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{#if value}
 				{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-				{@render tooltipWrapper(formatted, !!value && isTableView())}
+				{@render tooltipWrapper(formatted)}
 			{/if}
 		{/snippet}
 
@@ -261,11 +262,6 @@
 		/>
 		{@render clearBtn()}
 	</AdaptiveWrapper>
-{:else if property.type === PropertyType.CREATED}
-	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
-	<div class={buttonVariants({ theme: 'ghost', className: buttonClass })}>
-		{@render tooltipWrapper(formatted, !!value && isTableView())}
-	</div>
 {:else if property.type === PropertyType.TEXT && shouldShowTrigger()}
 	{@const content = truncateTextEnd(value, MAX_PROPERTY_TEXT_OVERVIEW_LENGTH)}
 	<AdaptiveWrapper
@@ -278,7 +274,7 @@
 		)}
 	>
 		{#snippet trigger()}
-			{@render tooltipWrapper(content)}
+			{@render tooltipWrapper(content, !isTableView())}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -299,7 +295,8 @@
 {:else if property.type === PropertyType.NUMBER && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
-			{@render tooltipWrapper(formatNumber(+value, property.format, property.decimals))}
+			{@const formatted = formatNumber(+value, property.format, property.decimals)}
+			{@render tooltipWrapper(formatted, !isTableView())}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -335,7 +332,7 @@
 		{#snippet customTrigger({ id, toggle })}
 			{@const copyBtnTooltipId = useId(`select-trigger-${property.id}-value-${item.id}`)}
 
-			<div class={tm(buttonClass, 'flex items-center px-0.5')}>
+			<div class={tm(buttonClass, 'flex items-center px-1')}>
 				<button
 					{id}
 					onclick={() => toggle()}
@@ -403,17 +400,12 @@
 	</AdaptiveWrapper>
 {/if}
 
-{#snippet tooltipWrapper(content: string, isWrappered: boolean = false)}
+{#snippet tooltipWrapper(content: string, hasBg: boolean = true)}
 	{@const tooltipId = useId(`property-tooltip-${property.id}-`)}
-	{@const wrapperClass = tm(
-		isWrappered && 'h-6 flex items-center py-1 px-1.5 rounded-sm font-semibold',
-		isWrappered && PROPERTY_COLORS[color]
-	)}
 
-	<span id={tooltipId} class={wrapperClass}>
+	<Badge id={tooltipId} class={tm('w-fit', !hasBg && 'bg-transparent dark:bg-transparent')}>
 		{content}
-	</span>
-
+	</Badge>
 	{@render tooltipContent(tooltipId)}
 {/snippet}
 

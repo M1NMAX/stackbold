@@ -42,6 +42,7 @@ export function sanitizeNumber(value: string) {
 }
 
 export function formatNumber(value: number, format: string | null, decimals: number | null) {
+	if (value === 0) return '';
 	const options: Intl.NumberFormatOptions = {
 		minimumFractionDigits: decimals ?? DEFAULT_NUMBER_DECIMALS,
 		maximumFractionDigits: decimals ?? DEFAULT_NUMBER_DECIMALS
