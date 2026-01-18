@@ -155,8 +155,6 @@ function injectPropertyOptions(
 	if (isRelation(property)) {
 		const items = itemsMap.get(property.targetCollection!) || [];
 
-		console.log('Here');
-
 		return {
 			...property,
 			options: items.map((item) => ({
