@@ -16,6 +16,7 @@ enum Role {
 }
 
 enum Color {
+  SLATE  @map("slate")
   GRAY   @map("gray")
   RED    @map("red")
   BLUE   @map("blue")

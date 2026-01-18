@@ -167,13 +167,18 @@
 
 {#if property.type === PropertyType.CREATED}
 	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
-	{@render tooltipWrapper(formatted)}
+	{@render tooltipWrapper(formatted, false)}
 {:else if property.type === PropertyType.BUNDLE && shouldShowTrigger()}
 	{@const formatted = formatNumber(+value, property.format, property.decimals)}
 
 	<div class={tm(isTableView() && 'w-full flex justify-end')}>
-		{@render tooltipWrapper(formatted, !isTableView())}
+		{@render tooltipWrapper(formatted, false, !isTableView())}
 	</div>
+{:else if property.type === PropertyType.FILE && shouldShowTrigger()}
+	{@const tooltipId = `property-file-trigger-${property.id}-value-${item.id}`}
+	<PropertyFile {property} {value} itemId={item.id} id={tooltipId} {buttonClass} />
+
+	{@render tooltipContent(tooltipId)}
 {:else if property.type === PropertyType.CHECKBOX}
 	<label
 		class={tm(
@@ -274,7 +279,7 @@
 		)}
 	>
 		{#snippet trigger()}
-			{@render tooltipWrapper(content, !isTableView())}
+			{@render tooltipWrapper(content, false, !isTableView())}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -296,7 +301,7 @@
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{@const formatted = formatNumber(+value, property.format, property.decimals)}
-			{@render tooltipWrapper(formatted, !isTableView())}
+			{@render tooltipWrapper(formatted, false, !isTableView())}
 		{/snippet}
 
 		<form class="space-y-0.5">
@@ -371,11 +376,6 @@
 			/>
 		</form>
 	</AdaptiveWrapper>
-{:else if property.type === PropertyType.FILE && shouldShowTrigger()}
-	{@const tooltipId = `property-file-trigger-${property.id}-value-${item.id}`}
-	<PropertyFile {property} {value} itemId={item.id} id={tooltipId} {buttonClass} />
-
-	{@render tooltipContent(tooltipId)}
 {:else if shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
@@ -400,10 +400,18 @@
 	</AdaptiveWrapper>
 {/if}
 
-{#snippet tooltipWrapper(content: string, hasBg: boolean = true)}
+{#snippet tooltipWrapper(content: string, isInteractive: boolean = true, hasBg: boolean = true)}
 	{@const tooltipId = useId(`property-tooltip-${property.id}-`)}
 
-	<Badge id={tooltipId} class={tm('w-fit', !hasBg && 'bg-transparent dark:bg-transparent')}>
+	<Badge
+		id={tooltipId}
+		class={tm(
+			'w-fit',
+			!hasBg && 'bg-transparent dark:bg-transparent',
+			isInteractive ? 'cursor-pointer' : 'cursor-default'
+		)}
+		color={isInteractive ? Color.GRAY : Color.SLATE}
+	>
 		{content}
 	</Badge>
 	{@render tooltipContent(tooltipId)}
