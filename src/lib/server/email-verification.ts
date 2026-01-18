@@ -50,9 +50,9 @@ export async function sendEmail(msg: sendgrid.MailDataRequired) {
 }
 
 export async function createEmailVerificationRequest(userId: string, email: string) {
-	await prisma.emailVerication.deleteMany({ where: { userId } });
+	await prisma.emailVerification.deleteMany({ where: { userId } });
 
-	return await prisma.emailVerication.create({
+	return await prisma.emailVerification.create({
 		data: {
 			userId,
 			email,
@@ -63,7 +63,7 @@ export async function createEmailVerificationRequest(userId: string, email: stri
 }
 
 export async function getUserEmailVerificationRequest(userId: string, id: string) {
-	return await prisma.emailVerication.findFirst({ where: { id, userId } });
+	return await prisma.emailVerification.findFirst({ where: { id, userId } });
 }
 
 export async function getUserEmailVerificationRequestFromRequest(event: RequestEvent) {
@@ -79,7 +79,7 @@ export async function getUserEmailVerificationRequestFromRequest(event: RequestE
 }
 
 export async function deleteUserEmailVerificationRequest(userId: string) {
-	await prisma.emailVerication.deleteMany({ where: { userId } });
+	await prisma.emailVerification.deleteMany({ where: { userId } });
 }
 
 export function setEmailVerificationRequestCookie(
