@@ -26,14 +26,15 @@
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { PropertyType, SortType, type Filter, type Sort, type View } from '@prisma/client';
-	import {
-		getOption,
-		getPropertyState,
-		isPropertyVisible,
-		PropertyIcon
-	} from '$lib/components/property/index.js';
+	import { getPropertyState, PropertyIcon } from '$lib/components/property/index.js';
 	import { getViewState, isFilterSeletect, toggleFilter } from './index.js';
-	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
+	import {
+		capitalizeFirstLetter,
+		getOption,
+		isPropertyVisible,
+		tm,
+		useId
+	} from '$lib/utils/index.js';
 	import {
 		FILTERABLE_PROPERTY_TYPES,
 		NAME_FIELD,

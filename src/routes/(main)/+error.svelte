@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import { PageContainer, PageContent } from '$lib/components/page/index.js';
 </script>
 
 <svelte:head>

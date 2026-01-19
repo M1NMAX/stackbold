@@ -3,7 +3,6 @@
 	import Download from 'lucide-svelte/icons/download';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { extractFilenameFromUrl, joinFilesName, separateMultiselectOptions } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Badge,
@@ -23,9 +22,12 @@
 	import type { Property } from '@prisma/client';
 	import { getToastState, ModalState } from '$lib/states/index.js';
 	import {
+		extractFilenameFromUrl,
 		isAudioFile,
 		isImageFile,
 		isVideoFile,
+		joinFilesName,
+		separateMultiselectOptions,
 		tm,
 		truncateTextMiddle,
 		uploadFileToUrl,

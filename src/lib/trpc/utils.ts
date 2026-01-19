@@ -2,14 +2,7 @@ import {
 	PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE,
 	PROPERTIES_WITHOUT_REF
 } from '$lib/constant/index.js';
-import {
-	Aggregator,
-	PropertyType,
-	type Item,
-	type Option,
-	type Property,
-	type PropertyRef
-} from '@prisma/client';
+import { PropertyType, type Option, type Property, type PropertyRef } from '@prisma/client';
 
 export function isRelation(property: Property) {
 	return property.type === PropertyType.RELATION && property.targetCollection != null;
@@ -33,36 +26,6 @@ export function isBundleValueInjectable(property: Property) {
 
 export function hasRef(type: PropertyType) {
 	return !PROPERTIES_WITHOUT_REF.includes(type);
-}
-
-export function aggregatePropertyValue(
-	aggregator: Aggregator,
-	targetProperty: Property,
-	items: Item[]
-) {
-	if (aggregator === Aggregator.COUNT) return items.length;
-	else if (aggregator === Aggregator.COUNT_EMPTY) {
-		return items.reduce((acc, item) => {
-			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
-			if (propertyRef == null || propertyRef.value === '') return acc + 1;
-			return acc;
-		}, 0);
-	} else if (aggregator === Aggregator.COUNT_NOT_EMPTY) {
-		return items.reduce((acc, item) => {
-			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
-			if (propertyRef && propertyRef.value !== '') return acc + 1;
-			return acc;
-		}, 0);
-	} else if (aggregator === Aggregator.SUM || aggregator === Aggregator.AVG) {
-		const sum = items.reduce((acc, curr) => {
-			const propertyRef = getPropertyRef(curr.properties, targetProperty.id);
-			const inc = propertyRef ? propertyRef.value : 0;
-			return acc + Number(inc);
-		}, 0);
-		if (aggregator === Aggregator.SUM) return sum;
-		return sum / items.length;
-	}
-	return '';
 }
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {

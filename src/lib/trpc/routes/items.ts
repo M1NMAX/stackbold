@@ -1,4 +1,3 @@
-import { getRefValue } from '$lib/components/property';
 import {
 	DEFAULT_STRING_DELIMITER,
 	NAME_FIELD,
@@ -15,7 +14,6 @@ import {
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import {
-	aggregatePropertyValue,
 	compareValues,
 	getPropertyDefaultValue,
 	getPropertyOption,
@@ -24,7 +22,7 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
-import { incrementFileName } from '$lib/utils/index.js';
+import { aggregatePropertyValue, getRefValue, incrementFileName } from '$lib/utils/index.js';
 import {
 	PropertyType,
 	SortType,

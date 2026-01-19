@@ -11,16 +11,12 @@
 	import { DEFAULT_FEEDBACK_ERR_MESSAGE, TEMPLATE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { ChevronLeft, X } from 'lucide-svelte';
 	import { getContext } from 'svelte';
-	import {
-		getPropertyColor,
-		getPropertyRef,
-		PropertyTemplate
-	} from '$lib/components/property/index.js';
+	import { PropertyTemplate } from '$lib/components/property/index.js';
 	import { trpc } from '$lib/trpc/client';
 	import { getCollectionState } from '$lib/components/collection/index.js';
 	import { goto } from '$app/navigation';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
-	import { tm } from '$lib/utils/index.js';
+	import { getPropertyColor, getPropertyRef, tm } from '$lib/utils/index.js';
 
 	let { data } = $props();
 	let template = $derived(data.template);

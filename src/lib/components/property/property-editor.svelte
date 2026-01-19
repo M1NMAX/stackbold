@@ -9,14 +9,14 @@
 	import X from 'lucide-svelte/icons/x';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { Aggregator, PropertyType, type Property } from '@prisma/client';
-	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
-		getPropertyState,
+		capitalizeFirstLetter,
 		hasOptions,
 		isPropertyNumerical,
-		PropertyIcon,
-		PropertyOption
-	} from './index.js';
+		tm,
+		useId
+	} from '$lib/utils/index.js';
+	import { getPropertyState, PropertyIcon, PropertyOption } from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
 		MIN_SEARCHABLE_PROPERTY_SELECT,

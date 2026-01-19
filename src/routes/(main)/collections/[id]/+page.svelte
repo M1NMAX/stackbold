@@ -8,11 +8,11 @@
 	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
 	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
-	import { getOption, getPropertyColor, getPropertyState } from '$lib/components/property/index.js';
+	import { getPropertyState } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck } from '$lib/utils/index.js';
+	import { tm, noCheck, getPropertyColor, getOption } from '$lib/utils/index.js';
 	import {
 		Accordion,
 		AccordionItem,
@@ -37,7 +37,6 @@
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		MAX_COLLECTION_NAME_LENGTH,
-		THEME_COLORS,
 		SCREEN_LG_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';

@@ -22,7 +22,7 @@
 		PageHeader,
 		PageTitle
 	} from '$lib/components/page/index.js';
-	import { getPropertyState, getRefValue, PropertyInput } from '$lib/components/property/index.js';
+	import { getPropertyState, PropertyInput } from '$lib/components/property/index.js';
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
@@ -32,7 +32,7 @@
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import debounce from 'debounce';
 	import { getContext } from 'svelte';
-	import { tm } from '$lib/utils/index.js';
+	import { getRefValue, tm } from '$lib/utils/index.js';
 	import type { PropertyRef } from '@prisma/client';
 	import { getViewState } from '$lib/components/view/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';

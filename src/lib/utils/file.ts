@@ -1,3 +1,5 @@
+import { DEFAULT_STRING_DELIMITER } from '$lib/constant/index.js';
+
 export function isImageFile(name: string) {
 	return /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|tiff|tif)$/i.test(name);
 }
@@ -10,6 +12,13 @@ export function isAudioFile(name: string) {
 	return /\.(mp3|wav|ogg|m4a|aac|flac|wma|aiff|ape|opus|webm|oga)$/i.test(name);
 }
 
+export function joinFilesName(files: string[], newFile: string) {
+	return [...files, newFile].join(DEFAULT_STRING_DELIMITER);
+}
+
+export function extractFilenameFromUrl(url: string) {
+	return decodeURIComponent(url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('?')));
+}
 export async function uploadFileToUrl(url: string, file: File) {
 	return await fetch(url, {
 		method: 'PUT',

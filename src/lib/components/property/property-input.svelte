@@ -12,7 +12,14 @@
 		PROPERTIES_THAT_USE_INPUT,
 		THEME_COLORS
 	} from '$lib/constant/index.js';
-	import { useId, sanitizeNumbericInput, formatNumber } from '$lib/utils/index.js';
+	import {
+		useId,
+		sanitizeNumbericInput,
+		formatNumber,
+		isPropertyNumerical,
+		separateMultiselectOptions,
+		joinMultiselectOptions
+	} from '$lib/utils/index.js';
 	import debounce from 'debounce';
 	import {
 		fullDateFormat,
@@ -20,13 +27,7 @@
 		getToastState,
 		ModalState
 	} from '$lib/states/index.js';
-	import {
-		separateMultiselectOptions,
-		joinMultiselectOptions,
-		isPropertyNumerical,
-		PropertyFile,
-		PropertyIcon
-	} from './index.js';
+	import { PropertyFile, PropertyIcon } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Button,

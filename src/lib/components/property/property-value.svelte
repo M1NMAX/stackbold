@@ -28,17 +28,14 @@
 		truncateTextEnd,
 		sanitizeNumbericInput,
 		sanitizeNumber,
-		formatNumber
+		formatNumber,
+		isPropertyNumerical,
+		getRefValue,
+		separateMultiselectOptions,
+		joinMultiselectOptions
 	} from '$lib/utils/index.js';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
-	import {
-		isPropertyNumerical,
-		joinMultiselectOptions,
-		separateMultiselectOptions,
-		getRefValue,
-		PropertyIcon,
-		PropertyFile
-	} from './index.js';
+	import { PropertyIcon, PropertyFile } from './index.js';
 	import { getItemState } from '$lib/components/item/index.js';
 	import debounce from 'debounce';
 	import {
@@ -301,7 +298,7 @@
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
 		{#snippet trigger()}
 			{@const formatted = formatNumber(+value, property.format, property.decimals)}
-			{@render tooltipWrapper(formatted, false, !isTableView())}
+			{@render tooltipWrapper(formatted, true, !isTableView())}
 		{/snippet}
 
 		<form class="space-y-0.5">

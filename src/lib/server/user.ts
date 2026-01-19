@@ -20,7 +20,7 @@ export async function createUser(args: z.infer<typeof createUserSchema>) {
 
 	const passwordHash = await hashPassword(password);
 	const recoveryCode = generateRandomRecoveryCode();
-	const encryptedCode = encryptString(recoveryCode);
+	const encryptedCode = new Uint8Array(encryptString(recoveryCode));
 
 	const created = await prisma.user.create({
 		data: {
@@ -88,7 +88,10 @@ export async function getUserPasswordHash(userId: string) {
 }
 
 export async function updateUserTOTPKey(userId: string, key: Uint8Array) {
-	await prisma.user.update({ where: { id: userId }, data: { totpKey: encrypt(key) } });
+	await prisma.user.update({
+		where: { id: userId },
+		data: { totpKey: new Uint8Array(encrypt(key)) }
+	});
 }
 
 export async function updateUserPassword(userId: string, password: string) {
@@ -118,7 +121,7 @@ export async function updateUserRecoveryCode(userId: string, recoveryCode: strin
 		if (recoveryCode !== userRecoveryCode) return false;
 
 		const newRecoveryCode = generateRandomRecoveryCode();
-		const encryptedNewRecoveryCode = encryptString(newRecoveryCode);
+		const encryptedNewRecoveryCode = new Uint8Array(encryptString(newRecoveryCode));
 
 		const user = await tx.user.update({
 			where: { id: userId, recoveryCode: result.recoveryCode },
