@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { CheckSquare2, Square } from 'lucide-svelte';
 	import { PropertyType, type Color, type Property } from '@prisma/client';
-	import { PROPERTY_COLORS } from '$lib/constant/index.js';
-	import { tm, useId } from '$lib/utils/index.js';
-	import { getOption, hasOptions, PropertyIcon } from './index.js';
+	import { THEME_COLORS } from '$lib/constant/index.js';
+	import { getOption, hasOptions, tm, useId } from '$lib/utils/index.js';
+	import { PropertyIcon } from './index.js';
 	import { Tooltip } from '$lib/components/base/index.js';
 
 	type Props = {
@@ -19,7 +19,7 @@
 	<div
 		class={tm(
 			'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold [&_svg]:size-4',
-			PROPERTY_COLORS[color]
+			THEME_COLORS[color]
 		)}
 	>
 		{#if value === 'true'}
@@ -37,10 +37,7 @@
 		: value}
 	<span
 		id={tooltipId}
-		class={tm(
-			'h-6 flex items-center p-1.5 rounded-sm font-semibold truncate',
-			PROPERTY_COLORS[color]
-		)}
+		class={tm('h-6 flex items-center p-1.5 rounded-sm font-semibold truncate', THEME_COLORS[color])}
 	>
 		{#if property.type !== PropertyType.TEXT}
 			{result}

@@ -1,4 +1,3 @@
-import { getRefValue } from '$lib/components/property';
 import {
 	DEFAULT_STRING_DELIMITER,
 	NAME_FIELD,
@@ -15,7 +14,6 @@ import {
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import {
-	aggregatePropertyValue,
 	compareValues,
 	getPropertyDefaultValue,
 	getPropertyOption,
@@ -24,7 +22,7 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
-import { incrementFileName } from '$lib/utils/index.js';
+import { aggregatePropertyValue, getRefValue, incrementFileName } from '$lib/utils/index.js';
 import {
 	PropertyType,
 	SortType,
@@ -241,7 +239,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 
 			if (ids.length !== 0 && property.calculate) {
 				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
-				ref.value = aggregatePropertyValue(extItems, property.calculate, extProperty.id).toString();
+				ref.value = aggregatePropertyValue(property.calculate, extProperty, extItems).toString();
 			}
 
 			updates.set(key, addRef(updates.get(key)!, ref));
@@ -422,7 +420,8 @@ async function injectBundleRefs(item: Item, properties: Property[]) {
 		}
 
 		const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
-		const value = aggregatePropertyValue(extItems, property.calculate, extProperty.id);
+
+		const value = aggregatePropertyValue(property.calculate, extProperty, extItems);
 		item = addRef(item, { id: property.id, value: value.toString() });
 	}
 

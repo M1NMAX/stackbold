@@ -3,17 +3,17 @@
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import { APP_ICONS, PROPERTY_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
+	import { APP_ICONS, THEME_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { buttonVariants, Drawer, Floating } from './index.js';
+	import { Badge, buttonVariants, Drawer, Floating } from './index.js';
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
 
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;
 
-	type Props<T extends boolean = false> = {
+	type Props = {
 		id: string;
 		options: SelectOption[];
 		noOptionText?: string;
@@ -21,8 +21,8 @@
 		searchable?: boolean;
 		disabled?: boolean;
 		triggerClass?: string;
-		isMulti?: T;
-		onselect: T extends true ? MultiSelect : SingleSelect;
+		isMulti?: IsMulti;
+		onselect: IsMulti extends true ? MultiSelect : SingleSelect;
 	};
 
 	let {
@@ -35,7 +35,7 @@
 		triggerClass,
 		isMulti = false as IsMulti,
 		onselect
-	}: Props<IsMulti> = $props();
+	}: Props = $props();
 
 	let highlighted = $state('');
 	let selectedOptions = $derived.by(() => {
@@ -221,7 +221,7 @@
 			id: 'selector-more-option-id',
 			label: `+${selectedOptions.length - 3} More`,
 			isSelected: false,
-			theme: PROPERTY_COLORS['GRAY']
+			theme: THEME_COLORS['GRAY']
 		})}
 	{/if}
 </button>
@@ -335,14 +335,12 @@
 {/snippet}
 
 {#snippet option(opt: SelectOption)}
-	<span
-		class={tm('h-6 flex items-center gap-x-1.5 px-1.5 rounded-md font-semibold text-sm', opt.theme)}
-	>
+	<Badge class={opt.theme}>
 		{#if opt.icon}
 			{@render icon(opt.icon)}
 		{/if}
 		<span>
 			{opt.label}
 		</span>
-	</span>
+	</Badge>
 {/snippet}

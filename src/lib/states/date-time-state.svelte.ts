@@ -47,7 +47,7 @@ export function fullMonthAndYearFormat(date: Date) {
 }
 
 export function createMonth(ref: CalendarDate, value: CalendarDate) {
-	let days: Day[] = [];
+	const days: Day[] = [];
 
 	const end = endOfWeek(endOfMonth(ref), LOCALE);
 	let current = startOfWeek(startOfMonth(ref), LOCALE);

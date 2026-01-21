@@ -7,12 +7,7 @@
 	import Check from 'lucide-svelte/icons/check';
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import { ItemMenu, getItemState } from './index.js';
-	import {
-		PropertyValue,
-		getPropertyRef,
-		getPropertyState,
-		isPropertyVisible
-	} from '$lib/components/property/index.js';
+	import { PropertyValue, getPropertyState } from '$lib/components/property/index.js';
 	import { type Item, type View } from '@prisma/client';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import {
@@ -23,7 +18,7 @@
 	import debounce from 'debounce';
 	import { Button } from '$lib/components/base/index.js';
 	import { escapeKeydown, enterKeydown, clickOutside } from '$lib/actions/index.js';
-	import { tm } from '$lib/utils/index.js';
+	import { getPropertyRef, isPropertyVisible, tm } from '$lib/utils/index.js';
 
 	type Props = {
 		view: View;

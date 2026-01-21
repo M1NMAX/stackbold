@@ -2,16 +2,14 @@
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
 	import ToggleRight from 'lucide-svelte/icons/toggle-right';
-	import { tm } from '$lib/utils/index.js';
-	import { type Property, type Item, PropertyType, Aggregator, type View } from '@prisma/client';
+	import { aggregatePropertyValue, isPropertyVisible, tm } from '$lib/utils/index.js';
+	import { type Item, PropertyType, type View } from '@prisma/client';
 	import { getItemState, ItemMenu } from './index.js';
 	import {
 		PropertyValue,
 		PropertyIcon,
 		PropertyAggregatorMenu,
-		getPropertyRef,
-		getPropertyState,
-		isPropertyVisible
+		getPropertyState
 	} from '$lib/components/property';
 	import { fade } from 'svelte/transition';
 	import {
@@ -64,33 +62,6 @@
 		const id = targetEl.dataset.id!;
 		const name = targetEl.value;
 		updItemDebounced({ id, name });
-	}
-
-	function aggregatePropertyValue(property: Property) {
-		if (!property.aggregator) return '';
-		else if (property.aggregator === Aggregator.COUNT) return items.length;
-		else if (property.aggregator === Aggregator.COUNT_EMPTY) {
-			return items.reduce((acc, item) => {
-				const propertyRef = getPropertyRef(item.properties, property.id);
-				if (propertyRef == null || propertyRef.value === '') return acc + 1;
-				return acc;
-			}, 0);
-		} else if (property.aggregator === Aggregator.COUNT_NOT_EMPTY) {
-			return items.reduce((acc, item) => {
-				const propertyRef = getPropertyRef(item.properties, property.id);
-				if (propertyRef && propertyRef.value !== '') return acc + 1;
-				return acc;
-			}, 0);
-		} else if (property.aggregator === Aggregator.SUM || property.aggregator === Aggregator.AVG) {
-			const sum = items.reduce((acc, curr) => {
-				const propertyRef = getPropertyRef(curr.properties, property.id);
-				const inc = propertyRef ? propertyRef.value : 0;
-				return acc + Number(inc);
-			}, 0);
-			if (property.aggregator === Aggregator.SUM) return sum.toFixed(2);
-			return (sum / items.length).toFixed(2);
-		}
-		return '';
 	}
 
 	function getVisibleProperties() {
@@ -189,7 +160,9 @@
 							<div class="flex w-full justify-end group">
 								<PropertyAggregatorMenu
 									{property}
-									calculated={aggregatePropertyValue(property).toString()}
+									calculated={property.aggregator
+										? aggregatePropertyValue(property.aggregator, property, items, true).toString()
+										: ''}
 									onchange={(aggregator) => {
 										propertyState.updProperty({ id: property.id, aggregator });
 									}}

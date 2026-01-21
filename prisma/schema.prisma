@@ -16,6 +16,7 @@ enum Role {
 }
 
 enum Color {
+  SLATE  @map("slate")
   GRAY   @map("gray")
   RED    @map("red")
   BLUE   @map("blue")
@@ -97,17 +98,19 @@ model User {
   sessions              Session[]
   collections           Collection[]
   group                 Group[]
-  emailVerication       EmailVerication[]
+  emailVerification     EmailVerification[]
   passwordResetSessions PasswordResetSession[]
 }
 
-model EmailVerication {
+model EmailVerification {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   code      String
   userId    String   @db.ObjectId
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   email     String   @unique
   expiresAt DateTime
+
+  @@map("EmailVerication")
 }
 
 model PasswordResetSession {
@@ -197,6 +200,8 @@ model Property {
   intTargetProperty String? // BUMDLE only
   extTargetProperty String? // BUNDLE only
   calculate         Aggregator? // BUNDLE only
+  format            String? // NUMBER only
+  decimals          Int? // NUMBER only
 
   @@index([collectionId, order])
 }

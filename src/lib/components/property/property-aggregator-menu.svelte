@@ -7,7 +7,7 @@
 		RadioGroupItem
 	} from '$lib/components/base/index.js';
 	import { ModalState } from '$lib/states/index.js';
-	import { tm, useId } from '$lib/utils/index.js';
+	import { isPropertyNumerical, tm, useId } from '$lib/utils/index.js';
 	import {
 		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
 		PROPERTY_AGGREGATOR_LABELS,
@@ -15,7 +15,6 @@
 		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import type { Aggregator, Property } from '@prisma/client';
-	import { isPropertyNumerical } from './index.js';
 	import type { Nullable } from '$lib/types.js';
 
 	type Props = {

@@ -48,7 +48,9 @@ export class PropertyState {
 				relatedProperty: null,
 				intTargetProperty: null,
 				extTargetProperty: null,
-				calculate: null
+				calculate: null,
+				format: null,
+				decimals: null
 			});
 
 			const property = await trpc().properties.create.mutate({

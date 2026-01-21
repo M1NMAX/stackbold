@@ -26,18 +26,19 @@
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { PropertyType, SortType, type Filter, type Sort, type View } from '@prisma/client';
-	import {
-		getOption,
-		getPropertyState,
-		isPropertyVisible,
-		PropertyIcon
-	} from '$lib/components/property/index.js';
+	import { getPropertyState, PropertyIcon } from '$lib/components/property/index.js';
 	import { getViewState, isFilterSeletect, toggleFilter } from './index.js';
-	import { capitalizeFirstLetter, useId } from '$lib/utils/index.js';
+	import {
+		capitalizeFirstLetter,
+		getOption,
+		isPropertyVisible,
+		tm,
+		useId
+	} from '$lib/utils/index.js';
 	import {
 		FILTERABLE_PROPERTY_TYPES,
 		NAME_FIELD,
-		PROPERTY_COLORS,
+		THEME_COLORS,
 		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
@@ -236,7 +237,7 @@
 						onClickFilterOption(filterSelectedProperty.id, option.id, filterSelectedProperty.type);
 					}}
 				>
-					<span class={['size-3.5 rounded-sm', PROPERTY_COLORS[option.color]]}></span>
+					<span class={['size-3.5 rounded-sm', THEME_COLORS[option.color]]}></span>
 
 					<span class="grow font-semibold">
 						{option.value}
@@ -337,10 +338,8 @@
 									class="font-semibold"
 									onclick={() => onClickFilterOption(filter.id, option.id, property.type)}
 								>
-									<span class={['size-3.5 rounded-sm', PROPERTY_COLORS[option.color]]}></span>
-									<span>
-										{option.value}
-									</span>
+									<span class={tm('size-3.5 rounded-sm', THEME_COLORS[option.color])}></span>
+									<span>{option.value}</span>
 									<X />
 								</Button>
 							{/if}

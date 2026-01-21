@@ -3,14 +3,14 @@
 	import { setAccordionState } from '$lib/states/index.js';
 	import { tm } from '$lib/utils/index.js';
 
-	type Props<T extends boolean = false> = {
-		isMulti?: T;
-		value?: T extends true ? string[] : string;
+	type Props = {
+		isMulti?: IsMulti;
+		value?: IsMulti extends true ? string[] : string;
 		children: Snippet;
 		class?: string;
 	};
 
-	let { isMulti = false as IsMulti, value, children, class: className }: Props<IsMulti> = $props();
+	let { isMulti = false as IsMulti, value, children, class: className }: Props = $props();
 	const accordionState = setAccordionState(isMulti);
 
 	$effect(() => {

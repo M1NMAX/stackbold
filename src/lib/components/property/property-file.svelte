@@ -3,7 +3,6 @@
 	import Download from 'lucide-svelte/icons/download';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { extractFilenameFromUrl, joinFilesName, separateMultiselectOptions } from './index.js';
 	import {
 		AdaptiveWrapper,
 		Badge,
@@ -17,16 +16,18 @@
 		MAX_FILE_NAME_OVERVIEW_LENGTH,
 		MAX_FILE_SIZE,
 		MAX_PROPERTY_FILE_COUNT,
-		MAX_VISIBLE_FILES,
-		PROPERTY_COLORS
+		MAX_VISIBLE_FILES
 	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
-	import { Color, type Property } from '@prisma/client';
+	import type { Property } from '@prisma/client';
 	import { getToastState, ModalState } from '$lib/states/index.js';
 	import {
+		extractFilenameFromUrl,
 		isAudioFile,
 		isImageFile,
 		isVideoFile,
+		joinFilesName,
+		separateMultiselectOptions,
 		tm,
 		truncateTextMiddle,
 		uploadFileToUrl,
@@ -153,11 +154,10 @@
 	)}
 >
 	{#snippet trigger()}
-		{@const cls = tm(PROPERTY_COLORS[Color.GRAY])}
 		{@const filesToRender = files.slice(0, MAX_VISIBLE_FILES)}
 		{@const truncateLength = Math.floor(MAX_FILE_NAME_OVERVIEW_LENGTH / filesToRender.length)}
 		{#each filesToRender as file (file)}
-			<Badge class={cls}>
+			<Badge>
 				{@render icon(file)}
 				<span class="overflow-hidden whitespace-nowrap text-ellipsis">
 					{truncateTextMiddle(file, truncateLength)}
@@ -166,9 +166,7 @@
 		{/each}
 
 		{#if files.length > 3}
-			<Badge class={cls}>
-				+{files.length - 3} More
-			</Badge>
+			<Badge>+{files.length - 3} More</Badge>
 		{/if}
 	{/snippet}
 

@@ -92,7 +92,7 @@ export class CollectionState {
 
 	async updCollection(args: RouterInputs['collections']['update']) {
 		const { id, ...rest } = args;
-		let target = this.getCollection(id);
+		const target = this.getCollection(id);
 		if (!target) {
 			this.#toastState.error();
 			return;
@@ -107,8 +107,8 @@ export class CollectionState {
 		}
 	}
 
-	async deleteCollection(id: string, redirect: boolean = false) {
-		let target = this.getCollection(id);
+	async deleteCollection(id: string) {
+		const target = this.getCollection(id);
 		if (!target) {
 			this.#toastState.error();
 			return;
