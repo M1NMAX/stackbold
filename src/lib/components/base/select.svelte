@@ -9,6 +9,7 @@
 	import { Badge, buttonVariants, Drawer, Floating } from './index.js';
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
+	import { Color } from '@prisma/client';
 
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;
@@ -221,7 +222,7 @@
 			id: 'selector-more-option-id',
 			label: `+${selectedOptions.length - 3} More`,
 			isSelected: false,
-			theme: THEME_COLORS['GRAY']
+			theme: THEME_COLORS[Color.GRAY]
 		})}
 	{/if}
 </button>
@@ -335,7 +336,7 @@
 {/snippet}
 
 {#snippet option(opt: SelectOption)}
-	<Badge class={opt.theme}>
+	<Badge class={opt.theme ?? 'bg-transparent dark:bg-transparent'}>
 		{#if opt.icon}
 			{@render icon(opt.icon)}
 		{/if}
