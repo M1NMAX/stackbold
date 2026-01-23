@@ -112,13 +112,15 @@
 	<p class="py-1.5 px-2 text-sm font-semibold">Colors</p>
 	<RadioGroup {value} onchange={(value) => handleSelectColor(value)}>
 		{#each Object.entries(THEME_COLORS) as [colorName, colorClasses]}
-			{@const id = useId(`property-option-color`)}
+			{#if colorName !== 'SLATE'}
+				{@const id = useId(`property-option-color`)}
 
-			<Label for={id} compact hoverEffect>
-				<span class={tm('size-4 rounded-md', colorClasses)}></span>
-				<span class="grow"> {capitalizeFirstLetter(colorName)}</span>
-				<RadioGroupItem {id} value={colorName} />
-			</Label>
+				<Label for={id} compact hoverEffect>
+					<span class={tm('size-4 rounded-md', colorClasses)}></span>
+					<span class="grow"> {capitalizeFirstLetter(colorName)}</span>
+					<RadioGroupItem {id} value={colorName} />
+				</Label>
+			{/if}
 		{/each}
 	</RadioGroup>
 
