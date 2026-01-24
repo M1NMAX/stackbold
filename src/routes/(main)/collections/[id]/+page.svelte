@@ -1,11 +1,9 @@
 <script lang="ts">
 	import Layout from 'lucide-svelte/icons/layout-dashboard';
-	import Check from 'lucide-svelte/icons/check';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import FileMinus from 'lucide-svelte/icons/file-minus';
 	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
-	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
 	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
@@ -21,6 +19,7 @@
 		BreadcrumbItem,
 		Button,
 		IconPicker,
+		MockCheckbox,
 		Shortcut,
 		TextareaAutosize,
 		Tooltip
@@ -395,12 +394,7 @@
 {#snippet groupLabel(key: string, property: Property, color: Color)}
 	<Badge {color}>
 		{#if property.type === PropertyType.CHECKBOX}
-			{#if key === 'true'}
-				<Check class="stroke-[4px] bg-primary rounded-md" />
-			{:else}
-				<Square />
-			{/if}
-
+			<MockCheckbox checked={key === 'true'} />
 			{property.name}
 		{:else}
 			{@const option = getOption(property.options, key)}

@@ -239,7 +239,7 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 
 			if (ids.length !== 0 && property.calculate) {
 				const extItems = ids.map((id) => extItemsMap.get(id)!).filter(Boolean);
-				ref.value = aggregatePropertyValue(property.calculate, extProperty, extItems).toString();
+				ref.value = aggregatePropertyValue(property.calculate, extProperty, extItems);
 			}
 
 			updates.set(key, addRef(updates.get(key)!, ref));

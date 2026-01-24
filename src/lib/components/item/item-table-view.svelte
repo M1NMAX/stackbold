@@ -156,13 +156,14 @@
 					<td></td>
 
 					{#each properties as property (property.id)}
+						{@const calculated = property.aggregator
+							? aggregatePropertyValue(property.aggregator, property, items, true)
+							: ''}
 						<td>
 							<div class="flex w-full justify-end group">
 								<PropertyAggregatorMenu
 									{property}
-									calculated={property.aggregator
-										? aggregatePropertyValue(property.aggregator, property, items, true).toString()
-										: ''}
+									{calculated}
 									onchange={(aggregator) => {
 										propertyState.updProperty({ id: property.id, aggregator });
 									}}
