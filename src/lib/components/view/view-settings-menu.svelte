@@ -1,11 +1,9 @@
 <script lang="ts">
 	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
-	import Check from 'lucide-svelte/icons/check';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import ListCollapse from 'lucide-svelte/icons/list-collapse';
 	import ListFilter from 'lucide-svelte/icons/list-filter';
-	import Minus from 'lucide-svelte/icons/minus';
 	import MoveDown from 'lucide-svelte/icons/move-down';
 	import MoveUp from 'lucide-svelte/icons/move-up';
 	import Settings from 'lucide-svelte/icons/settings-2';
@@ -20,24 +18,26 @@
 		HSeparator,
 		Label,
 		MenuTitle,
+		MockCheckbox,
 		RadioGroup,
 		RadioGroupItem,
 		Switch,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { PropertyType, SortType, type Filter, type Sort, type View } from '@prisma/client';
-	import {
-		getOption,
-		getPropertyState,
-		isPropertyVisible,
-		PropertyIcon
-	} from '$lib/components/property/index.js';
+	import { getPropertyState, PropertyIcon } from '$lib/components/property/index.js';
 	import { getViewState, isFilterSeletect, toggleFilter } from './index.js';
-	import { capitalizeFirstLetter, useId } from '$lib/utils/index.js';
+	import {
+		capitalizeFirstLetter,
+		getOption,
+		isPropertyVisible,
+		tm,
+		useId
+	} from '$lib/utils/index.js';
 	import {
 		FILTERABLE_PROPERTY_TYPES,
 		NAME_FIELD,
-		PROPERTY_COLORS,
+		THEME_COLORS,
 		VALUE_NONE
 	} from '$lib/constant/index.js';
 	import type { Nullable } from '$lib/types.js';
@@ -217,7 +217,7 @@
 					{#each [true, false] as value}
 						{@const filterMenuCheckboxId = useId('filter-menu-checkbox')}
 						<Label for={filterMenuCheckboxId} compact hoverEffect>
-							{@render mockCheckbox(value)}
+							<MockCheckbox checked={value} />
 							<span class="grow font-semibold"> {value ? 'Checked' : 'Unchecked'} </span>
 
 							<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()}></RadioGroupItem>
@@ -236,7 +236,7 @@
 						onClickFilterOption(filterSelectedProperty.id, option.id, filterSelectedProperty.type);
 					}}
 				>
-					<span class={['size-3.5 rounded-sm', PROPERTY_COLORS[option.color]]}></span>
+					<span class={['size-3.5 rounded-sm', THEME_COLORS[option.color]]}></span>
 
 					<span class="grow font-semibold">
 						{option.value}
@@ -323,7 +323,7 @@
 							class="font-semibold"
 							onclick={() => clearFilter(filter.id)}
 						>
-							{@render mockCheckbox(value === 'true')}
+							<MockCheckbox checked={value === 'true'} />
 							<span> {property.name} </span>
 							<X />
 						</Button>
@@ -337,10 +337,8 @@
 									class="font-semibold"
 									onclick={() => onClickFilterOption(filter.id, option.id, property.type)}
 								>
-									<span class={['size-3.5 rounded-sm', PROPERTY_COLORS[option.color]]}></span>
-									<span>
-										{option.value}
-									</span>
+									<span class={tm('size-3.5 rounded-sm', THEME_COLORS[option.color])}></span>
+									<span>{option.value}</span>
 									<X />
 								</Button>
 							{/if}
@@ -393,16 +391,6 @@
 			</Button>
 		</div>
 	{/if}
-{/snippet}
-
-{#snippet mockCheckbox(value: boolean)}
-	<span class="p-[1px] rounded-sm bg-primary">
-		{#if value}
-			<Check class="size-3" />
-		{:else}
-			<Minus class="size-3" />
-		{/if}
-	</span>
 {/snippet}
 
 {#snippet activeSortRow(sort: Sort, name: string, key: PropertyType)}

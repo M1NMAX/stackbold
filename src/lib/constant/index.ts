@@ -3,7 +3,8 @@ import { Aggregator, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
-export const PROPERTY_COLORS: Colors = {
+export const THEME_COLORS: Colors = {
+	SLATE: 'bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-100',
 	GRAY: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-100',
 	RED: 'bg-red-500 text-white dark:bg-red-800 dark:text-red-100',
 	GREEN: 'bg-green-500 text-white dark:bg-green-800 dark:text-green-100',
@@ -12,7 +13,7 @@ export const PROPERTY_COLORS: Colors = {
 	ORANGE: 'bg-orange-500 text-white dark:bg-orange-700 dark:text-orange-100'
 };
 
-export const PROPERTY_AGGREGATOR_LABELS: { [key: string]: string } = {
+export const PROPERTY_AGGREGATOR_LABELS: Record<string, string> = {
 	none: 'None',
 	count: 'Count all',
 	count_empty: 'Count empty',
@@ -29,6 +30,18 @@ export const DEFAULT_SORT_OPTIONS = [
 	{ label: 'Recently Added', field: 'createdAt', order: 'desc' },
 	{ label: 'Oldest Added', field: 'createdAt', order: 'asc' }
 ];
+
+export const DEFAULT_NUMBER_DECIMALS = 2;
+export const NUMBER_FORMATS = ['PERCENTAGE', 'EUR', 'USD', 'GBP', 'JPY', 'CNY'];
+export const NUMBER_FORMAT_LABELS: Record<string, string> = {
+	NUMBER: 'Number',
+	PERCENTAGE: 'Percentage',
+	EUR: 'Euro (€)',
+	USD: 'US Dollar ($)',
+	GBP: 'British Pound (£)',
+	JPY: 'Japanese Yen (¥)',
+	CNY: 'Chinese Yuan (¥)'
+};
 
 export const DEFAULT_STRING_DELIMITER = '|';
 

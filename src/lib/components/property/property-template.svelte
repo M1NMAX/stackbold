@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { CheckSquare2, Square } from 'lucide-svelte';
 	import { PropertyType, type Color, type Property } from '@prisma/client';
-	import { PROPERTY_COLORS } from '$lib/constant/index.js';
-	import { tm, useId } from '$lib/utils/index.js';
-	import { getOption, hasOptions, PropertyIcon } from './index.js';
-	import { Tooltip } from '$lib/components/base/index.js';
+	import { getOption, hasOptions, useId } from '$lib/utils/index.js';
+	import { PropertyIcon } from './index.js';
+	import { Badge, MockCheckbox, Tooltip } from '$lib/components/base/index.js';
 
 	type Props = {
 		property: Property;
@@ -13,42 +11,23 @@
 	};
 
 	let { property, color, value }: Props = $props();
+
+	const tooltipId = useId(`template-prop-tooltip-${property.id}`);
 </script>
 
-{#if property.type === PropertyType.CHECKBOX}
-	<div
-		class={tm(
-			'h-6 flex items-center space-x-1 py-1 px-1.5 rounded-sm font-semibold [&_svg]:size-4',
-			PROPERTY_COLORS[color]
-		)}
-	>
-		{#if value === 'true'}
-			<CheckSquare2 />
-		{:else}
-			<Square />
-		{/if}
+<Badge id={tooltipId} {color} class="cursor-default">
+	{#if property.type === PropertyType.CHECKBOX}
+		<MockCheckbox checked={value === 'true'} />
+		{property.name}
+	{:else}
+		{@const result = hasOptions(property.type)
+			? (getOption(property.options, value)?.value ?? '')
+			: value}
+		{result.substring(0, 55)}
+	{/if}
+</Badge>
 
-		<span class="font-semibold">{property.name} </span>
-	</div>
-{:else}
-	{@const tooltipId = useId(`template-prop-tooltip-${property.id}`)}
-	{@const result = hasOptions(property.type)
-		? (getOption(property.options, value)?.value ?? '')
-		: value}
-	<span
-		id={tooltipId}
-		class={tm(
-			'h-6 flex items-center p-1.5 rounded-sm font-semibold truncate',
-			PROPERTY_COLORS[color]
-		)}
-	>
-		{#if property.type !== PropertyType.TEXT}
-			{result}
-		{:else}
-			{result.substring(0, 55)}
-		{/if}
-	</span>
-
+{#if property.type !== PropertyType.CHECKBOX}
 	<Tooltip triggerBy={tooltipId}>
 		<PropertyIcon key={property.type} class="size-4" />
 		<span>{property.name}</span>

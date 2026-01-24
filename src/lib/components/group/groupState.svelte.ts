@@ -47,7 +47,7 @@ export class GroupState {
 	async updGroup(args: RouterInputs['groups']['update']) {
 		const { id, ...rest } = args;
 
-		let target = this.getGroup(id);
+		const target = this.getGroup(id);
 		if (target == null) {
 			this.#toastState.error();
 			return;
@@ -63,7 +63,7 @@ export class GroupState {
 	}
 
 	async deleteGroup(id: string) {
-		let target = this.getGroup(id);
+		const target = this.getGroup(id);
 		if (target == null) {
 			this.#toastState.error();
 			return;

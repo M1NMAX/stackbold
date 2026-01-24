@@ -1,25 +1,25 @@
 <script lang="ts">
 	import Layout from 'lucide-svelte/icons/layout-dashboard';
-	import CheckSquare2 from 'lucide-svelte/icons/check-square-2';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import FileMinus from 'lucide-svelte/icons/file-minus';
 	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
-	import Square from 'lucide-svelte/icons/square';
 	import { Color, PropertyType, type Property } from '@prisma/client';
 	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
-	import { getOption, getPropertyColor, getPropertyState } from '$lib/components/property/index.js';
+	import { getPropertyState } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck } from '$lib/utils/index.js';
+	import { tm, noCheck, getPropertyColor, getOption } from '$lib/utils/index.js';
 	import {
 		Accordion,
 		AccordionItem,
+		Badge,
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
 		IconPicker,
+		MockCheckbox,
 		Shortcut,
 		TextareaAutosize,
 		Tooltip
@@ -36,7 +36,6 @@
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
 		MAX_COLLECTION_NAME_LENGTH,
-		PROPERTY_COLORS,
 		SCREEN_LG_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
@@ -393,22 +392,15 @@
 </aside>
 
 {#snippet groupLabel(key: string, property: Property, color: Color)}
-	<span
-		class={tm('h-6 flex items-center py-1 px-1.5 rounded-md font-semibold', PROPERTY_COLORS[color])}
-	>
+	<Badge {color}>
 		{#if property.type === PropertyType.CHECKBOX}
-			{#if key === 'true'}
-				<CheckSquare2 class="size-4 mr-1.5" />
-			{:else}
-				<Square class="size-4 mr-1.5 " />
-			{/if}
-
+			<MockCheckbox checked={key === 'true'} />
 			{property.name}
 		{:else}
 			{@const option = getOption(property.options, key)}
 			{option ? option.value : `No ${property.name}`}
 		{/if}
-	</span>
+	</Badge>
 {/snippet}
 
 {#snippet noItem()}

@@ -4,3 +4,4 @@ export * from './style';
 export * from './number';
 export * from './funs';
 export * from './file';
+export * from './property';

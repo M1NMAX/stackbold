@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { PROPERTY_COLORS } from '$lib/constant';
+	import { THEME_COLORS } from '$lib/constant';
 	import { Color, type Option } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
@@ -31,7 +31,7 @@
 	let value = $state(option.color as string);
 
 	let selectedKey = $derived.by(() => {
-		return (Object.keys(PROPERTY_COLORS).find((key) => key === value) as Color) ?? Color.GRAY;
+		return (Object.keys(THEME_COLORS).find((key) => key === value) as Color) ?? Color.GRAY;
 	});
 
 	const propertyState = getPropertyState();
@@ -90,13 +90,13 @@
 	})}
 >
 	{#snippet trigger()}
-		<span class={tm('size-4 rounded-md', PROPERTY_COLORS[selectedKey])}></span>
+		<span class={tm('size-4 rounded-md', THEME_COLORS[selectedKey])}></span>
 		<span class="grow text-start">{option.value}</span>
 		<ChevronRight />
 	{/snippet}
 
 	<div class="px-1 pb-1.5 md:px-0 md:pb-1.5">
-		<Label for={`${propertyId}-option-${option.id}`} class="md:sr-only font-semibold text-sm  ">
+		<Label for={`${propertyId}-option-${option.id}`} class="md:sr-only font-semibold text-sm">
 			{option.value}
 		</Label>
 		<input
@@ -111,21 +111,23 @@
 
 	<p class="py-1.5 px-2 text-sm font-semibold">Colors</p>
 	<RadioGroup {value} onchange={(value) => handleSelectColor(value)}>
-		{#each Object.entries(PROPERTY_COLORS) as [colorName, colorClasses]}
-			{@const id = useId(`property-option-color`)}
+		{#each Object.entries(THEME_COLORS) as [colorName, colorClasses]}
+			{#if colorName !== Color.SLATE}
+				{@const id = useId(`property-option-color`)}
 
-			<Label for={id} compact hoverEffect>
-				<span class={tm('size-4 rounded-md', colorClasses)}></span>
-				<span class="grow"> {capitalizeFirstLetter(colorName)}</span>
-				<RadioGroupItem {id} value={colorName} />
-			</Label>
+				<Label for={id} compact hoverEffect>
+					<span class={tm('size-4 rounded-md', colorClasses)}></span>
+					<span class="grow"> {capitalizeFirstLetter(colorName)}</span>
+					<RadioGroupItem {id} value={colorName} />
+				</Label>
+			{/if}
 		{/each}
 	</RadioGroup>
 
 	<HSeparator />
 
 	<Button theme="danger" variant="menu" onclick={() => deleteOption()}>
-		<Trash class="size-4" />
+		<Trash />
 		<span>Delete option </span>
 	</Button>
 </AdaptiveWrapper>

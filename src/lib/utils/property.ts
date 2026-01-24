@@ -1,17 +1,56 @@
 import {
+	Aggregator,
+	Color,
+	PropertyType,
+	type Item,
+	type Property,
+	type PropertyRef,
+	type View,
+	type Option
+} from '@prisma/client';
+import { formatNumber } from './index.js';
+import {
 	DEFAULT_STRING_DELIMITER,
 	NUMBERICAL_PROPERTY_TYPES,
 	PROPERTIES_WITH_LISTABLE_OPTIONS
 } from '$lib/constant/index.js';
-import type { SelectOption } from '$lib/types';
-import {
-	Color,
-	type Property,
-	type PropertyRef,
-	type Option,
-	PropertyType,
-	type View
-} from '@prisma/client';
+import type { SelectOption } from '$lib/types.js';
+
+export function aggregatePropertyValue(
+	aggregator: Aggregator,
+	targetProperty: Property,
+	items: Item[],
+	format: boolean = false
+) {
+	let result = 0;
+	if (aggregator === Aggregator.COUNT) result = items.length;
+	else if (aggregator === Aggregator.COUNT_EMPTY) {
+		result = items.reduce((acc, item) => {
+			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
+			if (propertyRef == null || propertyRef.value === '') return acc + 1;
+			return acc;
+		}, 0);
+	} else if (aggregator === Aggregator.COUNT_NOT_EMPTY) {
+		result = items.reduce((acc, item) => {
+			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
+			if (propertyRef && propertyRef.value !== '') return acc + 1;
+			return acc;
+		}, 0);
+	} else if (aggregator === Aggregator.SUM || aggregator === Aggregator.AVG) {
+		result = items.reduce((acc, curr) => {
+			const propertyRef = getPropertyRef(curr.properties, targetProperty.id);
+			const inc = propertyRef ? propertyRef.value : 0;
+			return acc + Number(inc);
+		}, 0);
+
+		if (aggregator === Aggregator.AVG) result = result / items.length;
+
+		return format
+			? formatNumber(result, targetProperty.format, targetProperty.decimals)
+			: result.toString();
+	}
+	return result.toString();
+}
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
@@ -59,12 +98,4 @@ export function joinMultiselectOptions(options: SelectOption[]) {
 export function separateMultiselectOptions(value: string) {
 	if (!value) return [];
 	return value.split(DEFAULT_STRING_DELIMITER);
-}
-
-export function joinFilesName(currentFiles: string[], newFile: string) {
-	return [...currentFiles, newFile].join(DEFAULT_STRING_DELIMITER);
-}
-
-export function extractFilenameFromUrl(url: string) {
-	return decodeURIComponent(url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('?')));
 }

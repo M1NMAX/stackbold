@@ -9,25 +9,27 @@
 	import X from 'lucide-svelte/icons/x';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { Aggregator, PropertyType, type Property } from '@prisma/client';
-	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
-		getPropertyState,
+		capitalizeFirstLetter,
 		hasOptions,
 		isPropertyNumerical,
-		PropertyIcon,
-		PropertyOption
-	} from './index.js';
+		tm,
+		useId
+	} from '$lib/utils/index.js';
+	import { getPropertyState, PropertyIcon, PropertyOption } from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
 		MIN_SEARCHABLE_PROPERTY_SELECT,
 		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
 		PROPERTIES_WITH_LISTABLE_OPTIONS,
 		PROPERTY_AGGREGATOR_LABELS,
-		PROPERTY_COLORS,
+		THEME_COLORS,
 		VALUE_NOT_DEFINED,
 		PROPERTY_UNIVERSAL_AGGREGATORS,
 		VALUE_NONE,
-		MAX_PROPERTY_NAME_LENGTH
+		MAX_PROPERTY_NAME_LENGTH,
+		NUMBER_FORMATS,
+		NUMBER_FORMAT_LABELS
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
@@ -153,11 +155,47 @@
 				id: option.id,
 				label: option.value,
 				isSelected: property.defaultValue === option.id,
-				theme: PROPERTY_COLORS[option.color]
+				theme: THEME_COLORS[option.color]
 			}))
 		);
 
 		return options;
+	}
+
+	function setupNumberFormatOptions() {
+		const options: SelectOption[] = [];
+
+		options.push({
+			id: '',
+			label: NUMBER_FORMAT_LABELS['NUMBER'],
+			isSelected: !property.format
+		});
+
+		options.push(
+			...NUMBER_FORMATS.map((format) => ({
+				id: format,
+				label: NUMBER_FORMAT_LABELS[format],
+				isSelected: property.format === format
+			}))
+		);
+		return options;
+	}
+
+	function setupNumberDecimalOptions() {
+		const decimalCounts = [0, 1, 2, 3, 4, 5];
+
+		return [
+			{
+				id: '',
+				label: 'Default',
+				isSelected: !property.decimals
+			},
+			...decimalCounts.map((n) => ({
+				id: n.toString(),
+				label: n.toString(),
+				isSelected: n === property.decimals
+			}))
+		];
 	}
 
 	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
@@ -282,6 +320,27 @@
 				{@render defaultValueSelector()}
 				<HSeparator />
 				{@render propertyOptions()}
+			{:else if property.type === PropertyType.NUMBER}
+				<Field>
+					<Label for={getIdPrefix('property-format')} name="Format" />
+					<Select
+						id={getIdPrefix('property-format')}
+						options={setupNumberFormatOptions()}
+						onselect={(opt) => updProperty({ id: property.id, format: opt.id || null })}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
+				<Field>
+					<Label for={getIdPrefix('property-decimals')} name="Decimals" />
+					<Select
+						id={getIdPrefix('property-decimals')}
+						options={setupNumberDecimalOptions()}
+						onselect={(opt) => updProperty({ id: property.id, decimals: +opt.id || null })}
+						placeholder="Empty"
+						searchable
+					/>
+				</Field>
 			{:else if property.type === PropertyType.RELATION}
 				<Field>
 					<Label for={getIdPrefix('property-target-collection')} name="Related to" />
