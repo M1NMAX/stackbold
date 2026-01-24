@@ -1,11 +1,9 @@
 <script lang="ts">
 	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
-	import Check from 'lucide-svelte/icons/check';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import ListCollapse from 'lucide-svelte/icons/list-collapse';
 	import ListFilter from 'lucide-svelte/icons/list-filter';
-	import Minus from 'lucide-svelte/icons/minus';
 	import MoveDown from 'lucide-svelte/icons/move-down';
 	import MoveUp from 'lucide-svelte/icons/move-up';
 	import Settings from 'lucide-svelte/icons/settings-2';
@@ -20,6 +18,7 @@
 		HSeparator,
 		Label,
 		MenuTitle,
+		MockCheckbox,
 		RadioGroup,
 		RadioGroupItem,
 		Switch,
@@ -218,7 +217,7 @@
 					{#each [true, false] as value}
 						{@const filterMenuCheckboxId = useId('filter-menu-checkbox')}
 						<Label for={filterMenuCheckboxId} compact hoverEffect>
-							{@render mockCheckbox(value)}
+							<MockCheckbox checked={value} />
 							<span class="grow font-semibold"> {value ? 'Checked' : 'Unchecked'} </span>
 
 							<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()}></RadioGroupItem>
@@ -324,7 +323,7 @@
 							class="font-semibold"
 							onclick={() => clearFilter(filter.id)}
 						>
-							{@render mockCheckbox(value === 'true')}
+							<MockCheckbox checked={value === 'true'} />
 							<span> {property.name} </span>
 							<X />
 						</Button>
@@ -392,16 +391,6 @@
 			</Button>
 		</div>
 	{/if}
-{/snippet}
-
-{#snippet mockCheckbox(value: boolean)}
-	<span class="p-[1px] rounded-sm bg-primary">
-		{#if value}
-			<Check class="size-3" />
-		{:else}
-			<Minus class="size-3" />
-		{/if}
-	</span>
 {/snippet}
 
 {#snippet activeSortRow(sort: Sort, name: string, key: PropertyType)}

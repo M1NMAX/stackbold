@@ -112,7 +112,7 @@
 	<p class="py-1.5 px-2 text-sm font-semibold">Colors</p>
 	<RadioGroup {value} onchange={(value) => handleSelectColor(value)}>
 		{#each Object.entries(THEME_COLORS) as [colorName, colorClasses]}
-			{#if colorName !== 'SLATE'}
+			{#if colorName !== Color.SLATE}
 				{@const id = useId(`property-option-color`)}
 
 				<Label for={id} compact hoverEffect>
