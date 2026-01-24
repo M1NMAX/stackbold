@@ -22,21 +22,22 @@ export function aggregatePropertyValue(
 	items: Item[],
 	format: boolean = false
 ) {
-	if (aggregator === Aggregator.COUNT) return items.length;
+	let result = 0;
+	if (aggregator === Aggregator.COUNT) result = items.length;
 	else if (aggregator === Aggregator.COUNT_EMPTY) {
-		return items.reduce((acc, item) => {
+		result = items.reduce((acc, item) => {
 			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
 			if (propertyRef == null || propertyRef.value === '') return acc + 1;
 			return acc;
 		}, 0);
 	} else if (aggregator === Aggregator.COUNT_NOT_EMPTY) {
-		return items.reduce((acc, item) => {
+		result = items.reduce((acc, item) => {
 			const propertyRef = getPropertyRef(item.properties, targetProperty.id);
 			if (propertyRef && propertyRef.value !== '') return acc + 1;
 			return acc;
 		}, 0);
 	} else if (aggregator === Aggregator.SUM || aggregator === Aggregator.AVG) {
-		let result = items.reduce((acc, curr) => {
+		result = items.reduce((acc, curr) => {
 			const propertyRef = getPropertyRef(curr.properties, targetProperty.id);
 			const inc = propertyRef ? propertyRef.value : 0;
 			return acc + Number(inc);
@@ -44,9 +45,11 @@ export function aggregatePropertyValue(
 
 		if (aggregator === Aggregator.AVG) result = result / items.length;
 
-		return format ? formatNumber(result, targetProperty.format, targetProperty.decimals) : result;
+		return format
+			? formatNumber(result, targetProperty.format, targetProperty.decimals)
+			: result.toString();
 	}
-	return '';
+	return result.toString();
 }
 
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
