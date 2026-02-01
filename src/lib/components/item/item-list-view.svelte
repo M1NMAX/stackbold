@@ -5,7 +5,7 @@
 <script lang="ts">
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import Check from 'lucide-svelte/icons/check';
-	import Pencil from 'lucide-svelte/icons/pencil';
+	import PencilLine from 'lucide-svelte/icons/pencil-line';
 	import { ItemMenu, getItemState } from './index.js';
 	import { PropertyValue, getPropertyState } from '$lib/components/property/index.js';
 	import { type Item, type View } from '@prisma/client';
@@ -19,6 +19,7 @@
 	import { Button } from '$lib/components/base/index.js';
 	import { escapeKeydown, enterKeydown, clickOutside } from '$lib/actions/index.js';
 	import { getPropertyRef, isPropertyVisible, tm } from '$lib/utils/index.js';
+	import type { ClickItemEvent } from '$lib/types.js';
 
 	type Props = {
 		view: View;
@@ -46,10 +47,6 @@
 		const name = targetEl.value;
 		updItemDebounced({ id, name });
 	}
-
-	type ClickItemEvent = MouseEvent & {
-		currentTarget: EventTarget & HTMLDivElement;
-	};
 
 	function onClickItemBody(e: ClickItemEvent, itemId: string) {
 		if (e.target === e.currentTarget || e.target === e.currentTarget.firstChild) {
@@ -109,7 +106,7 @@
 					oninput={handleOnInput}
 					onclickoutside={(e) => saveAndClose(e.target as HTMLInputElement)}
 					onclick={(e) => e.stopPropagation()}
-					class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-sm"
+					class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-md"
 				/>
 
 				<Button
@@ -130,7 +127,7 @@
 					class="absolute right-1 top-1 flex items-center gap-x-1 lg:invisible lg:group-hover:visible"
 				>
 					<Button theme="ghost" onclick={() => startEditing(item.id)}>
-						<Pencil />
+						<PencilLine />
 					</Button>
 					<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />
 				</div>

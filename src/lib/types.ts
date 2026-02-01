@@ -82,3 +82,7 @@ export type CollectionWithViews = Collection & {
 };
 
 export type OnChangeFn<T> = (value: T) => void;
+
+export type ClickItemEvent = MouseEvent & {
+	currentTarget: EventTarget & HTMLDivElement;
+};

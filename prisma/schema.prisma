@@ -50,6 +50,7 @@ enum Aggregator {
 enum ViewType {
   LIST  @map("list")
   TABLE @map("table")
+  BOARD @map("board")
 }
 
 enum SortType {

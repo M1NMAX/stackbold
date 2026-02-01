@@ -4,7 +4,7 @@
 	import FileMinus from 'lucide-svelte/icons/file-minus';
 	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
-	import { Color, PropertyType, type Property } from '@prisma/client';
+	import { Color, PropertyType, ViewType, type Property } from '@prisma/client';
 	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
 	import debounce from 'debounce';
@@ -319,7 +319,7 @@
 
 		{#if isEmpty || items.length === 0}
 			{@render noItem()}
-		{:else if !view.groupBy}
+		{:else if view.type === ViewType.BOARD || !view.groupBy}
 			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
 			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}

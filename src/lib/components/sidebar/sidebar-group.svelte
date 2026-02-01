@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
-	import Pencil from 'lucide-svelte/icons/pencil';
+	import PencilLine from 'lucide-svelte/icons/pencil-line';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Trash from 'lucide-svelte/icons/trash';
 	import MoreHorizontal from 'lucide-svelte/icons/more-horizontal';
@@ -122,7 +122,7 @@
 			</Button>
 
 			<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
-				<Pencil />
+				<PencilLine />
 				<span> Rename group </span>
 			</Button>
 

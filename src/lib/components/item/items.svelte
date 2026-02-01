@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type Item, type View, ViewType } from '@prisma/client';
-	import { ItemListView, ItemTableView } from './index.js';
+	import { ItemBoardView, ItemListView, ItemTableView } from './index.js';
 
 	type Props = {
 		view: View;
@@ -15,8 +15,10 @@
 	<div class="grow space-y-2">
 		{#if view.type === ViewType.TABLE}
 			<ItemTableView {view} {items} {...rest} />
-		{:else}
+		{:else if view.type === ViewType.LIST}
 			<ItemListView {view} {items} {...rest} />
+		{:else if view.type === ViewType.BOARD}
+			<ItemBoardView {view} {items} {...rest} />
 		{/if}
 	</div>
 {/if}
