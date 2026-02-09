@@ -4,22 +4,16 @@
 	import FileMinus from 'lucide-svelte/icons/file-minus';
 	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
-	import { Color, PropertyType, ViewType, type Property } from '@prisma/client';
-	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
-	import { getPropertyState } from '$lib/components/property/index.js';
+	import { Items, getItemState } from '$lib/components/item/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck, getPropertyColor, getOption } from '$lib/utils/index.js';
+	import { tm, noCheck } from '$lib/utils/index.js';
 	import {
-		Accordion,
-		AccordionItem,
-		Badge,
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
 		IconPicker,
-		MockCheckbox,
 		Shortcut,
 		TextareaAutosize,
 		Tooltip
@@ -58,7 +52,6 @@
 
 	const collectionState = getCollectionState();
 	const viewState = getViewState();
-	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	const sidebarState = getSidebarState();
 
@@ -319,25 +312,8 @@
 
 		{#if isEmpty || items.length === 0}
 			{@render noItem()}
-		{:else if view.type === ViewType.BOARD || !view.groupBy}
-			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
-			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}
-			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
-				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
-					{@const property = propertyState.getProperty(groupedItems[key].pid)}
-
-					{#if property}
-						{@const color = getPropertyColor(property, key)}
-						<AccordionItem id={`accordion-item-${key}`}>
-							{#snippet header()}
-								{@render groupLabel(key, property, color)}
-							{/snippet}
-							<Items {view} items={groupedItems[key].items} clickOpenItem={(id) => clickItem(id)} />
-						</AccordionItem>
-					{/if}
-				{/each}
-			</Accordion>
+			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{/if}
 	</PageContent>
 	<PageFooter class="flex">
@@ -390,18 +366,6 @@
 		<StructurePage data={noCheck(page.state)} />
 	{/if}
 </aside>
-
-{#snippet groupLabel(key: string, property: Property, color: Color)}
-	<Badge {color}>
-		{#if property.type === PropertyType.CHECKBOX}
-			<MockCheckbox checked={key === 'true'} />
-			{property.name}
-		{:else}
-			{@const option = getOption(property.options, key)}
-			{option ? option.value : `No ${property.name}`}
-		{/if}
-	</Badge>
-{/snippet}
 
 {#snippet noItem()}
 	{@const Icon = isEmpty ? FolderMinus : FileMinus}

@@ -1,4 +1,4 @@
-import type { Collection, Color } from '@prisma/client';
+import type { Collection, Color, Item } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
 import type {
 	BlurParams,
@@ -86,3 +86,5 @@ export type OnChangeFn<T> = (value: T) => void;
 export type ClickItemEvent = MouseEvent & {
 	currentTarget: EventTarget & HTMLDivElement;
 };
+
+export type ItemsGroup = Record<string, Item[]>;
