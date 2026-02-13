@@ -25,7 +25,7 @@
 	import debounce from 'debounce';
 	import { Button } from '$lib/components/base/index.js';
 	import { escapeKeydown, enterKeydown, clickOutside } from '$lib/actions/index.js';
-	import { getPropertyRef, isPropertyVisible, tm } from '$lib/utils/index.js';
+	import { getPropertyRef, isPropertyVisible, tm, useId } from '$lib/utils/index.js';
 	import type { ClickItemEvent } from '$lib/types.js';
 
 	type Props = {
@@ -37,6 +37,7 @@
 	let { view, item, clickOpenItem }: Props = $props();
 	let dragging = $state(false);
 
+	const id = useId(`ìtem-${item.id}-card-`);
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
 
@@ -82,8 +83,6 @@
 		dragging = false;
 	}
 
-	$inspect(dragging);
-
 	$effect(() => {
 		if (currentlyEditing) {
 			document.getElementById(currentlyEditing)?.focus();
@@ -109,7 +108,7 @@
 		dragging && 'text-blue-500'
 	)}
 >
-	{#if isCurrentlyEditing(item.id)}
+	{#if isCurrentlyEditing(id)}
 		<input
 			use:clickOutside
 			id={item.id}
@@ -139,7 +138,7 @@
 		<div
 			class="absolute right-1 top-1 flex items-center gap-x-1 lg:invisible lg:group-hover:visible"
 		>
-			<Button theme="ghost" onclick={() => startEditing(item.id)}>
+			<Button theme="ghost" onclick={() => startEditing(id)}>
 				<PencilLine />
 			</Button>
 			<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />

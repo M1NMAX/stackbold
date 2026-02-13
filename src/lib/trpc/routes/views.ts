@@ -26,7 +26,9 @@ const viewCreateSchema = z.object({
 	properties: z.array(viewPropertySchema).optional(),
 	filters: z.array(filterSchema).optional(),
 	sorts: z.array(sortSchema).optional(),
-	groupBy: z.string().nullish()
+	groupBy: z.string().nullish(),
+	hideEmptyGroups: z.boolean().nullish(),
+	hideItemCounts: z.boolean().nullish()
 });
 
 const viewUpdateSchema = viewCreateSchema.extend({ id: z.string() }).partial({
@@ -109,7 +111,7 @@ async function orderView(args: z.infer<typeof viewOrderSchema>) {
 		where: { collectionId: args.collectionId, order: args.start }
 	});
 
-	let promises: Promise<any>[] = [];
+	const promises: Promise<unknown>[] = [];
 
 	if (args.start < args.end) {
 		promises.push(

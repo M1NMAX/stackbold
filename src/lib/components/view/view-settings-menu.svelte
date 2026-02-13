@@ -89,6 +89,20 @@
 		await viewState.updView({ id: view.id, groupBy: value === '' ? null : value });
 	}
 
+	async function toggleViewHideEmptyGroups() {
+		await viewState.updView({
+			id: view.id,
+			hideEmptyGroups: view.hideEmptyGroups ? !view.hideEmptyGroups : true
+		});
+	}
+
+	async function toggleViewHideItemCounts() {
+		await viewState.updView({
+			id: view.id,
+			hideItemCounts: view.hideItemCounts ? !view.hideItemCounts : true
+		});
+	}
+
 	function getFilterValue(id: string) {
 		const target = view.filters.find((f) => f.id == id);
 		if (!target) return undefined;
@@ -290,6 +304,24 @@
 					<RadioGroupItem id="collection-group-by-none" value="" />
 				</Label>
 			</RadioGroup>
+			<HSeparator />
+			<div class="flex justify-between items-center pr-1">
+				<Label for={`view-${view.id}-hide-empty`} name="Hide empty groups" />
+				<Switch
+					id={`view-${view.id}-hide-empty`}
+					checked={view.hideEmptyGroups ?? false}
+					onchange={() => toggleViewHideEmptyGroups()}
+				/>
+			</div>
+
+			<div class="flex justify-between items-center pr-1">
+				<Label for={`view-${view.id}-hide-count`} name="Hide items count" />
+				<Switch
+					id={`view-${view.id}-hide-count`}
+					checked={view.hideItemCounts ?? false}
+					onchange={() => toggleViewHideItemCounts()}
+				/>
+			</div>
 		{:else}
 			{@render empty('Existing properties do not support grouping')}
 		{/if}

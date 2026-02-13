@@ -26,6 +26,11 @@
 
 	let { view, items, ...rest }: Props = $props();
 	const propertyState = getPropertyState();
+
+	function shouldRenderEmptyGroups(len: number) {
+		if (view.hideEmptyGroups) return len !== 0;
+		return true;
+	}
 </script>
 
 {#if items.length > 0}
@@ -42,25 +47,29 @@
 			{#if view.type === ViewType.BOARD}
 				<div class="flex gap-x-4 overflow-x-auto hd-scroll">
 					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
-						{@const color = getPropertyColor(targetProperty, key)}
+						{#if shouldRenderEmptyGroups(groupedItems[key].length)}
+							{@const color = getPropertyColor(targetProperty, key)}
 
-						<ItemBoardView {key} {view} items={groupedItems[key]} {...rest}>
-							{#snippet header()}
-								{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
-							{/snippet}
-						</ItemBoardView>
+							<ItemBoardView {key} {view} items={groupedItems[key]} {...rest}>
+								{#snippet header()}
+									{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
+								{/snippet}
+							</ItemBoardView>
+						{/if}
 					{/each}
 				</div>
 			{:else}
 				<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
 					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
-						{@const color = getPropertyColor(targetProperty, key)}
-						<AccordionItem id={`accordion-item-${key}`}>
-							{#snippet header()}
-								{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
-							{/snippet}
-							{@render itemView(groupedItems[key])}
-						</AccordionItem>
+						{#if shouldRenderEmptyGroups(groupedItems[key].length)}
+							{@const color = getPropertyColor(targetProperty, key)}
+							<AccordionItem id={`accordion-item-${key}`}>
+								{#snippet header()}
+									{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
+								{/snippet}
+								{@render itemView(groupedItems[key])}
+							</AccordionItem>
+						{/if}
 					{/each}
 				</Accordion>
 			{/if}
@@ -90,6 +99,8 @@
 			{/if}
 		</Badge>
 
-		<span class="text-sm font-semibold"> {count} </span>
+		{#if !view.hideItemCounts}
+			<span class="text-sm font-semibold"> {count} </span>
+		{/if}
 	</div>
 {/snippet}

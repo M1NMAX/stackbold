@@ -166,19 +166,21 @@ model Collection {
 }
 
 model View {
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  shortId      Int
-  collection   Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId String         @db.ObjectId
-  name         String
-  type         ViewType       @default(LIST)
-  order        Int            @default(0)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  properties   ViewProperty[]
-  filters      Filter[]
-  sorts        Sort[]
-  groupBy      String?
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  shortId         Int
+  collection      Collection     @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId    String         @db.ObjectId
+  name            String
+  type            ViewType       @default(LIST)
+  order           Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  properties      ViewProperty[]
+  filters         Filter[]
+  sorts           Sort[]
+  groupBy         String?
+  hideEmptyGroups Boolean? // groupBy exclusive
+  hideItemCounts  Boolean? // groupBy exclusive
 
   @@unique([collectionId, shortId])
   @@index([collectionId, order])
