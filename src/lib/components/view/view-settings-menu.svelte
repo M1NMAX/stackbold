@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Icon } from 'lucide-svelte';
 	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Eraser from 'lucide-svelte/icons/eraser';
@@ -24,7 +25,14 @@
 		Switch,
 		Tooltip
 	} from '$lib/components/base/index.js';
-	import { PropertyType, SortType, type Filter, type Sort, type View } from '@prisma/client';
+	import {
+		PropertyType,
+		SortType,
+		ViewType,
+		type Filter,
+		type Sort,
+		type View
+	} from '@prisma/client';
 	import { getPropertyState, PropertyIcon } from '$lib/components/property/index.js';
 	import { getViewState, isFilterSeletect, toggleFilter } from './index.js';
 	import {
@@ -47,9 +55,29 @@
 		view: View;
 	};
 
-	type ContentType = Nullable<'filter' | 'filter-property' | 'sort' | 'group' | 'visibility'>;
+	const CONTENT_OPTIONS = {
+		FILTER: 'FILTER',
+		FILTER_PROPERTY: 'FILTER_PROPERTY',
+		SORT: 'SORT',
+		GROUP: 'GROUP',
+		VISIBILITY: 'VISIBILITY'
+	} as const;
+
+	type ContentType = Nullable<(typeof CONTENT_OPTIONS)[keyof typeof CONTENT_OPTIONS]>;
+	type MenuItem = {
+		label: string;
+		value: ContentType;
+		icon: typeof Icon;
+	};
 
 	let { view }: Props = $props();
+
+	const MENU_ITEMS: MenuItem[] = [
+		{ label: 'Property visibility', value: CONTENT_OPTIONS.VISIBILITY, icon: ToggleRight },
+		{ label: 'Filter', value: CONTENT_OPTIONS.FILTER, icon: ListFilter },
+		{ label: 'Sort', value: CONTENT_OPTIONS.SORT, icon: ArrowDownUp },
+		{ label: 'Group', value: CONTENT_OPTIONS.GROUP, icon: ListCollapse }
+	];
 
 	const id = useId();
 	const menuState = new ModalState();
@@ -167,26 +195,13 @@
 	{#if !content}
 		<MenuTitle title="View settings" />
 
-		<Button theme="ghost" variant="menu" onclick={() => (content = 'visibility')}>
-			<ToggleRight />
-			<span> Property visibility </span>
-		</Button>
-
-		<Button theme="ghost" variant="menu" onclick={() => (content = 'filter')}>
-			<ListFilter />
-			<span> Filter </span>
-		</Button>
-
-		<Button theme="ghost" variant="menu" onclick={() => (content = 'sort')}>
-			<ArrowDownUp />
-			<span> Sort </span>
-		</Button>
-
-		<Button theme="ghost" variant="menu" onclick={() => (content = 'group')}>
-			<ListCollapse />
-			<span> Group </span>
-		</Button>
-	{:else if content === 'visibility'}
+		{#each MENU_ITEMS as item (item.value)}
+			<Button theme="ghost" variant="menu" onclick={() => (content = item.value)}>
+				<item.icon />
+				<span> {item.label} </span>
+			</Button>
+		{/each}
+	{:else if content === CONTENT_OPTIONS.VISIBILITY}
 		{@render header('Properties')}
 		{#each propertyState.properties as property}
 			<div draggable="true" class="flex justify-between items-center pr-1">
@@ -198,7 +213,7 @@
 				/>
 			</div>
 		{/each}
-	{:else if content === 'filter'}
+	{:else if content === CONTENT_OPTIONS.FILTER}
 		{@render header('Filters')}
 		{@render activeFilters()}
 
@@ -208,7 +223,7 @@
 				variant="menu"
 				onclick={() => {
 					filterSelectedProperty = property;
-					content = 'filter-property';
+					content = CONTENT_OPTIONS.FILTER_PROPERTY;
 				}}
 			>
 				<PropertyIcon key={property.type} />
@@ -217,8 +232,8 @@
 		{:else}
 			{@render empty('Existing properties do not support filters')}
 		{/each}
-	{:else if content === 'filter-property'}
-		{@render header(`${filterSelectedProperty.name} is`, 'filter')}
+	{:else if content === CONTENT_OPTIONS.FILTER_PROPERTY}
+		{@render header(`${filterSelectedProperty.name} is`, CONTENT_OPTIONS.FILTER)}
 		{#if filterSelectedProperty.type === PropertyType.CHECKBOX}
 			{@const currValue = getFilterValue(filterSelectedProperty.id)}
 			{#key currValue}
@@ -259,7 +274,7 @@
 			{/each}
 		{/if}
 		{@render clearBtn(filterSelectedProperty.id)}
-	{:else if content === 'sort'}
+	{:else if content === CONTENT_OPTIONS.SORT}
 		{@render header('Sort by')}
 		{@render activeSorts()}
 		{#if !isSort(NAME_FIELD)}
@@ -285,11 +300,19 @@
 				</Button>
 			{/if}
 		{/each}
-	{:else if content === 'group'}
+	{:else if content === CONTENT_OPTIONS.GROUP}
 		{@render header('Group By')}
 
 		{#if properties.length > 0}
 			<RadioGroup value={view.groupBy ?? ''} onchange={updViewGroupBy}>
+				{#if view.type !== ViewType.BOARD}
+					<Label for="collection-group-by-none" compact hoverEffect>
+						<PropertyIcon key="none" />
+						<span class="grow">{VALUE_NONE}</span>
+						<RadioGroupItem id="collection-group-by-none" value="" />
+					</Label>
+				{/if}
+
 				{#each properties as property (property.id)}
 					{@const id = useId(`group-by-${property.id}`)}
 					<Label for={id} compact hoverEffect>
@@ -298,11 +321,6 @@
 						<RadioGroupItem {id} value={property.id} />
 					</Label>
 				{/each}
-				<Label for="collection-group-by-none" compact hoverEffect>
-					<PropertyIcon key="none" />
-					<span class="grow">{VALUE_NONE}</span>
-					<RadioGroupItem id="collection-group-by-none" value="" />
-				</Label>
 			</RadioGroup>
 			<HSeparator />
 			<div class="flex justify-between items-center pr-1">
