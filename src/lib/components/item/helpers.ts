@@ -6,10 +6,10 @@ import { PropertyType, type Item, type Property } from '@prisma/client';
 export function getInitialItemsGroup(property: Property) {
 	if (!FILTERABLE_PROPERTY_TYPES.includes(property.type)) return {};
 
-	let keys = [...property.options.map((o) => o.id), ''];
+	let keys = ['', ...property.options.map((o) => o.id)];
 
 	if (property.type === PropertyType.CHECKBOX) {
-		keys = ['true', 'false'];
+		keys = ['false', 'true'];
 	}
 
 	const groups: ItemsGroup = {};
