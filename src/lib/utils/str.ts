@@ -1,3 +1,5 @@
+import { TRPCClientError } from '@trpc/client';
+
 export function capitalizeFirstLetter(text: string) {
 	return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
@@ -30,4 +32,9 @@ export function truncateDomain(url: string, maxLength: number) {
 	} catch {
 		return truncateTextEnd(url, maxLength);
 	}
+}
+
+export function getTRPCErrorMsg(error: unknown) {
+	if (!(error instanceof TRPCClientError)) return null;
+	return error.message;
 }

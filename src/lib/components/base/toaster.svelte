@@ -19,14 +19,14 @@
 	const toastState = getToastState();
 </script>
 
-<div class="fixed top-10 z-[100] flex flex-col flex-wrap content-center gap-2 w-full">
+<div class="fixed top-4 z-[100] flex flex-col flex-wrap content-center gap-2 w-full px-2">
 	{#each toastState.toasts as toast (toast.id)}
 		<div
 			in:slide={{ duration: 150 }}
 			out:fade={{ duration: 150 }}
 			animate:flip={{ duration: 150 }}
 			class={tm(
-				'min-w-[18rem] max-w-xs md:md-w-lg flex justify-between items-center space-x-2.5 p-2 rounded-lg shadow-lg group',
+				'min-w-[18rem] max-w-md md:md-w-lg flex justify-between items-center space-x-2.5 p-2 rounded-lg shadow-lg group [&_svg]:size-6 [&_svg]:shrink-0',
 				toast.type === 'success' && 'bg-green-50 dark:bg-green-800 text-green-500 dark:text-white',
 				toast.type === 'error' && 'bg-red-200 dark:bg-red-800 text-red-600 dark:text-red-100',
 				toast.type === 'warning' && 'bg-amber-100 dark:bg-amber-600 text-amber-600 dark:text-white',
@@ -36,14 +36,14 @@
 		>
 			{#if toast.type === 'success'}
 				<CircleCheck
-					class="size-6 stroke-green-50 dark:stroke-green-800 fill-green-500 dark:fill-green-500"
+					class="stroke-green-50 dark:stroke-green-800 fill-green-500 dark:fill-green-500"
 				/>
 			{:else if toast.type === 'error'}
-				<CircleAlert class="size-6" />
+				<CircleAlert />
 			{:else if toast.type === 'warning'}
-				<TriangleAlert class="size-6 " />
+				<TriangleAlert />
 			{:else if toast.type === 'loading'}
-				<Loader class="size-6 animate-spin" />
+				<Loader class="animate-spin" />
 			{/if}
 			<span class="grow text-sm font-medium">
 				{toast.message}
@@ -51,7 +51,7 @@
 
 			{#if dismissable || !['action', 'loading'].includes(toast.type)}
 				<button onclick={() => toastState.remove(toast.id)}>
-					<X class="size-4" />
+					<X class="size-4!" />
 				</button>
 			{/if}
 

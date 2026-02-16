@@ -23,7 +23,7 @@ export function getInitialItemsGroup(property: Property) {
 export function groupItemsByPropertyValue(pid: string) {
 	return function (groups: ItemsGroup, item: Item) {
 		const ref = getPropertyRef(item.properties, pid);
-		const key = ref ? ref.value : '';
+		const key = getFallbackKey(Object.keys(groups), ref ? ref.value : '');
 
 		let keys = [key];
 		if (key.includes(DEFAULT_STRING_DELIMITER)) {
@@ -37,4 +37,10 @@ export function groupItemsByPropertyValue(pid: string) {
 
 		return groups;
 	};
+}
+
+function getFallbackKey(keys: string[], key: string) {
+	if (keys.includes(key)) return key;
+	if (!keys.includes('')) return keys[0];
+	return key;
 }

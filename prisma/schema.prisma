@@ -179,8 +179,8 @@ model View {
   filters         Filter[]
   sorts           Sort[]
   groupBy         String?
-  hideEmptyGroups Boolean? // groupBy exclusive
-  hideItemCounts  Boolean? // groupBy exclusive
+  hideEmptyGroups Boolean? // GroupBy exclusive
+  hideItemCounts  Boolean? // GroupBy exclusive
 
   @@unique([collectionId, shortId])
   @@index([collectionId, order])

@@ -48,7 +48,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class={tm(
-		'min-w-96 h-fit flex flex-col items-start gap-2 p-2 rounded-md bg-secondary/30',
+		'min-w-96 max-w-2xl h-fit flex flex-col items-start gap-2 p-2 rounded-md bg-secondary/30',
 		dragover && 'bg-secondary/60'
 	)}
 	{ondrop}

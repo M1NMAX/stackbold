@@ -115,6 +115,11 @@ export const FILTERABLE_PROPERTY_TYPES: PropertyType[] = [
 	PropertyType.CHECKBOX
 ];
 
+export const GROUPABLE_PROPERTY_TYPES: PropertyType[] = [
+	...PROPERTIES_THAT_USE_SELECTOR,
+	PropertyType.CHECKBOX
+];
+
 export const PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE: PropertyType[] = [
 	...PROPERTIES_THAT_USE_SELECTOR,
 	PropertyType.CHECKBOX

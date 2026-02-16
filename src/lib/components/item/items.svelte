@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Help from 'lucide-svelte/icons/circle-help';
 	import {
 		Color,
 		type Item,
@@ -14,9 +15,16 @@
 		ItemListView,
 		ItemTableView
 	} from './index.js';
-	import { Accordion, AccordionItem, Badge, MockCheckbox } from '$lib/components/base/index.js';
-	import { getOption, getPropertyColor } from '$lib/utils/index.js';
+	import {
+		Accordion,
+		AccordionItem,
+		Badge,
+		MockCheckbox,
+		Tooltip
+	} from '$lib/components/base/index.js';
+	import { capitalizeFirstLetter, getOption, getPropertyColor } from '$lib/utils/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
+	import { GROUPABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
 
 	type Props = {
 		view: View;
@@ -83,6 +91,20 @@
 			<ItemTableView {view} {items} {...rest} />
 		{:else if view.type === ViewType.LIST}
 			<ItemListView {view} {items} {...rest} />
+		{:else if view.type === ViewType.BOARD}
+			<ItemBoardView key="" {view} {items} {...rest}>
+				{#snippet header()}
+					<div class="w-full flex justify-center items-center gap-x-2">
+						<span> This collection does not contain properties that support grouping </span>
+						<Help id="help-id" />
+						<Tooltip triggerBy="help-id">
+							Grouping properties:
+							<br />
+							{GROUPABLE_PROPERTY_TYPES.map((p) => capitalizeFirstLetter(p)).join(', ')}
+						</Tooltip>
+					</div>
+				{/snippet}
+			</ItemBoardView>
 		{/if}
 	</div>
 {/snippet}

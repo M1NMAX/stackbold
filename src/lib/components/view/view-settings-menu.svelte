@@ -44,6 +44,7 @@
 	} from '$lib/utils/index.js';
 	import {
 		FILTERABLE_PROPERTY_TYPES,
+		GROUPABLE_PROPERTY_TYPES,
 		NAME_FIELD,
 		THEME_COLORS,
 		VALUE_NONE
@@ -114,7 +115,7 @@
 	async function updViewGroupBy(value: string) {
 		menuState.close();
 		content = null;
-		await viewState.updView({ id: view.id, groupBy: value === '' ? null : value });
+		await viewState.updView({ id: view.id, groupBy: value ?? null });
 	}
 
 	async function toggleViewHideEmptyGroups() {
@@ -301,9 +302,13 @@
 			{/if}
 		{/each}
 	{:else if content === CONTENT_OPTIONS.GROUP}
+		{@const groupableProperties = propertyState.properties.filter((p) =>
+			GROUPABLE_PROPERTY_TYPES.includes(p.type)
+		)}
+
 		{@render header('Group By')}
 
-		{#if properties.length > 0}
+		{#if groupableProperties.length > 0}
 			<RadioGroup value={view.groupBy ?? ''} onchange={updViewGroupBy}>
 				{#if view.type !== ViewType.BOARD}
 					<Label for="collection-group-by-none" compact hoverEffect>
@@ -313,7 +318,7 @@
 					</Label>
 				{/if}
 
-				{#each properties as property (property.id)}
+				{#each groupableProperties as property (property.id)}
 					{@const id = useId(`group-by-${property.id}`)}
 					<Label for={id} compact hoverEffect>
 						<PropertyIcon key={property.type} />

@@ -1,3 +1,4 @@
+import { GROUPABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
 import { prisma } from '$lib/server/prisma';
 import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { SortType, ViewType } from '@prisma/client';
@@ -22,7 +23,7 @@ const viewPropertySchema = z.object({
 const viewCreateSchema = z.object({
 	collectionId: z.string(),
 	name: z.string(),
-	type: z.enum(ViewType).optional(),
+	type: z.enum(ViewType),
 	properties: z.array(viewPropertySchema).optional(),
 	filters: z.array(filterSchema).optional(),
 	sorts: z.array(sortSchema).optional(),
@@ -33,7 +34,8 @@ const viewCreateSchema = z.object({
 
 const viewUpdateSchema = viewCreateSchema.extend({ id: z.string() }).partial({
 	collectionId: true,
-	name: true
+	name: true,
+	type: true
 });
 
 const viewOrderSchema = z.object({
@@ -73,21 +75,31 @@ async function listViews(collectionId: string) {
 	});
 }
 
-async function createView(args: z.infer<typeof viewCreateSchema>) {
-	const [result, properties] = await Promise.all([
+async function createView(view: z.infer<typeof viewCreateSchema>) {
+	const [aggregate, properties] = await Promise.all([
 		prisma.view.aggregate({
-			where: { collectionId: args.collectionId },
+			where: { collectionId: view.collectionId },
 			_count: true,
 			_max: { shortId: true }
 		}),
-		prisma.property.findMany({ where: { collectionId: args.collectionId } })
+		prisma.property.findMany({ where: { collectionId: view.collectionId } })
 	]);
+
+	let groupBy = view.groupBy;
+
+	if (view.type === ViewType.BOARD) {
+		const groupableProperties = properties.filter((p) => GROUPABLE_PROPERTY_TYPES.includes(p.type));
+		if (groupableProperties.length !== 0) {
+			groupBy = groupableProperties[0].id;
+		}
+	}
 
 	return await prisma.view.create({
 		data: {
-			...args,
-			shortId: (result._max.shortId || 0) + 1,
-			order: result._count + 1,
+			...view,
+			groupBy,
+			shortId: (aggregate._max.shortId || 0) + 1,
+			order: aggregate._count + 1,
 			filters: [],
 			properties: properties.map((prop) => ({
 				id: prop.id,
@@ -97,12 +109,30 @@ async function createView(args: z.infer<typeof viewCreateSchema>) {
 	});
 }
 
-async function updView(args: z.infer<typeof viewUpdateSchema>) {
-	const { id, ...rest } = args;
+async function updView(view: z.infer<typeof viewUpdateSchema>) {
+	const { id, ...rest } = view;
+
+	const storedView = await prisma.view.findUnique({
+		where: { id },
+		select: { groupBy: true, collectionId: true }
+	});
+	if (!storedView) throw new TRPCError({ code: 'BAD_REQUEST', message: 'View not found' });
+
+	let groupBy = view.groupBy;
+	if (!storedView.groupBy && view.type && view.type === ViewType.BOARD) {
+		const property = await prisma.property.findFirst({
+			where: {
+				collectionId: storedView.collectionId,
+				type: { in: GROUPABLE_PROPERTY_TYPES }
+			}
+		});
+
+		if (property) groupBy = property.id;
+	}
 
 	return await prisma.view.update({
 		where: { id },
-		data: { ...rest }
+		data: { ...rest, groupBy }
 	});
 }
 
