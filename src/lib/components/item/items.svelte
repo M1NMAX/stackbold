@@ -53,18 +53,19 @@
 			)}
 
 			{#if view.type === ViewType.BOARD}
-				<div class="flex gap-x-4 overflow-x-auto hd-scroll">
-					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
-						{#if shouldRenderEmptyGroups(groupedItems[key].length)}
-							{@const color = getPropertyColor(targetProperty, key)}
-
-							<ItemBoardView {key} {view} items={groupedItems[key]} {...rest}>
-								{#snippet header()}
-									{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
-								{/snippet}
-							</ItemBoardView>
-						{/if}
-					{/each}
+				<div class="grow space-y-2">
+					<div class="h-full flex gap-x-4 pb-4 overflow-x-auto">
+						{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
+							{#if shouldRenderEmptyGroups(groupedItems[key].length)}
+								{@const color = getPropertyColor(targetProperty, key)}
+								<ItemBoardView {key} {view} items={groupedItems[key]} {...rest}>
+									{#snippet header()}
+										{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
+									{/snippet}
+								</ItemBoardView>
+							{/if}
+						{/each}
+					</div>
 				</div>
 			{:else}
 				<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
