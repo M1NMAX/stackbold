@@ -1,16 +1,16 @@
 <script module>
-	let currentlyEditing = $state('');
+	let editing = $state('');
 
-	function isCurrentlyEditing(id: string) {
-		return currentlyEditing === id;
+	function isEditing(id: string) {
+		return editing === id;
 	}
 
 	function startEditing(id: string) {
-		currentlyEditing = id;
+		editing = id;
 	}
 
 	function stopEditing() {
-		currentlyEditing = '';
+		editing = '';
 	}
 </script>
 
@@ -25,7 +25,7 @@
 	import debounce from 'debounce';
 	import { Button } from '$lib/components/base/index.js';
 	import { escapeKeydown, enterKeydown, clickOutside } from '$lib/actions/index.js';
-	import { getPropertyRef, isPropertyVisible, tm } from '$lib/utils/index.js';
+	import { getPropertyRef, isPropertyVisible, tm, useId } from '$lib/utils/index.js';
 	import type { ClickItemEvent } from '$lib/types.js';
 
 	type Props = {
@@ -36,9 +36,9 @@
 
 	let { view, item, clickOpenItem }: Props = $props();
 	const draggable = $derived.by(() => view.type === ViewType.BOARD && view.groupBy != null);
-
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
+	const itemInputId = useId('item-input-id');
 
 	const updItemDebounced = debounce(updItem, DEBOUNCE_INTERVAL);
 	async function updItem(args: RouterInputs['items']['update']) {
@@ -79,9 +79,8 @@
 	}
 
 	$effect(() => {
-		if (currentlyEditing) {
-			document.getElementById(currentlyEditing)?.focus();
-		}
+		if (!editing) return;
+		document.getElementById(editing)?.focus();
 	});
 </script>
 
@@ -92,8 +91,8 @@
 	role="button"
 	use:escapeKeydown
 	use:enterKeydown
-	onescapekey={(e) => saveAndClose(e.currentTarget as HTMLInputElement)}
-	onenterkey={(e) => saveAndClose(e.currentTarget as HTMLInputElement)}
+	onescapekey={(e) => saveAndClose(e.target as HTMLInputElement)}
+	onenterkey={(e) => saveAndClose(e.target as HTMLInputElement)}
 	{onclick}
 	{ondragstart}
 	class={tm(
@@ -101,10 +100,10 @@
 		item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 	)}
 >
-	{#if isCurrentlyEditing(item.id)}
+	{#if isEditing(itemInputId)}
 		<input
 			use:clickOutside
-			id={item.id}
+			id={itemInputId}
 			data-id={item.id}
 			value={item.name}
 			maxlength={MAX_ITEM_NAME_LENGTH}
@@ -114,14 +113,7 @@
 			class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-md"
 		/>
 
-		<Button
-			theme="ghost"
-			onclick={() => {
-				const target = document.getElementById(item.id) as HTMLInputElement;
-				saveAndClose(target);
-			}}
-			class="absolute right-1"
-		>
+		<Button theme="ghost" type="button" class="absolute right-1">
 			<Check />
 		</Button>
 	{:else}
@@ -131,7 +123,7 @@
 		<div
 			class="absolute right-1 top-1 flex items-center gap-x-1 lg:invisible lg:group-hover:visible"
 		>
-			<Button theme="ghost" onclick={() => startEditing(item.id)}>
+			<Button theme="ghost" onclick={() => startEditing(itemInputId)}>
 				<PencilLine />
 			</Button>
 			<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />
