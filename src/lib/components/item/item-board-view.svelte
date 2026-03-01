@@ -13,9 +13,10 @@
 		items: Item[];
 		clickOpenItem: (id: string) => void;
 		header: Snippet;
+		scrollTop: number;
 	};
 
-	let { key, view, items, clickOpenItem, header }: Props = $props();
+	let { key, view, items, clickOpenItem, header, scrollTop }: Props = $props();
 
 	let multiplier = $state(1);
 	let dragover = $state(false);
@@ -26,8 +27,6 @@
 	function ondragover(e: DragEvent) {
 		e.preventDefault();
 		dragover = true;
-		const target = e.target as HTMLDivElement;
-		target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'start' });
 	}
 
 	function ondragleave(e: DragEvent) {
@@ -47,22 +46,48 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class={tm(
-		'min-w-96 grow h-fit flex flex-col items-start gap-2 p-2 rounded-md bg-secondary/30',
-		dragover && 'bg-secondary/60'
-	)}
+	class={tm('h-full min-w-96 grow flex flex-col rounded-md', dragover && 'bg-secondary/30')}
 	{ondrop}
 	{ondragover}
 	{ondragleave}
 >
-	{@render header()}
-	{#each items.slice(0, renderLimit) as item (item.id)}
-		<ItemCard {item} {view} {clickOpenItem} />
-	{/each}
-	{#if items.length > renderLimit}
-		<Button theme="ghost" variant="menu" class="justify-center" onclick={() => (multiplier += 1)}>
-			<ArrowDown />
-			Load more
-		</Button>
+	<div
+		class={tm(
+			'z-10 w-full p-2 rounded-md bg-secondary/20',
+			scrollTop > 120 && 'bg-secondary',
+			items.length > 0 && 'rounded-b-none'
+		)}
+		style="transform: translateY({Math.max(0, scrollTop - 126)}px)"
+	>
+		{@render header()}
+		{#if scrollTop > 120}
+			<div
+				class="absolute -top-[200px] left-0 -z-10 w-full h-[200px] bg-secondary rounded-md"
+			></div>
+		{/if}
+	</div>
+
+	{#if items.length > 0}
+		<div
+			class={tm(
+				'relative z-0 h-fit w-full flex flex-col items-start gap-2 px-2 pb-2 rounded-md rounded-t-none bg-secondary/20',
+				scrollTop > 120 && 'pt-4'
+			)}
+		>
+			{#each items.slice(0, renderLimit) as item (item.id)}
+				<ItemCard {item} {view} {clickOpenItem} />
+			{/each}
+			{#if items.length > renderLimit}
+				<Button
+					theme="ghost"
+					variant="menu"
+					class="justify-center"
+					onclick={() => (multiplier += 1)}
+				>
+					<ArrowDown />
+					Load more
+				</Button>
+			{/if}
+		</div>
 	{/if}
 </div>

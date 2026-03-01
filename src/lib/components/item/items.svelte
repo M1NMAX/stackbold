@@ -29,10 +29,11 @@
 	type Props = {
 		view: View;
 		items: Item[];
+		scrollTop: number;
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { view, items, ...rest }: Props = $props();
+	let { view, items, scrollTop, ...rest }: Props = $props();
 	const propertyState = getPropertyState();
 
 	function shouldRenderEmptyGroups(len: number) {
@@ -58,7 +59,7 @@
 						{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 							{#if shouldRenderEmptyGroups(groupedItems[key].length)}
 								{@const color = getPropertyColor(targetProperty, key)}
-								<ItemBoardView {key} {view} items={groupedItems[key]} {...rest}>
+								<ItemBoardView {key} {view} {scrollTop} items={groupedItems[key]} {...rest}>
 									{#snippet header()}
 										{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
 									{/snippet}
@@ -93,7 +94,7 @@
 		{:else if view.type === ViewType.LIST}
 			<ItemListView {view} {items} {...rest} />
 		{:else if view.type === ViewType.BOARD}
-			<ItemBoardView key="" {view} {items} {...rest}>
+			<ItemBoardView key="" {scrollTop} {view} {items} {...rest}>
 				{#snippet header()}
 					<div class="w-full flex justify-center items-center gap-x-2">
 						<span> This collection does not contain properties that support grouping </span>

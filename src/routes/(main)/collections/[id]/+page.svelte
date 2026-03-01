@@ -59,6 +59,7 @@
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 	const isEmpty = $derived(isCollectionEmpty());
 
+	let scrollTop = $state(0);
 	let search = $state('');
 
 	let items = $derived.by(() => {
@@ -119,6 +120,7 @@
 
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
+		scrollTop = targetEl.scrollTop;
 
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
@@ -313,7 +315,12 @@
 		{#if isEmpty || items.length === 0}
 			{@render noItem()}
 		{:else}
-			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
+			<Items
+				{view}
+				{items}
+				scrollTop={isLargeScreen.current ? scrollTop : 0}
+				clickOpenItem={(id) => clickItem(id)}
+			/>
 		{/if}
 	</PageContent>
 	<PageFooter class="flex">
