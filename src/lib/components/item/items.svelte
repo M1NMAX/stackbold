@@ -97,7 +97,7 @@
 			<ItemBoardView key="" {scrollTop} {view} {items} {...rest}>
 				{#snippet header()}
 					<div class="w-full flex justify-center items-center gap-x-2">
-						<span> This collection does not contain properties that support grouping </span>
+						<span> No grouping properties have been selected for this view </span>
 						<Help id="help-id" />
 						<Tooltip triggerBy="help-id">
 							Grouping properties:
