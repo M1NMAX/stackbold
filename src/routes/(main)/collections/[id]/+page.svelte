@@ -238,7 +238,7 @@
 </script>
 
 <svelte:head>
-	<title>{collection.name} - Stackbold</title>
+	<title>{collection && collection.name} - Stackbold</title>
 </svelte:head>
 
 <PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>

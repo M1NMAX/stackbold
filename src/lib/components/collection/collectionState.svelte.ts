@@ -108,7 +108,7 @@ export class CollectionState {
 		}
 	}
 
-	async deleteCollection(id: string) {
+	async deleteCollection(id: string, active: boolean = false) {
 		const target = this.getCollection(id);
 		if (!target) {
 			this.#toastState.error();
@@ -118,11 +118,10 @@ export class CollectionState {
 		try {
 			this.#removeCollection(id);
 			await trpc().collections.delete.mutate(id);
-			this.#toastState.success(`Collection [${target.name}] deleted successfully`);
-
 			localStorage.removeItem(`collection-${id}-view`);
 
-			if (history.length === 1) await goto('/collections');
+			if (!active) return;
+			if (history.length === 1) history.replaceState(null, '', '/collections');
 			else history.back();
 		} catch (err) {
 			this.#toastState.error();

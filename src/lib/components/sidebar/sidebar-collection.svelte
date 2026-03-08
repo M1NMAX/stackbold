@@ -141,12 +141,12 @@
 
 		<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
 			<PencilLine />
-			<span> Rename collection </span>
+			<span> Rename </span>
 		</Button>
 
 		<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
 			<CornerUpRight />
-			<span>Move collection</span>
+			<span>Move</span>
 		</Button>
 
 		<Button
@@ -158,7 +158,7 @@
 			}}
 		>
 			<Copy />
-			<span>Duplicate collection </span>
+			<span>Duplicate </span>
 		</Button>
 
 		<HSeparator />
@@ -172,7 +172,7 @@
 			}}
 		>
 			<Trash />
-			<span>Delete collection </span>
+			<span>Delete</span>
 		</Button>
 	</AdaptiveWrapper>
 {/snippet}
