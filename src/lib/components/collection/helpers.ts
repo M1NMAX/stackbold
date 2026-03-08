@@ -1,16 +1,17 @@
+import { DEFAULT_COLLECTION_SHORT_VIEW_ID } from '$lib/constant/index.js';
 import type { CollectionWithViews } from '$lib/types.js';
 
 export function getCollectionView(collection: CollectionWithViews) {
-	if (typeof window === 'undefined') return collection.views[0].shortId;
+	if (typeof window === 'undefined') return DEFAULT_COLLECTION_SHORT_VIEW_ID;
+
 	const key = `collection-${collection.id}-view`;
 	const stored = localStorage.getItem(key);
 	const parsed = stored ? JSON.parse(stored) : null;
 
 	if (!parsed || !collection.views.some((v) => v.shortId === parsed)) {
-		const defaultShortId = collection.views[0].shortId;
-		localStorage.setItem(key, JSON.stringify(defaultShortId));
-		return defaultShortId;
+		localStorage.setItem(key, JSON.stringify(DEFAULT_COLLECTION_SHORT_VIEW_ID));
+		return DEFAULT_COLLECTION_SHORT_VIEW_ID;
 	}
 
-	return parsed;
+	return +parsed;
 }

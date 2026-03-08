@@ -72,7 +72,9 @@ export const MAX_FILE_NAME_OVERVIEW_LENGTH = 60;
 export const DEFAULT_FEEDBACK_ERR_MESSAGE = 'Something went wrong :(, try again';
 export const DEFAULT_COPY_TO_CLIPBOARD_MESSAGE = 'Copied to clipboard';
 export const NAME_FIELD = 'name';
-export const NEW_COLLECTION_NAME = 'Add a name';
+export const DEFAULT_COLLECTION_SHORT_VIEW_ID = 1;
+export const DEFAULT_COLLECTION_ICON = 'folder';
+export const NEW_COLLECTION_NAME = 'New collection';
 export const NEW_GROUP_NAME = 'New group';
 
 export const APP_BUCKET = 'app';

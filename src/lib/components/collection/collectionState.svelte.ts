@@ -4,6 +4,7 @@ import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { getToastState } from '$lib/states';
 import type { CollectionWithViews } from '$lib/types';
+import { DEFAULT_COLLECTION_ICON, DEFAULT_COLLECTION_SHORT_VIEW_ID } from '$lib/constant/index.js';
 
 export class CollectionState {
 	#toastState = getToastState();
@@ -36,7 +37,7 @@ export class CollectionState {
 				groupId: args.groupId || null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				icon: args.icon || 'folder',
+				icon: args.icon || DEFAULT_COLLECTION_ICON,
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
 				isPinned: args.isPinned || true,
@@ -47,7 +48,7 @@ export class CollectionState {
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 
-			const url = `/collections/${result.id}`;
+			const url = `/collections/${result.id}?view=${DEFAULT_COLLECTION_SHORT_VIEW_ID}`;
 
 			if (autodirect) {
 				await goto(url);
