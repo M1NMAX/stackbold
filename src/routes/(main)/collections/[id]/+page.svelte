@@ -111,6 +111,8 @@
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
+		if (itemName.trim() === '') return;
+
 		await itemState.createItem({
 			name: itemName,
 			collectionId: collection.id
@@ -198,6 +200,11 @@
 
 	function isCollectionEmpty() {
 		return itemState.items.length === 0 && viewState.views.every((v) => v.filters.length === 0);
+	}
+
+	function shouldCleanNewItemInput() {
+		if (itemName.trim() !== '') return;
+		isNewItemInputVisible = false;
 	}
 
 	$effect(() => {
@@ -337,9 +344,9 @@
 					name="new-item-name"
 					placeholder="New item"
 					autocomplete="off"
-					class="h-9 w-full py-2 px-8 text-base font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
-					onfocusout={() => (isNewItemInputVisible = false)}
-					onescapekey={() => (isNewItemInputVisible = false)}
+					class="h-9 w-full py-2 px-8 text-sm font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
+					onfocusout={() => shouldCleanNewItemInput()}
+					onescapekey={() => shouldCleanNewItemInput()}
 				/>
 			</form>
 		{:else}
@@ -349,7 +356,7 @@
 				onclick={() => (isNewItemInputVisible = true)}
 			>
 				<Plus />
-				<span class="grow"> New item </span>
+				<span class="grow text-sm"> New item </span>
 				<Shortcut class="hidden lg:inline-flex">
 					<span>Alt</span>
 					<span>N</span>
