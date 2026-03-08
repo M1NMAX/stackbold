@@ -21,6 +21,7 @@
 	let multiplier = $state(1);
 	let dragover = $state(false);
 
+	const isSticky = $derived(scrollTop > 120);
 	const renderLimit = $derived(ITEMS_CHUNK_SIZE * multiplier);
 	const itemState = getItemState();
 
@@ -53,14 +54,14 @@
 >
 	<div
 		class={tm(
-			'z-10 w-full p-2 rounded-md bg-secondary/20',
-			scrollTop > 120 && 'bg-secondary',
+			'z-10 w-full p-2 rounded-md bg-secondary/20 shrink-0',
+			isSticky && 'bg-secondary',
 			items.length > 0 && 'rounded-b-none'
 		)}
-		style="transform: translateY({Math.max(0, scrollTop - 126)}px)"
+		style="transform: translateY({Math.max(0, scrollTop - 130)}px)"
 	>
 		{@render header()}
-		{#if scrollTop > 120}
+		{#if isSticky}
 			<div
 				class="absolute -top-[200px] left-0 -z-10 w-full h-[200px] bg-secondary rounded-md"
 			></div>
@@ -71,7 +72,7 @@
 		<div
 			class={tm(
 				'relative z-0 h-fit w-full flex flex-col items-start gap-2 px-2 pb-2 rounded-md rounded-t-none bg-secondary/20',
-				scrollTop > 120 && 'pt-4'
+				isSticky && 'pt-4'
 			)}
 		>
 			{#each items.slice(0, renderLimit) as item (item.id)}
