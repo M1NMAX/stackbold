@@ -123,12 +123,12 @@
 
 			<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
 				<PencilLine />
-				<span> Rename group </span>
+				<span>Rename</span>
 			</Button>
 
 			<Button theme="danger" variant="menu" onclick={() => deleteGroup()}>
 				<Trash />
-				<span>Delete group </span>
+				<span>Delete</span>
 			</Button>
 		</AdaptiveWrapper>
 	{/if}
