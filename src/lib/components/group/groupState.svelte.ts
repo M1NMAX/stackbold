@@ -3,6 +3,7 @@ import type { Group } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
+import { getTRPCErrorMsg } from '$lib/utils/index.js';
 
 export class GroupState {
 	#toastState = getToastState();
@@ -38,8 +39,8 @@ export class GroupState {
 			const result = await trpc().groups.create.mutate({ ...args });
 			this.#updGroup(tmpId, result);
 			this.#toastState.success('New group created successfully');
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeGroup(tmpId);
 		}
 	}
@@ -56,8 +57,8 @@ export class GroupState {
 		try {
 			this.#updGroup(id, { ...target, ...rest });
 			await trpc().groups.update.mutate({ ...args });
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updGroup(id, target);
 		}
 	}
@@ -72,8 +73,8 @@ export class GroupState {
 		try {
 			this.#removeGroup(id);
 			await trpc().groups.delete.mutate(id);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.groups.push({ ...target });
 		}
 	}
@@ -82,8 +83,8 @@ export class GroupState {
 		try {
 			const result = await trpc().groups.list.query();
 			this.groups = result;
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 }
