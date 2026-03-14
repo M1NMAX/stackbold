@@ -32,7 +32,7 @@
 	import type { RouterInputs } from '$lib/trpc/router.js';
 	import debounce from 'debounce';
 	import { getContext } from 'svelte';
-	import { getRefValue, tm } from '$lib/utils/index.js';
+	import { getPropertyRefValue, tm } from '$lib/utils/index.js';
 	import type { PropertyRef } from '@prisma/client';
 	import { getViewState } from '$lib/components/view/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
@@ -172,7 +172,7 @@
 		{#each propertyState.properties as property}
 			<PropertyInput
 				{property}
-				value={getRefValue(item.properties, property.id)}
+				value={getPropertyRefValue(item.properties, property.id)}
 				onchange={(value) => updPropertyRef({ id: property.id, value })}
 				itemId={item.id}
 			/>

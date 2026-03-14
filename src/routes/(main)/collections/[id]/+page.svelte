@@ -4,22 +4,16 @@
 	import FileMinus from 'lucide-svelte/icons/file-minus';
 	import FolderMinus from 'lucide-svelte/icons/folder-minus';
 	import Plus from 'lucide-svelte/icons/plus';
-	import { Color, PropertyType, type Property } from '@prisma/client';
-	import { Items, getItemState, groupItemsByPropertyValue } from '$lib/components/item/index.js';
-	import { getPropertyState } from '$lib/components/property/index.js';
+	import { Items, getItemState } from '$lib/components/item/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck, getPropertyColor, getOption } from '$lib/utils/index.js';
+	import { tm, noCheck } from '$lib/utils/index.js';
 	import {
-		Accordion,
-		AccordionItem,
-		Badge,
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
 		IconPicker,
-		MockCheckbox,
 		Shortcut,
 		TextareaAutosize,
 		Tooltip
@@ -58,7 +52,6 @@
 
 	const collectionState = getCollectionState();
 	const viewState = getViewState();
-	const propertyState = getPropertyState();
 	const itemState = getItemState();
 	const sidebarState = getSidebarState();
 
@@ -66,6 +59,7 @@
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 	const isEmpty = $derived(isCollectionEmpty());
 
+	let scrollTop = $state(0);
 	let search = $state('');
 
 	let items = $derived.by(() => {
@@ -117,6 +111,8 @@
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
+		if (itemName.trim() === '') return;
+
 		await itemState.createItem({
 			name: itemName,
 			collectionId: collection.id
@@ -126,6 +122,7 @@
 
 	function handleScroll(e: Event) {
 		const targetEl = e.target as HTMLDivElement;
+		scrollTop = targetEl.scrollTop;
 
 		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
 		else isSmHeadingVisible = false;
@@ -205,6 +202,11 @@
 		return itemState.items.length === 0 && viewState.views.every((v) => v.filters.length === 0);
 	}
 
+	function shouldCleanNewItemInput() {
+		if (itemName.trim() !== '') return;
+		isNewItemInputVisible = false;
+	}
+
 	$effect(() => {
 		data.cid;
 		search = '';
@@ -236,7 +238,7 @@
 </script>
 
 <svelte:head>
-	<title>{collection.name} - Stackbold</title>
+	<title>{collection && collection.name} - Stackbold</title>
 </svelte:head>
 
 <PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
@@ -319,25 +321,13 @@
 
 		{#if isEmpty || items.length === 0}
 			{@render noItem()}
-		{:else if !view.groupBy}
-			<Items {view} {items} clickOpenItem={(id) => clickItem(id)} />
 		{:else}
-			{@const groupedItems = items.reduce(groupItemsByPropertyValue(view.groupBy), {})}
-			<Accordion isMulti value={Object.keys(groupedItems).map((k) => `accordion-item-${k}`)}>
-				{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
-					{@const property = propertyState.getProperty(groupedItems[key].pid)}
-
-					{#if property}
-						{@const color = getPropertyColor(property, key)}
-						<AccordionItem id={`accordion-item-${key}`}>
-							{#snippet header()}
-								{@render groupLabel(key, property, color)}
-							{/snippet}
-							<Items {view} items={groupedItems[key].items} clickOpenItem={(id) => clickItem(id)} />
-						</AccordionItem>
-					{/if}
-				{/each}
-			</Accordion>
+			<Items
+				{view}
+				{items}
+				scrollTop={isLargeScreen.current ? scrollTop : 0}
+				clickOpenItem={(id) => clickItem(id)}
+			/>
 		{/if}
 	</PageContent>
 	<PageFooter class="flex">
@@ -354,9 +344,9 @@
 					name="new-item-name"
 					placeholder="New item"
 					autocomplete="off"
-					class="h-9 w-full py-2 px-8 text-base lg:text-sm font-semibold rounded-md bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
-					onfocusout={() => (isNewItemInputVisible = false)}
-					onescapekey={() => (isNewItemInputVisible = false)}
+					class="h-9 w-full py-2 px-8 text-sm font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
+					onfocusout={() => shouldCleanNewItemInput()}
+					onescapekey={() => shouldCleanNewItemInput()}
 				/>
 			</form>
 		{:else}
@@ -366,7 +356,7 @@
 				onclick={() => (isNewItemInputVisible = true)}
 			>
 				<Plus />
-				<span class="grow"> New item </span>
+				<span class="grow text-sm"> New item </span>
 				<Shortcut class="hidden lg:inline-flex">
 					<span>Alt</span>
 					<span>N</span>
@@ -390,18 +380,6 @@
 		<StructurePage data={noCheck(page.state)} />
 	{/if}
 </aside>
-
-{#snippet groupLabel(key: string, property: Property, color: Color)}
-	<Badge {color}>
-		{#if property.type === PropertyType.CHECKBOX}
-			<MockCheckbox checked={key === 'true'} />
-			{property.name}
-		{:else}
-			{@const option = getOption(property.options, key)}
-			{option ? option.value : `No ${property.name}`}
-		{/if}
-	</Badge>
-{/snippet}
 
 {#snippet noItem()}
 	{@const Icon = isEmpty ? FolderMinus : FileMinus}

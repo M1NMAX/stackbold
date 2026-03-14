@@ -78,6 +78,7 @@
 	const updPropertyDebounced = debounce(updProperty, DEBOUNCE_INTERVAL);
 	async function updProperty(property: UpdProperty) {
 		await propertyState.updProperty(property);
+		await viewState.refresh();
 	}
 
 	async function handleUpdPropertyCalculate(aggregator: Nullable<Aggregator>) {

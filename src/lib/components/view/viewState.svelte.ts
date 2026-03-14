@@ -1,7 +1,7 @@
 import { getToastState } from '$lib/states/index.js';
 import { trpc } from '$lib/trpc/client';
 import type { RouterInputs } from '$lib/trpc/router';
-import { capitalizeFirstLetter } from '$lib/utils/index.js';
+import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
 import type { View, ViewType } from '@prisma/client';
 import { getContext, setContext } from 'svelte';
 
@@ -47,9 +47,11 @@ export class ViewState {
 				properties: [],
 				filters: [],
 				sorts: [],
-				groupBy: null,
 				createdAt: new Date(),
-				updatedAt: new Date()
+				updatedAt: new Date(),
+				groupBy: null,
+				hideEmptyGroups: null,
+				hideItemCounts: null
 			});
 
 			const view = await trpc().views.create.mutate({
@@ -60,7 +62,7 @@ export class ViewState {
 
 			this.#updView(tmpId, view);
 		} catch (error) {
-			this.#toastState.error();
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeView(tmpId);
 		}
 	}
@@ -101,8 +103,7 @@ export class ViewState {
 	}
 
 	async updView(args: RouterInputs['views']['update']) {
-		const { id, ...rest } = args;
-		const target = this.#getView(id);
+		const target = this.#getView(args.id);
 
 		if (!target) {
 			this.#toastState.error();
@@ -110,10 +111,10 @@ export class ViewState {
 		}
 
 		try {
-			this.#updView(id, { ...target, ...rest });
-			await trpc().views.update.mutate({ ...args });
-		} catch (err) {
-			this.#toastState.error();
+			const view = await trpc().views.update.mutate({ ...args });
+			this.#updView(args.id, view);
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 	async orderView(start: number, end: number) {
@@ -134,7 +135,7 @@ export class ViewState {
 			this.#removeView(id);
 			await trpc().views.delete.mutate(id);
 		} catch (error) {
-			this.#toastState.error();
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 

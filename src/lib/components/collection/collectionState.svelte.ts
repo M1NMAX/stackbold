@@ -4,6 +4,8 @@ import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { getToastState } from '$lib/states';
 import type { CollectionWithViews } from '$lib/types';
+import { DEFAULT_COLLECTION_ICON, DEFAULT_COLLECTION_SHORT_VIEW_ID } from '$lib/constant/index.js';
+import { getTRPCErrorMsg } from '$lib/utils/index.js';
 
 export class CollectionState {
 	#toastState = getToastState();
@@ -36,7 +38,7 @@ export class CollectionState {
 				groupId: args.groupId || null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				icon: args.icon || 'folder',
+				icon: args.icon || DEFAULT_COLLECTION_ICON,
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
 				isPinned: args.isPinned || true,
@@ -47,7 +49,7 @@ export class CollectionState {
 			const result = await trpc().collections.create.mutate({ ...args });
 			this.#updCollection(tmpId, result);
 
-			const url = `/collections/${result.id}`;
+			const url = `/collections/${result.id}?view=${DEFAULT_COLLECTION_SHORT_VIEW_ID}`;
 
 			if (autodirect) {
 				await goto(url);
@@ -60,8 +62,8 @@ export class CollectionState {
 					}
 				});
 			}
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeCollection(tmpId);
 		}
 	}
@@ -85,8 +87,8 @@ export class CollectionState {
 					onclick: () => goto(`/collections/${result.id}`)
 				}
 			});
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 
@@ -101,13 +103,13 @@ export class CollectionState {
 		try {
 			this.#updCollection(id, { ...target, ...rest });
 			await trpc().collections.update.mutate({ ...args });
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updCollection(id, target);
 		}
 	}
 
-	async deleteCollection(id: string) {
+	async deleteCollection(id: string, active: boolean = false) {
 		const target = this.getCollection(id);
 		if (!target) {
 			this.#toastState.error();
@@ -117,14 +119,13 @@ export class CollectionState {
 		try {
 			this.#removeCollection(id);
 			await trpc().collections.delete.mutate(id);
-			this.#toastState.success(`Collection [${target.name}] deleted successfully`);
-
 			localStorage.removeItem(`collection-${id}-view`);
 
-			if (history.length === 1) await goto('/collections');
+			if (!active) return;
+			if (history.length === 1) history.replaceState(null, '', '/collections');
 			else history.back();
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.collections.push({ ...target });
 		}
 	}
@@ -132,8 +133,8 @@ export class CollectionState {
 	async refresh() {
 		try {
 			this.collections = await trpc().collections.list.query();
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 }

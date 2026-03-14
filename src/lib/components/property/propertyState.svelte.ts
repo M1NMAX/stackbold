@@ -1,6 +1,6 @@
 import { Color, type Property, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
-import { capitalizeFirstLetter } from '$lib/utils';
+import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
 import type { RouterInputs } from '$lib/trpc/router';
@@ -59,8 +59,8 @@ export class PropertyState {
 				collectionId
 			});
 			this.#updProperty(tmpId, property);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeProperty(tmpId);
 		}
 	}
@@ -94,8 +94,8 @@ export class PropertyState {
 			});
 
 			this.#updProperty(tmpId, property);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeProperty(tmpId);
 		}
 	}
@@ -111,8 +111,8 @@ export class PropertyState {
 		try {
 			const updatedProperty = await trpc().properties.update.mutate({ ...property });
 			this.#updProperty(property.id, { ...updatedProperty });
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(property.id, target);
 		}
 	}
@@ -133,8 +133,8 @@ export class PropertyState {
 		try {
 			this.#removeProperty(id);
 			await trpc().properties.delete.mutate(id);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.properties.push({ ...target });
 		}
 	}
@@ -142,8 +142,8 @@ export class PropertyState {
 	async refresh() {
 		try {
 			this.properties = await trpc().properties.list.query(this.collectionId);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 
@@ -166,8 +166,8 @@ export class PropertyState {
 
 			this.#updProperty(pid, { ...target, options: [...target.options, option] });
 			await trpc().properties.addOption.mutate({ pid, option });
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(pid, target);
 		}
 	}
@@ -190,8 +190,8 @@ export class PropertyState {
 			this.#updProperty(pid, { ...target, options });
 
 			await trpc().properties.updateOption.mutate({ pid, option });
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(pid, target);
 		}
 	}
@@ -209,8 +209,8 @@ export class PropertyState {
 			this.#updProperty(pid, { ...target, options });
 
 			await trpc().properties.removeOption.mutate({ pid, optionId });
-		} catch (err) {
-			this.#toastState.error('Invalid property');
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(pid, target);
 		}
 	}

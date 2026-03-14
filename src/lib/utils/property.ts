@@ -52,11 +52,11 @@ export function aggregatePropertyValue(
 	return result.toString();
 }
 
-export function getPropertyRef(properties: PropertyRef[], pid: string) {
-	return properties.find((property) => property.id === pid) || null;
+export function getPropertyRef(refs: PropertyRef[], pid: string) {
+	return refs.find((property) => property.id === pid) || null;
 }
 
-export function getRefValue(refs: PropertyRef[], pid: string) {
+export function getPropertyRefValue(refs: PropertyRef[], pid: string) {
 	const ref = getPropertyRef(refs, pid);
 	return ref ? ref.value : '';
 }

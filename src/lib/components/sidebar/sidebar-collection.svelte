@@ -2,7 +2,7 @@
 	import Copy from 'lucide-svelte/icons/copy';
 	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import Pencil from 'lucide-svelte/icons/pencil';
+	import PencilLine from 'lucide-svelte/icons/pencil-line';
 	import Trash from 'lucide-svelte/icons/trash';
 	import StarOff from 'lucide-svelte/icons/star-off';
 	import {
@@ -140,13 +140,13 @@
 		<HSeparator />
 
 		<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
-			<Pencil />
-			<span> Rename collection </span>
+			<PencilLine />
+			<span> Rename </span>
 		</Button>
 
 		<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
 			<CornerUpRight />
-			<span>Move collection</span>
+			<span>Move</span>
 		</Button>
 
 		<Button
@@ -158,7 +158,7 @@
 			}}
 		>
 			<Copy />
-			<span>Duplicate collection </span>
+			<span>Duplicate </span>
 		</Button>
 
 		<HSeparator />
@@ -172,7 +172,7 @@
 			}}
 		>
 			<Trash />
-			<span>Delete collection </span>
+			<span>Delete</span>
 		</Button>
 	</AdaptiveWrapper>
 {/snippet}

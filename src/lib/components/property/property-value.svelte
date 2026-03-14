@@ -30,7 +30,7 @@
 		sanitizeNumber,
 		formatNumber,
 		isPropertyNumerical,
-		getRefValue,
+		getPropertyRefValue,
 		separateMultiselectOptions,
 		joinMultiselectOptions
 	} from '$lib/utils/index.js';
@@ -68,7 +68,7 @@
 	const toastState = getToastState();
 	const wrapperState = new ModalState();
 
-	let value = $derived(getRefValue(item.properties, property.id));
+	let value = $derived(getPropertyRefValue(item.properties, property.id));
 
 	const updPropertyRefDebounced = debounce(updPropertyRef, DEBOUNCE_INTERVAL);
 	async function updPropertyRef(value: string) {

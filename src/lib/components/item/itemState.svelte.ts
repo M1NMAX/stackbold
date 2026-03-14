@@ -4,6 +4,7 @@ import { trpc } from '$lib/trpc/client';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states/index.js';
 import type { Nullable } from '$lib/types.js';
+import { getTRPCErrorMsg } from '$lib/utils/index.js';
 
 export class ItemState {
 	#toastState = getToastState();
@@ -45,8 +46,8 @@ export class ItemState {
 			this.#updItem(tmpId, createdItem);
 			await this.refresh(this.viewShortId);
 			return createdItem.id;
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeItem(tmpId);
 		}
 	}
@@ -59,8 +60,8 @@ export class ItemState {
 			this.#updItem(id, { ...target, ...rest });
 			await trpc().items.update.mutate(args);
 			if (refresh) await this.refresh(this.viewShortId);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updItem(id, target);
 		}
 	}
@@ -70,8 +71,8 @@ export class ItemState {
 			const createdItem = await trpc().items.duplicate.mutate(id);
 			this.items.push({ ...createdItem });
 			if (refresh) await this.refresh(this.viewShortId);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 
@@ -84,8 +85,8 @@ export class ItemState {
 			await trpc().items.delete.mutate(id);
 
 			this.#toastState.success('Item deleted successfully');
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.items.push({ ...target });
 		}
 	}
@@ -107,8 +108,8 @@ export class ItemState {
 			this.#updItem(id, { ...updatedItem });
 
 			if (refresh) await this.refresh(this.viewShortId);
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updItem(target.id, target);
 		}
 	}
@@ -119,8 +120,8 @@ export class ItemState {
 				collectionId: this.collectionId,
 				viewShortId
 			});
-		} catch (err) {
-			this.#toastState.error();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
 		}
 	}
 
