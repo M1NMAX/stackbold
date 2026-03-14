@@ -1,14 +1,13 @@
 import { prisma } from './prisma';
-import sendgrid from '@sendgrid/mail';
-import { SENDGRID_API_KEY, SB_EMAIL } from '$env/static/private';
+import { MAILERSEND_API_KEY, APP_NOTIFICATION_EMAIL, APP_NAME } from '$env/static/private';
 import { dev } from '$app/environment';
 import type { RequestEvent } from '@sveltejs/kit';
 import { generateRandomOTP } from './utils';
+import { EmailParams, MailerSend, Recipient, Sender } from 'mailersend';
 
 export async function sendEmailVerificationCode(email: string, code: string) {
 	const msg = {
 		to: email,
-		from: SB_EMAIL,
 		subject: 'Confirm Your Email Address',
 		html: `
          <h2>Stackbold - Confirm your email</h2>
@@ -24,7 +23,6 @@ export async function sendEmailVerificationCode(email: string, code: string) {
 export async function sendPasswordResetToken(email: string, code: string) {
 	const msg = {
 		to: email,
-		from: SB_EMAIL,
 		subject: 'Password Reset Request',
 		html: `
         <h2>Stackbold - password reset</h2>
@@ -39,14 +37,24 @@ export async function sendPasswordResetToken(email: string, code: string) {
 	await sendEmail(msg);
 }
 
-export async function sendEmail(msg: sendgrid.MailDataRequired) {
-	if (dev) {
-		console.log(msg);
-		return;
-	}
+export async function sendEmail(msg: { to: string; subject: string; html: string }) {
+	try {
+		if (dev) console.log(msg);
 
-	sendgrid.setApiKey(SENDGRID_API_KEY);
-	await sendgrid.send(msg);
+		const mailerSend = new MailerSend({ apiKey: MAILERSEND_API_KEY });
+
+		const emailParams = new EmailParams()
+			.setFrom(new Sender(APP_NOTIFICATION_EMAIL, APP_NAME))
+			.setTo([new Recipient(msg.to)])
+			.setSubject(msg.subject)
+			.setHtml(msg.html);
+
+		const response = await mailerSend.email.send(emailParams);
+
+		if (response.statusCode != 202) console.error('Faild to send email');
+	} catch (error) {
+		console.error(error);
+	}
 }
 
 export async function createEmailVerificationRequest(userId: string, email: string) {
