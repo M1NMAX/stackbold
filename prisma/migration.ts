@@ -1,58 +1,54 @@
-import { Collection, PrismaClient, Property, ViewType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 async function migrate() {
-	await prisma.view.deleteMany();
-	const collections = await prisma.collection.findMany({ include: { properties: true } });
-	for (const collection of collections) {
-		await prisma.view.createMany({
-			data: [
-				{
-					collectionId: collection.id,
-					name: 'List',
-					shortId: 1,
-					order: 1,
-					type: ViewType.LIST,
-					groupBy: getGroupByConfig(ViewType.LIST, collection),
-					filters: getFilterConfig(ViewType.LIST, collection),
-					properties: getPropertiesVisibility(collection.properties, ViewType.LIST)
-				},
-				{
-					collectionId: collection.id,
-					name: 'Table',
-					shortId: 2,
-					order: 2,
-					type: ViewType.TABLE,
-					groupBy: getGroupByConfig(ViewType.TABLE, collection),
-					filters: getFilterConfig(ViewType.TABLE, collection),
-					properties: getPropertiesVisibility(collection.properties, ViewType.LIST)
+	await prisma.propertyOption.deleteMany();
+
+	const properties = await prisma.property.findMany();
+
+	for (const property of properties) {
+		if (property.options.length == 0) continue;
+
+		for (let i = 0; i < property.options.length; i++) {
+			const createdOpt = await prisma.propertyOption.create({
+				data: {
+					propertyId: property.id,
+					color: property.options[i].color,
+					value: property.options[i].value,
+					order: i + 1
 				}
-			]
-		});
-		console.log(`Collection ${collection.name} views created`);
+			});
+
+			await prisma.item.updateMany({
+				where: {
+					collectionId: property.collectionId,
+					AND: {
+						properties: {
+							some: {
+								id: property.id,
+								AND: { value: { contains: property.options[i].id } }
+							}
+						}
+					}
+				},
+				data: {
+					properties: {
+						updateMany: {
+							where: { id: property.id, AND: { value: { contains: property.options[i].id } } },
+							data: { value: createdOpt.id }
+						}
+					}
+				}
+			});
+		}
 	}
 
-	console.log('Add template flag');
-	await prisma.collection.updateMany({ data: { isTemplate: false } });
-}
+	const embeddedCount = await prisma.property
+		.findMany({ select: { options: true } })
+		.then((ps) => ps.reduce((sum, p) => sum + p.options.length, 0));
 
-function getGroupByConfig(view: ViewType, collection: Collection) {
-	const target = collection.groupByConfigs.find((config) => config.view === view);
-	if (!target || !target.propertyId) return undefined;
-	return target.propertyId;
-}
-
-function getFilterConfig(view: ViewType, collection: Collection) {
-	const target = collection.filterConfigs.find((config) => config.view === view);
-	if (!target) return [];
-	return target.filters;
-}
-
-function getPropertiesVisibility(properties: Property[], view: ViewType) {
-	return properties.map((property) => ({
-		id: property.id,
-		isVisible: property.visibleInViews.includes(view)
-	}));
+	const modelCount = await prisma.propertyOption.count();
+	console.assert(embeddedCount === modelCount, 'Mismatch!');
 }
 
 migrate()

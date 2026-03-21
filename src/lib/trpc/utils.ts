@@ -2,7 +2,7 @@ import {
 	PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE,
 	PROPERTIES_WITHOUT_REF
 } from '$lib/constant/index.js';
-import { PropertyType, type Option, type Property, type PropertyRef } from '@prisma/client';
+import { PropertyType, type Property, type PropertyOption, type PropertyRef } from '@prisma/client';
 
 export function isRelation(property: Property) {
 	return property.type === PropertyType.RELATION && property.targetCollection != null;
@@ -31,7 +31,7 @@ export function hasRef(type: PropertyType) {
 export function getPropertyRef(properties: PropertyRef[], pid: string) {
 	return properties.find((property) => property.id === pid) || null;
 }
-export function getPropertyOption(options: Option[], id: string) {
+export function getPropertyOption(options: PropertyOption[], id: string) {
 	return options.find((opt) => opt.id === id) || null;
 }
 

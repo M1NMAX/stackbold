@@ -1,4 +1,4 @@
-import type { Collection, Color, Item } from '@prisma/client';
+import type { Collection, Color, Item, Property, PropertyOption } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
 import type {
 	BlurParams,
@@ -81,6 +81,14 @@ export type CollectionWithViews = Collection & {
 	views: { shortId: number }[];
 };
 
+export type XPropertyOption = PropertyOption & {
+	extra?: string;
+};
+
+export type PropertyWithOptions = Property & {
+	optionsM: XPropertyOption[];
+};
+
 export type OnChangeFn<T> = (value: T) => void;
 
 export type ClickItemEvent = MouseEvent & {
@@ -88,3 +96,8 @@ export type ClickItemEvent = MouseEvent & {
 };
 
 export type ItemsGroup = Record<string, Item[]>;
+
+export type DragData = {
+	index: number;
+	group: string;
+};

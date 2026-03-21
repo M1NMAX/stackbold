@@ -32,7 +32,7 @@
 		NUMBER_FORMAT_LABELS
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import type { UpdProperty, SelectOption, Nullable } from '$lib/types';
+	import type { UpdProperty, SelectOption, Nullable, PropertyWithOptions } from '$lib/types';
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/item/index.js';
 	import {
@@ -50,7 +50,7 @@
 	import { getViewState } from '$lib/components/view/index.js';
 
 	type Props = {
-		property: Property;
+		property: PropertyWithOptions;
 		isOpen: boolean;
 		openChange: (value: string | null) => void;
 	};
@@ -493,11 +493,12 @@
 			)}
 		/>
 
-		<div class="space-y-1">
-			{#each property.options.slice(0, getMaxVisisbleOptions()) as option}
-				<PropertyOption propertyId={property.id} {option} />
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="space-y-1" ondragover={(e) => e.stopPropagation()}>
+			{#each property.optionsM.slice(0, getMaxVisisbleOptions()) as option}
+				<PropertyOption {option} />
 			{/each}
-			{#if property.options.length >= 6}
+			{#if property.optionsM.length >= 6}
 				<Button
 					theme="secondary"
 					variant="menu"

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
+	import GripHorizontal from 'lucide-svelte/icons/grip-vertical';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { THEME_COLORS } from '$lib/constant';
-	import { Color, type Option } from '@prisma/client';
+	import { Color, type PropertyOption } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
 		AdaptiveWrapper,
+		Badge,
 		Button,
 		buttonVariants,
 		HSeparator,
@@ -20,13 +22,13 @@
 	import { tick } from 'svelte';
 
 	type Props = {
-		propertyId: string;
-		option: Option;
+		option: PropertyOption;
 	};
 
-	let { propertyId, option }: Props = $props();
+	let { option }: Props = $props();
 
-	let wrapperState = new ModalState();
+	let dragging = $state(false);
+	let dragover = $state(false);
 
 	let value = $state(option.color as string);
 
@@ -34,6 +36,7 @@
 		return (Object.keys(THEME_COLORS).find((key) => key === value) as Color) ?? Color.GRAY;
 	});
 
+	const wrapperState = new ModalState();
 	const propertyState = getPropertyState();
 	const deleteModal = getDeleteModalState();
 	const updOptionDebounded = debounce(updOption, 1000);
@@ -44,7 +47,7 @@
 
 	function handleOnInput(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
-		updOptionDebounded(propertyId, { id: option.id, value: targetEl.value });
+		updOptionDebounded(option.propertyId, { id: option.id, value: targetEl.value });
 	}
 
 	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
@@ -55,7 +58,7 @@
 
 	function handleSelectColor(selectedKey: string) {
 		value = selectedKey;
-		updOptionDebounded(propertyId, { id: option.id, color: value as Color });
+		updOptionDebounded(option.propertyId, { id: option.id, color: value as Color });
 	}
 
 	function deleteOption() {
@@ -63,19 +66,51 @@
 
 		deleteModal.open({
 			type: 'option',
-			id: propertyId,
+			id: option.propertyId,
 			option: option.id,
 			name: option.value,
 			fun: () => {
-				propertyState.removeOptionFromProperty(propertyId, option.id);
+				propertyState.removeOptionFromProperty(option.propertyId, option.id);
 			}
 		});
+	}
+
+	function ondragover(e: DragEvent) {
+		e.preventDefault();
+		dragover = true;
+	}
+
+	function ondragleave(e: DragEvent) {
+		e.preventDefault();
+		dragover = false;
+	}
+
+	function ondragend() {
+		dragging = false;
+		dragover = false;
+	}
+
+	function ondragstart(e: DragEvent) {
+		dragging = true;
+		if (!e.dataTransfer) return;
+		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.dropEffect = 'move';
+		e.dataTransfer.setData('text/plain', option.order.toString());
+	}
+
+	async function ondrop(e: DragEvent) {
+		dragover = false;
+		dragging = false;
+		if (!e.dataTransfer) return;
+		e.dataTransfer.dropEffect = 'move';
+		const start = +e.dataTransfer.getData('text/plain');
+		await propertyState.orderPropertyOption(option.propertyId, start, option.order);
 	}
 
 	$effect(() => {
 		if (wrapperState.isOpen) {
 			tick().then(() => {
-				document.getElementById(`${propertyId}-option-${option.id}`)?.focus();
+				document.getElementById(`${option.propertyId}-option-${option.id}`)?.focus();
 			});
 		}
 	});
@@ -89,18 +124,37 @@
 		variant: 'menu'
 	})}
 >
-	{#snippet trigger()}
-		<span class={tm('size-4 rounded-md', THEME_COLORS[selectedKey])}></span>
-		<span class="grow text-start">{option.value}</span>
-		<ChevronRight />
+	{#snippet customTrigger({ id, toggle })}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			{id}
+			{ondragstart}
+			{ondrop}
+			{ondragend}
+			{ondragover}
+			{ondragleave}
+			draggable="true"
+			class="w-full flex justify-between items-center gap-1 cursor-pointer [&_svg]:size-4"
+			onclick={() => toggle()}
+		>
+			<GripHorizontal />
+			<span class="grow">
+				<Badge color={selectedKey} class="w-fit">{option.value}</Badge>
+			</span>
+			<ChevronRight />
+		</div>
 	{/snippet}
 
 	<div class="px-1 pb-1.5 md:px-0 md:pb-1.5">
-		<Label for={`${propertyId}-option-${option.id}`} class="md:sr-only font-semibold text-sm">
+		<Label
+			for={`${option.propertyId}-option-${option.id}`}
+			class="md:sr-only font-semibold text-sm"
+		>
 			{option.value}
 		</Label>
 		<input
-			id={`${propertyId}-option-${option.id}`}
+			id={`${option.propertyId}-option-${option.id}`}
 			name="option"
 			value={option.value}
 			oninput={handleOnInput}

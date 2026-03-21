@@ -13,14 +13,7 @@
 		PROPERTIES_THAT_USE_SELECTOR,
 		THEME_COLORS
 	} from '$lib/constant/index.js';
-	import {
-		Color,
-		PropertyType,
-		ViewType,
-		type Item,
-		type Property,
-		type View
-	} from '@prisma/client';
+	import { Color, PropertyType, ViewType, type Item, type View } from '@prisma/client';
 	import {
 		tm,
 		useId,
@@ -55,10 +48,11 @@
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
 		view: View;
-		property: Property;
+		property: PropertyWithOptions;
 		item: Item;
 	};
 
@@ -193,7 +187,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: option.id === value,
@@ -212,7 +206,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
@@ -232,7 +226,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],

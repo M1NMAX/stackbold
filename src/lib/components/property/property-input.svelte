@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
 	import Eraser from 'lucide-svelte/icons/eraser';
-	import { PropertyType, type Property } from '@prisma/client';
+	import { PropertyType } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -41,9 +41,10 @@
 		Tooltip,
 		Badge
 	} from '$lib/components/base/index.js';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
-		property: Property;
+		property: PropertyWithOptions;
 		onchange: (value: string) => void;
 		value: string;
 		itemId: string;

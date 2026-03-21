@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { PropertyType, type Color, type Property } from '@prisma/client';
+	import { PropertyType, type Color } from '@prisma/client';
 	import { getOption, hasOptions, useId } from '$lib/utils/index.js';
 	import { PropertyIcon } from './index.js';
 	import { Badge, MockCheckbox, Tooltip } from '$lib/components/base/index.js';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
-		property: Property;
+		property: PropertyWithOptions;
 		color: Color;
 		value: string;
 	};

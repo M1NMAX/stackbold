@@ -1,13 +1,6 @@
 <script lang="ts">
 	import Help from 'lucide-svelte/icons/circle-help';
-	import {
-		Color,
-		type Item,
-		type Property,
-		PropertyType,
-		type View,
-		ViewType
-	} from '@prisma/client';
+	import { Color, type Item, PropertyType, type View, ViewType } from '@prisma/client';
 	import {
 		getInitialItemsGroup,
 		groupItemsByPropertyValue,
@@ -25,6 +18,7 @@
 	import { capitalizeFirstLetter, getOption, getPropertyColor } from '$lib/utils/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
 	import { GROUPABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
+	import { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
 		view: View;
@@ -111,7 +105,7 @@
 	</div>
 {/snippet}
 
-{#snippet groupLabel(key: string, property: Property, color: Color, count: number)}
+{#snippet groupLabel(key: string, property: PropertyWithOptions, color: Color, count: number)}
 	<div class="flex items-center gap-2">
 		<Badge {color}>
 			{#if property.type === PropertyType.CHECKBOX}

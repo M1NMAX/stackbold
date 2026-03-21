@@ -65,7 +65,7 @@ export const views = createTRPCRouter({
 
 	delete: protectedProcedure
 		.input(z.string())
-		.mutation(async ({ input: id, ctx: { userId } }) => deleteView(id, userId))
+		.mutation(async ({ input: id, ctx: { userId } }) => await deleteView(id, userId))
 });
 
 async function listViews(collectionId: string) {
