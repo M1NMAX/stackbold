@@ -1,17 +1,5 @@
 <script module>
 	let editing = $state('');
-
-	function isEditing(id: string) {
-		return editing === id;
-	}
-
-	function startEditing(id: string) {
-		editing = id;
-	}
-
-	function stopEditing() {
-		editing = '';
-	}
 </script>
 
 <script lang="ts">
@@ -78,6 +66,18 @@
 		e.dataTransfer.setData('text/plain', item.id);
 	}
 
+	function isEditing(id: string) {
+		return editing === id;
+	}
+
+	function startEditing(id: string) {
+		editing = id;
+	}
+
+	function stopEditing() {
+		editing = '';
+	}
+
 	$effect(() => {
 		if (!editing) return;
 		document.getElementById(editing)?.focus();
@@ -96,37 +96,39 @@
 	{onclick}
 	{ondragstart}
 	class={tm(
-		'relative w-full flex flex-col items-start p-2 gap-y-2 rounded-md select-none bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
+		'w-full flex flex-col items-start p-1.5 gap-y-1 rounded-md select-none bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
 		item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 	)}
 >
 	{#if isEditing(itemInputId)}
-		<input
-			use:clickOutside
-			id={itemInputId}
-			data-id={item.id}
-			value={item.name}
-			maxlength={MAX_ITEM_NAME_LENGTH}
-			oninput={handleOnInput}
-			onclickoutside={(e) => saveAndClose(e.target as HTMLInputElement)}
-			onclick={(e) => e.stopPropagation()}
-			class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-md"
-		/>
+		<div class="relative w-full">
+			<input
+				use:clickOutside
+				id={itemInputId}
+				data-id={item.id}
+				value={item.name}
+				maxlength={MAX_ITEM_NAME_LENGTH}
+				oninput={handleOnInput}
+				onclickoutside={(e) => saveAndClose(e.target as HTMLInputElement)}
+				onclick={(e) => e.stopPropagation()}
+				class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-md"
+			/>
 
-		<Button theme="ghost" type="button" class="absolute right-1">
-			<Check />
-		</Button>
-	{:else}
-		<p class="text-lg font-semibold max-w-full truncate">
-			{item.name}
-		</p>
-		<div
-			class="absolute right-1 top-1 flex items-center gap-x-1 lg:invisible lg:group-hover:visible"
-		>
-			<Button theme="ghost" onclick={() => startEditing(itemInputId)}>
-				<PencilLine />
+			<Button theme="ghost" type="button" class="absolute right-1">
+				<Check />
 			</Button>
-			<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />
+		</div>
+	{:else}
+		<div class="w-full flex justify-between items-center gap-x-1.5">
+			<p class="text-lg font-semibold grow truncate">
+				{item.name}
+			</p>
+			<div class="flex items-center gap-x-1.5 lg:invisible lg:group-hover:visible">
+				<Button theme="ghost" variant="cicon" onclick={() => startEditing(itemInputId)}>
+					<PencilLine />
+				</Button>
+				<ItemMenu id={item.id} name={item.name} {clickOpenItem} align="end" />
+			</div>
 		</div>
 	{/if}
 

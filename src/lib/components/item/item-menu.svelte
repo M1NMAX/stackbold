@@ -55,6 +55,7 @@
 	floatingAlign={align}
 	triggerClass={buttonVariants({
 		theme: 'ghost',
+		variant: 'cicon',
 		class: tm(menuState.isOpen && 'visible bg-accent')
 	})}
 >
