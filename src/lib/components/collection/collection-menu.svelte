@@ -103,18 +103,18 @@
 
 	<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
 		<CornerUpRight />
-		<span>Move collection</span>
+		<span>Move</span>
 	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => duplicateCollection()}>
 		<Copy />
-		<span>Duplicate collection </span>
+		<span>Duplicate</span>
 	</Button>
 
 	<HSeparator />
 
 	<Button theme="danger" variant="menu" onclick={() => deleteCollection()}>
 		<Trash />
-		<span>Delete collection</span>
+		<span>Delete</span>
 	</Button>
 </AdaptiveWrapper>

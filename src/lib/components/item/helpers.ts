@@ -1,20 +1,46 @@
-import type { Item, PropertyRef } from '@prisma/client';
+import { DEFAULT_STRING_DELIMITER, FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
+import type { ItemsGroup } from '$lib/types.js';
+import { getPropertyRef } from '$lib/utils/index.js';
+import { PropertyType, type Item, type Property } from '@prisma/client';
 
-export function groupItemsByPropertyValue(pid: string) {
-	function getProperty(properties: PropertyRef[], id: string) {
-		return properties.find((property) => property.id === id) || null;
+export function getInitialItemsGroup(property: Property) {
+	if (!FILTERABLE_PROPERTY_TYPES.includes(property.type)) return {};
+
+	let keys = ['', ...property.options.map((o) => o.id)];
+
+	if (property.type === PropertyType.CHECKBOX) {
+		keys = ['false', 'true'];
 	}
 
-	type Group = Record<string, { pid: string; items: Item[] }>;
-	return function (groupedItems: Group, item: Item) {
-		const property = getProperty(item.properties, pid);
+	const groups: ItemsGroup = {};
+	for (const key of keys) {
+		groups[key] = [];
+	}
 
-		const key = property ? property.value : 'no-group';
+	return groups;
+}
 
-		if (!groupedItems[key]) groupedItems[key] = { pid, items: [] };
+export function groupItemsByPropertyValue(pid: string) {
+	return function (groups: ItemsGroup, item: Item) {
+		const ref = getPropertyRef(item.properties, pid);
+		const key = getFallbackKey(Object.keys(groups), ref ? ref.value : '');
 
-		groupedItems[key].items.push(item);
+		let keys = [key];
+		if (key.includes(DEFAULT_STRING_DELIMITER)) {
+			keys = key.split(DEFAULT_STRING_DELIMITER);
+		}
 
-		return groupedItems;
+		for (const k of keys) {
+			if (!groups[k]) groups[k] = [];
+			groups[k].push(item);
+		}
+
+		return groups;
 	};
+}
+
+function getFallbackKey(keys: string[], key: string) {
+	if (keys.includes(key)) return key;
+	if (!keys.includes('')) return keys[0];
+	return key;
 }

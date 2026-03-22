@@ -7,7 +7,7 @@ import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { setSessionAs2FAVerified } from '$lib/server/session';
 import { updateUserTOTPKey } from '$lib/server/user';
-import { dev } from '$app/environment';
+import { APP_NAME } from '$env/static/private';
 
 export const load: PageServerLoad = async (event) => {
 	const { session, user } = event.locals;
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async (event) => {
 	const totpKey = new Uint8Array(20);
 	crypto.getRandomValues(totpKey);
 	const encodedTOTPKey = encodeBase64(totpKey);
-	const keyURI = createTOTPKeyURI(`Stackbold ${dev && '(Dev)'}`, user.name, totpKey, 30, 6);
+	const keyURI = createTOTPKeyURI(APP_NAME, user.name, totpKey, 30, 6);
 	const form = await superValidate(zod(twoFactorSetupSchema));
 	return { form, encodedTOTPKey, keyURI };
 };

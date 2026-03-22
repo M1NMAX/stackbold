@@ -2,7 +2,7 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { NAME_FIELD } from '$lib/constant/index.js';
+import { DEFAULT_COLLECTION_ICON, NAME_FIELD } from '$lib/constant/index.js';
 import { ViewType } from '@prisma/client';
 import { capitalizeFirstLetter } from '$lib/utils/index.js';
 import { listObjects, removeObjects } from '$lib/server/minio';
@@ -56,18 +56,23 @@ export const collections = createTRPCRouter({
 });
 
 async function createCollection(args: z.infer<typeof collectionCreateSchema>, userId: string) {
-	const views = Object.values(ViewType).map((v, idx) => ({
-		shortId: idx + 1,
-		order: idx + 1,
-		name: capitalizeFirstLetter(v),
-		type: v as ViewType,
+	const defaultView = {
+		shortId: 1,
+		order: 1,
+		name: capitalizeFirstLetter(ViewType.LIST),
+		type: ViewType.LIST,
 		properties: [],
 		filters: [],
 		sorts: []
-	}));
+	};
 
 	return await prisma.collection.create({
-		data: { ...args, ownerId: userId, views: { create: [...views] } },
+		data: {
+			...args,
+			ownerId: userId,
+			icon: DEFAULT_COLLECTION_ICON,
+			views: { create: [defaultView] }
+		},
 		include: { views: { select: { shortId: true } } }
 	});
 }

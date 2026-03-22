@@ -12,7 +12,7 @@ import {
 	type View
 } from '@prisma/client';
 import { listObjects, removeObjects } from '$lib/server/minio';
-import { NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS } from '$lib/constant';
+import { GROUPABLE_PROPERTY_TYPES, NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS } from '$lib/constant';
 
 const colorSchema = z.enum(Color);
 const propertyTypeSchema = z.enum(PropertyType);
@@ -197,24 +197,47 @@ function injectPropertyOptions(
 
 async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
 	const { id, ...rest } = args;
-	const relatedProperty = await createBidirectionalRelation({ id, ...rest });
 
-	const property = await prisma.property.update({
-		where: { id },
-		data: { ...rest, relatedProperty }
+	return await prisma.$transaction(async (tx) => {
+		const storedProperty = await tx.property.findFirstOrThrow({
+			where: { id },
+			include: { collection: { select: { name: true, views: true } } }
+		});
+
+		let relatedProperty = undefined;
+		if (shouldCreateBidirectionalRef(storedProperty, args)) {
+			relatedProperty = await createBidirectionalRelation(
+				storedProperty,
+				args,
+				storedProperty.collection.name
+			);
+		}
+
+		if (rest.type && !GROUPABLE_PROPERTY_TYPES.includes(rest.type)) {
+			const viewsGroupedBy = getViewsGroupedBy(storedProperty.collection.views, id);
+
+			if (viewsGroupedBy.length > 0) {
+				await tx.view.updateMany({
+					where: { id: { in: viewsGroupedBy.map((v) => v.id) } },
+					data: { groupBy: null }
+				});
+			}
+		}
+
+		const property = await tx.property.update({
+			where: { id },
+			data: { ...rest, relatedProperty }
+		});
+
+		return injectPropertyOptionsAsync(property);
 	});
-
-	return injectPropertyOptionsAsync(property);
 }
 
-async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSchema>) {
-	const storedProperty = await prisma.property.findFirstOrThrow({
-		where: { id: args.id },
-		include: { collection: { select: { name: true } } }
-	});
-
-	if (!shouldCreateBidirectionalRef(storedProperty, args)) return;
-
+async function createBidirectionalRelation(
+	storedProperty: Property,
+	args: z.infer<typeof propertyUpdateSchema>,
+	collectionName: string
+) {
 	const exists = !!(await prisma.property.findFirst({
 		where: {
 			type: PropertyType.RELATION,
@@ -227,7 +250,7 @@ async function createBidirectionalRelation(args: z.infer<typeof propertyUpdateSc
 	if (exists) return;
 
 	const property = await createProperty({
-		name: `Related to ${storedProperty.collection.name}`,
+		name: `Related to ${collectionName}`,
 		type: PropertyType.RELATION,
 		collectionId: args.targetCollection!,
 		targetCollection: storedProperty.collectionId,

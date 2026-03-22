@@ -22,7 +22,11 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
-import { aggregatePropertyValue, getRefValue, incrementFileName } from '$lib/utils/index.js';
+import {
+	aggregatePropertyValue,
+	getPropertyRefValue,
+	incrementFileName
+} from '$lib/utils/index.js';
 import {
 	PropertyType,
 	SortType,
@@ -106,7 +110,7 @@ export const items = createTRPCRouter({
 	fileUploadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
 		const [property, item] = await getFilePropertyAndItem(input.pid, input.id);
 
-		const ref = getRefValue(item.properties, input.pid);
+		const ref = getPropertyRefValue(item.properties, input.pid);
 		let generateName = input.filename;
 
 		if (ref) {
@@ -121,7 +125,7 @@ export const items = createTRPCRouter({
 	fileDownloadUrl: protectedProcedure.input(fileUploadSchema).mutation(async ({ input }) => {
 		const [property, item] = await getFilePropertyAndItem(input.pid, input.id);
 
-		const ref = getRefValue(item.properties, input.pid);
+		const ref = getPropertyRefValue(item.properties, input.pid);
 
 		if (!ref.split(DEFAULT_STRING_DELIMITER).includes(input.filename))
 			throw new TRPCError({ code: 'BAD_REQUEST' });
