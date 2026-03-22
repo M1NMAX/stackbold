@@ -19,17 +19,10 @@ const colorSchema = z.enum(Color);
 const propertyTypeSchema = z.enum(PropertyType);
 const aggregatorSchema = z.enum(Aggregator);
 
-const optionSchema = z.object({
-	id: z.string(),
-	value: z.string(),
-	color: colorSchema
-});
-
 const propertyCreateSchema = z.object({
 	collectionId: z.string(),
 	name: z.string(),
 	type: propertyTypeSchema.optional(),
-	options: z.array(optionSchema).optional(),
 	order: z.number().optional(),
 	aggregator: aggregatorSchema.nullish(),
 	defaultValue: z.string().nullish(),

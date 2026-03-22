@@ -22,6 +22,7 @@ import {
 	isBidirectionalRelation,
 	isBundleValueInjectable
 } from '$lib/trpc/utils';
+import type { PropertyWithOptions } from '$lib/types';
 import {
 	aggregatePropertyValue,
 	getPropertyRefValue,
@@ -173,7 +174,8 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 			where: {
 				collectionId,
 				OR: [{ type: { in: PROPERTIES_WITHOUT_REF } }, { id: { in: sortIds } }]
-			}
+			},
+			include: { optionsM: true }
 		})
 	]);
 
@@ -253,10 +255,10 @@ async function injectBundleRefsItems(items: Item[], properties: Property[]) {
 	return Array.from(updates.values());
 }
 
-function sortItems(items: Item[], sorts: Sort[], properties: Property[]) {
+function sortItems(items: Item[], sorts: Sort[], properties: PropertyWithOptions[]) {
 	if (sorts.length === 0) return items;
 
-	const propertiesMap = new Map<string, Property>(properties.map((p) => [p.id, p]));
+	const propertiesMap = new Map<string, PropertyWithOptions>(properties.map((p) => [p.id, p]));
 
 	return items.sort((a, b) => {
 		for (const sort of sorts) {
@@ -270,8 +272,8 @@ function sortItems(items: Item[], sorts: Sort[], properties: Property[]) {
 				bValue = getPropertyRef(b.properties, sort.field)?.value || '';
 				const property = propertiesMap.get(sort.field);
 				if (property && PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)) {
-					aValue = getPropertyOption(property.options, aValue)?.value || '';
-					bValue = getPropertyOption(property.options, bValue)?.value || '';
+					aValue = getPropertyOption(property.optionsM, aValue)?.order.toString() || '';
+					bValue = getPropertyOption(property.optionsM, bValue)?.order.toString() || '';
 				}
 			}
 

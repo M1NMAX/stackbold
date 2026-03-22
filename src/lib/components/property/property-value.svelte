@@ -195,7 +195,7 @@
 			}))
 		]}
 		onselect={(opt) => updPropertyRef(opt.id)}
-		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		placeholder=""
 	/>
@@ -214,7 +214,7 @@
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
-		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		placeholder=""
 		isMulti

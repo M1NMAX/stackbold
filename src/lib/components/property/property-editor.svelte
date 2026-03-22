@@ -152,7 +152,7 @@
 		});
 
 		options.push(
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: property.defaultValue === option.id,
@@ -390,7 +390,7 @@
 					<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
 					<Select
 						id={getIdPrefix('property-ext-target-property')}
-						options={property.options.map((opt) => ({
+						options={property.optionsM.map((opt) => ({
 							id: opt.id,
 							label: opt.value,
 							icon: opt.extra ? opt.extra.toLowerCase() : '',
@@ -462,7 +462,7 @@
 				</Tooltip>
 			{/if}
 
-			{#if property.options.length >= 6}
+			{#if property.optionsM.length >= 6}
 				{@const tooltipId = useId(`property-editor-toggle-option-list-tooltip-${property.id}`)}
 				<Button
 					id={tooltipId}
@@ -519,7 +519,7 @@
 			id={getIdPrefix('property-default-value')}
 			options={setupDefaultOptionSelectOptions()}
 			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id || null })}
-			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		/>
 	</Field>
 {/snippet}
