@@ -164,15 +164,15 @@ export class PropertyState {
 
 			const option = {
 				id: tmpId,
-				color: Color.GRAY,
-				order,
 				value,
-				extra: null,
+				order,
+				color: Color.GRAY,
+				propertyId: pid,
 				createdAt: date,
 				updatedAt: date
 			};
 
-			this.#updProperty(pid, { ...target, options: [...target.options, option] });
+			this.#updProperty(pid, { ...target, optionsM: [...target.optionsM, option] });
 			await trpc().properties.addOption.mutate({ propertyId: pid, value });
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
@@ -188,11 +188,11 @@ export class PropertyState {
 		}
 
 		try {
-			const options = target.options.map((opt) =>
+			const optionsM = target.optionsM.map((opt) =>
 				opt.id !== option.id ? opt : { ...opt, ...option }
 			);
 
-			this.#updProperty(pid, { ...target, options });
+			this.#updProperty(pid, { ...target, optionsM });
 
 			await trpc().properties.updateOption.mutate(option);
 		} catch (error) {
@@ -214,9 +214,9 @@ export class PropertyState {
 		}
 
 		try {
-			const options = target.options.filter((opt) => opt.id !== oid);
+			const optionsM = target.optionsM.filter((opt) => opt.id !== oid);
 
-			this.#updProperty(pid, { ...target, options });
+			this.#updProperty(pid, { ...target, optionsM });
 
 			await trpc().properties.removeOption.mutate(oid);
 		} catch (error) {

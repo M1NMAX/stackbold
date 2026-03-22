@@ -18,7 +18,7 @@
 	import { capitalizeFirstLetter, getOption, getPropertyColor } from '$lib/utils/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
 	import { GROUPABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
-	import { PropertyWithOptions } from '$lib/types.js';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
 		view: View;
@@ -27,7 +27,7 @@
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { view, items, scrollTop, ...rest }: Props = $props();
+	let { view, items, scrollTop, clickOpenItem }: Props = $props();
 	const propertyState = getPropertyState();
 
 	function shouldRenderEmptyGroups(len: number) {
@@ -53,7 +53,7 @@
 						{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 							{#if shouldRenderEmptyGroups(groupedItems[key].length)}
 								{@const color = getPropertyColor(targetProperty, key)}
-								<ItemBoardView {key} {view} {scrollTop} items={groupedItems[key]} {...rest}>
+								<ItemBoardView {key} {view} {scrollTop} items={groupedItems[key]} {clickOpenItem}>
 									{#snippet header()}
 										{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
 									{/snippet}
@@ -84,11 +84,11 @@
 {#snippet itemView(items: Item[])}
 	<div class="grow space-y-2">
 		{#if view.type === ViewType.TABLE}
-			<ItemTableView {view} {items} {...rest} />
+			<ItemTableView {view} {items} {clickOpenItem} />
 		{:else if view.type === ViewType.LIST}
-			<ItemListView {view} {items} {...rest} />
+			<ItemListView {view} {items} {clickOpenItem} />
 		{:else if view.type === ViewType.BOARD}
-			<ItemBoardView key="" {scrollTop} {view} {items} {...rest}>
+			<ItemBoardView key="" {scrollTop} {view} {items} {clickOpenItem}>
 				{#snippet header()}
 					<div class="w-full flex justify-center items-center gap-x-2">
 						<span> No grouping properties have been selected for this view </span>
@@ -112,7 +112,7 @@
 				<MockCheckbox checked={key === 'true'} />
 				{property.name}
 			{:else}
-				{@const option = getOption(property.options, key)}
+				{@const option = getOption(property.optionsM, key)}
 				{option ? option.value : `No ${property.name}`}
 			{/if}
 		</Badge>

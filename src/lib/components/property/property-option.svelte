@@ -2,7 +2,7 @@
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import GripHorizontal from 'lucide-svelte/icons/grip-vertical';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { THEME_COLORS } from '$lib/constant';
+	import { DEBOUNCE_INTERVAL, THEME_COLORS } from '$lib/constant/index.js';
 	import { Color, type PropertyOption } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
@@ -30,19 +30,17 @@
 	let dragging = $state(false);
 	let dragover = $state(false);
 
-	let value = $state(option.color as string);
-
-	let selectedKey = $derived.by(() => {
-		return (Object.keys(THEME_COLORS).find((key) => key === value) as Color) ?? Color.GRAY;
-	});
-
 	const wrapperState = new ModalState();
 	const propertyState = getPropertyState();
 	const deleteModal = getDeleteModalState();
-	const updOptionDebounded = debounce(updOption, 1000);
+	const updOptionDebounded = debounce(updOption, DEBOUNCE_INTERVAL);
 
 	async function updOption(pid: string, option: UpdOption) {
 		await propertyState.updPropertyOption(pid, option);
+	}
+
+	async function handleSelectColor(color: Color) {
+		await updOption(option.propertyId, { id: option.id, color });
 	}
 
 	function handleOnInput(e: Event) {
@@ -54,11 +52,6 @@
 		e.stopPropagation();
 		if (e.key !== 'Enter') return;
 		wrapperState.close();
-	}
-
-	function handleSelectColor(selectedKey: string) {
-		value = selectedKey;
-		updOptionDebounded(option.propertyId, { id: option.id, color: value as Color });
 	}
 
 	function deleteOption() {
@@ -140,7 +133,7 @@
 		>
 			<GripHorizontal />
 			<span class="grow">
-				<Badge color={selectedKey} class="w-fit">{option.value}</Badge>
+				<Badge color={option.color} class="w-fit">{option.value}</Badge>
 			</span>
 			<ChevronRight />
 		</div>
@@ -164,7 +157,7 @@
 	</div>
 
 	<p class="py-1.5 px-2 text-sm font-semibold">Colors</p>
-	<RadioGroup {value} onchange={(value) => handleSelectColor(value)}>
+	<RadioGroup value={option.color} onchange={(value) => handleSelectColor(value as Color)}>
 		{#each Object.entries(THEME_COLORS) as [colorName, colorClasses]}
 			{#if colorName !== Color.SLATE}
 				{@const id = useId(`property-option-color`)}

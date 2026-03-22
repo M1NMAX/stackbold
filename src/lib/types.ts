@@ -40,7 +40,7 @@ export type MoveCollectionDetail = {
 export type UpdGroup = RouterInputs['groups']['update'];
 export type UpdView = RouterInputs['views']['update'];
 export type UpdProperty = RouterInputs['properties']['update'];
-export type UpdOption = RouterInputs['properties']['updateOption']['option'];
+export type UpdOption = RouterInputs['properties']['updateOption'];
 
 export type Filter = { id: string; values: string[] };
 
@@ -96,8 +96,3 @@ export type ClickItemEvent = MouseEvent & {
 };
 
 export type ItemsGroup = Record<string, Item[]>;
-
-export type DragData = {
-	index: number;
-	group: string;
-};

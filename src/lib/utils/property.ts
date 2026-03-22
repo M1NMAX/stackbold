@@ -63,7 +63,7 @@ export function getPropertyRefValue(refs: PropertyRef[], pid: string) {
 
 export function getPropertyColor(property: PropertyWithOptions, value: string) {
 	if (!hasOptions(property.type)) return Color.GRAY;
-	const option = property.options.find((opt) => opt.id === value);
+	const option = property.optionsM.find((opt) => opt.id === value);
 	return option ? option.color : Color.GRAY;
 }
 
@@ -84,7 +84,7 @@ export function hasOptions(type: PropertyType) {
 export function isPropertyNumerical(property: PropertyWithOptions) {
 	if (NUMBERICAL_PROPERTY_TYPES.includes(property.type)) return true;
 	if (property.type === PropertyType.BUNDLE) {
-		const select = property.options.find((opt) => opt.id === property.extTargetProperty);
+		const select = property.optionsM.find((opt) => opt.id === property.extTargetProperty);
 		return select ? NUMBERICAL_PROPERTY_TYPES.includes(select.extra as PropertyType) : false;
 	}
 

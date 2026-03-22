@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import ChevronsUpDown from 'lucide-svelte/icons/chevrons-up-down';
 	import ChevronsDownUp from 'lucide-svelte/icons/chevrons-down-up';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
@@ -218,8 +218,8 @@
 
 	function getMaxVisisbleOptions() {
 		if (!hasOptions(property.type)) return 0;
-		if (property.options.length < 6) return property.options.length;
-		return showAllOptions.isOpen ? property.options.length : 5;
+		if (property.optionsM.length < 6) return property.optionsM.length;
+		return showAllOptions.isOpen ? property.optionsM.length : 6;
 	}
 
 	function ondragover(e: DragEvent) {
@@ -291,7 +291,7 @@
 
 		<div class="grow">{property.name}</div>
 
-		<ChevronLeft class={tm('size-4 transition-transform', isOpen ? '-rotate-90' : 'rotate-0')} />
+		<ChevronRight class={tm('size-4 transition-transform', isOpen ? 'rotate-90' : 'rotate-0')} />
 	</div>
 	{#if isOpen}
 		<div class="flex flex-col gap-y-1 p-2" transition:slide>

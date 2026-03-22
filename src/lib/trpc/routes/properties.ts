@@ -466,9 +466,11 @@ async function createPropertyOption(option: z.infer<typeof propertyOptionCreateS
 }
 
 async function updatePropertyOption(option: z.infer<typeof propertyOptionUpdateSchema>) {
+	const { id, ...rest } = option;
+
 	return await prisma.propertyOption.update({
-		where: { id: option.id },
-		data: { ...option }
+		where: { id },
+		data: { ...rest }
 	});
 }
 

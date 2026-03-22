@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import GripVertical from 'lucide-svelte/icons/grip-vertical';
 	import Trash from 'lucide-svelte/icons/trash';
@@ -135,7 +135,7 @@
 
 		<div class="grow">{view.name}</div>
 
-		<ChevronLeft class={tm('size-4 transition-transform', isOpen ? '-rotate-90' : 'rotate-0')} />
+		<ChevronRight class={tm('size-4 transition-transform', isOpen ? 'rotate-90' : 'rotate-0')} />
 	</div>
 
 	{#if isOpen}
