@@ -1,7 +1,6 @@
 import { Color, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
 import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
-import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
 import type { RouterInputs } from '$lib/trpc/router';
