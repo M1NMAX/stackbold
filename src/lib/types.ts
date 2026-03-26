@@ -96,3 +96,5 @@ export type ClickItemEvent = MouseEvent & {
 };
 
 export type ItemsGroup = Record<string, Item[]>;
+
+export type PropertiesSnapshot = { id: string; optionsIds: Map<string, string> };

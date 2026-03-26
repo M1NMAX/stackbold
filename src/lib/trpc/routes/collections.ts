@@ -6,6 +6,8 @@ import { BASE_FIELDS, DEFAULT_COLLECTION_ICON, NAME_FIELD } from '$lib/constant/
 import { ViewType } from '@prisma/client';
 import { capitalizeFirstLetter, omit } from '$lib/utils/index.js';
 import { listObjects, removeObjects } from '$lib/server/minio';
+import type { PropertiesSnapshot, PropertyWithOptions } from '$lib/types.js';
+import type { map } from 'zod/v3';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -77,10 +79,6 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 	});
 }
 
-interface PropertySnapshot {
-	id: string;
-	optionIds: Map<string, string>;
-}
 export async function duplicateCollection(id: string, ownerId: string) {
 	const target = await prisma.collection.findUnique({
 		where: { id },
@@ -98,36 +96,19 @@ export async function duplicateCollection(id: string, ownerId: string) {
 
 	const rest = omit(target, [...BASE_FIELDS, 'views', 'properties', 'items']);
 
-	const oldPropertyMaps = new Map<string, string>();
-	const oldPropertiesOrderToOptions = new Map<string, string[]>();
-	const snapshots = new Map<string, PropertySnapshot>();
+	const propertiesData: ReturnType<typeof mapPropertyData>[] = [];
+	const snapshots = new Map<string, PropertiesSnapshot>();
+
 	for (const property of target.properties) {
-		const key = `${property.name}-${property.order}`;
-		snapshots.set(key, {
+		propertiesData.push(mapPropertyData(property));
+
+		snapshots.set(`${property.name}-${property.order}`, {
 			id: property.id,
-			optionIds: new Map<string, string>(
+			optionsIds: new Map<string, string>(
 				property.optionsM.map((o) => [`${o.value}-${o.order}`, o.id])
 			)
 		});
-		oldPropertyMaps.set(key, property.id);
-		oldPropertiesOrderToOptions.set(
-			key,
-			property.optionsM.map((o) => o.id)
-		);
 	}
-
-	const propertiesData = target.properties.map((property) => {
-		const base = omit(property, [...BASE_FIELDS, 'collectionId']);
-
-		const optionData = property.optionsM.map((option) =>
-			omit(option, [...BASE_FIELDS, 'propertyId'])
-		);
-
-		return {
-			...base,
-			optionsM: { create: [...optionData] }
-		};
-	});
 
 	return await prisma.$transaction(async (tx) => {
 		const collection = await tx.collection.create({
@@ -147,16 +128,16 @@ export async function duplicateCollection(id: string, ownerId: string) {
 		});
 
 		const propertyIdsMap = new Map<string, string>();
-		const newSnapshots = new Map<string, PropertySnapshot>();
+		const newSnapshots = new Map<string, PropertiesSnapshot>();
 		for (const property of collection.properties) {
 			const key = `${property.name}-${property.order}`;
 			const snap = snapshots.get(key);
 			if (!snap) continue;
 			newSnapshots.set(snap.id, {
 				id: property.id,
-				optionIds: new Map<string, string>(
+				optionsIds: new Map<string, string>(
 					property.optionsM.flatMap((o) => {
-						const oldOption = snap.optionIds.get(`${o.value}-${o.order}`);
+						const oldOption = snap.optionsIds.get(`${o.value}-${o.order}`);
 						return oldOption ? [[oldOption, o.id]] : [];
 					})
 				)
@@ -206,7 +187,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 				const snap = newSnapshots.get(ref.id);
 				if (!snap) return [];
 
-				const value = (ref.value && snap.optionIds.get(ref.value)) || ref.value;
+				const value = (ref.value && snap.optionsIds.get(ref.value)) || ref.value;
 
 				return [{ id: snap.id, value }];
 			});
@@ -228,6 +209,19 @@ export async function duplicateCollection(id: string, ownerId: string) {
 			include: { views: { select: { shortId: true } } }
 		});
 	});
+}
+
+function mapPropertyData(property: PropertyWithOptions) {
+	const base = omit(property, [...BASE_FIELDS, 'collectionId']);
+
+	const optionData = property.optionsM.map((option) =>
+		omit(option, [...BASE_FIELDS, 'propertyId'])
+	);
+
+	return {
+		...base,
+		optionsM: { create: [...optionData] }
+	};
 }
 
 async function deleteCollection(id: string, userId: string) {
