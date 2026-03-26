@@ -2,9 +2,9 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { DEFAULT_COLLECTION_ICON, NAME_FIELD } from '$lib/constant/index.js';
+import { BASE_FIELDS, DEFAULT_COLLECTION_ICON, NAME_FIELD } from '$lib/constant/index.js';
 import { ViewType } from '@prisma/client';
-import { capitalizeFirstLetter } from '$lib/utils/index.js';
+import { capitalizeFirstLetter, omit } from '$lib/utils/index.js';
 import { listObjects, removeObjects } from '$lib/server/minio';
 
 const collectionCreateSchema = z.object({
@@ -41,7 +41,7 @@ export const collections = createTRPCRouter({
 
 	duplicate: protectedProcedure
 		.input(z.string())
-		.mutation(async ({ input, ctx: { userId } }) => await duplicateCollection(input, userId, true)),
+		.mutation(async ({ input, ctx: { userId } }) => await duplicateCollection(input, userId)),
 
 	update: protectedProcedure
 		.input(collectionUpdateSchema)
@@ -77,28 +77,55 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 	});
 }
 
-export async function duplicateCollection(id: string, ownerId: string, copy: boolean = false) {
-	const target = await prisma.collection.findUniqueOrThrow({
+interface PropertySnapshot {
+	id: string;
+	optionIds: Map<string, string>;
+}
+export async function duplicateCollection(id: string, ownerId: string) {
+	const target = await prisma.collection.findUnique({
 		where: { id },
 		include: {
 			views: true,
 			items: true,
 			properties: {
-				orderBy: { order: 'asc' }
+				orderBy: { order: 'asc' },
+				include: { optionsM: { orderBy: { order: 'asc' } } }
 			}
 		}
 	});
 
-	const { id: _1, createdAt: _2, updatedAt: _3, views, properties, items, ...rest } = target;
+	if (!target) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Collection not found' });
 
-	const oldPropertyIdToOrder = new Map<number, string>(
-		properties.map((property) => [property.order, property.id])
-	);
+	const rest = omit(target, [...BASE_FIELDS, 'views', 'properties', 'items']);
 
-	const propertiesData = properties.map((property) => {
-		const { id: _1, createdAt: _2, updatedAt: _3, collectionId: _4, ...rest } = property;
+	const oldPropertyMaps = new Map<string, string>();
+	const oldPropertiesOrderToOptions = new Map<string, string[]>();
+	const snapshots = new Map<string, PropertySnapshot>();
+	for (const property of target.properties) {
+		const key = `${property.name}-${property.order}`;
+		snapshots.set(key, {
+			id: property.id,
+			optionIds: new Map<string, string>(
+				property.optionsM.map((o) => [`${o.value}-${o.order}`, o.id])
+			)
+		});
+		oldPropertyMaps.set(key, property.id);
+		oldPropertiesOrderToOptions.set(
+			key,
+			property.optionsM.map((o) => o.id)
+		);
+	}
+
+	const propertiesData = target.properties.map((property) => {
+		const base = omit(property, [...BASE_FIELDS, 'collectionId']);
+
+		const optionData = property.optionsM.map((option) =>
+			omit(option, [...BASE_FIELDS, 'propertyId'])
+		);
+
 		return {
-			...rest
+			...base,
+			optionsM: { create: [...optionData] }
 		};
 	});
 
@@ -108,22 +135,36 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 				...rest,
 				ownerId,
 				isTemplate: false,
-				name: copy ? `${rest.name} copy` : rest.name,
+				name: target.isTemplate ? rest.name : `${rest.name} copy`,
 				properties: { create: [...propertiesData] }
 			},
 			include: {
-				properties: { orderBy: { order: 'asc' } }
+				properties: {
+					orderBy: { order: 'asc' },
+					include: { optionsM: { orderBy: { order: 'asc' } } }
+				}
 			}
 		});
 
 		const propertyIdsMap = new Map<string, string>();
+		const newSnapshots = new Map<string, PropertySnapshot>();
 		for (const property of collection.properties) {
-			const oldId = oldPropertyIdToOrder.get(property.order);
-			if (oldId) propertyIdsMap.set(oldId, property.id);
+			const key = `${property.name}-${property.order}`;
+			const snap = snapshots.get(key);
+			if (!snap) continue;
+			newSnapshots.set(snap.id, {
+				id: property.id,
+				optionIds: new Map<string, string>(
+					property.optionsM.flatMap((o) => {
+						const oldOption = snap.optionIds.get(`${o.value}-${o.order}`);
+						return oldOption ? [[oldOption, o.id]] : [];
+					})
+				)
+			});
 		}
 
-		const viewsData = views.map((view) => {
-			const { id: _1, createdAt: _2, updatedAt: _3, collectionId: _4, ...rest } = view;
+		const viewsData = target.views.map((view) => {
+			const rest = omit(view, [...BASE_FIELDS, 'collectionId']);
 
 			let groupBy = undefined;
 			if (rest.groupBy) {
@@ -133,18 +174,19 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 
 			const sorts = rest.sorts.map((sort) => {
 				if (sort.field === NAME_FIELD) return { ...sort };
-				const id = propertyIdsMap.get(sort.field);
-				return id ? { ...sort, field: id } : null;
+
+				const snap = newSnapshots.get(sort.field);
+				return snap ? { ...sort, field: snap.id } : null;
 			});
 
 			const filters = rest.filters.map((filter) => {
-				const id = propertyIdsMap.get(filter.id);
-				return id ? { ...filter, id } : null;
+				const snap = newSnapshots.get(filter.id);
+				return snap ? { ...filter, id: snap.id } : null;
 			});
 
 			const properties = rest.properties.map((property) => {
-				const id = propertyIdsMap.get(property.id);
-				return id ? { ...property, id } : null;
+				const snap = newSnapshots.get(property.id);
+				return snap ? { ...property, id: snap.id } : null;
 			});
 
 			return {
@@ -157,18 +199,22 @@ export async function duplicateCollection(id: string, ownerId: string, copy: boo
 			};
 		});
 
-		const itemData = items.map((item) => {
-			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = item;
+		const itemData = target.items.map((item) => {
+			const rest = omit(item, [...BASE_FIELDS]);
 
-			const refs = rest.properties.map((ref) => {
-				const id = propertyIdsMap.get(ref.id);
-				return id ? { ...ref, id } : null;
+			const refs = rest.properties.flatMap((ref) => {
+				const snap = newSnapshots.get(ref.id);
+				if (!snap) return [];
+
+				const value = (ref.value && snap.optionIds.get(ref.value)) || ref.value;
+
+				return [{ id: snap.id, value }];
 			});
 
 			return {
 				...rest,
 				collectionId: collection.id,
-				properties: refs.filter((r) => r != null)
+				properties: refs
 			};
 		});
 

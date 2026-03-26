@@ -12,8 +12,13 @@ import {
 	type View
 } from '@prisma/client';
 import { listObjects, removeObjects } from '$lib/server/minio';
-import { GROUPABLE_PROPERTY_TYPES, NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS } from '$lib/constant';
+import {
+	BASE_FIELDS,
+	GROUPABLE_PROPERTY_TYPES,
+	NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS
+} from '$lib/constant/index.js';
 import type { PropertyWithOptions, XPropertyOption } from '$lib/types';
+import { omit } from '$lib/utils/index.js';
 
 const colorSchema = z.enum(Color);
 const propertyTypeSchema = z.enum(PropertyType);
@@ -76,6 +81,10 @@ export const properties = createTRPCRouter({
 	create: protectedProcedure
 		.input(propertyCreateSchema)
 		.mutation(async ({ input }) => await createProperty(input)),
+
+	duplicate: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ input }) => await duplicateProperty(input)),
 
 	update: protectedProcedure
 		.input(propertyUpdateSchema)
@@ -313,6 +322,59 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	await Promise.all(promises);
 
 	return property;
+}
+
+async function duplicateProperty(id: string) {
+	const target = await prisma.property.findUnique({ where: { id }, include: { optionsM: true } });
+
+	if (!target) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Property not found' });
+
+	return await prisma.$transaction(async (tx) => {
+		const order = await prisma.property.count({ where: { collectionId: target.collectionId } });
+
+		const rest = omit(target, [...BASE_FIELDS, 'optionsM']);
+
+		const optionsData = target.optionsM.map((option) =>
+			omit(option, [...BASE_FIELDS, 'propertyId'])
+		);
+
+		const property = await tx.property.create({
+			data: {
+				...rest,
+				order: order + 1,
+				name: rest.name + ' copy',
+				relatedProperty: null,
+				optionsM: {
+					createMany: {
+						data: [...optionsData]
+					}
+				}
+			},
+			include: { optionsM: true }
+		});
+
+		const promises: Promise<unknown>[] = [];
+
+		if (hasRef(property.type)) {
+			promises.push(
+				tx.item.updateMany({
+					where: { collectionId: property.collectionId },
+					data: { properties: { push: { id: property.id, value: '' } } }
+				})
+			);
+		}
+
+		promises.push(
+			tx.view.updateMany({
+				where: { collectionId: property.collectionId },
+				data: { properties: { push: { id: property.id, isVisible: true } } }
+			})
+		);
+
+		await Promise.all(promises);
+
+		return property;
+	});
 }
 
 async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
