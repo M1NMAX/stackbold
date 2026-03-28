@@ -98,3 +98,11 @@ export type ClickItemEvent = MouseEvent & {
 export type ItemsGroup = Record<string, Item[]>;
 
 export type PropertiesSnapshot = { id: string; optionsIds: Map<string, string> };
+
+export type ReadableBox<T> = {
+	readonly current: T;
+};
+
+export type WritableBox<T> = ReadableBox<T> & {
+	current: T;
+};

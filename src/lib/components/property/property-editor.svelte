@@ -65,7 +65,7 @@
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
-	const newOptionInputId = useId(`property-editor-${property.id}`);
+	const newOptionInputId = useId('property-editor');
 	const newOptionInputState = new ModalState();
 	const showAllOptions = new ModalState();
 	const menuState = new ModalState();

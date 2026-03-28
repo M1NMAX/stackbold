@@ -101,6 +101,7 @@ async function createView(view: z.infer<typeof viewCreateSchema>) {
 			shortId: (aggregate._max.shortId || 0) + 1,
 			order: aggregate._count + 1,
 			filters: [],
+			hideEmptyGroups: view.type !== ViewType.BOARD,
 			properties: properties.map((prop) => ({
 				id: prop.id,
 				isVisible: true

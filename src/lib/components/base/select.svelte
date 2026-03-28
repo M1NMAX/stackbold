@@ -56,9 +56,12 @@
 		);
 	});
 
-	const triggerId = `select-trigger-${id}`;
-	const searchInputId = `select-search-${id}`;
-	const contentId = `select-content-${id}`;
+	const { triggerId, searchInputId, contentId } = $derived({
+		triggerId: `select-trigger-${id}`,
+		searchInputId: `select-search-${id}`,
+		contentId: `select-content-${id}`
+	});
+
 	const menuState = new ModalState();
 	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 

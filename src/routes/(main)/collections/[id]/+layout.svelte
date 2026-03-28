@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setItemState } from '$lib/components/item/index.js';
-	import { ModalState } from '$lib/states/index.js';
+	import { box, ModalState } from '$lib/states/index.js';
 	import { setPropertyState } from '$lib/components/property/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { setContext } from 'svelte';
@@ -8,9 +8,12 @@
 
 	let { children, data } = $props();
 
-	const viewState = setViewState(data.views, data.viewShortId);
-	const propertyState = setPropertyState(data.properties);
-	const itemState = setItemState(data.items);
+	const viewState = setViewState(
+		() => data.views,
+		() => data.viewShortId
+	);
+	const propertyState = setPropertyState(() => data.properties);
+	const itemState = setItemState(() => data.items);
 
 	const panelState = setContext(COLLECTION_PAGE_PANEL_CTX_KEY, new ModalState());
 

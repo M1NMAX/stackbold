@@ -1,3 +1,4 @@
+import type { ReadableBox, WritableBox } from '$lib/types';
 import { getContext, setContext, tick } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 
@@ -6,15 +7,19 @@ const COMMAND_ITEM_ATTR = '[role="option"]';
 
 type Ref = HTMLDivElement | null;
 
+interface CommandItemOpts {
+	value: WritableBox<string>;
+	onselect: ReadableBox<() => void>;
+}
+
 class CommandItem {
-	value: string;
-	onselect?: () => void;
+	readonly opts: CommandItemOpts;
+
 	render = $state(true);
 	isSelected = $state(false);
 
-	constructor(value: string, onselect?: () => void) {
-		this.value = value;
-		this.onselect = onselect;
+	constructor(opts: CommandItemOpts) {
+		this.opts = opts;
 	}
 }
 
@@ -32,7 +37,9 @@ class CommandState {
 
 		$effect(() => {
 			const searchTerm = this.search.toLowerCase() || '';
-			this.#items.forEach((item) => (item.render = item.value.toLowerCase().includes(searchTerm)));
+			this.#items.forEach(
+				(item) => (item.render = item.opts.value.current.toLowerCase().includes(searchTerm))
+			);
 
 			tick().then(() => this.#focusFirstItem());
 		});
@@ -42,8 +49,8 @@ class CommandState {
 		this.ref = ref;
 	}
 
-	registerItem(id: string, value: string, onselect?: () => void) {
-		this.#items.set(id, new CommandItem(value, onselect));
+	registerItem(id: string, opts: CommandItemOpts) {
+		this.#items.set(id, new CommandItem(opts));
 	}
 
 	getItemById(id: string) {
@@ -74,7 +81,7 @@ class CommandState {
 			next = current.previousElementSibling as HTMLDivElement;
 		} else if (e.key === 'Enter') {
 			const target = this.getItemById(this.#selectedItemId);
-			if (target.onselect) target.onselect();
+			target.opts.onselect.current();
 		}
 
 		if (next) {

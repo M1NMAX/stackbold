@@ -13,7 +13,7 @@
 
 	let { property, color, value }: Props = $props();
 
-	const tooltipId = useId(`template-prop-tooltip-${property.id}`);
+	const tooltipId = useId('template-prop-tooltip');
 </script>
 
 <Badge id={tooltipId} {color} class="cursor-default">

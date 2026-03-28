@@ -9,8 +9,8 @@ class AccordionState {
 		this.#isMulti = isMulti;
 	}
 
-	addChild(id: string) {
-		this.#children.set(id, new ModalState());
+	addChild(id: () => string) {
+		this.#children.set(id(), new ModalState());
 	}
 
 	open(id: string) {
@@ -49,8 +49,8 @@ class AccordionState {
 
 const ACCORDION_CTX_KEY = Symbol('ACCORDION_CTX_KEY');
 
-export function setAccordionState(isMulti: boolean) {
-	return setContext(ACCORDION_CTX_KEY, new AccordionState(isMulti));
+export function setAccordionState(isMulti: () => boolean) {
+	return setContext(ACCORDION_CTX_KEY, new AccordionState(isMulti()));
 }
 
 export function getAccordionState() {

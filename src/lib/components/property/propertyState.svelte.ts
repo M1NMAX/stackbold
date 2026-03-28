@@ -1,10 +1,11 @@
 import { Color, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
-import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
+import { capitalizeFirstLetter, getTRPCErrorMsg, omit } from '$lib/utils/index.js';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
 import type { RouterInputs } from '$lib/trpc/router';
 import type { PropertyWithOptions } from '$lib/types';
+import { BASE_FIELDS } from '$lib/constant';
 
 export class PropertyState {
 	#toastState = getToastState();
@@ -33,13 +34,12 @@ export class PropertyState {
 			const name = capitalizeFirstLetter(type);
 			const order = this.properties.length + 1;
 			const collectionId = this.collectionId;
+			const date = new Date();
 
 			this.properties.push({
 				id: tmpId,
 				name,
 				type,
-				createdAt: new Date(),
-				updatedAt: new Date(),
 				defaultValue: null,
 				aggregator: null,
 				options: [],
@@ -52,7 +52,9 @@ export class PropertyState {
 				extTargetProperty: null,
 				calculate: null,
 				format: null,
-				decimals: null
+				decimals: null,
+				createdAt: date,
+				updatedAt: date
 			});
 
 			const property = await trpc().properties.create.mutate({
@@ -77,23 +79,19 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = target;
-			const name = rest.name + ' copy';
+			const rest = omit(target, [...BASE_FIELDS]);
+			const date = new Date();
 
 			this.properties.push({
 				...rest,
-				name,
 				id: tmpId,
+				name: rest.name + ' copy',
 				order: this.properties.length + 1,
-				createdAt: new Date(),
-				updatedAt: new Date()
+				createdAt: date,
+				updatedAt: date
 			});
 
-			const property = await trpc().properties.create.mutate({
-				...rest,
-				relatedProperty: null,
-				name
-			});
+			const property = await trpc().properties.duplicate.mutate(id);
 
 			this.#updProperty(tmpId, property);
 		} catch (error) {
@@ -228,8 +226,8 @@ export class PropertyState {
 
 const PROPERTY_STATE_CTX_KEY = Symbol('PROPERTY_STATE_CTX_KEY');
 
-export function setPropertyState(properties: PropertyWithOptions[]) {
-	return setContext(PROPERTY_STATE_CTX_KEY, new PropertyState(properties));
+export function setPropertyState(properties: () => PropertyWithOptions[]) {
+	return setContext(PROPERTY_STATE_CTX_KEY, new PropertyState(properties()));
 }
 
 export function getPropertyState() {

@@ -11,7 +11,7 @@
 	};
 
 	let { isMulti = false as IsMulti, value, children, class: className }: Props = $props();
-	const accordionState = setAccordionState(isMulti);
+	const accordionState = setAccordionState(() => isMulti);
 
 	$effect(() => {
 		if (isMulti && value) {

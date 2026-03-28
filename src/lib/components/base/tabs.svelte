@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { ClassValue } from 'svelte/elements';
-	import { setTabsState } from '$lib/states/index.js';
+	import { box, setTabsState } from '$lib/states/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import type { OnChangeFn } from '$lib/types';
 
@@ -16,7 +16,16 @@
 
 	let { value, triggers, children, class: className, triggersClass, onChange }: Props = $props();
 
-	setTabsState(value, onChange);
+	setTabsState({
+		value: box(
+			() => value,
+			(v) => {
+				if (v === value) return;
+				value = v;
+				onChange?.(value);
+			}
+		)
+	});
 </script>
 
 <div class={tm('flex flex-col gap-y-1', className)}>

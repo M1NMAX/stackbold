@@ -8,3 +8,5 @@ export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Om
 	keys.forEach((key) => delete result[key]);
 	return result;
 }
+
+export function noop() {}

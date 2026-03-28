@@ -27,7 +27,7 @@
 
 	const accordionState = getAccordionState();
 
-	accordionState.addChild(id);
+	accordionState.addChild(() => id);
 
 	const isOpen = $derived(accordionState.isOpen(id));
 
