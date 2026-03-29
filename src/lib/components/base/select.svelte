@@ -10,6 +10,7 @@
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
 	import { Color } from '@prisma/client';
+	import { ChevronDown, ChevronsUpDown } from 'lucide-svelte';
 
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;
@@ -38,13 +39,24 @@
 		onselect
 	}: Props = $props();
 
+	let isHeadless = $state(true);
 	let highlighted = $state('');
 	let selectedOptions = $derived.by(() => {
 		return options.filter((opt) => opt.isSelected);
 	});
 	let selectedToRender = $derived.by(() => {
 		if (selectedOptions.length <= 2) return selectedOptions;
-		return selectedOptions.slice(0, 3);
+		if (selectedOptions.length === 3) return selectedOptions.slice(0, 3);
+
+		return [
+			...selectedOptions.slice(0, 3),
+			{
+				id: 'selector-more-option-id',
+				label: `+${selectedOptions.length - 3} More`,
+				isSelected: false,
+				theme: THEME_COLORS[Color.GRAY]
+			}
+		];
 	});
 
 	let search = $state('');
@@ -165,6 +177,8 @@
 	$effect(() => {
 		const labels = document.querySelectorAll(`label[for="${id}"]`);
 
+		isHeadless = labels && labels.length > 0;
+
 		for (const label of labels) {
 			label.addEventListener('click', (ev) => onLabelClick(ev));
 		}
@@ -208,7 +222,7 @@
 		buttonVariants({
 			theme: 'secondary',
 			variant: 'menu',
-			className: tm(triggerClass, 'bg-transparent overflow-y-hidden')
+			className: tm(triggerClass, 'bg-transparent overflow-y-hidden relative')
 		})
 	)}
 >
@@ -220,13 +234,13 @@
 		</div>
 	{/each}
 
-	{#if selectedOptions.length > 3}
-		{@render option({
-			id: 'selector-more-option-id',
-			label: `+${selectedOptions.length - 3} More`,
-			isSelected: false,
-			theme: THEME_COLORS[Color.GRAY]
-		})}
+	{#if isHeadless}
+		<ChevronDown
+			class={tm(
+				'size-3 absolute right-2 bottom-2 transition-transform',
+				menuState.isOpen ? 'rotate-180' : 'rotate-0'
+			)}
+		/>
 	{/if}
 </button>
 
@@ -293,6 +307,7 @@
 			aria-activedescendant={highlighted ?? undefined}
 			tabindex="-1"
 			onkeydown={handleKeydown}
+			class="space-y-0.5"
 		>
 			{#each filteredOptions as option}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -303,7 +318,7 @@
 					tabindex="-1"
 					aria-selected={option.isSelected}
 					class={tm(
-						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-none lg:rounded-md cursor-pointer',
+						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1.5 px-0.5 rounded-none lg:rounded-md cursor-pointer',
 						highlighted == option.id && 'bg-secondary text-secondary-foreground'
 					)}
 					onclick={() => selectOption(option)}
@@ -311,12 +326,14 @@
 				>
 					{#if option.icon}
 						{@render icon(option.icon)}
+						<span class="grow text-sm font-semibold">
+							{option.label}
+						</span>
 					{:else if option.theme}
-						{@render color(option.theme)}
+						<span class="grow">
+							<Badge class={tm(option.theme, 'w-fit')}>{option.label}</Badge>
+						</span>
 					{/if}
-					<span class="grow text-sm font-semibold">
-						{option.label}
-					</span>
 
 					<Check class={tm('size-4', !option.isSelected && 'text-transparent')} />
 				</div>
@@ -332,10 +349,6 @@
 {#snippet icon(key: string)}
 	{@const Icon = APP_ICONS[key.toLowerCase()]}
 	<Icon class="size-4" />
-{/snippet}
-
-{#snippet color(theme: string)}
-	<span class={['size-3.5 rounded-sm', theme]}> </span>
 {/snippet}
 
 {#snippet option(opt: SelectOption)}
