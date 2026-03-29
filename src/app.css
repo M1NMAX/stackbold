@@ -1,7 +1,12 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@config '../tailwind.config.js';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@custom-variant dark (&:is(.dark *));
 /* Scrollbar */
 * {
 	scrollbar-width: thin;
@@ -87,13 +92,13 @@ input[type='number'] {
 
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
+			@apply opacity-100 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
 	}
 
 	&-ghost {
-		@apply bg-opacity-10;
+		@apply opacity-10;
 
 		&:focus,
 		&:focus-within {
@@ -121,17 +126,17 @@ input[type='number'] {
 
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
+			@apply opacity-100 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
 	}
 
 	&-ghost {
-		@apply bg-opacity-10;
+		@apply opacity-10;
 
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-90 outline outline-secondary outline-offset-0;
+			@apply opacity-90 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
 	}
@@ -155,13 +160,13 @@ input[type='number'] {
 
 		&:focus,
 		&:focus-within {
-			@apply bg-opacity-100 outline outline-secondary outline-offset-0;
+			@apply opacity-100 outline outline-secondary outline-offset-0;
 			box-shadow: none;
 		}
 	}
 
 	&-ghost {
-		@apply bg-opacity-10;
+		@apply opacity-10;
 
 		&:focus,
 		&:focus-within {

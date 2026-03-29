@@ -96,7 +96,7 @@
 	{onclick}
 	{ondragstart}
 	class={tm(
-		'w-full flex flex-col items-start p-1.5 gap-y-1 rounded-md select-none bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/40 dark:hover:bg-secondary/60 group',
+		'w-full flex flex-col items-start p-1.5 gap-y-1 rounded-md select-none bg-secondary/50 hover:bg-secondary/60 group',
 		item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 	)}
 >
