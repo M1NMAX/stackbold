@@ -23,10 +23,10 @@
 <AdaptiveWrapper
 	floatingAlign="start"
 	bind:open={menuState.isOpen}
-	triggerClass={buttonVariants({ theme: 'ghost', variant: 'icon', className: '[&_svg]:size-7' })}
+	triggerClass={buttonVariants({ theme: 'ghost', variant: 'icon' })}
 >
 	{#snippet trigger()}
-		<SelectedIcon />
+		<SelectedIcon class="size-7" />
 	{/snippet}
 
 	<MenuTitle title="Icons" class="md:sr-only" divider={false} />

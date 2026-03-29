@@ -22,7 +22,7 @@
 	onclick={() => tabsState.setValue(value)}
 	class={tm(
 		'h-10 grow flex items-center justify-center whitespace-nowrap rounded-t-md px-2 py-1.5 font-semibold transition-all',
-		tabsState.isSelected(value) && 'bg-secondary shadow-sm border-b-2 border-primary'
+		tabsState.isSelected(value) && 'bg-secondary/70 shadow-sm border-b-2 border-primary'
 	)}
 >
 	{@render children()}

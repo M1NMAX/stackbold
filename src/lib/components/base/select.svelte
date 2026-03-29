@@ -331,7 +331,7 @@
 						</span>
 					{:else if option.theme}
 						<span class="grow">
-							<Badge class={tm(option.theme, 'w-fit')}>{option.label}</Badge>
+							<Badge class={tm(option.theme, 'w-fit h-5')}>{option.label}</Badge>
 						</span>
 					{/if}
 

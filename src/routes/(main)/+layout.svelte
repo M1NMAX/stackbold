@@ -145,7 +145,7 @@
 			</div>
 
 			<Accordion value="favorites" class="grow overflow-y-hidden flex flex-col">
-				<AccordionItem id="favorites" contentClass="p-0 grow overflow-y-scroll">
+				<AccordionItem id="favorites" contentClass="p-0 grow overflow-y-auto">
 					{#snippet accordionHeader({ isOpen, toggle })}
 						<div class="w-full group hover:bg-secondary">
 							<button

@@ -261,7 +261,7 @@
 			class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
 		/>
 
-		<div class="flex justify-end items-center space-x-1.5">
+		<div class="flex justify-end items-center gap-x-1.5">
 			<Button
 				id={`collection-${collection.id}-struct-btn`}
 				theme="secondary"
@@ -332,9 +332,9 @@
 	</PageContent>
 	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
-			<form onsubmit={handleCreateItem} class="grow relative space-y-0">
-				<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none [&_svg]:size-4">
-					<Plus />
+			<form onsubmit={handleCreateItem} class="relative w-full">
+				<div class="absolute top-2.5 left-2 flex items-center pointer-events-none">
+					<Plus class="size-4" />
 				</div>
 				<label for="new-item-name" class="sr-only"> Item name</label>
 				<input
