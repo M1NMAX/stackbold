@@ -1,6 +1,4 @@
 <script lang="ts">
-	import ChevronRight from 'lucide-svelte/icons/chevron-right';
-	import GripHorizontal from 'lucide-svelte/icons/grip-vertical';
 	import Trash from 'lucide-svelte/icons/trash';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -8,20 +6,8 @@
 		THEME_COLORS
 	} from '$lib/constant/index.js';
 	import { Color, type PropertyOption } from '@prisma/client';
-	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
-	import {
-		AdaptiveWrapper,
-		Badge,
-		Button,
-		buttonVariants,
-		Field,
-		HSeparator,
-		Label,
-		RadioGroup,
-		RadioGroupItem,
-		Select,
-		Tooltip
-	} from '$lib/components/base/index.js';
+	import { capitalizeFirstLetter } from '$lib/utils/index.js';
+	import { Button, Field, Label, Select } from '$lib/components/base/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import debounce from 'debounce';
 	import { getPropertyState } from './propertyState.svelte';
@@ -33,9 +19,6 @@
 	};
 
 	let { option }: Props = $props();
-
-	let dragging = $state(false);
-	let dragover = $state(false);
 
 	const wrapperState = new ModalState();
 	const propertyState = getPropertyState();
@@ -55,12 +38,6 @@
 		updOptionDebounded(option.propertyId, { id: option.id, value: targetEl.value });
 	}
 
-	function handleKeypress(e: KeyboardEvent & { currentTarget: HTMLInputElement }) {
-		e.stopPropagation();
-		if (e.key !== 'Enter') return;
-		wrapperState.close();
-	}
-
 	function deleteOption() {
 		wrapperState.close();
 
@@ -75,38 +52,6 @@
 		});
 	}
 
-	function ondragover(e: DragEvent) {
-		e.preventDefault();
-		dragover = true;
-	}
-
-	function ondragleave(e: DragEvent) {
-		e.preventDefault();
-		dragover = false;
-	}
-
-	function ondragend() {
-		dragging = false;
-		dragover = false;
-	}
-
-	function ondragstart(e: DragEvent) {
-		dragging = true;
-		if (!e.dataTransfer) return;
-		e.dataTransfer.effectAllowed = 'move';
-		e.dataTransfer.dropEffect = 'move';
-		e.dataTransfer.setData('text/plain', option.order.toString());
-	}
-
-	async function ondrop(e: DragEvent) {
-		dragover = false;
-		dragging = false;
-		if (!e.dataTransfer) return;
-		e.dataTransfer.dropEffect = 'move';
-		const start = +e.dataTransfer.getData('text/plain');
-		await propertyState.orderPropertyOption(option.propertyId, start, option.order);
-	}
-
 	function setupOptionColorSelectOptions() {
 		return Object.keys(THEME_COLORS).map((color) => {
 			return {
@@ -118,7 +63,7 @@
 		});
 	}
 
-	function getIdPrefix(tail: string) {
+	function getIdWithPrefix(tail: string) {
 		return `${option.id}-${tail}`;
 	}
 
@@ -132,9 +77,9 @@
 </script>
 
 <Field>
-	<Label for={getIdPrefix('option-name')} name="Name" />
+	<Label for={getIdWithPrefix('option-name')} name="Name" />
 	<input
-		id={getIdPrefix('option-name')}
+		id={getIdWithPrefix('option-name')}
 		value={option.value}
 		type="text"
 		name="name"
@@ -144,9 +89,9 @@
 	/>
 </Field>
 <Field>
-	<Label for={getIdPrefix('option-color')} name="Color" />
+	<Label for={getIdWithPrefix('option-color')} name="Color" />
 	<Select
-		id={getIdPrefix('option-color')}
+		id={getIdWithPrefix('option-color')}
 		options={setupOptionColorSelectOptions()}
 		onselect={(opt) => handleSelectColor(opt.id as Color)}
 		searchable
@@ -154,7 +99,7 @@
 </Field>
 
 <div class="flex items-center justify-end gap-x-2">
-	<Button id={`${option.id}-delete-btn`} theme="danger" onclick={() => deleteOption()}>
+	<Button theme="danger" onclick={() => deleteOption()}>
 		<Trash />
 		<span>Delete option </span>
 	</Button>
