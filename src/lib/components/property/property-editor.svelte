@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import Plus from 'lucide-svelte/icons/plus';
 	import X from 'lucide-svelte/icons/x';
 	import Trash from 'lucide-svelte/icons/trash';
@@ -26,7 +25,6 @@
 	import debounce from 'debounce';
 	import { getItemState } from '$lib/components/item/index.js';
 	import {
-		AdaptiveWrapper,
 		Badge,
 		Button,
 		ExpandableEditor,
@@ -188,7 +186,7 @@
 		e.currentTarget.value = '';
 	}
 
-	function getIdPrefix(tail: string) {
+	function getIdWithPrefix(tail: string) {
 		return `${property.id}-${tail}`;
 	}
 
@@ -215,9 +213,9 @@
 </script>
 
 <Field>
-	<Label for={getIdPrefix('property-name')} name="Name" />
+	<Label for={getIdWithPrefix('property-name')} name="Name" />
 	<input
-		id={getIdPrefix('property-name')}
+		id={getIdWithPrefix('property-name')}
 		value={property.name}
 		type="text"
 		name="name"
@@ -227,9 +225,9 @@
 	/>
 </Field>
 <Field>
-	<Label for={getIdPrefix('property-type')} name="Type" />
+	<Label for={getIdWithPrefix('property-type')} name="Type" />
 	<Select
-		id={getIdPrefix('property-type')}
+		id={getIdWithPrefix('property-type')}
 		options={setupPropertyTypeSelectOptions()}
 		onselect={(opt) => updProperty({ id: property.id, type: opt.id as PropertyType })}
 		searchable
@@ -242,9 +240,9 @@
 	{@render propertyOptions()}
 {:else if property.type === PropertyType.NUMBER}
 	<Field>
-		<Label for={getIdPrefix('property-format')} name="Format" />
+		<Label for={getIdWithPrefix('property-format')} name="Format" />
 		<Select
-			id={getIdPrefix('property-format')}
+			id={getIdWithPrefix('property-format')}
 			options={setupNumberFormatOptions()}
 			onselect={(opt) => updProperty({ id: property.id, format: opt.id || null })}
 			placeholder="Empty"
@@ -252,9 +250,9 @@
 		/>
 	</Field>
 	<Field>
-		<Label for={getIdPrefix('property-decimals')} name="Decimals" />
+		<Label for={getIdWithPrefix('property-decimals')} name="Decimals" />
 		<Select
-			id={getIdPrefix('property-decimals')}
+			id={getIdWithPrefix('property-decimals')}
 			options={setupNumberDecimalOptions()}
 			onselect={(opt) => updProperty({ id: property.id, decimals: +opt.id || null })}
 			placeholder="Empty"
@@ -263,9 +261,9 @@
 	</Field>
 {:else if property.type === PropertyType.RELATION}
 	<Field>
-		<Label for={getIdPrefix('property-target-collection')} name="Related to" />
+		<Label for={getIdWithPrefix('property-target-collection')} name="Related to" />
 		<Select
-			id={getIdPrefix('property-target-collection')}
+			id={getIdWithPrefix('property-target-collection')}
 			options={collectionState.collections.map((collection) => ({
 				id: collection.id,
 				label: collection.name,
@@ -285,9 +283,9 @@
 	)}
 
 	<Field>
-		<Label for={getIdPrefix('property-target-relation')} name="Relation" />
+		<Label for={getIdWithPrefix('property-target-relation')} name="Relation" />
 		<Select
-			id={getIdPrefix('property-target-relation')}
+			id={getIdWithPrefix('property-target-relation')}
 			options={relations.map((prop) => ({
 				id: prop.id,
 				label: prop.name,
@@ -306,9 +304,9 @@
 		/>
 	</Field>
 	<Field>
-		<Label for={getIdPrefix('property-ext-target-property')} name="Target Property" />
+		<Label for={getIdWithPrefix('property-ext-target-property')} name="Target Property" />
 		<Select
-			id={getIdPrefix('property-ext-target-property')}
+			id={getIdWithPrefix('property-ext-target-property')}
 			options={property.optionsM.map((opt) => ({
 				id: opt.id,
 				label: opt.value,
@@ -323,9 +321,9 @@
 		/>
 	</Field>
 	<Field>
-		<Label for={getIdPrefix('property-calculate')} name="Calculate" />
+		<Label for={getIdWithPrefix('property-calculate')} name="Calculate" />
 		<Select
-			id={getIdPrefix('property-calculate')}
+			id={getIdWithPrefix('property-calculate')}
 			options={setupAggregatorSelectOptions(isPropertyNumerical(property), property.calculate)}
 			onselect={(opt) => handleUpdPropertyCalculate(opt.id ? (opt.id as Aggregator) : null)}
 			placeholder="Empty"
@@ -398,9 +396,9 @@
 
 {#snippet defaultValueSelector()}
 	<Field>
-		<Label for={getIdPrefix('property-default-value')} name="Default value" />
+		<Label for={getIdWithPrefix('property-default-value')} name="Default value" />
 		<Select
-			id={getIdPrefix('property-default-value')}
+			id={getIdWithPrefix('property-default-value')}
 			options={setupDefaultOptionSelectOptions()}
 			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id || null })}
 			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}

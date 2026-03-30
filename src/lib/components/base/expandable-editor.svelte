@@ -85,7 +85,7 @@
 	class={tm(
 		'relative bg-secondary/60 hover:bg-secondary/70 first:rounded-t-md last:rounded-b-md p-0.5 border border-card',
 		isExpanded ? 'is-open my-1.5 rounded-md [&+*]:rounded-t-md' : 'has-[+.is-open]:rounded-b-md',
-		dragover && 'opacity-50',
+		(dragging || dragover) && 'opacity-50',
 		group ? `group/options` : 'group'
 	)}
 >
