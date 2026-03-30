@@ -2,7 +2,11 @@
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import GripHorizontal from 'lucide-svelte/icons/grip-vertical';
 	import Trash from 'lucide-svelte/icons/trash';
-	import { DEBOUNCE_INTERVAL, THEME_COLORS } from '$lib/constant/index.js';
+	import {
+		DEBOUNCE_INTERVAL,
+		MAX_PROPERTY_OPTION_NAME_LENGTH,
+		THEME_COLORS
+	} from '$lib/constant/index.js';
 	import { Color, type PropertyOption } from '@prisma/client';
 	import { capitalizeFirstLetter, tm, useId } from '$lib/utils/index.js';
 	import {
@@ -10,10 +14,13 @@
 		Badge,
 		Button,
 		buttonVariants,
+		Field,
 		HSeparator,
 		Label,
 		RadioGroup,
-		RadioGroupItem
+		RadioGroupItem,
+		Select,
+		Tooltip
 	} from '$lib/components/base/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import debounce from 'debounce';
@@ -100,6 +107,21 @@
 		await propertyState.orderPropertyOption(option.propertyId, start, option.order);
 	}
 
+	function setupOptionColorSelectOptions() {
+		return Object.keys(THEME_COLORS).map((color) => {
+			return {
+				id: color,
+				label: capitalizeFirstLetter(color),
+				isSelected: color === option.color,
+				theme: THEME_COLORS[color as Color]
+			};
+		});
+	}
+
+	function getIdPrefix(tail: string) {
+		return `${option.id}-${tail}`;
+	}
+
 	$effect(() => {
 		if (wrapperState.isOpen) {
 			tick().then(() => {
@@ -109,72 +131,31 @@
 	});
 </script>
 
-<AdaptiveWrapper
-	bind:open={wrapperState.isOpen}
-	floatingAlign="end"
-	triggerClass={buttonVariants({
-		theme: 'ghost',
-		variant: 'menu'
-	})}
->
-	{#snippet customTrigger({ id, toggle })}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			{id}
-			{ondragstart}
-			{ondrop}
-			{ondragend}
-			{ondragover}
-			{ondragleave}
-			draggable="true"
-			class="w-full flex justify-between items-center gap-1 cursor-pointer [&_svg]:size-4"
-			onclick={() => toggle()}
-		>
-			<GripHorizontal />
-			<span class="grow">
-				<Badge color={option.color} class="w-fit">{option.value}</Badge>
-			</span>
-			<ChevronRight />
-		</div>
-	{/snippet}
+<Field>
+	<Label for={getIdPrefix('option-name')} name="Name" />
+	<input
+		id={getIdPrefix('option-name')}
+		value={option.value}
+		type="text"
+		name="name"
+		oninput={handleOnInput}
+		class="input input-ghost"
+		maxlength={MAX_PROPERTY_OPTION_NAME_LENGTH}
+	/>
+</Field>
+<Field>
+	<Label for={getIdPrefix('option-color')} name="Color" />
+	<Select
+		id={getIdPrefix('option-color')}
+		options={setupOptionColorSelectOptions()}
+		onselect={(opt) => handleSelectColor(opt.id as Color)}
+		searchable
+	/>
+</Field>
 
-	<div class="px-1 pb-1.5 md:px-0 md:pb-1.5">
-		<Label
-			for={`${option.propertyId}-option-${option.id}`}
-			class="md:sr-only font-semibold text-sm"
-		>
-			{option.value}
-		</Label>
-		<input
-			id={`${option.propertyId}-option-${option.id}`}
-			name="option"
-			value={option.value}
-			oninput={handleOnInput}
-			onkeypress={handleKeypress}
-			class="input input-bordered"
-		/>
-	</div>
-
-	<p class="py-1.5 px-2 text-sm font-semibold">Colors</p>
-	<RadioGroup value={option.color} onchange={(value) => handleSelectColor(value as Color)}>
-		{#each Object.entries(THEME_COLORS) as [colorName, colorClasses]}
-			{#if colorName !== Color.SLATE}
-				{@const id = useId(`property-option-color`)}
-
-				<Label for={id} compact hoverEffect>
-					<span class={tm('size-4 rounded-md', colorClasses)}></span>
-					<span class="grow"> {capitalizeFirstLetter(colorName)}</span>
-					<RadioGroupItem {id} value={colorName} />
-				</Label>
-			{/if}
-		{/each}
-	</RadioGroup>
-
-	<HSeparator />
-
-	<Button theme="danger" variant="menu" onclick={() => deleteOption()}>
+<div class="flex items-center justify-end gap-x-2">
+	<Button id={`${option.id}-delete-btn`} theme="danger" onclick={() => deleteOption()}>
 		<Trash />
 		<span>Delete option </span>
 	</Button>
-</AdaptiveWrapper>
+</div>
