@@ -139,7 +139,7 @@
 
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { insidePanel: true });
+			pushState(url, { cid: result.data.cid, insidePanel: true });
 			panelContentType = 'structure';
 			if (!panelState.isOpen) panelState.open();
 		} else {
@@ -158,7 +158,7 @@
 
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { id: result.data.id, insidePanel: true });
+			pushState(url, { cid: result.data.cid, insidePanel: true });
 			panelContentType = 'item';
 			if (!panelState.isOpen) panelState.open();
 		} else {
@@ -374,9 +374,9 @@
 		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 	)}
 >
-	{#if panelContentType === 'item' && page.state.id}
+	{#if panelContentType === 'item' && page.state.cid}
 		<ItemPage data={noCheck(page.state)} />
-	{:else if panelContentType === 'structure'}
+	{:else if panelContentType === 'structure' && page.state.cid}
 		<StructurePage data={noCheck(page.state)} />
 	{/if}
 </aside>

@@ -16,7 +16,7 @@ declare global {
 		}
 		// interface PageData {}
 		interface PageState {
-			id?: string;
+			cid?: string;
 			insidePanel?: boolean;
 			template?: Collection;
 		}
