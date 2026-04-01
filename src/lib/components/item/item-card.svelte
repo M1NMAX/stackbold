@@ -44,9 +44,9 @@
 	}
 
 	function onclick(e: ClickItemEvent) {
-		if (e.target === e.currentTarget || e.target === e.currentTarget.firstChild) {
-			clickOpenItem(item.id);
-		}
+		const target = e.target as HTMLElement;
+		if (target.closest('[data-properties-values], button')) return;
+		clickOpenItem(item.id);
 	}
 
 	async function saveAndClose(target: HTMLInputElement) {
@@ -97,7 +97,7 @@
 	{ondragstart}
 	class={tm(
 		'w-full flex flex-col items-start p-1.5 gap-y-1 rounded-md select-none bg-secondary/50 hover:bg-secondary/60 group',
-		item.id === itemState.active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
+		item.id === itemState.active && 'border border-primary bg-secondary/80'
 	)}
 >
 	{#if isEditing(itemInputId)}
@@ -111,19 +111,21 @@
 				oninput={handleOnInput}
 				onclickoutside={(e) => saveAndClose(e.target as HTMLInputElement)}
 				onclick={(e) => e.stopPropagation()}
-				class="w-full p-1 pr-7 text-lg font-semibold focus:outline-none rounded-md"
+				class="w-full h-7 p-1 pr-7 text-md font-semibold focus:outline-none focus-within:ring-2 focus-within:ring-primary rounded-md bg-secondary/30"
 			/>
 
-			<Button theme="ghost" type="button" class="absolute right-1">
+			<Button type="button" variant="cicon" class="absolute right-0.5 top-0.5">
 				<Check />
 			</Button>
 		</div>
 	{:else}
 		<div class="w-full flex justify-between items-center gap-x-1.5">
-			<p class="text-lg font-semibold grow truncate">
+			<p class="text-md font-semibold grow truncate">
 				{item.name}
 			</p>
-			<div class="flex items-center gap-x-1.5 lg:invisible lg:group-hover:visible">
+			<div
+				class="flex items-center gap-x-1.5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+			>
 				<Button theme="ghost" variant="cicon" onclick={() => startEditing(itemInputId)}>
 					<PencilLine />
 				</Button>
@@ -132,7 +134,7 @@
 		</div>
 	{/if}
 
-	<div class="flex items-end flex-wrap gap-2">
+	<div class="flex items-end flex-wrap gap-2" data-properties-values>
 		{#each propertyState.properties as property (property.id)}
 			{#if isPropertyVisible(view, property.id)}
 				{@const propertyRef = getPropertyRef(item.properties, property.id)}
