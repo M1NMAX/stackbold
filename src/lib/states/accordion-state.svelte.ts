@@ -36,7 +36,7 @@ class AccordionState {
 	}
 
 	openAll(value: string[]) {
-		if (this.#opts.isMulti) return;
+		if (!this.#opts.isMulti) return;
 
 		for (const v of value) {
 			this.open(v);
