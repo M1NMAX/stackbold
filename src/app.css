@@ -79,11 +79,11 @@ input[type='number'] {
 }
 
 .input {
-	@apply h-9 md:h-7 w-full flex px-2 rounded-sm border-0 bg-transparent text-base ring-offset-background file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 md:h-7 w-full flex px-2 rounded-sm border-0 bg-transparent text-base file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
-		@apply outline outline-primary outline-offset-0;
+		@apply outline-2 outline-primary;
 		box-shadow: none;
 	}
 
@@ -194,6 +194,19 @@ input[type='number'] {
 
 .menu-header {
 	@apply md:sr-only py-1 px-2 text-sm text-center font-semibold;
+}
+
+.settings-section {
+	@apply flex flex-col lg:flex-row lg:items-center gap-2 p-2 rounded-md bg-secondary;
+
+	& > .grow > .title,
+	& > .title {
+		@apply text-base font-semibold;
+	}
+
+	& > .grow > .content {
+		@apply text-sm;
+	}
 }
 
 @layer base {
