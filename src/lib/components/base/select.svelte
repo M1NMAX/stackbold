@@ -269,6 +269,7 @@
 				<MenuTitle title={smTitle} />
 			{/if}
 
+			{@render searchInput()}
 			{@render content()}
 		</Drawer>
 	{/if}
