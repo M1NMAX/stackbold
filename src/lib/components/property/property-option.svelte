@@ -53,13 +53,16 @@
 	}
 
 	function setupOptionColorSelectOptions() {
-		return Object.keys(THEME_COLORS).map((color) => {
-			return {
-				id: color,
-				label: capitalizeFirstLetter(color),
-				isSelected: color === option.color,
-				theme: THEME_COLORS[color as Color]
-			};
+		return Object.keys(THEME_COLORS).flatMap((color) => {
+			if (color === Color.SLATE) return [];
+			return [
+				{
+					id: color,
+					label: capitalizeFirstLetter(color),
+					isSelected: color === option.color,
+					theme: THEME_COLORS[color as Color]
+				}
+			];
 		});
 	}
 
