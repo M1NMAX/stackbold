@@ -1,10 +1,10 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import { INPUT_ICONS, VIEW_ICONS } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Grip from 'lucide-svelte/icons/grip-vertical';
-	import type { Snippet } from 'svelte';
-	import { slide } from 'svelte/transition';
 
 	type Props = {
 		icon?: string;
@@ -35,6 +35,7 @@
 
 	const Icon = $derived({ ...INPUT_ICONS, ...VIEW_ICONS }[icon.toLowerCase()]);
 	function ondragover(e: DragEvent) {
+		e.stopPropagation();
 		e.preventDefault();
 		dragover = true;
 	}
@@ -50,8 +51,9 @@
 	}
 
 	function ondragstart(e: DragEvent) {
-		dragging = true;
+		e.stopPropagation();
 		if (!e.dataTransfer) return;
+		dragging = true;
 
 		const ghost = e.target as HTMLDivElement;
 		ghost.style.opacity = '';
@@ -65,9 +67,11 @@
 	}
 
 	async function ondrop(e: DragEvent) {
+		e.stopPropagation();
+		if (!e.dataTransfer) return;
+
 		dragover = false;
 		dragging = false;
-		if (!e.dataTransfer) return;
 		e.dataTransfer.dropEffect = 'move';
 		ondropEditor(e.dataTransfer);
 	}

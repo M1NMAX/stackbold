@@ -530,9 +530,11 @@ async function updatePropertyOption(option: z.infer<typeof propertyOptionUpdateS
 }
 
 async function orderPropertyOption(args: z.infer<typeof propertyOptionOrderSchema>) {
-	const option = await prisma.propertyOption.findFirstOrThrow({
+	const option = await prisma.propertyOption.findFirst({
 		where: { propertyId: args.propertyId, order: args.start }
 	});
+
+	if (!option) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Property option not found' });
 
 	await prisma.$transaction(async (tx) => {
 		const promises: Promise<unknown>[] = [];
