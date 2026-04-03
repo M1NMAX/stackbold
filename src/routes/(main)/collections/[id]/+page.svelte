@@ -158,7 +158,7 @@
 
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { cid: result.data.cid, insidePanel: true });
+			pushState(url, { iid: result.data.iid, insidePanel: true });
 			panelContentType = 'item';
 			if (!panelState.isOpen) panelState.open();
 		} else {
@@ -374,7 +374,7 @@
 		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 	)}
 >
-	{#if panelContentType === 'item' && page.state.cid}
+	{#if panelContentType === 'item' && page.state.iid}
 		<ItemPage data={noCheck(page.state)} />
 	{:else if panelContentType === 'structure' && page.state.cid}
 		<StructurePage data={noCheck(page.state)} />

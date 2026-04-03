@@ -45,7 +45,7 @@
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
 	const itemState = getItemState();
-	const item = $derived(itemState.getItem(data.id)!);
+	const item = $derived(itemState.getItem(data.iid)!);
 	const collection = $derived(collectionState.getCollection(item.collectionId)!);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 

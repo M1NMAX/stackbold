@@ -67,12 +67,14 @@
 					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 						{#if shouldRenderEmptyGroups(groupedItems[key].length)}
 							{@const color = getPropertyColor(targetProperty, key)}
-							<AccordionItem id={`accordion-item-${key}`}>
-								{#snippet header()}
-									{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
-								{/snippet}
-								{@render itemView(groupedItems[key])}
-							</AccordionItem>
+							<div class="rounded-md bg-secondary/20 my-1">
+								<AccordionItem id={`accordion-item-${key}`} contentClass="mb-3">
+									{#snippet header()}
+										{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
+									{/snippet}
+									{@render itemView(groupedItems[key])}
+								</AccordionItem>
+							</div>
 						{/if}
 					{/each}
 				</Accordion>
