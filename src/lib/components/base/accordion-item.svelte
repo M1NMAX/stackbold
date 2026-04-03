@@ -49,14 +49,15 @@
 				triggerClass
 			)}
 		>
-			<ChevronRight
-				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
-			/>
 			{#if title}
 				{title}
 			{:else if header}
 				{@render header()}
 			{/if}
+
+			<ChevronRight
+				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
+			/>
 		</button>
 	</div>
 {/if}

@@ -106,7 +106,7 @@
 {/snippet}
 
 {#snippet groupLabel(key: string, property: PropertyWithOptions, color: Color, count: number)}
-	<div class="flex items-center gap-2">
+	<div class="grow flex items-center gap-2">
 		<Badge {color}>
 			{#if property.type === PropertyType.CHECKBOX}
 				<MockCheckbox checked={key === 'true'} />
