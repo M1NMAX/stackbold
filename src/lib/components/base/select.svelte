@@ -6,11 +6,11 @@
 	import { APP_ICONS, THEME_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { Badge, buttonVariants, Drawer, Floating } from './index.js';
+	import { Badge, buttonVariants, Drawer, Floating, MenuTitle } from './index.js';
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
 	import { Color } from '@prisma/client';
-	import { ChevronDown, ChevronsUpDown } from 'lucide-svelte';
+	import { ChevronDown } from 'lucide-svelte';
 
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;
@@ -22,6 +22,8 @@
 		placeholder?: string;
 		searchable?: boolean;
 		disabled?: boolean;
+
+		smTitle?: string;
 		triggerClass?: string;
 		isMulti?: IsMulti;
 		onselect: IsMulti extends true ? MultiSelect : SingleSelect;
@@ -34,6 +36,7 @@
 		placeholder = '-- Select --',
 		searchable = false,
 		disabled = false,
+		smTitle,
 		triggerClass,
 		isMulti = false as IsMulti,
 		onselect
@@ -262,6 +265,10 @@
 		</Floating>
 	{:else}
 		<Drawer bind:open={menuState.isOpen}>
+			{#if smTitle}
+				<MenuTitle title={smTitle} />
+			{/if}
+
 			{@render content()}
 		</Drawer>
 	{/if}
@@ -275,7 +282,7 @@
 			</div>
 			<input
 				id={searchInputId}
-				class="w-full h-9 px-8 text-base font-semibold rounded-md bg-popover focus:outline-none"
+				class="w-full h-9 px-8 text-base font-semibold rounded-none lg:rounded-md bg-popover focus:outline-none"
 				placeholder="Search for an option"
 				bind:value={search}
 				type="text"
@@ -318,7 +325,7 @@
 					tabindex="-1"
 					aria-selected={option.isSelected}
 					class={tm(
-						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1.5 px-0.5 rounded-none lg:rounded-md cursor-pointer',
+						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1 lg:py-1.5 px-2 lg:px-0.5 rounded-none lg:rounded-md cursor-pointer',
 						highlighted == option.id && 'bg-secondary text-secondary-foreground'
 					)}
 					onclick={() => selectOption(option)}
@@ -331,7 +338,7 @@
 						</span>
 					{:else if option.theme}
 						<span class="grow">
-							<Badge class={tm(option.theme, 'w-fit h-5')}>{option.label}</Badge>
+							<Badge class={tm(option.theme, 'w-fit h-6 lg:h-5 ')}>{option.label}</Badge>
 						</span>
 					{/if}
 

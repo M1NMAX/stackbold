@@ -113,6 +113,7 @@
 			onselect={(opt) => onchange(opt.id)}
 			placeholder="Empty"
 			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			smTitle={property.name}
 		/>
 	</Field>
 {:else if property.type === PropertyType.MULTISELECT}
@@ -132,6 +133,7 @@
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
 			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			smTitle={property.name}
 			isMulti
 		/>
 	</Field>
@@ -151,6 +153,7 @@
 				}))
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
+			smTitle={property.name}
 			placeholder="Empty"
 			searchable
 			isMulti

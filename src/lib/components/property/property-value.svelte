@@ -197,6 +197,7 @@
 		onselect={(opt) => updPropertyRef(opt.id)}
 		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
+		smTitle={property.name}
 		placeholder=""
 	/>
 
@@ -216,6 +217,7 @@
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
 		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
+		smTitle={property.name}
 		placeholder=""
 		isMulti
 	/>
@@ -236,6 +238,7 @@
 		]}
 		onselect={(opts) => updPropertyRef(joinMultiselectOptions(opts))}
 		triggerClass={buttonClass}
+		smTitle={property.name}
 		placeholder=""
 		searchable
 		isMulti
