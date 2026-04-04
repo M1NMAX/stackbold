@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 async function migrate() {
+	console.log('Migrating option to property options');
+
 	await prisma.propertyOption.deleteMany();
 
 	const properties = await prisma.property.findMany();
@@ -49,6 +51,38 @@ async function migrate() {
 
 	const modelCount = await prisma.propertyOption.count();
 	console.assert(embeddedCount === modelCount, 'Mismatch!');
+
+	console.log('Option to property options migrating finished');
+
+	console.log('Migrating checkbox default value');
+
+	const checkboxProperties = await prisma.property.findMany({ where: { type: 'CHECKBOX' } });
+
+	for (const property of checkboxProperties) {
+		await prisma.item.updateMany({
+			where: {
+				collectionId: property.collectionId,
+				AND: {
+					properties: {
+						some: {
+							id: property.id,
+							AND: { value: { not: 'true' } }
+						}
+					}
+				}
+			},
+			data: {
+				properties: {
+					updateMany: {
+						where: { id: property.id, AND: { value: { not: 'true' } } },
+						data: { value: 'false' }
+					}
+				}
+			}
+		});
+	}
+
+	console.log('Checkbox default value migration finished');
 }
 
 migrate()

@@ -36,9 +36,9 @@ export function getPropertyOption(options: PropertyOption[], id: string) {
 }
 
 export function getPropertyDefaultValue(property: Property) {
-	if (!PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE.includes(property.type)) return null;
+	if (!PROPERTIES_THAT_CAN_HAVE_DEFAULT_VALUE.includes(property.type)) return '';
 	if (property.type === PropertyType.CHECKBOX) return 'false';
-	return property.defaultValue;
+	return property.defaultValue ?? '';
 }
 
 export function groupBy<T>(items: T[], key: keyof T) {

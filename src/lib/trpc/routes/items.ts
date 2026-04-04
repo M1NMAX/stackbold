@@ -307,7 +307,7 @@ async function createItem(args: z.infer<typeof itemCreateSchema>) {
 		.filter((property) => hasRef(property.type))
 		.map((property) => ({
 			id: property.id,
-			value: getPropertyDefaultValue(property) || ''
+			value: getPropertyDefaultValue(property)
 		}));
 
 	const createdProperties = properties.filter((property) => property.type === PropertyType.CREATED);
@@ -343,7 +343,7 @@ async function addCreatedItemToBidirectionalRefs(properties: Property[], itemId:
 
 	const allReferencedIds = new Set<string>();
 	const processingData = properties.map((property) => {
-		const defaultValue = getPropertyDefaultValue(property) || '';
+		const defaultValue = getPropertyDefaultValue(property);
 		allReferencedIds.add(defaultValue);
 		return { property, defaultValue };
 	});

@@ -218,6 +218,17 @@ async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
 			}
 		}
 
+		if (rest.type && storedProperty.type !== rest.type && rest.type === PropertyType.CHECKBOX) {
+			tx.item.updateMany({
+				where: { collectionId: storedProperty.collectionId },
+				data: {
+					properties: {
+						push: { id: storedProperty.id, value: 'false' }
+					}
+				}
+			});
+		}
+
 		const property = await tx.property.update({
 			where: { id },
 			data: { ...rest, relatedProperty },
@@ -304,10 +315,15 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	const promises: Promise<unknown>[] = [];
 
 	if (hasRef(property.type)) {
+		const value = args.type === PropertyType.CHECKBOX ? 'false' : '';
 		promises.push(
 			prisma.item.updateMany({
 				where: { collectionId: property.collectionId },
-				data: { properties: { push: { id: property.id, value: '' } } }
+				data: {
+					properties: {
+						push: { id: property.id, value }
+					}
+				}
 			})
 		);
 	}
