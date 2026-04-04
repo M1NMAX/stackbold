@@ -110,8 +110,6 @@ model EmailVerification {
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   email     String   @unique
   expiresAt DateTime
-
-  @@map("EmailVerication")
 }
 
 model PasswordResetSession {
