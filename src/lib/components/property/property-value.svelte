@@ -307,7 +307,7 @@
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="w-full input input-ghost input-sm px-1 font-semibold text-sm"
+				class="input input-ghost"
 				type="text"
 				inputmode="numeric"
 				{value}
@@ -363,7 +363,7 @@
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="w-full input input-ghost px-1 font-semibold text-sm"
+				class="input input-ghost"
 				type="url"
 				{value}
 				oninput={handleOnInput}
@@ -385,7 +385,7 @@
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="w-full input input-ghost px-1 font-semibold text-sm"
+				class="input input-ghost"
 				type={property.type.toLowerCase()}
 				{value}
 				oninput={handleOnInput}

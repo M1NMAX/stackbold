@@ -225,7 +225,7 @@
 		buttonVariants({
 			theme: 'secondary',
 			variant: 'menu',
-			className: tm(triggerClass, 'bg-transparent overflow-y-hidden relative')
+			className: tm(triggerClass, 'bg-transparent hover:bg-transparent overflow-y-hidden relative')
 		})
 	)}
 >
@@ -254,7 +254,7 @@
 			bind:visible={menuState.isOpen}
 			sameWidth
 			align="start"
-			class="bg-secondary focus-within:bg-secondary/80"
+			class="bg-secondary/60 focus-within:bg-secondary/80"
 		>
 			{@render searchInput()}
 			<div
