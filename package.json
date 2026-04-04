@@ -2,10 +2,6 @@
 	"name": "stackbold",
 	"version": "0.82.0",
 	"private": true,
-	"engines": {
-		"node": "25.8.1",
-		"npm": "11.12.0"
-	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
