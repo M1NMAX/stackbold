@@ -16,14 +16,14 @@
 	const radioGroupState = getRadioGroupState();
 
 	function handleClick() {
-		if (radioGroupState.disabled || disabled) return;
+		if (radioGroupState.isDisabled() || disabled) return;
 		radioGroupState.setValue(value);
 	}
 </script>
 
 <button
 	{id}
-	disabled={radioGroupState.disabled || disabled}
+	disabled={radioGroupState.isDisabled() || disabled}
 	type="button"
 	role="radio"
 	aria-checked={radioGroupState.isChecked(value)}

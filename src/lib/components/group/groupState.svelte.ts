@@ -90,8 +90,8 @@ export class GroupState {
 }
 
 const GROUP_STATE_CTX_KEY = Symbol('GROUP_STATE_CTX_KEY');
-export function setGroupState(groups: Group[]) {
-	return setContext(GROUP_STATE_CTX_KEY, new GroupState(groups));
+export function setGroupState(groups: () => Group[]) {
+	return setContext(GROUP_STATE_CTX_KEY, new GroupState(groups()));
 }
 
 export function getGroupState() {

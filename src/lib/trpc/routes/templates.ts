@@ -20,6 +20,9 @@ async function listTemplates() {
 async function loadTemplate(id: string) {
 	return await prisma.collection.findUniqueOrThrow({
 		where: { id },
-		include: { properties: true, items: true }
+		include: {
+			items: true,
+			properties: { include: { optionsM: true } }
+		}
 	});
 }

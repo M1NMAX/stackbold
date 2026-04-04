@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import { slide } from 'svelte/transition';
-	import { getAccordionState } from '$lib/states/index.js';
+	import { box, getAccordionState } from '$lib/states/index.js';
 	import { tm, useId } from '$lib/utils/index.js';
 
 	type Props = {
@@ -27,7 +27,7 @@
 
 	const accordionState = getAccordionState();
 
-	accordionState.addChild(id);
+	accordionState.addChild({ id: box(() => id) });
 
 	const isOpen = $derived(accordionState.isOpen(id));
 
@@ -49,14 +49,15 @@
 				triggerClass
 			)}
 		>
-			<ChevronRight
-				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
-			/>
 			{#if title}
 				{title}
 			{:else if header}
 				{@render header()}
 			{/if}
+
+			<ChevronRight
+				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
+			/>
 		</button>
 	</div>
 {/if}

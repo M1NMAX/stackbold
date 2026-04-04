@@ -1,13 +1,6 @@
 <script lang="ts">
 	import Help from 'lucide-svelte/icons/circle-help';
-	import {
-		Color,
-		type Item,
-		type Property,
-		PropertyType,
-		type View,
-		ViewType
-	} from '@prisma/client';
+	import { Color, type Item, PropertyType, type View, ViewType } from '@prisma/client';
 	import {
 		getInitialItemsGroup,
 		groupItemsByPropertyValue,
@@ -25,6 +18,7 @@
 	import { capitalizeFirstLetter, getOption, getPropertyColor } from '$lib/utils/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
 	import { GROUPABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
 		view: View;
@@ -33,7 +27,7 @@
 		clickOpenItem: (id: string) => void;
 	};
 
-	let { view, items, scrollTop, ...rest }: Props = $props();
+	let { view, items, scrollTop, clickOpenItem }: Props = $props();
 	const propertyState = getPropertyState();
 
 	function shouldRenderEmptyGroups(len: number) {
@@ -59,7 +53,7 @@
 						{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 							{#if shouldRenderEmptyGroups(groupedItems[key].length)}
 								{@const color = getPropertyColor(targetProperty, key)}
-								<ItemBoardView {key} {view} {scrollTop} items={groupedItems[key]} {...rest}>
+								<ItemBoardView {key} {view} {scrollTop} items={groupedItems[key]} {clickOpenItem}>
 									{#snippet header()}
 										{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
 									{/snippet}
@@ -73,12 +67,14 @@
 					{#each Object.keys(groupedItems) as key (`group-item-${key}`)}
 						{#if shouldRenderEmptyGroups(groupedItems[key].length)}
 							{@const color = getPropertyColor(targetProperty, key)}
-							<AccordionItem id={`accordion-item-${key}`}>
-								{#snippet header()}
-									{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
-								{/snippet}
-								{@render itemView(groupedItems[key])}
-							</AccordionItem>
+							<div class="rounded-md bg-secondary/20 my-1">
+								<AccordionItem id={`accordion-item-${key}`} contentClass="mb-3">
+									{#snippet header()}
+										{@render groupLabel(key, targetProperty, color, groupedItems[key].length)}
+									{/snippet}
+									{@render itemView(groupedItems[key])}
+								</AccordionItem>
+							</div>
 						{/if}
 					{/each}
 				</Accordion>
@@ -90,11 +86,11 @@
 {#snippet itemView(items: Item[])}
 	<div class="grow space-y-2">
 		{#if view.type === ViewType.TABLE}
-			<ItemTableView {view} {items} {...rest} />
+			<ItemTableView {view} {items} {clickOpenItem} />
 		{:else if view.type === ViewType.LIST}
-			<ItemListView {view} {items} {...rest} />
+			<ItemListView {view} {items} {clickOpenItem} />
 		{:else if view.type === ViewType.BOARD}
-			<ItemBoardView key="" {scrollTop} {view} {items} {...rest}>
+			<ItemBoardView key="" {scrollTop} {view} {items} {clickOpenItem}>
 				{#snippet header()}
 					<div class="w-full flex justify-center items-center gap-x-2">
 						<span> No grouping properties have been selected for this view </span>
@@ -111,14 +107,14 @@
 	</div>
 {/snippet}
 
-{#snippet groupLabel(key: string, property: Property, color: Color, count: number)}
-	<div class="flex items-center gap-2">
+{#snippet groupLabel(key: string, property: PropertyWithOptions, color: Color, count: number)}
+	<div class="grow flex items-center gap-2">
 		<Badge {color}>
 			{#if property.type === PropertyType.CHECKBOX}
 				<MockCheckbox checked={key === 'true'} />
 				{property.name}
 			{:else}
-				{@const option = getOption(property.options, key)}
+				{@const option = getOption(property.optionsM, key)}
 				{option ? option.value : `No ${property.name}`}
 			{/if}
 		</Badge>

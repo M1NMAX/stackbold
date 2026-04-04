@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { tm, useId } from '$lib/utils/index.js';
-	import { setRadioGroupState } from '$lib/states/index.js';
+	import { box, setRadioGroupState } from '$lib/states/index.js';
 	import type { OnChangeFn } from '$lib/types';
 
 	type Props = {
@@ -26,7 +26,17 @@
 		class: className
 	}: Props = $props();
 
-	setRadioGroupState(value ?? '', disabled, onchange);
+	setRadioGroupState({
+		disabled: box(() => disabled),
+		value: box(
+			() => value ?? '',
+			(v) => {
+				if (v === value) return;
+				value = v;
+				onchange?.(v);
+			}
+		)
+	});
 </script>
 
 <div {id} role="radiogroup" aria-disabled={required} class={tm('gap-y-0', className)}>

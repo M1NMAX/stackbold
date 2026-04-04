@@ -3,6 +3,8 @@ import { Aggregator, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
+export const BASE_FIELDS = ['id', 'updatedAt', 'createdAt'] as const;
+
 export const THEME_COLORS: Colors = {
 	SLATE: 'bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-100',
 	GRAY: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-100',
@@ -56,6 +58,7 @@ export const MAX_VISIBLE_VIEWS_TAB = 3;
 export const MAX_COLLECTION_NAME_LENGTH = 50;
 export const MAX_VIEW_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NAME_LENGTH = 50;
+export const MAX_PROPERTY_OPTION_NAME_LENGTH = 50;
 export const MAX_ITEM_NAME_LENGTH = 100;
 export const MAX_GROUP_NAME_LENGTH = 50;
 export const MAX_PROPERTY_NUMERIC_LENGTH = 10;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
 	import Eraser from 'lucide-svelte/icons/eraser';
-	import { PropertyType, type Property } from '@prisma/client';
+	import { PropertyType } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {
 		DEBOUNCE_INTERVAL,
@@ -41,9 +41,10 @@
 		Tooltip,
 		Badge
 	} from '$lib/components/base/index.js';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
-		property: Property;
+		property: PropertyWithOptions;
 		onchange: (value: string) => void;
 		value: string;
 		itemId: string;
@@ -85,7 +86,7 @@
 
 {#if property.type === PropertyType.CHECKBOX}
 	<div
-		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-md bg-secondary text-secondary-foreground"
+		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-md bg-secondary/60 text-secondary-foreground"
 	>
 		<input
 			id={property.id}
@@ -102,7 +103,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.options.map((option) => ({
+				...property.optionsM.map((option) => ({
 					id: option.id,
 					label: option.value,
 					isSelected: option.id === value,
@@ -111,7 +112,8 @@
 			]}
 			onselect={(opt) => onchange(opt.id)}
 			placeholder="Empty"
-			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			smTitle={property.name}
 		/>
 	</Field>
 {:else if property.type === PropertyType.MULTISELECT}
@@ -121,7 +123,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.options.map((option) => ({
+				...property.optionsM.map((option) => ({
 					id: option.id,
 					label: option.value,
 					isSelected: selectedOptions.includes(option.id),
@@ -130,7 +132,8 @@
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
-			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			smTitle={property.name}
 			isMulti
 		/>
 	</Field>
@@ -141,7 +144,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.options.map((option) => ({
+				...property.optionsM.map((option) => ({
 					id: option.id,
 					label: option.value,
 					theme: THEME_COLORS[option.color],
@@ -150,6 +153,7 @@
 				}))
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
+			smTitle={property.name}
 			placeholder="Empty"
 			searchable
 			isMulti
@@ -166,39 +170,46 @@
 		</div>
 	</Field>
 {:else if property.type === PropertyType.DATE}
-	<Field>
-		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<AdaptiveWrapper
-			bind:open={wrapperState.isOpen}
-			floatingAlign="start"
-			triggerClass={buttonVariants({
-				theme: 'ghost',
-				variant: 'menu',
-				className: 'bg-transparent'
-			})}
-		>
-			{#snippet trigger()}
-				{#if value}
-					{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-					<Badge>{formatted}</Badge>
-				{/if}
-			{/snippet}
+	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start">
+		{#snippet customTrigger({ id, toggle })}
+			<Field onclick={() => toggle()}>
+				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+				<span
+					{id}
+					class={buttonVariants({
+						theme: 'ghost',
+						variant: 'menu',
+						className: 'bg-transparent hover:bg-transparent'
+					})}
+				>
+					{#if value}
+						{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
+						<Badge class="w-fit">{formatted}</Badge>
+					{/if}
+				</span>
+			</Field>
+		{/snippet}
 
-			<Calendar
-				value={value ? parseDate(value) : undefined}
-				onchange={(dt) => {
-					onchange(dt.toString());
-					wrapperState.close();
-				}}
-			/>
-			{@render clearBtn()}
-		</AdaptiveWrapper>
-	</Field>
+		<Calendar
+			value={value ? parseDate(value) : undefined}
+			onchange={(dt) => {
+				onchange(dt.toString());
+				wrapperState.close();
+			}}
+		/>
+		{@render clearBtn()}
+	</AdaptiveWrapper>
 {:else if property.type === PropertyType.CREATED}
 	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<div class={buttonVariants({ theme: 'ghost', variant: 'menu', className: 'bg-transparent' })}>
+		<div
+			class={buttonVariants({
+				theme: 'ghost',
+				variant: 'menu',
+				className: 'bg-transparent hover:bg-transparent'
+			})}
+		>
 			<Badge>{formatted}</Badge>
 		</div>
 	</Field>

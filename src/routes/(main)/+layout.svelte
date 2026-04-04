@@ -36,14 +36,14 @@
 	import { tm } from '$lib/utils/index.js';
 
 	let { data, children } = $props();
-	let user = $state(data.user);
-	let collections = $state(data.collections);
-	let items = $state(data.items);
+	const user = $derived(data.user);
+	const collections = $derived(data.collections);
+	const items = $derived(data.items);
 
 	let activeUrl = $state<string>('');
 
-	const collectionState = setCollectionState(data.collections);
-	const groupState = setGroupState(data.groups);
+	const collectionState = setCollectionState(() => data.collections);
+	const groupState = setGroupState(() => data.groups);
 
 	const globalSearchModal = new ModalState();
 	const moveCollectionModal = setMoveCollectionModalState();
@@ -145,7 +145,7 @@
 			</div>
 
 			<Accordion value="favorites" class="grow overflow-y-hidden flex flex-col">
-				<AccordionItem id="favorites" contentClass="p-0 grow overflow-y-scroll">
+				<AccordionItem id="favorites" contentClass="p-0 grow overflow-y-auto">
 					{#snippet accordionHeader({ isOpen, toggle })}
 						<div class="w-full group hover:bg-secondary">
 							<button

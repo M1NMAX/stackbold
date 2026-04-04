@@ -100,7 +100,7 @@
 						href={`/templates/${template.id}`}
 						onclick={(e) => clickTemplate(e, template.id)}
 						class={tm(
-							'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary bg-opacity-80 dark:bg-opacity-40 hover:bg-secondary/50 dark:hover:bg-secondary/80 overflow-hidden',
+							'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary/50 hover:bg-secondary/60 overflow-hidden',
 							template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 						)}
 					>

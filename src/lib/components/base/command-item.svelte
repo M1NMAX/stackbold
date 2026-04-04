@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getCommandState } from '$lib/states';
-	import { useId } from '$lib/utils/index.js';
+	import { box, getCommandState } from '$lib/states';
+	import { noop, useId } from '$lib/utils/index.js';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -9,12 +9,15 @@
 		onselect?: () => void;
 	};
 
-	let { value, children, onselect }: Props = $props();
+	let { value, children, onselect = noop }: Props = $props();
 
 	const id = useId();
 
 	const commandState = getCommandState();
-	commandState.registerItem(id, value, onselect);
+	commandState.registerItem(id, {
+		value: box(() => value),
+		onselect: box(() => onselect)
+	});
 
 	const item = $derived(commandState.getItemById(id));
 </script>
