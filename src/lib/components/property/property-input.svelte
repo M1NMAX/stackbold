@@ -170,39 +170,46 @@
 		</div>
 	</Field>
 {:else if property.type === PropertyType.DATE}
+	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start">
+		{#snippet customTrigger({ id, toggle })}
+			<Field onclick={() => toggle()}>
+				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+				<span
+					{id}
+					class={buttonVariants({
+						theme: 'ghost',
+						variant: 'menu',
+						className: 'bg-transparent hover:bg-transparent'
+					})}
+				>
+					{#if value}
+						{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
+						<Badge class="w-fit">{formatted}</Badge>
+					{/if}
+				</span>
+			</Field>
+		{/snippet}
+
+		<Calendar
+			value={value ? parseDate(value) : undefined}
+			onchange={(dt) => {
+				onchange(dt.toString());
+				wrapperState.close();
+			}}
+		/>
+		{@render clearBtn()}
+	</AdaptiveWrapper>
+{:else if property.type === PropertyType.CREATED}
+	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<AdaptiveWrapper
-			bind:open={wrapperState.isOpen}
-			floatingAlign="start"
-			triggerClass={buttonVariants({
+		<div
+			class={buttonVariants({
 				theme: 'ghost',
 				variant: 'menu',
 				className: 'bg-transparent hover:bg-transparent'
 			})}
 		>
-			{#snippet trigger()}
-				{#if value}
-					{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-					<Badge>{formatted}</Badge>
-				{/if}
-			{/snippet}
-
-			<Calendar
-				value={value ? parseDate(value) : undefined}
-				onchange={(dt) => {
-					onchange(dt.toString());
-					wrapperState.close();
-				}}
-			/>
-			{@render clearBtn()}
-		</AdaptiveWrapper>
-	</Field>
-{:else if property.type === PropertyType.CREATED}
-	{@const formatted = fullDateTimeFormat(parseAbsolute(value, getLocalTimeZone()).toDate())}
-	<Field>
-		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
-		<div class={buttonVariants({ theme: 'ghost', variant: 'menu', className: 'bg-transparent' })}>
 			<Badge>{formatted}</Badge>
 		</div>
 	</Field>
