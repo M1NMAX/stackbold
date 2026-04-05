@@ -124,7 +124,7 @@
 				{item.name}
 			</p>
 			<div
-				class="flex items-center gap-x-1.5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+				class="hidden lg:flex items-center gap-x-1.5 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
 			>
 				<Button theme="ghost" variant="cicon" onclick={() => startEditing(itemInputId)}>
 					<PencilLine />
