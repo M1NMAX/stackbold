@@ -7,25 +7,29 @@
 	import type { Group } from '@prisma/client';
 	import { tm } from '$lib/utils/index.js';
 	import { getCollectionState } from '$lib/components/collection/index.js';
-	import { MAX_GROUP_NAME_LENGTH, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
+	import { MAX_GROUP_NAME_LENGTH, NEW_COLLECTION_NAME, SLIDE_PARAMS } from '$lib/constant/index.js';
 	import { getGroupState } from '$lib/components/group/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { AdaptiveWrapper, Button, buttonVariants } from '$lib/components/base/index.js';
-	import { tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import { clickOutside, enterKeydown, escapeKeydown } from '$lib/actions/index.js';
 	import type { UpdGroup } from '$lib/types.js';
+	import { slide } from 'svelte/transition';
 
 	type Props = {
 		group: Group;
-		isOpen: boolean;
-		toggle: () => void;
+
+		children: Snippet;
 	};
 
-	let { group, isOpen, toggle }: Props = $props();
+	let { group, children }: Props = $props();
 
 	const groupState = getGroupState();
 	const collectionState = getCollectionState();
 	const deleteModal = getDeleteModalState();
+
+	const wrapperState = new ModalState(true);
+
 	const menuState = new ModalState();
 
 	let isRenaming = $state(false);
@@ -68,7 +72,7 @@
 	});
 </script>
 
-<div class="w-full relative group hover:bg-secondary">
+<div class="w-full relative group/cgroup">
 	{#if isRenaming}
 		<div class="px-2">
 			<input
@@ -89,47 +93,52 @@
 		</div>
 	{:else}
 		<button
-			onclick={toggle}
-			aria-expanded={isOpen}
-			class="w-full flex items-center gap-1.5 py-0.5 px-4"
+			onclick={() => wrapperState.toggle()}
+			aria-expanded={wrapperState.isOpen}
+			class="w-full flex items-center gap-1.5 py-0.5 px-4 hover:bg-secondary/70"
 		>
 			<ChevronRight
 				class={tm(
-					'size-4 shrink-0 transition-transform duration-200',
-					isOpen ? 'rotate-90' : 'rotate-0'
+					'size-4 shrink-0 transition-transform',
+					wrapperState.isOpen ? 'rotate-90' : 'rotate-0'
 				)}
 			/>
 			<span>
 				{group.name}
 			</span>
 		</button>
+	{/if}
 
-		<AdaptiveWrapper
-			floatingAlign="start"
-			bind:open={menuState.isOpen}
-			triggerClass={buttonVariants({
-				theme: 'ghost',
-				variant: 'compact',
-				className: 'absolute top-0 right-1 invisible group-hover:visible transition-opacity'
-			})}
-		>
-			{#snippet trigger()}
-				<MoreHorizontal />
-			{/snippet}
-			<Button theme="ghost" variant="menu" onclick={() => createCollection()}>
-				<Plus />
-				<span>New collection</span>
-			</Button>
+	<AdaptiveWrapper
+		floatingAlign="start"
+		bind:open={menuState.isOpen}
+		triggerClass={buttonVariants({
+			theme: 'ghost',
+			variant: 'compact',
+			className: 'absolute top-0 right-1 invisible group-hover/cgroup:visible transition-opacity'
+		})}
+	>
+		{#snippet trigger()}
+			<MoreHorizontal />
+		{/snippet}
+		<Button theme="ghost" variant="menu" onclick={() => createCollection()}>
+			<Plus />
+			<span>New collection</span>
+		</Button>
 
-			<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
-				<PencilLine />
-				<span>Rename</span>
-			</Button>
+		<Button theme="ghost" variant="menu" onclick={() => startRenaming()}>
+			<PencilLine />
+			<span>Rename</span>
+		</Button>
 
-			<Button theme="danger" variant="menu" onclick={() => deleteGroup()}>
-				<Trash />
-				<span>Delete</span>
-			</Button>
-		</AdaptiveWrapper>
+		<Button theme="danger" variant="menu" onclick={() => deleteGroup()}>
+			<Trash />
+			<span>Delete</span>
+		</Button>
+	</AdaptiveWrapper>
+	{#if wrapperState.isOpen}
+		<div transition:slide={{ ...SLIDE_PARAMS }} class="overflow-visible p-0">
+			{@render children()}
+		</div>
 	{/if}
 </div>
