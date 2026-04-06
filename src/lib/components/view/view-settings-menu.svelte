@@ -352,15 +352,15 @@
 </AdaptiveWrapper>
 
 {#snippet header(title: string, backTo: ContentType = null)}
-	<div class="w-full flex items-center gap-x-1 px-1">
-		<Button theme="ghost" variant="icon" onclick={() => (content = backTo)}>
+	<div class="w-full flex items-center gap-x-1 px-0.5">
+		<Button theme="ghost" variant="cicon" onclick={() => (content = backTo)}>
 			<ChevronLeft />
 		</Button>
 		<span class="grow pr-4 py-1 font-semibold text-sm text-center md:text-left">
 			{title}
 		</span>
 	</div>
-	<!-- <HSeparator /> -->
+	<HSeparator />
 {/snippet}
 
 {#snippet activeFilters()}

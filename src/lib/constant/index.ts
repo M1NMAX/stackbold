@@ -49,6 +49,7 @@ export const DEFAULT_STRING_DELIMITER = '|';
 
 export const VALUE_NOT_DEFINED = 'Not Defined';
 export const VALUE_NONE = 'None';
+export const NO_ITEMS = 'Not items';
 
 export const DEBOUNCE_INTERVAL = 1000;
 
@@ -141,3 +142,5 @@ export const NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS: Aggregator[] = [
 	Aggregator.SUM,
 	Aggregator.AVG
 ];
+
+export const SLIDE_PARAMS = { delay: 10, duration: 150 };

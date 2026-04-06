@@ -2,7 +2,7 @@
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
 	import { ItemCard } from './index.js';
 	import { type Item, type View } from '@prisma/client';
-	import { ITEMS_CHUNK_SIZE } from '$lib/constant/index.js';
+	import { ITEMS_CHUNK_SIZE, NO_ITEMS } from '$lib/constant/index.js';
 	import { Button } from '$lib/components/base/index.js';
 
 	type Props = {
@@ -16,15 +16,19 @@
 	const renderLimit = $derived(ITEMS_CHUNK_SIZE * multiplier);
 </script>
 
-<div class="h-full space-y-2 grow">
-	{#each items.slice(0, renderLimit) as item (item.id)}
-		<ItemCard {item} {view} {clickOpenItem} />
-	{/each}
+{#if items.length === 0}
+	<p class="text-center">{NO_ITEMS}</p>
+{:else}
+	<div class="h-full space-y-2 grow">
+		{#each items.slice(0, renderLimit) as item (item.id)}
+			<ItemCard {item} {view} {clickOpenItem} />
+		{/each}
 
-	{#if items.length > renderLimit}
-		<Button theme="ghost" variant="menu" class="justify-center" onclick={() => (multiplier += 1)}>
-			<ArrowDown />
-			Load more
-		</Button>
-	{/if}
-</div>
+		{#if items.length > renderLimit}
+			<Button theme="ghost" variant="menu" class="justify-center" onclick={() => (multiplier += 1)}>
+				<ArrowDown />
+				Load more
+			</Button>
+		{/if}
+	</div>
+{/if}

@@ -4,6 +4,7 @@
 	import { slide } from 'svelte/transition';
 	import { box, getAccordionState } from '$lib/states/index.js';
 	import { tm, useId } from '$lib/utils/index.js';
+	import { SLIDE_PARAMS } from '$lib/constant/index.js';
 
 	type Props = {
 		id?: string;
@@ -37,15 +38,23 @@
 	}
 </script>
 
-{#if accordionHeader}
-	{@render accordionHeader({ isOpen, toggle })}
-{:else}
-	<div class="flex items-center gap-x-2 py-0.5 rounded-md hover:bg-secondary group">
+<div
+	class={tm(
+		'first:rounded-t-md last:rounded-b-md border-secondary',
+		isOpen
+			? 'is-open my-3 border-2 first:mt-0 last:mb-0 rounded-md [&+*]:rounded-t-md'
+			: 'has-[+.is-open]:rounded-b-md border-x-2 border-t-2 has-[+.is-open]:border-b-2 last:border-b-2'
+	)}
+>
+	{#if accordionHeader}
+		{@render accordionHeader({ isOpen, toggle })}
+	{:else}
 		<button
 			onclick={toggle}
 			aria-expanded={accordionState.isOpen(id)}
 			class={tm(
-				'grow h-9 lg:h-7 flex items-center gap-x-1.5 py-0.5 px-1 font-medium transition-all',
+				'w-full h-full flex items-center gap-x-1.5 py-1 px-1.5  font-medium transition-all hover:bg-secondary/70',
+				isOpen && 'bg-secondary/10',
 				triggerClass
 			)}
 		>
@@ -56,16 +65,16 @@
 			{/if}
 
 			<ChevronRight
-				class={tm('size-4 shrink-0 transition-transform duration-200', isOpen && 'rotate-90')}
+				class={tm('size-4 transition-transform ', isOpen ? '-rotate-90' : 'rotate-0')}
 			/>
 		</button>
-	</div>
-{/if}
-{#if isOpen}
-	<div
-		transition:slide={{ delay: 10, duration: 150 }}
-		class={tm('p-1 overflow-hidden', contentClass)}
-	>
-		{@render children()}
-	</div>
-{/if}
+	{/if}
+	{#if isOpen}
+		<div
+			transition:slide={{ ...SLIDE_PARAMS }}
+			class={tm('p-2 overflow-hidden border-t-2 border-secondary', contentClass)}
+		>
+			{@render children()}
+		</div>
+	{/if}
+</div>

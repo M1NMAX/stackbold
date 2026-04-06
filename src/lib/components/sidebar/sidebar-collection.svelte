@@ -101,8 +101,8 @@
 {:else}
 	<span
 		class={tm(
-			'group flex items-center py-0.5 pr-1 [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-secondary/70 transition-all duration-75 text-secondary-foreground',
-			active && 'border-r-2 border-primary bg-secondary hover:bg-secondary/70',
+			'group/collection flex items-center py-0.5 pr-1 [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-secondary/70 transition-all text-secondary-foreground',
+			active && 'border-r-2 border-primary bg-secondary/70',
 			asChild ? 'pl-10' : 'pl-4'
 		)}
 	>
@@ -125,7 +125,7 @@
 		triggerClass={buttonVariants({
 			theme: 'ghost',
 			variant: 'compact',
-			className: 'invisible group-hover:visible transition-opacity'
+			className: 'invisible group-hover/collection:visible transition-opacity'
 		})}
 	>
 		{#snippet trigger()}
