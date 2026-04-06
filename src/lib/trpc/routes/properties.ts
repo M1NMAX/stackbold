@@ -119,7 +119,7 @@ async function listProperties(collectionId: string) {
 	const properties = await prisma.property.findMany({
 		where: { collectionId },
 		orderBy: { order: 'asc' },
-		include: { optionsM: { orderBy: { order: 'asc' } } }
+		include: { options: { orderBy: { order: 'asc' } } }
 	});
 
 	const relationTargets = new Set<string>();
@@ -159,7 +159,7 @@ function injectPropertyOptions(
 
 		return {
 			...property,
-			optionsM: items.map((item) => createXPropertyOption(item.id, item.name))
+			options: items.map((item) => createXPropertyOption(item.id, item.name))
 		};
 	} else if (isBundle(property)) {
 		const properties = propsMap.get(property.targetCollection!) || [];
@@ -180,7 +180,7 @@ function injectPropertyOptions(
 			...property,
 			format: format,
 			decimals: decimals,
-			optionsM: properties.map((p) => createXPropertyOption(p.id, p.name, p.type.toString()))
+			options: properties.map((p) => createXPropertyOption(p.id, p.name, p.type.toString()))
 		};
 	}
 
@@ -232,7 +232,7 @@ async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
 		const property = await tx.property.update({
 			where: { id },
 			data: { ...rest, relatedProperty },
-			include: { optionsM: true }
+			include: { options: true }
 		});
 
 		return injectPropertyOptionsAsync(property);
@@ -274,7 +274,7 @@ async function injectPropertyOptionsAsync(property: PropertyWithOptions) {
 
 		return {
 			...property,
-			optionsM: items.map((item) => createXPropertyOption(item.id, item.name))
+			options: items.map((item) => createXPropertyOption(item.id, item.name))
 		};
 	} else if (isBundle(property)) {
 		const properties = await prisma.property.findMany({
@@ -298,7 +298,7 @@ async function injectPropertyOptionsAsync(property: PropertyWithOptions) {
 			...property,
 			format,
 			decimals,
-			optionsM: properties.map((p) => createXPropertyOption(p.id, p.name, p.type.toString()))
+			options: properties.map((p) => createXPropertyOption(p.id, p.name, p.type.toString()))
 		};
 	}
 
@@ -309,7 +309,7 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	const order = await prisma.property.count({ where: { collectionId: args.collectionId } });
 	const property = await prisma.property.create({
 		data: { ...args, order: order + 1 },
-		include: { optionsM: true }
+		include: { options: true }
 	});
 
 	const promises: Promise<unknown>[] = [];
@@ -341,16 +341,16 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 }
 
 async function duplicateProperty(id: string) {
-	const target = await prisma.property.findUnique({ where: { id }, include: { optionsM: true } });
+	const target = await prisma.property.findUnique({ where: { id }, include: { options: true } });
 
 	if (!target) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Property not found' });
 
 	return await prisma.$transaction(async (tx) => {
 		const order = await prisma.property.count({ where: { collectionId: target.collectionId } });
 
-		const rest = omit(target, [...BASE_FIELDS, 'optionsM']);
+		const rest = omit(target, [...BASE_FIELDS, 'options']);
 
-		const optionsData = target.optionsM.map((option) =>
+		const optionsData = target.options.map((option) =>
 			omit(option, [...BASE_FIELDS, 'propertyId'])
 		);
 
@@ -360,13 +360,13 @@ async function duplicateProperty(id: string) {
 				order: order + 1,
 				name: rest.name + ' copy',
 				relatedProperty: null,
-				optionsM: {
+				options: {
 					createMany: {
 						data: [...optionsData]
 					}
 				}
 			},
-			include: { optionsM: true }
+			include: { options: true }
 		});
 
 		const promises: Promise<unknown>[] = [];

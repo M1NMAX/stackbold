@@ -1,7 +1,8 @@
+import { BASE_FIELDS } from '$lib/constant/index.js';
 import { getToastState } from '$lib/states/index.js';
 import { trpc } from '$lib/trpc/client';
 import type { RouterInputs } from '$lib/trpc/router';
-import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
+import { capitalizeFirstLetter, getTRPCErrorMsg, omit } from '$lib/utils/index.js';
 import type { View, ViewType } from '@prisma/client';
 import { getContext, setContext } from 'svelte';
 
@@ -80,7 +81,7 @@ export class ViewState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			const { id: _1, createdAt: _2, updatedAt: _3, shortId: _4, ...rest } = target;
+			const rest = omit(target, [...BASE_FIELDS, 'shortId']);
 			const name = rest.name + ' copy';
 			const date = new Date();
 
@@ -139,6 +140,7 @@ export class ViewState {
 			await trpc().views.delete.mutate(id);
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
+			this.views.push({ ...target });
 		}
 	}
 

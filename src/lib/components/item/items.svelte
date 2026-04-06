@@ -102,7 +102,7 @@
 				<MockCheckbox checked={key === 'true'} />
 				{property.name}
 			{:else}
-				{@const option = getOption(property.optionsM, key)}
+				{@const option = getOption(property.options, key)}
 				{option ? option.value : `No ${property.name}`}
 			{/if}
 		</Badge>

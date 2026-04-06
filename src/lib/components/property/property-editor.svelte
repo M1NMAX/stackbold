@@ -131,7 +131,7 @@
 		let options: SelectOption[] = [];
 
 		options.push(
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: property.defaultValue === option.id,
@@ -307,7 +307,7 @@
 		<Label for={getIdWithPrefix('property-ext-target-property')} name="Target Property" />
 		<Select
 			id={getIdWithPrefix('property-ext-target-property')}
-			options={property.optionsM.map((opt) => ({
+			options={property.options.map((opt) => ({
 				id: opt.id,
 				label: opt.value,
 				icon: opt.extra ? opt.extra.toLowerCase() : '',
@@ -370,7 +370,7 @@
 		/>
 
 		<div>
-			{#each property.optionsM as option}
+			{#each property.options as option}
 				<ExpandableEditor
 					isExpanded={isViewOptionExpanded(option.id)}
 					onclickHeader={() => onclickExpandableOptionEditor(option.id)}
@@ -400,7 +400,7 @@
 			id={getIdWithPrefix('property-default-value')}
 			options={setupDefaultOptionSelectOptions()}
 			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id || null })}
-			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			placeholder={VALUE_NOT_DEFINED}
 		/>
 	</Field>

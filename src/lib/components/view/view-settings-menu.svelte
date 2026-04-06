@@ -256,7 +256,7 @@
 				</RadioGroup>
 			{/key}
 		{:else}
-			{#each filterSelectedProperty.optionsM as option}
+			{#each filterSelectedProperty.options as option}
 				<Checkbox
 					checked={isFilterSeletect(view.filters, {
 						id: filterSelectedProperty.id,
@@ -384,7 +384,7 @@
 						</Button>
 					{:else}
 						{#each filter.values as fv}
-							{@const option = getOption(property.optionsM, fv)}
+							{@const option = getOption(property.options, fv)}
 							{#if option}
 								<Button
 									theme="secondary"

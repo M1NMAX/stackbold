@@ -103,7 +103,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.optionsM.map((option) => ({
+				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
 					isSelected: option.id === value,
@@ -112,7 +112,7 @@
 			]}
 			onselect={(opt) => onchange(opt.id)}
 			placeholder="Empty"
-			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			smTitle={property.name}
 		/>
 	</Field>
@@ -123,7 +123,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.optionsM.map((option) => ({
+				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
 					isSelected: selectedOptions.includes(option.id),
@@ -132,7 +132,7 @@
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
-			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			smTitle={property.name}
 			isMulti
 		/>
@@ -144,7 +144,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.optionsM.map((option) => ({
+				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
 					theme: THEME_COLORS[option.color],

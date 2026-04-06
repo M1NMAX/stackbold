@@ -187,7 +187,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: option.id === value,
@@ -195,7 +195,7 @@
 			}))
 		]}
 		onselect={(opt) => updPropertyRef(opt.id)}
-		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
@@ -207,7 +207,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
@@ -215,7 +215,7 @@
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
-		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
@@ -228,7 +228,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
