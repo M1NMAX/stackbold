@@ -1,17 +1,9 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
 	import Trash from 'lucide-svelte/icons/trash';
 	import { capitalizeFirstLetter } from '$lib/utils/index.js';
 	import { ViewType, type View } from '@prisma/client';
-	import {
-		AdaptiveWrapper,
-		Button,
-		Field,
-		HSeparator,
-		Label,
-		Select
-	} from '$lib/components/base/index.js';
+	import { Button, Field, HSeparator, Label, Select } from '$lib/components/base/index.js';
 	import { getViewState } from './index.js';
 	import debounce from 'debounce';
 	import { DEBOUNCE_INTERVAL, MAX_VIEW_NAME_LENGTH } from '$lib/constant/index.js';
@@ -26,7 +18,6 @@
 
 	const viewState = getViewState();
 	const deleteModal = getDeleteModalState();
-	const menuState = new ModalState();
 
 	const updViewDebounced = debounce(updView, DEBOUNCE_INTERVAL);
 	async function updView(view: UpdView) {
@@ -38,7 +29,6 @@
 	}
 
 	async function deleteView() {
-		menuState.close();
 		deleteModal.open({
 			id: view.id,
 			type: 'view',
@@ -91,18 +81,13 @@
 </Field>
 <HSeparator />
 <div class="flex justify-end items-center">
-	<AdaptiveWrapper bind:open={menuState.isOpen} floatingAlign="end">
-		{#snippet trigger()}
-			<Ellipsis />
-		{/snippet}
-		<Button theme="ghost" variant="menu" onclick={() => duplicateView()}>
-			<Copy />
-			<span> Duplicate view</span>
-		</Button>
+	<Button theme="ghost" onclick={() => duplicateView()}>
+		<Copy />
+		<span> Duplicate </span>
+	</Button>
 
-		<Button theme="danger" variant="menu" onclick={() => deleteView()}>
-			<Trash />
-			<span> Delete view</span>
-		</Button>
-	</AdaptiveWrapper>
+	<Button theme="danger" onclick={() => deleteView()}>
+		<Trash />
+		<span> Delete </span>
+	</Button>
 </div>
