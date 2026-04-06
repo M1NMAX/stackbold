@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { INPUT_ICONS, VIEW_ICONS } from '$lib/constant/index.js';
+	import { INPUT_ICONS, SLIDE_PARAMS, VIEW_ICONS } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import Grip from 'lucide-svelte/icons/grip-vertical';
@@ -124,10 +124,7 @@
 	</div>
 
 	{#if isExpanded}
-		<div
-			transition:slide={{ delay: 10, duration: 150 }}
-			class="flex flex-col gap-y-2 py-3 px-2.5 bg-card"
-		>
+		<div transition:slide={{ ...SLIDE_PARAMS }} class="flex flex-col gap-y-2 py-3 px-2.5 bg-card">
 			{@render children()}
 		</div>
 	{/if}

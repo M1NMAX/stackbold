@@ -47,14 +47,14 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class={tm('h-full min-w-96 grow flex flex-col rounded-md', dragover && 'bg-secondary/30')}
+	class={tm('h-full min-w-96 grow flex  flex-col rounded-md', dragover && 'bg-secondary/50')}
 	{ondrop}
 	{ondragover}
 	{ondragleave}
 >
 	<div
 		class={tm(
-			'z-10 w-full p-2 rounded-md bg-secondary/20 shrink-0',
+			'z-10 w-full p-2 rounded-md border-2 border-secondary shrink-0',
 			isSticky && 'bg-secondary',
 			items.length > 0 && 'rounded-b-none'
 		)}
@@ -71,7 +71,8 @@
 	{#if items.length > 0}
 		<div
 			class={tm(
-				'relative z-0 h-fit w-full flex flex-col items-start gap-2 px-2 pb-2 rounded-md rounded-t-none bg-secondary/20',
+				'relative z-0 h-fit w-full flex flex-col items-start gap-2 p-2 rounded-md rounded-t-none border-b-2 border-x-2 border-secondary/70',
+				dragover && 'h-full',
 				isSticky && 'pt-4'
 			)}
 		>

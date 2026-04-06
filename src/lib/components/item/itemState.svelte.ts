@@ -100,9 +100,9 @@ export class ItemState {
 
 		try {
 			const updatedItem = await trpc().items.updateRef.mutate({
+				cid: target.collectionId,
 				id,
-				ref,
-				cid: target.collectionId
+				ref
 			});
 
 			this.#updItem(id, { ...updatedItem });
