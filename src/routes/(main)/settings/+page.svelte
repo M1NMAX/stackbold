@@ -80,30 +80,30 @@
 			<TabTrigger value="appearance">Appearance</TabTrigger>
 		{/snippet}
 		<TabContent value="account" class="gap-y-2">
-			<div class="section">
+			<div class="settings-section">
 				<div class="grow">
 					<h3 class="title">Name</h3>
 					<p class="content">{data.user.name}</p>
 				</div>
 				<Button theme="outline" href="/settings/update-name">Change Name</Button>
 			</div>
-			<div class="section">
+			<div class="settings-section">
 				<div class="grow">
 					<h3 class="title">Email</h3>
 					<p class="content">{data.user.email}</p>
 				</div>
 				<Button theme="outline" href="/settings/update-email">Change Email</Button>
 			</div>
-			<div class="section">
+			<div class="settings-section">
 				<h3 class="grow title">Password</h3>
 				<Button theme="outline" href="/settings/update-password">Change Password</Button>
 			</div>
-			<div class="section">
+			<div class="settings-section">
 				<h3 class="grow title">Two-factor authenctication</h3>
 				<Button theme="outline" href="/settings/2fa-setup">Setup 2FA</Button>
 			</div>
 			{#if data.recoveryCode != null}
-				<div class="section">
+				<div class="settings-section">
 					<div class="grow">
 						<h3 class="title">Recovery code</h3>
 						<p class="content">
@@ -113,7 +113,7 @@
 					<Button theme="outline" href="/settings/recovery-code">See code</Button>
 				</div>
 			{/if}
-			<div class="section">
+			<div class="settings-section">
 				<div class="grow">
 					<h3 class="title">Delete account</h3>
 					<p class="content">
@@ -162,18 +162,3 @@
 		</form>
 	</div>
 </Dialog>
-
-<style>
-	.section {
-		@apply flex flex-col lg:flex-row lg:items-center gap-2 p-2 rounded-md bg-secondary;
-
-		& > .grow > .title,
-		& > .title {
-			@apply text-base font-semibold;
-		}
-
-		& > .grow > .content {
-			@apply text-sm;
-		}
-	}
-</style>

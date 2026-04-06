@@ -1,5 +1,4 @@
 import { fontFamily } from 'tailwindcss/defaultTheme';
-import tailwindcssAnimate from 'tailwindcss-animate';
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -62,9 +61,10 @@ const config = {
 			},
 			borderRadius: {
 				xl: 'calc(var(--radius) + 4px)',
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				lg: 'calc(var(--radius) + 1px)',
+				md: 'var(--radius)',
+				sm: 'calc(var(--radius) - 1px)',
+				xs: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
 				sans: [...fontFamily.sans]
@@ -89,8 +89,7 @@ const config = {
 				'caret-blink': 'caret-blink 1.25s ease-out infinite'
 			}
 		}
-	},
-	plugins: [tailwindcssAnimate]
+	}
 };
 
 export default config;

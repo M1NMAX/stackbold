@@ -1,29 +1,30 @@
-import type { OnChangeFn } from '$lib/types';
+import type { WritableBox } from '$lib/types';
 import { getContext, setContext } from 'svelte';
 
-class TabsState {
-	value = $state('');
-	onchange?: OnChangeFn<string>;
+interface TabsStateOpts {
+	value: WritableBox<string>;
+}
 
-	constructor(value?: string, onchange?: OnChangeFn<string>) {
-		this.value = value ?? '';
-		this.onchange = onchange;
+class TabsState {
+	readonly opts: TabsStateOpts;
+
+	constructor(opts: TabsStateOpts) {
+		this.opts = opts;
 	}
 
 	setValue(value: string) {
-		this.value = value;
-		this.onchange?.(value);
+		this.opts.value.current = value;
 	}
 
 	isSelected(value: string) {
-		return this.value == value;
+		return this.opts.value.current == value;
 	}
 }
 
 const TABS_CTX_KEY = Symbol('TABS_CTX_KEY');
 
-export function setTabsState(value?: string, onchange?: OnChangeFn<string>) {
-	return setContext(TABS_CTX_KEY, new TabsState(value, onchange));
+export function setTabsState(opts: TabsStateOpts) {
+	return setContext(TABS_CTX_KEY, new TabsState(opts));
 }
 
 export function getTabsState() {

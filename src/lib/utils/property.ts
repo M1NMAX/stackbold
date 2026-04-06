@@ -6,7 +6,7 @@ import {
 	type Property,
 	type PropertyRef,
 	type View,
-	type Option
+	type PropertyOption
 } from '@prisma/client';
 import { formatNumber } from './index.js';
 import {
@@ -14,7 +14,7 @@ import {
 	NUMBERICAL_PROPERTY_TYPES,
 	PROPERTIES_WITH_LISTABLE_OPTIONS
 } from '$lib/constant/index.js';
-import type { SelectOption } from '$lib/types.js';
+import type { PropertyWithOptions, SelectOption } from '$lib/types.js';
 
 export function aggregatePropertyValue(
 	aggregator: Aggregator,
@@ -61,13 +61,13 @@ export function getPropertyRefValue(refs: PropertyRef[], pid: string) {
 	return ref ? ref.value : '';
 }
 
-export function getPropertyColor(property: Property, value: string) {
+export function getPropertyColor(property: PropertyWithOptions, value: string) {
 	if (!hasOptions(property.type)) return Color.GRAY;
-	const option = property.options.find((opt) => opt.id === value);
+	const option = property.optionsM.find((opt) => opt.id === value);
 	return option ? option.color : Color.GRAY;
 }
 
-export function getOption(options: Option[], id: string) {
+export function getOption(options: PropertyOption[], id: string) {
 	return options.find((opt) => opt.id === id) || null;
 }
 
@@ -81,10 +81,10 @@ export function hasOptions(type: PropertyType) {
 	return PROPERTIES_WITH_LISTABLE_OPTIONS.includes(type);
 }
 
-export function isPropertyNumerical(property: Property) {
+export function isPropertyNumerical(property: PropertyWithOptions) {
 	if (NUMBERICAL_PROPERTY_TYPES.includes(property.type)) return true;
 	if (property.type === PropertyType.BUNDLE) {
-		const select = property.options.find((opt) => opt.id === property.extTargetProperty);
+		const select = property.optionsM.find((opt) => opt.id === property.extTargetProperty);
 		return select ? NUMBERICAL_PROPERTY_TYPES.includes(select.extra as PropertyType) : false;
 	}
 

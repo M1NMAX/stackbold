@@ -29,7 +29,7 @@
 			isDragging = true;
 
 			node.setPointerCapture(e.pointerId);
-			e.preventDefault();
+			// e.preventDefault();
 		}
 
 		function handlePointerMove(e: PointerEvent) {

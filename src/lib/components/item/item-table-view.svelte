@@ -23,7 +23,8 @@
 	import {
 		DEBOUNCE_INTERVAL,
 		ITEMS_CHUNK_SIZE,
-		MAX_ITEM_NAME_LENGTH
+		MAX_ITEM_NAME_LENGTH,
+		NO_ITEMS
 	} from '$lib/constant/index.js';
 	import type { RouterInputs } from '$lib/trpc/router';
 	import debounce from 'debounce';
@@ -69,42 +70,37 @@
 	}
 </script>
 
-<div class="overflow-x-auto pb-1.5">
-	<table class="w-full table-auto">
-		<thead>
-			<tr class="text-muted-foreground text-sm">
-				<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
-					<span class="flex items-center">
-						<PropertyIcon key={PropertyType.TEXT} class="size-4 mr-2" />
-						Name
-					</span>
-				</th>
-				{#each properties as property (property.id)}
-					<th
-						scope="col"
-						class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
-					>
+{#if items.length === 0}
+	<p class="text-center">{NO_ITEMS}</p>
+{:else}
+	<div class="overflow-x-auto pb-1.5">
+		<table class="w-full table-auto">
+			<thead>
+				<tr class="text-muted-foreground text-sm">
+					<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 						<span class="flex items-center">
-							<PropertyIcon key={property.type} class="size-4 mr-2" />
-							{property.name}
+							<PropertyIcon key={PropertyType.TEXT} class="size-4 mr-2" />
+							Name
 						</span>
 					</th>
-				{/each}
+					{#each properties as property (property.id)}
+						<th
+							scope="col"
+							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
+						>
+							<span class="flex items-center">
+								<PropertyIcon key={property.type} class="size-4 mr-2" />
+								{property.name}
+							</span>
+						</th>
+					{/each}
 
-				<th scope="col" class="text-left w-8">
-					{@render visibilityMenu()}
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#if items.length === 0}
-				<tr>
-					<td colspan={propertyState.properties.length + 3}>
-						<div class="empty" in:fade>No items found.</div>
-					</td>
+					<th scope="col" class="text-left w-8">
+						{@render visibilityMenu()}
+					</th>
 				</tr>
-			{/if}
-			{#if items.length > 0}
+			</thead>
+			<tbody>
 				{#each items.slice(0, renderLimit) as item (item.id)}
 					<tr
 						class={tm(
@@ -174,11 +170,10 @@
 
 					<td></td>
 				</tr>
-			{/if}
-		</tbody>
-	</table>
-</div>
-
+			</tbody>
+		</table>
+	</div>
+{/if}
 {#snippet visibilityMenu()}
 	<AdaptiveWrapper triggerClass={buttonVariants({ theme: 'ghost' })} floatingAlign="start">
 		{#snippet trigger()}

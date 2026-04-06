@@ -31,7 +31,7 @@
 		'[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
 		compact ? 'h-9 lg:h-7' : 'py-0.5',
 		hoverEffect &&
-			'ronded-none rounded-md hover:bg-secondary hover:text-secondary-foreground cursor-pointer',
+			'rounded-none lg:rounded-md hover:bg-secondary hover:text-secondary-foreground cursor-pointer',
 		className
 	)}
 >
@@ -40,7 +40,7 @@
 			{@const Icon = INPUT_ICONS[icon]}
 			<Icon />
 		{/if}
-		<span class="font-semibold text-sm"> {name} </span>
+		<span> {name} </span>
 	{:else if children}
 		{@render children()}
 	{/if}

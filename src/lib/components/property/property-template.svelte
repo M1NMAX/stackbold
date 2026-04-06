@@ -1,18 +1,19 @@
 <script lang="ts">
-	import { PropertyType, type Color, type Property } from '@prisma/client';
+	import { PropertyType, type Color } from '@prisma/client';
 	import { getOption, hasOptions, useId } from '$lib/utils/index.js';
 	import { PropertyIcon } from './index.js';
 	import { Badge, MockCheckbox, Tooltip } from '$lib/components/base/index.js';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
-		property: Property;
+		property: PropertyWithOptions;
 		color: Color;
 		value: string;
 	};
 
 	let { property, color, value }: Props = $props();
 
-	const tooltipId = useId(`template-prop-tooltip-${property.id}`);
+	const tooltipId = useId('template-prop-tooltip');
 </script>
 
 <Badge id={tooltipId} {color} class="cursor-default">
@@ -21,7 +22,7 @@
 		{property.name}
 	{:else}
 		{@const result = hasOptions(property.type)
-			? (getOption(property.options, value)?.value ?? '')
+			? (getOption(property.optionsM, value)?.value ?? '')
 			: value}
 		{result.substring(0, 55)}
 	{/if}

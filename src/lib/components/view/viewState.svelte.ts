@@ -7,8 +7,8 @@ import { getContext, setContext } from 'svelte';
 
 export class ViewState {
 	#toastState = getToastState();
-	views = $state<View[]>([]);
 	collectionId = $state('');
+	views = $state<View[]>([]);
 	viewShortId = $state(0);
 
 	constructor(views: View[], viewShortId: number) {
@@ -36,19 +36,21 @@ export class ViewState {
 
 		try {
 			const name = capitalizeFirstLetter(type);
+			const order = this.views.length + 1;
+			const date = new Date();
 
 			this.views.push({
 				id: tmpId,
 				name: capitalizeFirstLetter(type),
 				type,
-				shortId: this.views.length + 1,
-				order: this.views.length + 1,
+				shortId: order,
+				order: order,
 				collectionId: this.collectionId,
 				properties: [],
 				filters: [],
 				sorts: [],
-				createdAt: new Date(),
-				updatedAt: new Date(),
+				createdAt: date,
+				updatedAt: date,
 				groupBy: null,
 				hideEmptyGroups: null,
 				hideItemCounts: null
@@ -80,14 +82,15 @@ export class ViewState {
 		try {
 			const { id: _1, createdAt: _2, updatedAt: _3, shortId: _4, ...rest } = target;
 			const name = rest.name + ' copy';
+			const date = new Date();
 
 			this.views.push({
 				...rest,
 				name,
 				id: tmpId,
 				shortId: this.views.length + 1,
-				createdAt: new Date(),
-				updatedAt: new Date()
+				createdAt: date,
+				updatedAt: date
 			});
 
 			const view = await trpc().views.create.mutate({
@@ -146,8 +149,8 @@ export class ViewState {
 
 const VIEW_STATE_CTX_KEY = Symbol('VIEW_STATE_CTX_KEY');
 
-export function setViewState(views: View[], viewShortId: number) {
-	return setContext(VIEW_STATE_CTX_KEY, new ViewState(views, viewShortId));
+export function setViewState(views: () => View[], viewShortId: () => number) {
+	return setContext(VIEW_STATE_CTX_KEY, new ViewState(views(), viewShortId()));
 }
 
 export function getViewState() {

@@ -141,8 +141,8 @@ export class CollectionState {
 
 const COLLECTION_STATE_CTX_KEY = Symbol('COLLECTION_STATE_CTX_KEY');
 
-export function setCollectionState(collections: CollectionWithViews[]) {
-	return setContext(COLLECTION_STATE_CTX_KEY, new CollectionState(collections));
+export function setCollectionState(collections: () => CollectionWithViews[]) {
+	return setContext(COLLECTION_STATE_CTX_KEY, new CollectionState(collections()));
 }
 
 export function getCollectionState() {

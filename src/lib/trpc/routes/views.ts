@@ -65,7 +65,7 @@ export const views = createTRPCRouter({
 
 	delete: protectedProcedure
 		.input(z.string())
-		.mutation(async ({ input: id, ctx: { userId } }) => deleteView(id, userId))
+		.mutation(async ({ input: id, ctx: { userId } }) => await deleteView(id, userId))
 });
 
 async function listViews(collectionId: string) {
@@ -101,6 +101,7 @@ async function createView(view: z.infer<typeof viewCreateSchema>) {
 			shortId: (aggregate._max.shortId || 0) + 1,
 			order: aggregate._count + 1,
 			filters: [],
+			hideEmptyGroups: view.type !== ViewType.BOARD,
 			properties: properties.map((prop) => ({
 				id: prop.id,
 				isVisible: true

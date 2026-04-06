@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { createRequire } from 'module';
 import path from 'path';
+import tailwindcss from '@tailwindcss/vite';
 
 const { resolve } = createRequire(import.meta.url);
 
@@ -12,7 +13,7 @@ const prismaClientIndexBrowser = resolve('@prisma/client/index-browser').replace
 	`.${prismaClient}`
 );
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [tailwindcss(), sveltekit()],
 	resolve: {
 		alias: { '.prisma/client/index-browser': path.relative(__dirname, prismaClientIndexBrowser) }
 	},

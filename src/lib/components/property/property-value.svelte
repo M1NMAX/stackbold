@@ -13,14 +13,7 @@
 		PROPERTIES_THAT_USE_SELECTOR,
 		THEME_COLORS
 	} from '$lib/constant/index.js';
-	import {
-		Color,
-		PropertyType,
-		ViewType,
-		type Item,
-		type Property,
-		type View
-	} from '@prisma/client';
+	import { Color, PropertyType, ViewType, type Item, type View } from '@prisma/client';
 	import {
 		tm,
 		useId,
@@ -55,10 +48,11 @@
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
+	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
 		view: View;
-		property: Property;
+		property: PropertyWithOptions;
 		item: Item;
 	};
 
@@ -193,7 +187,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: option.id === value,
@@ -201,8 +195,9 @@
 			}))
 		]}
 		onselect={(opt) => updPropertyRef(opt.id)}
-		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
+		smTitle={property.name}
 		placeholder=""
 	/>
 
@@ -212,7 +207,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
@@ -220,8 +215,9 @@
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
-		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
+		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
+		smTitle={property.name}
 		placeholder=""
 		isMulti
 	/>
@@ -232,7 +228,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.options.map((option) => ({
+			...property.optionsM.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
@@ -242,6 +238,7 @@
 		]}
 		onselect={(opts) => updPropertyRef(joinMultiselectOptions(opts))}
 		triggerClass={buttonClass}
+		smTitle={property.name}
 		placeholder=""
 		searchable
 		isMulti
@@ -310,7 +307,7 @@
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="w-full input input-ghost input-sm px-1 font-semibold text-sm"
+				class="input input-ghost"
 				type="text"
 				inputmode="numeric"
 				{value}
@@ -366,7 +363,7 @@
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="w-full input input-ghost px-1 font-semibold text-sm"
+				class="input input-ghost"
 				type="url"
 				{value}
 				oninput={handleOnInput}
@@ -388,7 +385,7 @@
 				id={property.id}
 				name={property.name}
 				placeholder="Empty"
-				class="w-full input input-ghost px-1 font-semibold text-sm"
+				class="input input-ghost"
 				type={property.type.toLowerCase()}
 				{value}
 				oninput={handleOnInput}

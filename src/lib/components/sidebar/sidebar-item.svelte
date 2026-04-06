@@ -17,7 +17,7 @@
 <a
 	{href}
 	class={tm(
-		'w-full flex items-center space-x-1.5 py-1 px-4 [&>svg]:size-5 hover:bg-secondary/95 transition duration-75 text-secondary-foreground',
+		'w-full flex items-center space-x-1.5 py-1 px-4 [&_svg]:size-4 hover:bg-secondary/95 transition duration-75 text-secondary-foreground',
 		active && 'border-r-2 border-primary bg-secondary text-primary'
 	)}
 >

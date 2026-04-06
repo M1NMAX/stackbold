@@ -1,12 +1,12 @@
 import { DEFAULT_STRING_DELIMITER, FILTERABLE_PROPERTY_TYPES } from '$lib/constant/index.js';
-import type { ItemsGroup } from '$lib/types.js';
+import type { ItemsGroup, PropertyWithOptions } from '$lib/types.js';
 import { getPropertyRef } from '$lib/utils/index.js';
-import { PropertyType, type Item, type Property } from '@prisma/client';
+import { PropertyType, type Item } from '@prisma/client';
 
-export function getInitialItemsGroup(property: Property) {
+export function getInitialItemsGroup(property: PropertyWithOptions) {
 	if (!FILTERABLE_PROPERTY_TYPES.includes(property.type)) return {};
 
-	let keys = ['', ...property.options.map((o) => o.id)];
+	let keys = ['', ...property.optionsM.map((o) => o.id)];
 
 	if (property.type === PropertyType.CHECKBOX) {
 		keys = ['false', 'true'];

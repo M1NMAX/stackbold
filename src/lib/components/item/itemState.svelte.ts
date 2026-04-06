@@ -100,9 +100,9 @@ export class ItemState {
 
 		try {
 			const updatedItem = await trpc().items.updateRef.mutate({
+				cid: target.collectionId,
 				id,
-				ref,
-				cid: target.collectionId
+				ref
 			});
 
 			this.#updItem(id, { ...updatedItem });
@@ -140,8 +140,8 @@ export class ItemState {
 
 const ITEM_STATE_CTX_KEY = Symbol('ITEM_STATE_CTX_KEY');
 
-export function setItemState(items: Item[]) {
-	return setContext(ITEM_STATE_CTX_KEY, new ItemState(items));
+export function setItemState(items: () => Item[]) {
+	return setContext(ITEM_STATE_CTX_KEY, new ItemState(items()));
 }
 
 export function getItemState() {

@@ -16,14 +16,7 @@
 	} from '$lib/components/sidebar/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
 	import { goto } from '$app/navigation';
-	import {
-		Accordion,
-		AccordionItem,
-		Button,
-		Command,
-		CommandItem,
-		Shortcut
-	} from '$lib/components/base/index.js';
+	import { Button, Command, CommandItem, Shortcut } from '$lib/components/base/index.js';
 	import { ModalState, setMoveCollectionModalState } from '$lib/states/index.js';
 	import { setGroupState } from '$lib/components/group/index.js';
 	import { setCollectionState } from '$lib/components/collection/index.js';
@@ -31,23 +24,26 @@
 		COLLECTION_ICONS,
 		NEW_COLLECTION_NAME,
 		NEW_GROUP_NAME,
-		PAGE_ICONS
+		PAGE_ICONS,
+		SLIDE_PARAMS
 	} from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
+	import { slide } from 'svelte/transition';
 
 	let { data, children } = $props();
-	let user = $state(data.user);
-	let collections = $state(data.collections);
-	let items = $state(data.items);
+	const user = $derived(data.user);
+	const collections = $derived(data.collections);
+	const items = $derived(data.items);
 
 	let activeUrl = $state<string>('');
 
-	const collectionState = setCollectionState(data.collections);
-	const groupState = setGroupState(data.groups);
+	const collectionState = setCollectionState(() => data.collections);
+	const groupState = setGroupState(() => data.groups);
 
 	const globalSearchModal = new ModalState();
 	const moveCollectionModal = setMoveCollectionModalState();
 	const sidebarState = setSidebarState();
+	const favouritesState = new ModalState(true);
 
 	const SIDEBAR_ITEMS = [
 		{ label: 'Home', url: '/', icon: 'home' },
@@ -143,38 +139,28 @@
 					/>
 				{/each}
 			</div>
+			<div class="grow overflow-y-hidden flex flex-col">
+				<button
+					onclick={() => favouritesState.toggle()}
+					class="w-full flex items-center gap-1.5 py-0.5 px-4 text-sm font-medium hover:bg-secondary/70"
+				>
+					Favorites
+				</button>
+				{#if favouritesState.isOpen}
+					<div transition:slide={{ ...SLIDE_PARAMS }}>
+						{#each collectionState.collections as collection}
+							{#if collection.groupId === null && collection.isPinned}
+								<SidebarCollection {collection} active={activeCollection(collection.id)} />
+							{/if}
+						{/each}
 
-			<Accordion value="favorites" class="grow overflow-y-hidden flex flex-col">
-				<AccordionItem id="favorites" contentClass="p-0 grow overflow-y-scroll">
-					{#snippet accordionHeader({ isOpen, toggle })}
-						<div class="w-full group hover:bg-secondary">
-							<button
-								onclick={toggle}
-								aria-expanded={isOpen}
-								class="w-full py-0.5 px-4 text-sm text-left font-semibold transition-all"
-							>
-								Favorites
-							</button>
-						</div>
-					{/snippet}
-
-					{#each collectionState.collections as collection}
-						{#if collection.groupId === null && collection.isPinned}
-							<SidebarCollection {collection} active={activeCollection(collection.id)} />
-						{/if}
-					{/each}
-
-					<Accordion isMulti value={groupState.groups.map((g) => g.id)}>
 						{#each groupState.groups as group (group.id)}
 							{@const groupCollections = collectionState.collections.filter(
 								(collection) =>
 									collection.groupId && collection.groupId === group.id && collection.isPinned
 							)}
 
-							<AccordionItem id={group.id} contentClass="overflow-visible p-0">
-								{#snippet accordionHeader({ isOpen, toggle })}
-									<SidebarGroup {group} {isOpen} {toggle} />
-								{/snippet}
+							<SidebarGroup {group}>
 								{#each groupCollections as collection}
 									<SidebarCollection
 										asChild
@@ -182,11 +168,11 @@
 										active={activeCollection(collection.id)}
 									/>
 								{/each}
-							</AccordionItem>
+							</SidebarGroup>
 						{/each}
-					</Accordion>
-				</AccordionItem>
-			</Accordion>
+					</div>
+				{/if}
+			</div>
 
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>

@@ -35,7 +35,7 @@ class SidebarState {
 
 const SIDEBAR_CTX = Symbol('SIDEBARSTATE_CTX');
 export function setSidebarState() {
-	return setContext(SIDEBAR_CTX, new SidebarState(true));
+	return setContext(SIDEBAR_CTX, new SidebarState(false));
 }
 
 export function getSidebarState() {

@@ -139,7 +139,7 @@
 
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { insidePanel: true });
+			pushState(url, { cid: result.data.cid, insidePanel: true });
 			panelContentType = 'structure';
 			if (!panelState.isOpen) panelState.open();
 		} else {
@@ -158,7 +158,7 @@
 
 		const result = await preloadData(url);
 		if (result.type === 'loaded' && result.status === 200) {
-			pushState(url, { id: result.data.id, insidePanel: true });
+			pushState(url, { iid: result.data.iid, insidePanel: true });
 			panelContentType = 'item';
 			if (!panelState.isOpen) panelState.open();
 		} else {
@@ -261,7 +261,7 @@
 			class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
 		/>
 
-		<div class="flex justify-end items-center space-x-1.5">
+		<div class="flex justify-end items-center gap-x-1.5">
 			<Button
 				id={`collection-${collection.id}-struct-btn`}
 				theme="secondary"
@@ -332,9 +332,9 @@
 	</PageContent>
 	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
-			<form onsubmit={handleCreateItem} class="grow relative space-y-0">
-				<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none [&_svg]:size-4">
-					<Plus />
+			<form onsubmit={handleCreateItem} class="relative w-full">
+				<div class="absolute top-2.5 left-2 flex items-center pointer-events-none">
+					<Plus class="size-4" />
 				</div>
 				<label for="new-item-name" class="sr-only"> Item name</label>
 				<input
@@ -374,9 +374,9 @@
 		panelState.isOpen ? 'w-full md:w-2/6 ml-1.5' : 'w-0'
 	)}
 >
-	{#if panelContentType === 'item' && page.state.id}
+	{#if panelContentType === 'item' && page.state.iid}
 		<ItemPage data={noCheck(page.state)} />
-	{:else if panelContentType === 'structure'}
+	{:else if panelContentType === 'structure' && page.state.cid}
 		<StructurePage data={noCheck(page.state)} />
 	{/if}
 </aside>

@@ -1,6 +1,6 @@
 <script lang="ts" generics="IsMulti extends boolean = false">
 	import type { Snippet } from 'svelte';
-	import { setAccordionState } from '$lib/states/index.js';
+	import { box, setAccordionState } from '$lib/states/index.js';
 	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
@@ -11,7 +11,7 @@
 	};
 
 	let { isMulti = false as IsMulti, value, children, class: className }: Props = $props();
-	const accordionState = setAccordionState(isMulti);
+	const accordionState = setAccordionState({ isMulti: box(() => isMulti) });
 
 	$effect(() => {
 		if (isMulti && value) {

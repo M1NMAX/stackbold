@@ -17,7 +17,8 @@
 		Button,
 		Tabs,
 		TabTrigger,
-		TabContent
+		TabContent,
+		ExpandableEditor
 	} from '$lib/components/base/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
 	import { capitalizeFirstLetter, tm } from '$lib/utils/index.js';
@@ -37,8 +38,8 @@
 	const panelState = getContext<ModalState>(COLLECTION_PAGE_PANEL_CTX_KEY);
 	const collection = $derived(collectionState.getCollection(data.cid)!);
 
-	let openedPropertyEditor = $state<string | null>(null);
-	let openedViewEdit = $state<string | null>(null);
+	let expandedPropertyEditor = $state<string | null>(null);
+	let expandedViewEdit = $state<string | null>(null);
 	let isSmHeadingVisible = $state(false);
 	let currentTab = $state<Tab>(TABS_OPTIONS.PROPERTIES);
 
@@ -58,6 +59,22 @@
 
 	function handleTabChange(value: string) {
 		currentTab = value as Tab;
+	}
+
+	function isPropertyEditorExpanded(pid: string) {
+		return expandedPropertyEditor === pid;
+	}
+
+	function onclickExpandablePropertyEditor(pid: string) {
+		expandedPropertyEditor = isPropertyEditorExpanded(pid) ? null : pid;
+	}
+
+	function isViewEditorExpanded(vid: string) {
+		return expandedViewEdit === vid;
+	}
+
+	function onclickExpandableViewEditor(vid: string) {
+		expandedViewEdit = isViewEditorExpanded(vid) ? null : vid;
 	}
 </script>
 
@@ -102,10 +119,10 @@
 			/>
 		{/if}
 	</PageHeader>
-	<PageContent onscroll={handleScroll}>
-		<PageTitle icon="structure" title="Structure" />
+	<PageContent onscroll={handleScroll} class="px-0 md:px-0">
+		<PageTitle icon="structure" title="Structure" class="px-2 md:px-4" />
 
-		<Tabs value={TABS_OPTIONS.PROPERTIES} onChange={handleTabChange}>
+		<Tabs value={TABS_OPTIONS.PROPERTIES} onChange={handleTabChange} triggersClass="mx-2 md:mx-4">
 			{#snippet triggers()}
 				{#each Object.keys(TABS_OPTIONS) as tab}
 					{@const value = TABS_OPTIONS[tab as Tab]}
@@ -136,25 +153,45 @@
 </PageContainer>
 
 {#snippet viewsEditors()}
-	<div class="grow overflow-y-auto space-y-1">
+	<div class="grow overflow-y-auto px-2 md:px-4">
 		{#each viewState.views as view (view.id)}
-			<ViewEditor
-				{view}
-				isOpen={openedViewEdit === view.id}
-				openChange={(value) => (openedViewEdit = value)}
-			/>
+			<ExpandableEditor
+				icon={view.type}
+				name={view.name}
+				isExpanded={isViewEditorExpanded(view.id)}
+				onclickHeader={() => onclickExpandableViewEditor(view.id)}
+				ondragEditor={(dt) => {
+					dt.setData('text/plain', view.order.toString());
+				}}
+				ondropEditor={async (dt) => {
+					const start = +dt.getData('text/plain');
+					await viewState.orderView(start, view.order);
+				}}
+			>
+				<ViewEditor {view} />
+			</ExpandableEditor>
 		{/each}
 	</div>
 {/snippet}
 
 {#snippet propertiesEditors()}
-	<div class="grow overflow-y-auto space-y-1">
+	<div class="grow overflow-y-auto px-2 md:px-4">
 		{#each propertyState.properties as property (property.id)}
-			<PropertyEditor
-				{property}
-				isOpen={openedPropertyEditor === property.id}
-				openChange={(value) => (openedPropertyEditor = value)}
-			/>
+			<ExpandableEditor
+				icon={property.type}
+				name={property.name}
+				isExpanded={isPropertyEditorExpanded(property.id)}
+				onclickHeader={() => onclickExpandablePropertyEditor(property.id)}
+				ondragEditor={(dt) => {
+					dt.setData('text/plain', property.order.toString());
+				}}
+				ondropEditor={async (dt) => {
+					const start = +dt.getData('text/plain');
+					await propertyState.orderProperty(start, property.order);
+				}}
+			>
+				<PropertyEditor {property} />
+			</ExpandableEditor>
 		{:else}
 			<div class="h-full flex flex-col items-center justify-center space-y-2">
 				<p class="text-center text-lg">This collection has no properties. <br /> Please add one</p>

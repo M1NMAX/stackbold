@@ -12,24 +12,22 @@ import {
 	type View
 } from '@prisma/client';
 import { listObjects, removeObjects } from '$lib/server/minio';
-import { GROUPABLE_PROPERTY_TYPES, NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS } from '$lib/constant';
+import {
+	BASE_FIELDS,
+	GROUPABLE_PROPERTY_TYPES,
+	NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS
+} from '$lib/constant/index.js';
+import type { PropertyWithOptions, XPropertyOption } from '$lib/types';
+import { omit } from '$lib/utils/index.js';
 
 const colorSchema = z.enum(Color);
 const propertyTypeSchema = z.enum(PropertyType);
 const aggregatorSchema = z.enum(Aggregator);
 
-const optionSchema = z.object({
-	id: z.string(),
-	value: z.string(),
-	color: colorSchema,
-	extra: z.string().nullish()
-});
-
 const propertyCreateSchema = z.object({
 	collectionId: z.string(),
 	name: z.string(),
 	type: propertyTypeSchema.optional(),
-	options: z.array(optionSchema).optional(),
 	order: z.number().optional(),
 	aggregator: aggregatorSchema.nullish(),
 	defaultValue: z.string().nullish(),
@@ -52,19 +50,23 @@ const propertyOrderSchema = z.object({
 	end: z.number()
 });
 
-const optionAddSchema = z.object({
-	pid: z.string(),
-	option: optionSchema.required({ id: true })
+const propertyOptionCreateSchema = z.object({
+	propertyId: z.string(),
+	value: z.string()
 });
 
-const optionUpdateSchema = z.object({
-	pid: z.string(),
-	option: optionSchema.required({ id: true }).partial({ value: true, color: true })
-});
+const propertyOptionUpdateSchema = propertyOptionCreateSchema
+	.extend({ id: z.string(), color: colorSchema.optional() })
+	.partial({
+		propertyId: true,
+		value: true,
+		color: true
+	});
 
-const optionRemoveSchema = z.object({
-	pid: z.string(),
-	optionId: z.string()
+const propertyOptionOrderSchema = z.object({
+	propertyId: z.string(),
+	start: z.number(),
+	end: z.number()
 });
 
 export const properties = createTRPCRouter({
@@ -80,6 +82,10 @@ export const properties = createTRPCRouter({
 		.input(propertyCreateSchema)
 		.mutation(async ({ input }) => await createProperty(input)),
 
+	duplicate: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ input }) => await duplicateProperty(input)),
+
 	update: protectedProcedure
 		.input(propertyUpdateSchema)
 		.mutation(async ({ input }) => await updateProperty(input)),
@@ -92,32 +98,28 @@ export const properties = createTRPCRouter({
 		.input(z.string())
 		.mutation(async ({ input: id, ctx: { userId } }) => await deleteProperty(id, userId)),
 
-	addOption: protectedProcedure.input(optionAddSchema).mutation(async ({ input }) =>
-		prisma.property.update({
-			where: { id: input.pid },
-			data: { options: { push: [input.option] } }
-		})
-	),
+	addOption: protectedProcedure
+		.input(propertyOptionCreateSchema)
+		.mutation(async ({ input }) => await createPropertyOption(input)),
 
-	updateOption: protectedProcedure.input(optionUpdateSchema).mutation(async ({ input }) =>
-		prisma.property.update({
-			where: { id: input.pid },
-			data: { options: { updateMany: { where: { id: input.option.id }, data: input.option } } }
-		})
-	),
+	updateOption: protectedProcedure
+		.input(propertyOptionUpdateSchema)
+		.mutation(async ({ input }) => await updatePropertyOption(input)),
 
-	removeOption: protectedProcedure.input(optionRemoveSchema).mutation(async ({ input }) =>
-		prisma.property.update({
-			where: { id: input.pid },
-			data: { options: { deleteMany: { where: { id: input.optionId } } } }
-		})
-	)
+	orderOption: protectedProcedure
+		.input(propertyOptionOrderSchema)
+		.mutation(async ({ input }) => await orderPropertyOption(input)),
+
+	removeOption: protectedProcedure
+		.input(z.string())
+		.mutation(async ({ input: id, ctx: { userId } }) => await deletePropertyOption(id, userId))
 });
 
 async function listProperties(collectionId: string) {
 	const properties = await prisma.property.findMany({
 		where: { collectionId },
-		orderBy: { order: 'asc' }
+		orderBy: { order: 'asc' },
+		include: { optionsM: { orderBy: { order: 'asc' } } }
 	});
 
 	const relationTargets = new Set<string>();
@@ -148,7 +150,7 @@ async function listProperties(collectionId: string) {
 }
 
 function injectPropertyOptions(
-	property: Property,
+	property: PropertyWithOptions,
 	itemsMap: Map<string, Item[]>,
 	propsMap: Map<string, Property[]>
 ) {
@@ -157,12 +159,7 @@ function injectPropertyOptions(
 
 		return {
 			...property,
-			options: items.map((item) => ({
-				id: item.id,
-				value: item.name,
-				color: Color.GRAY,
-				extra: ''
-			}))
+			optionsM: items.map((item) => createXPropertyOption(item.id, item.name))
 		};
 	} else if (isBundle(property)) {
 		const properties = propsMap.get(property.targetCollection!) || [];
@@ -183,12 +180,7 @@ function injectPropertyOptions(
 			...property,
 			format: format,
 			decimals: decimals,
-			options: properties.map((prop) => ({
-				id: prop.id,
-				value: prop.name,
-				color: Color.GRAY,
-				extra: prop.type.toString()
-			}))
+			optionsM: properties.map((p) => createXPropertyOption(p.id, p.name, p.type.toString()))
 		};
 	}
 
@@ -201,7 +193,9 @@ async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
 	return await prisma.$transaction(async (tx) => {
 		const storedProperty = await tx.property.findFirstOrThrow({
 			where: { id },
-			include: { collection: { select: { name: true, views: true } } }
+			include: {
+				collection: { select: { name: true, views: true } }
+			}
 		});
 
 		let relatedProperty = undefined;
@@ -224,9 +218,21 @@ async function updateProperty(args: z.infer<typeof propertyUpdateSchema>) {
 			}
 		}
 
+		if (rest.type && storedProperty.type !== rest.type && rest.type === PropertyType.CHECKBOX) {
+			tx.item.updateMany({
+				where: { collectionId: storedProperty.collectionId },
+				data: {
+					properties: {
+						push: { id: storedProperty.id, value: 'false' }
+					}
+				}
+			});
+		}
+
 		const property = await tx.property.update({
 			where: { id },
-			data: { ...rest, relatedProperty }
+			data: { ...rest, relatedProperty },
+			include: { optionsM: true }
 		});
 
 		return injectPropertyOptionsAsync(property);
@@ -260,7 +266,7 @@ async function createBidirectionalRelation(
 	return property.id;
 }
 
-async function injectPropertyOptionsAsync(property: Property) {
+async function injectPropertyOptionsAsync(property: PropertyWithOptions) {
 	if (isRelation(property)) {
 		const items = await prisma.item.findMany({
 			where: { collectionId: property.targetCollection! }
@@ -268,12 +274,7 @@ async function injectPropertyOptionsAsync(property: Property) {
 
 		return {
 			...property,
-			options: items.map((item) => ({
-				id: item.id,
-				value: item.name,
-				color: Color.GRAY,
-				extra: ''
-			}))
+			optionsM: items.map((item) => createXPropertyOption(item.id, item.name))
 		};
 	} else if (isBundle(property)) {
 		const properties = await prisma.property.findMany({
@@ -297,12 +298,7 @@ async function injectPropertyOptionsAsync(property: Property) {
 			...property,
 			format,
 			decimals,
-			options: properties.map((prop) => ({
-				id: prop.id,
-				value: prop.name,
-				color: Color.GRAY,
-				extra: prop.type.toString()
-			}))
+			optionsM: properties.map((p) => createXPropertyOption(p.id, p.name, p.type.toString()))
 		};
 	}
 
@@ -311,15 +307,23 @@ async function injectPropertyOptionsAsync(property: Property) {
 
 async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	const order = await prisma.property.count({ where: { collectionId: args.collectionId } });
-	const property = await prisma.property.create({ data: { ...args, order: order + 1 } });
+	const property = await prisma.property.create({
+		data: { ...args, order: order + 1 },
+		include: { optionsM: true }
+	});
 
 	const promises: Promise<unknown>[] = [];
 
 	if (hasRef(property.type)) {
+		const value = args.type === PropertyType.CHECKBOX ? 'false' : '';
 		promises.push(
 			prisma.item.updateMany({
 				where: { collectionId: property.collectionId },
-				data: { properties: { push: { id: property.id, value: '' } } }
+				data: {
+					properties: {
+						push: { id: property.id, value }
+					}
+				}
 			})
 		);
 	}
@@ -334,6 +338,59 @@ async function createProperty(args: z.infer<typeof propertyCreateSchema>) {
 	await Promise.all(promises);
 
 	return property;
+}
+
+async function duplicateProperty(id: string) {
+	const target = await prisma.property.findUnique({ where: { id }, include: { optionsM: true } });
+
+	if (!target) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Property not found' });
+
+	return await prisma.$transaction(async (tx) => {
+		const order = await prisma.property.count({ where: { collectionId: target.collectionId } });
+
+		const rest = omit(target, [...BASE_FIELDS, 'optionsM']);
+
+		const optionsData = target.optionsM.map((option) =>
+			omit(option, [...BASE_FIELDS, 'propertyId'])
+		);
+
+		const property = await tx.property.create({
+			data: {
+				...rest,
+				order: order + 1,
+				name: rest.name + ' copy',
+				relatedProperty: null,
+				optionsM: {
+					createMany: {
+						data: [...optionsData]
+					}
+				}
+			},
+			include: { optionsM: true }
+		});
+
+		const promises: Promise<unknown>[] = [];
+
+		if (hasRef(property.type)) {
+			promises.push(
+				tx.item.updateMany({
+					where: { collectionId: property.collectionId },
+					data: { properties: { push: { id: property.id, value: '' } } }
+				})
+			);
+		}
+
+		promises.push(
+			tx.view.updateMany({
+				where: { collectionId: property.collectionId },
+				data: { properties: { push: { id: property.id, isVisible: true } } }
+			})
+		);
+
+		await Promise.all(promises);
+
+		return property;
+	});
 }
 
 async function orderProperty(args: z.infer<typeof propertyOrderSchema>) {
@@ -474,6 +531,85 @@ async function deleteProperty(id: string, userId: string) {
 	});
 }
 
+async function createPropertyOption(option: z.infer<typeof propertyOptionCreateSchema>) {
+	const order = await prisma.propertyOption.count({ where: { propertyId: option.propertyId } });
+	return await prisma.propertyOption.create({ data: { ...option, order: order + 1 } });
+}
+
+async function updatePropertyOption(option: z.infer<typeof propertyOptionUpdateSchema>) {
+	const { id, ...rest } = option;
+
+	return await prisma.propertyOption.update({
+		where: { id },
+		data: { ...rest }
+	});
+}
+
+async function orderPropertyOption(args: z.infer<typeof propertyOptionOrderSchema>) {
+	const option = await prisma.propertyOption.findFirst({
+		where: { propertyId: args.propertyId, order: args.start }
+	});
+
+	if (!option) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Property option not found' });
+
+	await prisma.$transaction(async (tx) => {
+		const promises: Promise<unknown>[] = [];
+
+		if (args.start < args.end) {
+			promises.push(
+				tx.propertyOption.updateMany({
+					where: { propertyId: args.propertyId, order: { gt: args.start, lte: args.end } },
+					data: { order: { decrement: 1 } }
+				})
+			);
+		} else {
+			promises.push(
+				tx.propertyOption.updateMany({
+					where: { propertyId: args.propertyId, order: { gte: args.end, lt: args.start } },
+					data: { order: { increment: 1 } }
+				})
+			);
+		}
+
+		promises.push(
+			tx.propertyOption.update({
+				where: { id: option.id },
+				data: { order: args.end }
+			})
+		);
+
+		await Promise.all(promises);
+	});
+}
+
+async function deletePropertyOption(id: string, userId: string) {
+	const option = await prisma.propertyOption.findUniqueOrThrow({
+		where: { id },
+		include: {
+			property: {
+				include: { collection: { select: { ownerId: true } } }
+			}
+		}
+	});
+
+	if (option.property.collection.ownerId !== userId) {
+		throw new TRPCError({ code: 'UNAUTHORIZED' });
+	}
+
+	await prisma.$transaction(async (tx) => {
+		await Promise.all([
+			tx.propertyOption.delete({ where: { id } }),
+			tx.propertyOption.updateMany({
+				where: {
+					propertyId: option.propertyId,
+					order: { gt: option.order }
+				},
+				data: { order: { decrement: 1 } }
+			})
+		]);
+	});
+}
+
 function getViewsGroupedBy(views: View[], pid: string) {
 	return views.filter((view) => view.groupBy === pid);
 }
@@ -495,4 +631,18 @@ function shouldCreateBidirectionalRef(
 		updData.targetCollection != null &&
 		updData.targetCollection != property.targetCollection
 	);
+}
+
+function createXPropertyOption(id: string, value: string, extra?: string) {
+	const date = new Date();
+	return {
+		id,
+		value,
+		extra,
+		propertyId: id,
+		color: Color.GRAY,
+		order: 0,
+		createdAt: date,
+		updatedAt: date
+	} as XPropertyOption;
 }

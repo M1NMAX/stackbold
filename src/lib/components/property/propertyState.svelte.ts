@@ -1,20 +1,22 @@
-import { Color, type Property, type PropertyType } from '@prisma/client';
+import { Color, type PropertyType } from '@prisma/client';
 import { trpc } from '$lib/trpc/client';
-import { capitalizeFirstLetter, getTRPCErrorMsg } from '$lib/utils/index.js';
+import { capitalizeFirstLetter, getTRPCErrorMsg, omit } from '$lib/utils/index.js';
 import { getContext, setContext } from 'svelte';
 import { getToastState } from '$lib/states';
 import type { RouterInputs } from '$lib/trpc/router';
+import type { PropertyWithOptions } from '$lib/types';
+import { BASE_FIELDS } from '$lib/constant';
 
 export class PropertyState {
 	#toastState = getToastState();
-	properties = $state<Property[]>([]);
+	properties = $state<PropertyWithOptions[]>([]);
 	collectionId = $state('');
 
-	constructor(properties: Property[]) {
+	constructor(properties: PropertyWithOptions[]) {
 		this.properties = properties;
 	}
 
-	#updProperty(id: string, property: Property) {
+	#updProperty(id: string, property: PropertyWithOptions) {
 		this.properties = this.properties.map((prop) => (prop.id !== id ? prop : property));
 	}
 
@@ -32,16 +34,16 @@ export class PropertyState {
 			const name = capitalizeFirstLetter(type);
 			const order = this.properties.length + 1;
 			const collectionId = this.collectionId;
+			const date = new Date();
 
 			this.properties.push({
 				id: tmpId,
 				name,
 				type,
-				createdAt: new Date(),
-				updatedAt: new Date(),
 				defaultValue: null,
 				aggregator: null,
 				options: [],
+				optionsM: [],
 				order,
 				collectionId,
 				targetCollection: null,
@@ -50,7 +52,9 @@ export class PropertyState {
 				extTargetProperty: null,
 				calculate: null,
 				format: null,
-				decimals: null
+				decimals: null,
+				createdAt: date,
+				updatedAt: date
 			});
 
 			const property = await trpc().properties.create.mutate({
@@ -75,23 +79,19 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			const { id: _1, createdAt: _2, updatedAt: _3, ...rest } = target;
-			const name = rest.name + ' copy';
+			const rest = omit(target, [...BASE_FIELDS]);
+			const date = new Date();
 
 			this.properties.push({
 				...rest,
-				name,
 				id: tmpId,
+				name: rest.name + ' copy',
 				order: this.properties.length + 1,
-				createdAt: new Date(),
-				updatedAt: new Date()
+				createdAt: date,
+				updatedAt: date
 			});
 
-			const property = await trpc().properties.create.mutate({
-				...rest,
-				relatedProperty: null,
-				name
-			});
+			const property = await trpc().properties.duplicate.mutate(id);
 
 			this.#updProperty(tmpId, property);
 		} catch (error) {
@@ -157,25 +157,28 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 
 		try {
+			const order = target.optionsM.length + 1;
+			const date = new Date();
+
 			const option = {
 				id: tmpId,
-				color: Color.GRAY,
 				value,
-				extra: ''
+				order,
+				color: Color.GRAY,
+				propertyId: pid,
+				createdAt: date,
+				updatedAt: date
 			};
 
-			this.#updProperty(pid, { ...target, options: [...target.options, option] });
-			await trpc().properties.addOption.mutate({ pid, option });
+			this.#updProperty(pid, { ...target, optionsM: [...target.optionsM, option] });
+			await trpc().properties.addOption.mutate({ propertyId: pid, value });
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(pid, target);
 		}
 	}
 
-	async updPropertyOption(
-		pid: string,
-		option: RouterInputs['properties']['updateOption']['option']
-	) {
+	async updPropertyOption(pid: string, option: RouterInputs['properties']['updateOption']) {
 		const target = this.getProperty(pid);
 		if (!target) {
 			this.#toastState.error('Invalid property');
@@ -183,20 +186,25 @@ export class PropertyState {
 		}
 
 		try {
-			const options = target.options.map((opt) =>
+			const optionsM = target.optionsM.map((opt) =>
 				opt.id !== option.id ? opt : { ...opt, ...option }
 			);
 
-			this.#updProperty(pid, { ...target, options });
+			this.#updProperty(pid, { ...target, optionsM });
 
-			await trpc().properties.updateOption.mutate({ pid, option });
+			await trpc().properties.updateOption.mutate(option);
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(pid, target);
 		}
 	}
+	async orderPropertyOption(propertyId: string, start: number, end: number) {
+		if (start === end) return;
+		await trpc().properties.orderOption.mutate({ propertyId, start, end });
+		await this.refresh();
+	}
 
-	async removeOptionFromProperty(pid: string, optionId: string) {
+	async removeOptionFromProperty(pid: string, oid: string) {
 		const target = this.getProperty(pid);
 		if (!target) {
 			this.#toastState.error('Invalid property');
@@ -204,11 +212,11 @@ export class PropertyState {
 		}
 
 		try {
-			const options = target.options.filter((opt) => opt.id !== optionId);
+			const optionsM = target.optionsM.filter((opt) => opt.id !== oid);
 
-			this.#updProperty(pid, { ...target, options });
+			this.#updProperty(pid, { ...target, optionsM });
 
-			await trpc().properties.removeOption.mutate({ pid, optionId });
+			await trpc().properties.removeOption.mutate(oid);
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#updProperty(pid, target);
@@ -218,8 +226,8 @@ export class PropertyState {
 
 const PROPERTY_STATE_CTX_KEY = Symbol('PROPERTY_STATE_CTX_KEY');
 
-export function setPropertyState(properties: Property[]) {
-	return setContext(PROPERTY_STATE_CTX_KEY, new PropertyState(properties));
+export function setPropertyState(properties: () => PropertyWithOptions[]) {
+	return setContext(PROPERTY_STATE_CTX_KEY, new PropertyState(properties()));
 }
 
 export function getPropertyState() {

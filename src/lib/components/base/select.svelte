@@ -6,10 +6,11 @@
 	import { APP_ICONS, THEME_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { Badge, buttonVariants, Drawer, Floating } from './index.js';
+	import { Badge, buttonVariants, Drawer, Floating, MenuTitle } from './index.js';
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
 	import { Color } from '@prisma/client';
+	import { ChevronDown } from 'lucide-svelte';
 
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;
@@ -21,6 +22,8 @@
 		placeholder?: string;
 		searchable?: boolean;
 		disabled?: boolean;
+
+		smTitle?: string;
 		triggerClass?: string;
 		isMulti?: IsMulti;
 		onselect: IsMulti extends true ? MultiSelect : SingleSelect;
@@ -33,18 +36,30 @@
 		placeholder = '-- Select --',
 		searchable = false,
 		disabled = false,
+		smTitle,
 		triggerClass,
 		isMulti = false as IsMulti,
 		onselect
 	}: Props = $props();
 
+	let isHeadless = $state(true);
 	let highlighted = $state('');
 	let selectedOptions = $derived.by(() => {
 		return options.filter((opt) => opt.isSelected);
 	});
 	let selectedToRender = $derived.by(() => {
 		if (selectedOptions.length <= 2) return selectedOptions;
-		return selectedOptions.slice(0, 3);
+		if (selectedOptions.length === 3) return selectedOptions.slice(0, 3);
+
+		return [
+			...selectedOptions.slice(0, 3),
+			{
+				id: 'selector-more-option-id',
+				label: `+${selectedOptions.length - 3} More`,
+				isSelected: false,
+				theme: THEME_COLORS[Color.GRAY]
+			}
+		];
 	});
 
 	let search = $state('');
@@ -56,9 +71,12 @@
 		);
 	});
 
-	const triggerId = `select-trigger-${id}`;
-	const searchInputId = `select-search-${id}`;
-	const contentId = `select-content-${id}`;
+	const { triggerId, searchInputId, contentId } = $derived({
+		triggerId: `select-trigger-${id}`,
+		searchInputId: `select-search-${id}`,
+		contentId: `select-content-${id}`
+	});
+
 	const menuState = new ModalState();
 	const isLargeScreen = new MediaQuery(SCREEN_LG_MEDIA_QUERY, false);
 
@@ -162,6 +180,8 @@
 	$effect(() => {
 		const labels = document.querySelectorAll(`label[for="${id}"]`);
 
+		isHeadless = labels && labels.length > 0;
+
 		for (const label of labels) {
 			label.addEventListener('click', (ev) => onLabelClick(ev));
 		}
@@ -205,7 +225,7 @@
 		buttonVariants({
 			theme: 'secondary',
 			variant: 'menu',
-			className: tm(triggerClass, 'bg-transparent overflow-y-hidden')
+			className: tm(triggerClass, 'bg-transparent hover:bg-transparent overflow-y-hidden relative')
 		})
 	)}
 >
@@ -217,13 +237,13 @@
 		</div>
 	{/each}
 
-	{#if selectedOptions.length > 3}
-		{@render option({
-			id: 'selector-more-option-id',
-			label: `+${selectedOptions.length - 3} More`,
-			isSelected: false,
-			theme: THEME_COLORS[Color.GRAY]
-		})}
+	{#if isHeadless}
+		<ChevronDown
+			class={tm(
+				'size-3 absolute right-2 bottom-2 transition-transform',
+				menuState.isOpen ? 'rotate-180' : 'rotate-0'
+			)}
+		/>
 	{/if}
 </button>
 
@@ -234,7 +254,7 @@
 			bind:visible={menuState.isOpen}
 			sameWidth
 			align="start"
-			class="bg-secondary focus-within:bg-secondary/80"
+			class="bg-secondary/60 focus-within:bg-secondary/80"
 		>
 			{@render searchInput()}
 			<div
@@ -245,6 +265,11 @@
 		</Floating>
 	{:else}
 		<Drawer bind:open={menuState.isOpen}>
+			{#if smTitle}
+				<MenuTitle title={smTitle} />
+			{/if}
+
+			{@render searchInput()}
 			{@render content()}
 		</Drawer>
 	{/if}
@@ -258,7 +283,7 @@
 			</div>
 			<input
 				id={searchInputId}
-				class="w-full h-9 px-8 text-base font-semibold rounded-md bg-popover focus:outline-none"
+				class="w-full h-9 px-8 text-base font-semibold rounded-none lg:rounded-md bg-popover focus:outline-none"
 				placeholder="Search for an option"
 				bind:value={search}
 				type="text"
@@ -290,6 +315,7 @@
 			aria-activedescendant={highlighted ?? undefined}
 			tabindex="-1"
 			onkeydown={handleKeydown}
+			class="space-y-0.5"
 		>
 			{#each filteredOptions as option}
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -300,7 +326,7 @@
 					tabindex="-1"
 					aria-selected={option.isSelected}
 					class={tm(
-						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1.5 px-2 rounded-none lg:rounded-md cursor-pointer',
+						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1 lg:py-1.5 px-2 lg:px-0.5 rounded-none lg:rounded-md cursor-pointer',
 						highlighted == option.id && 'bg-secondary text-secondary-foreground'
 					)}
 					onclick={() => selectOption(option)}
@@ -308,12 +334,14 @@
 				>
 					{#if option.icon}
 						{@render icon(option.icon)}
+						<span class="grow text-sm font-semibold">
+							{option.label}
+						</span>
 					{:else if option.theme}
-						{@render color(option.theme)}
+						<span class="grow">
+							<Badge class={tm(option.theme, 'w-fit h-6 lg:h-5 ')}>{option.label}</Badge>
+						</span>
 					{/if}
-					<span class="grow text-sm font-semibold">
-						{option.label}
-					</span>
 
 					<Check class={tm('size-4', !option.isSelected && 'text-transparent')} />
 				</div>
@@ -329,10 +357,6 @@
 {#snippet icon(key: string)}
 	{@const Icon = APP_ICONS[key.toLowerCase()]}
 	<Icon class="size-4" />
-{/snippet}
-
-{#snippet color(theme: string)}
-	<span class={['size-3.5 rounded-sm', theme]}> </span>
 {/snippet}
 
 {#snippet option(opt: SelectOption)}

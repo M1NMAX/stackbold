@@ -110,8 +110,6 @@ model EmailVerification {
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
   email     String   @unique
   expiresAt DateTime
-
-  @@map("EmailVerication")
 }
 
 model PasswordResetSession {
@@ -187,15 +185,16 @@ model View {
 }
 
 model Property {
-  id                String       @id @default(auto()) @map("_id") @db.ObjectId
-  collection        Collection   @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId      String       @db.ObjectId
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  collection        Collection       @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId      String           @db.ObjectId
   name              String
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  type              PropertyType @default(TEXT)
-  order             Int          @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  type              PropertyType     @default(TEXT)
+  order             Int              @default(0)
   options           Option[]
+  optionsM          PropertyOption[]
   aggregator        Aggregator?
   defaultValue      String?
   targetCollection  String? // RELATION AND BUNDLE only
@@ -207,6 +206,19 @@ model Property {
   decimals          Int? // NUMBER only
 
   @@index([collectionId, order])
+}
+
+model PropertyOption {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String   @db.ObjectId
+  color      Color    @default(GRAY)
+  order      Int      @default(0)
+  value      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([propertyId, order])
 }
 
 model Item {

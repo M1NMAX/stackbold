@@ -256,7 +256,7 @@
 				</RadioGroup>
 			{/key}
 		{:else}
-			{#each filterSelectedProperty.options as option}
+			{#each filterSelectedProperty.optionsM as option}
 				<Checkbox
 					checked={isFilterSeletect(view.filters, {
 						id: filterSelectedProperty.id,
@@ -352,7 +352,7 @@
 </AdaptiveWrapper>
 
 {#snippet header(title: string, backTo: ContentType = null)}
-	<div class="w-full flex items-center gap-x-1">
+	<div class="w-full flex items-center gap-x-1 px-0.5">
 		<Button theme="ghost" variant="cicon" onclick={() => (content = backTo)}>
 			<ChevronLeft />
 		</Button>
@@ -384,7 +384,7 @@
 						</Button>
 					{:else}
 						{#each filter.values as fv}
-							{@const option = getOption(property.options, fv)}
+							{@const option = getOption(property.optionsM, fv)}
 							{#if option}
 								<Button
 									theme="secondary"
