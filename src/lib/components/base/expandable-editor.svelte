@@ -87,8 +87,10 @@
 	{ondragover}
 	{ondragleave}
 	class={tm(
-		'relative bg-secondary/60 hover:bg-secondary/70 first:rounded-t-md last:rounded-b-md p-0.5 border border-card',
-		isExpanded ? 'is-open my-1.5 rounded-md [&+*]:rounded-t-md' : 'has-[+.is-open]:rounded-b-md',
+		'relative first:rounded-t-md last:rounded-b-md border-secondary',
+		isExpanded
+			? 'is-open my-3 first:mt-0 last:mb-0 border-2 rounded-md [&+*]:rounded-t-md'
+			: 'has-[+.is-open]:rounded-b-md border-x-2 border-t-2 has-[+.is-open]:border-b-2 last:border-b-2',
 		(dragging || dragover) && 'opacity-50',
 		group ? `group/options` : 'group'
 	)}
@@ -105,7 +107,7 @@
 	</div>
 
 	<div
-		class="h-9 lg:h-7 flex items-center justify-between gap-x-2 py-1 px-1.5 cursor-pointer"
+		class="h-full w-full flex items-center justify-between gap-x-2 py-1 px-1.5 cursor-pointer bg-secondary/50 hover:bg-secondary/70"
 		onclick={() => onclickHeader()}
 	>
 		<Icon class="size-4" />
@@ -124,7 +126,10 @@
 	</div>
 
 	{#if isExpanded}
-		<div transition:slide={{ ...SLIDE_PARAMS }} class="flex flex-col gap-y-2 py-3 px-2.5 bg-card">
+		<div
+			transition:slide={{ ...SLIDE_PARAMS }}
+			class="flex flex-col gap-y-2 p-2 border-t-2 border-secondary"
+		>
 			{@render children()}
 		</div>
 	{/if}
