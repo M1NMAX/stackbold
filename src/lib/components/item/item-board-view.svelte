@@ -54,7 +54,7 @@
 >
 	<div
 		class={tm(
-			'z-10 w-full p-2 rounded-md border-2 border-secondary shrink-0',
+			'z-10 w-full py-1 px-1.5 rounded-md border-2 border-secondary shrink-0',
 			isSticky && 'bg-secondary',
 			items.length > 0 && 'rounded-b-none'
 		)}

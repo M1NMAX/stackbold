@@ -79,11 +79,11 @@ input[type='number'] {
 }
 
 .input {
-	@apply h-9 md:h-7 w-full flex px-2 rounded-md border-0 bg-transparent text-base shadow-none file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 lg:h-7 w-full flex px-2 rounded-md border-0 bg-transparent text-base shadow-none file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
-		@apply outline-2 outline-primary;
+		@apply outline-2 outline-primary placeholder:text-secondary-foreground;
 	}
 
 	&.input-ghost {
@@ -91,6 +91,31 @@ input[type='number'] {
 		&:focus-within {
 			@apply outline-none;
 		}
+	}
+
+	&.secondary {
+		@apply h-9 w-full bg-secondary/60;
+
+		&:focus,
+		&:focus-within {
+			@apply bg-secondary/80  outline-none;
+		}
+	}
+
+	&.icon-left {
+		@apply pl-8;
+	}
+
+	&.icon-right {
+		@apply pr-8;
+	}
+}
+
+.input-left-icon {
+	@apply absolute inset-y-0 pl-2 flex items-center pointer-events-none;
+
+	& > svg {
+		@apply size-4;
 	}
 }
 

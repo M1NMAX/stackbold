@@ -6,7 +6,15 @@
 	import { APP_ICONS, THEME_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { Badge, buttonVariants, Drawer, Floating, MenuTitle } from './index.js';
+	import {
+		Badge,
+		Button,
+		buttonVariants,
+		Drawer,
+		Floating,
+		HSeparator,
+		MenuTitle
+	} from './index.js';
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
 	import { Color } from '@prisma/client';
@@ -22,8 +30,8 @@
 		placeholder?: string;
 		searchable?: boolean;
 		disabled?: boolean;
-
 		smTitle?: string;
+		arrow?: boolean;
 		triggerClass?: string;
 		isMulti?: IsMulti;
 		onselect: IsMulti extends true ? MultiSelect : SingleSelect;
@@ -37,12 +45,12 @@
 		searchable = false,
 		disabled = false,
 		smTitle,
+		arrow = true,
 		triggerClass,
 		isMulti = false as IsMulti,
 		onselect
 	}: Props = $props();
 
-	let isHeadless = $state(true);
 	let highlighted = $state('');
 	let selectedOptions = $derived.by(() => {
 		return options.filter((opt) => opt.isSelected);
@@ -180,8 +188,6 @@
 	$effect(() => {
 		const labels = document.querySelectorAll(`label[for="${id}"]`);
 
-		isHeadless = labels && labels.length > 0;
-
 		for (const label of labels) {
 			label.addEventListener('click', (ev) => onLabelClick(ev));
 		}
@@ -237,7 +243,7 @@
 		</div>
 	{/each}
 
-	{#if isHeadless}
+	{#if arrow}
 		<ChevronDown
 			class={tm(
 				'size-3 absolute right-2 bottom-2 transition-transform',
@@ -249,19 +255,9 @@
 
 {#if !disabled}
 	{#if isLargeScreen.current}
-		<Floating
-			triggerBy={triggerId}
-			bind:visible={menuState.isOpen}
-			sameWidth
-			align="start"
-			class="bg-secondary/60 focus-within:bg-secondary/80"
-		>
+		<Floating triggerBy={triggerId} bind:visible={menuState.isOpen} sameWidth align="start">
 			{@render searchInput()}
-			<div
-				class="p-1 rounded-md shadow-md outline-none bg-popover text-popover-foreground max-h-60 overflow-y-auto"
-			>
-				{@render content()}
-			</div>
+			{@render content()}
 		</Floating>
 	{:else}
 		<Drawer bind:open={menuState.isOpen}>
@@ -277,13 +273,13 @@
 
 {#snippet searchInput()}
 	{#if searchable}
-		<div class="relative mb-0.5">
-			<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none">
-				<Search class="size-4" />
+		<div class="relative">
+			<div class="input-left-icon">
+				<Search />
 			</div>
 			<input
 				id={searchInputId}
-				class="w-full h-9 px-8 text-base font-semibold rounded-none lg:rounded-md bg-popover focus:outline-none"
+				class="input input-ghost icon-left icon-right"
 				placeholder="Search for an option"
 				bind:value={search}
 				type="text"
@@ -297,13 +293,18 @@
 			/>
 
 			{#if search && search.length > 0}
-				<div class="absolute inset-y-0 right-0 pr-2 flex items-center">
-					<button class="[&_svg]:size-4" onclick={resetSearch}>
-						<X />
-					</button>
-				</div>
+				<Button
+					type="button"
+					theme="ghost"
+					variant="cicon"
+					class="absolute inset-y-0 right-0"
+					onclick={resetSearch}
+				>
+					<X />
+				</Button>
 			{/if}
 		</div>
+		<HSeparator />
 	{/if}
 {/snippet}
 
