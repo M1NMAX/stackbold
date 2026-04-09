@@ -8,7 +8,6 @@
 		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
-		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTIES_THAT_USE_INPUT,
 		THEME_COLORS
 	} from '$lib/constant/index.js';
@@ -112,8 +111,8 @@
 			]}
 			onselect={(opt) => onchange(opt.id)}
 			placeholder="Empty"
-			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			smTitle={property.name}
+			searchable
 		/>
 	</Field>
 {:else if property.type === PropertyType.MULTISELECT}
@@ -132,8 +131,8 @@
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
-			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			smTitle={property.name}
+			searchable
 			isMulti
 		/>
 	</Field>

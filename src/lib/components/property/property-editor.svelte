@@ -8,7 +8,6 @@
 	import { getPropertyState, PropertyOption } from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
-		MIN_SEARCHABLE_PROPERTY_SELECT,
 		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
 		PROPERTIES_WITH_LISTABLE_OPTIONS,
 		PROPERTY_AGGREGATOR_LABELS,
@@ -384,7 +383,7 @@
 					group="options"
 				>
 					{#snippet header()}
-						<Badge color={option.color} class="w-fit h-5">{option.value}</Badge>
+						<Badge color={option.color} class="w-fit">{option.value}</Badge>
 					{/snippet}
 					<PropertyOption {option} />
 				</ExpandableEditor>
@@ -400,8 +399,8 @@
 			id={getIdWithPrefix('property-default-value')}
 			options={setupDefaultOptionSelectOptions()}
 			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id || null })}
-			searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			placeholder={VALUE_NOT_DEFINED}
+			searchable
 		/>
 	</Field>
 {/snippet}

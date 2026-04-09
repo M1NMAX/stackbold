@@ -8,7 +8,6 @@
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
-		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTIES_THAT_USE_INPUT,
 		PROPERTIES_THAT_USE_SELECTOR,
 		THEME_COLORS
@@ -195,10 +194,11 @@
 			}))
 		]}
 		onselect={(opt) => updPropertyRef(opt.id)}
-		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
+		searchable
+		arrow={false}
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
@@ -215,10 +215,11 @@
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
-		searchable={property.options.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
+		arrow={false}
+		searchable
 		isMulti
 	/>
 
@@ -240,6 +241,7 @@
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
+		arrow={false}
 		searchable
 		isMulti
 	/>
