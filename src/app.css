@@ -33,9 +33,9 @@
 /*  Scrollbar */
 
 /* Form */
-form {
+/*form {
 	@apply space-y-4;
-}
+}*/
 
 .form-title {
 	@apply text-center text-3xl font-medium;
@@ -98,7 +98,7 @@ input[type='number'] {
 
 		&:focus,
 		&:focus-within {
-			@apply bg-secondary/80  outline-none;
+			@apply bg-secondary/80 outline-none;
 		}
 	}
 
@@ -116,6 +116,34 @@ input[type='number'] {
 
 	& > svg {
 		@apply size-4;
+	}
+}
+
+.textarea {
+	@apply resize-none min-h-9 lg:min-h-7 h-auto w-full px-2 rounded-md bg-transparent text-base shadow-none placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+
+	&:focus,
+	&:focus-within {
+		@apply outline outline-primary outline-offset-0;
+		box-shadow: none;
+	}
+
+	&.ghost {
+		&:focus,
+		&:focus-within {
+			@apply outline-none;
+		}
+	}
+
+	&.bordered {
+		&:focus,
+		&:focus-within {
+			@apply outline-2 outline-secondary;
+		}
+	}
+
+	&.xl {
+		@apply min-h-9 text-2xl font-semibold py-0.5;
 	}
 }
 

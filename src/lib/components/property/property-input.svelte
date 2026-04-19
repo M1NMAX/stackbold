@@ -36,11 +36,11 @@
 		HSeparator,
 		buttonVariants,
 		Field,
-		TextareaAutosize,
 		Tooltip,
 		Badge
 	} from '$lib/components/base/index.js';
 	import type { PropertyWithOptions } from '$lib/types.js';
+	import { autosizeTextarea,  } from '$lib/actions/index.js';
 
 	type Props = {
 		property: PropertyWithOptions;
@@ -52,10 +52,9 @@
 	let { property, onchange, value, itemId }: Props = $props();
 
 	const wrapperState = new ModalState();
-
 	const toastState = getToastState();
-
 	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
+
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
@@ -81,6 +80,8 @@
 		navigator.clipboard.writeText(value);
 		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
+
+
 </script>
 
 {#if property.type === PropertyType.CHECKBOX}
@@ -240,18 +241,21 @@
 		/>
 	</Field>
 {:else}
+{@const taId = `property-${property.id}-input`}
+
 	<Field>
-		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Label for={taId} name={property.name} icon={property.type.toLowerCase()} />
 
 		{#if property.type === PropertyType.TEXT}
-			<TextareaAutosize
-				id={property.id}
+			<textarea
+    			{@attach autosizeTextarea(taId)}
+				id={taId}
 				name={property.name}
 				{value}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
-				ghost
-			></TextareaAutosize>
+				class="textarea ghost"
+			></textarea>
 		{:else if property.type === PropertyType.NUMBER}
 			<input
 				id={property.id}

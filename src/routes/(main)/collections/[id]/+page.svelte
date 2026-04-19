@@ -15,7 +15,6 @@
 		Button,
 		IconPicker,
 		Shortcut,
-		TextareaAutosize,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import {
@@ -37,7 +36,7 @@
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import StructurePage from './structure/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
-	import { escapeKeydown } from '$lib/actions/index.js';
+	import { escapeKeydown, autosizeTextarea } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
@@ -72,6 +71,7 @@
 
 	let isSmHeadingVisible = $state(false);
 	let isNewItemInputVisible = $state(false);
+
 
 	type PanelContentType = 'item' | 'structure' | null;
 
@@ -296,15 +296,18 @@
 			<span class="text-primary"> {renameCollectionError}</span>
 		{/if}
 		{#if !collection.isDescHidden}
-			<label for="description" class="sr-only"> Collection description </label>
+		{@const descriptionId = `collection-${collection.id}-description`}
 
-			<TextareaAutosize
-				id="description"
+			<label for={descriptionId} class="sr-only"> Collection description </label>
+
+			<textarea
+    			{@attach autosizeTextarea(descriptionId)}
+				id={descriptionId}
 				value={collection.description}
 				oninput={handleOnInputCollectionDesc}
 				spellcheck={false}
-				ghost
-			></TextareaAutosize>
+				class="textarea ghost"
+			></textarea>
 		{/if}
 
 		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">

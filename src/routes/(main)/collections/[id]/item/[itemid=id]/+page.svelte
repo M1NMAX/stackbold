@@ -10,8 +10,7 @@
 		BreadcrumbItem,
 		Button,
 		buttonVariants,
-		HSeparator,
-		TextareaAutosize
+		HSeparator
 	} from '$lib/components/base/index.js';
 	import { getItemState } from '$lib/components/item/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
@@ -37,10 +36,12 @@
 	import { getViewState } from '$lib/components/view/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
+	import { autosizeTextarea, } from '$lib/actions/index.js';
 
 	let { data } = $props();
 
 	let isSmHeadingVisible = $state(false);
+	let isReady = $state(false)
 	const collectionState = getCollectionState();
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
@@ -113,6 +114,20 @@
 			view.filters.some((f) => f.id === field)
 		);
 	}
+
+	$effect(() => {
+     	if (!data.insidePanel) {
+        isReady = true;
+        return;
+      }
+
+     const timer = setTimeout(() => {
+     	isReady = true;
+     	}, 100);
+
+      return () => clearTimeout(timer)
+	})
+
 </script>
 
 <svelte:head>
@@ -159,16 +174,18 @@
 	</PageHeader>
 
 	<PageContent onscroll={handleScroll}>
-		<TextareaAutosize
+
+	{#key isReady}
+		<textarea
+			{@attach autosizeTextarea(`item-${item.id}-name`)}
 			name="name"
 			value={item.name}
 			oninput={handleUpdItemName}
 			spellcheck={false}
 			maxlength={MAX_ITEM_NAME_LENGTH}
-			placeholder="New item"
-			ghost
-			xl
-		/>
+			placeholder="Name"
+			class="textarea ghost xl"
+		></textarea>
 		{#each propertyState.properties as property}
 			<PropertyInput
 				{property}
@@ -177,6 +194,7 @@
 				itemId={item.id}
 			/>
 		{/each}
+	{/key}
 	</PageContent>
 	<PageFooter class={tm(data.insidePanel ? 'flex justify-end' : 'hidden')}>
 		{@render menu()}
