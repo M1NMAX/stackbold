@@ -53,7 +53,7 @@
 			onclick={toggle}
 			aria-expanded={accordionState.isOpen(id)}
 			class={tm(
-				'h-full w-full flex items-center gap-x-1.5 py-1 px-1.5  font-medium transition-all hover:bg-secondary/70',
+				'h-9 w-full flex items-center gap-x-1.5 py-1 px-1.5  font-medium transition-all hover:bg-secondary/70',
 				isOpen && 'bg-secondary/10',
 				triggerClass
 			)}

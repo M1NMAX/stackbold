@@ -327,7 +327,7 @@
 					tabindex="-1"
 					aria-selected={option.isSelected}
 					class={tm(
-						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1 px-2 lg:px-0.5 rounded-none lg:rounded-md cursor-pointer',
+						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1 px-2 lg:py-1.5 lg:px-1 rounded-none lg:rounded-sm cursor-pointer',
 						highlighted == option.id && 'bg-secondary text-secondary-foreground'
 					)}
 					onclick={() => selectOption(option)}

@@ -184,7 +184,7 @@
 				>
 					{#if value}
 						{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-						<Badge class="w-fit">{formatted}</Badge>
+						<Badge >{formatted}</Badge>
 					{/if}
 				</span>
 			</Field>

@@ -383,7 +383,7 @@
 					group="options"
 				>
 					{#snippet header()}
-						<Badge color={option.color} class="w-fit">{option.value}</Badge>
+						<Badge color={option.color}>{option.value}</Badge>
 					{/snippet}
 					<PropertyOption {option} />
 				</ExpandableEditor>
