@@ -336,7 +336,7 @@
 	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="relative w-full">
-				<div class="absolute top-2.5 left-2 flex items-center pointer-events-none">
+				<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none">
 					<Plus class="size-4" />
 				</div>
 				<label for="new-item-name" class="sr-only"> Item name</label>
