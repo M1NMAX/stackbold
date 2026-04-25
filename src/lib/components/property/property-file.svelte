@@ -144,7 +144,6 @@
 	sameWidth
 	bind:open={wrapperState.isOpen}
 	floatingAlign="start"
-	floatingClass="bg-secondary focus-within:bg-secondary/80"
 	triggerClass={tm(
 		buttonVariants({
 			theme: 'ghost',
@@ -174,9 +173,7 @@
 		{property.name}
 	</p>
 
-	<div
-		class="flex flex-col lg:p-1 lg:rounded-md lg:shadow-md lg:outline-none lg:bg-popover lg:text-popover-foreground"
-	>
+	<div class="flex flex-col">
 		{@render content()}
 	</div>
 </AdaptiveWrapper>
