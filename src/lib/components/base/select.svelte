@@ -333,14 +333,16 @@
 					onclick={() => selectOption(option)}
 					onmouseover={() => highlightOption(option.id)}
 				>
-					{#if option.icon}
-						{@render icon(option.icon)}
-						<span class="grow text-sm font-semibold">
-							{option.label}
-						</span>
-					{:else if option.theme}
+					{#if option.theme}
 						<span class="grow">
 							<Badge class={tm(option.theme)}>{option.label}</Badge>
+						</span>
+					{:else}
+						{#if option.icon}
+							{@render icon(option.icon)}
+						{/if}
+						<span class="grow text-sm font-semibold">
+							{option.label}
 						</span>
 					{/if}
 
