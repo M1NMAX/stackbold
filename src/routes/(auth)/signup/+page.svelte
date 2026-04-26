@@ -1,26 +1,24 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms/client';
 	import { Button, Field, Label } from '$lib/components/base/index.js';
 	import { getToastState } from '$lib/states/index.js';
+	import { useSuperForm } from '$lib/utils/index.js';
+	import { untrack } from 'svelte';
 
 	let { data } = $props();
 
 	const toastState = getToastState();
-	const { form, errors, enhance } = superForm(data.form, {
-		onResult: ({ result }) => {
-			if (result.type != 'failure') return;
-			if (result.data == null || result.data.form.errors._errors == null) return;
-			toastState.error(result.data.form.errors._errors);
-		}
-	});
+	const { form, errors, enhance } = useSuperForm(
+		untrack(() => data.form),
+		toastState
+	);
 </script>
 
 <svelte:head>
 	<title>Sign up - Stackbold</title>
 </svelte:head>
 
-<div>
-	<h1 class="form-title mb-6">Create an account</h1>
+<div class="auth-form-container">
+	<h1>Create an account</h1>
 
 	<form method="post" use:enhance>
 		<Field errors={$errors.name}>

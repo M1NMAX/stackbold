@@ -31,23 +31,23 @@
 	}
 </script>
 
-<div class="flex flex-col gap-y-2 p-2 rounded-md bg-background">
+<div class="flex flex-col gap-y-2">
 	<div class="grid grid-cols-7 grid-flow-rows gap-x-4 md:gap-x-2">
 		<button
 			type="button"
-			class={buttonVariants({ theme: 'outline', variant: 'icon' })}
+			class={buttonVariants({ theme: 'ghost', variant: 'icon' })}
 			onclick={previousMonth}
 		>
 			<ChevronLeft />
 		</button>
 
-		<span class="col-span-5 text-center text-sm font-medium">
+		<span class="col-span-5 flex items-center justify-center text-sm font-medium">
 			{month.title}
 		</span>
 
 		<button
 			type="button"
-			class={buttonVariants({ theme: 'outline', variant: 'icon' })}
+			class={buttonVariants({ theme: 'ghost', variant: 'icon' })}
 			onclick={nextMonth}
 		>
 			<ChevronRight />
@@ -57,10 +57,7 @@
 	<div class="grid grid-cols-7 grid-flow-rows">
 		{#each Object.keys(WEEK_DAYS) as key (key)}
 			<span
-				class={[
-					' flex items-center justify-center',
-					'text-[0.8rem] font-normal text-muted-foreground'
-				]}
+				class="flex items-center justify-center text-[0.8rem] font-normal text-muted-foreground"
 			>
 				{WEEK_DAYS[+key].slice(0, 2)}
 			</span>

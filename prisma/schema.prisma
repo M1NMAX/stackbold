@@ -73,13 +73,6 @@ type ViewProperty {
   isVisible Boolean @default(true)
 }
 
-type Option {
-  id    String  @default(uuid()) @map("_id")
-  value String
-  color Color   @default(GRAY)
-  extra String?
-}
-
 type PropertyRef {
   id    String @map("_id")
   value String @default("")
@@ -193,8 +186,7 @@ model Property {
   updatedAt         DateTime         @updatedAt
   type              PropertyType     @default(TEXT)
   order             Int              @default(0)
-  options           Option[]
-  optionsM          PropertyOption[]
+  options           PropertyOption[]
   aggregator        Aggregator?
   defaultValue      String?
   targetCollection  String? // RELATION AND BUNDLE only

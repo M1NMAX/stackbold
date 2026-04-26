@@ -8,7 +8,6 @@
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
 		MAX_PROPERTY_TEXT_OVERVIEW_LENGTH,
-		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTIES_THAT_USE_INPUT,
 		PROPERTIES_THAT_USE_SELECTOR,
 		THEME_COLORS
@@ -44,11 +43,11 @@
 		Calendar,
 		HSeparator,
 		Select,
-		TextareaAutosize,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
 	import type { PropertyWithOptions } from '$lib/types.js';
+	import { autosizeTextarea } from '$lib/actions/index.js';
 
 	type Props = {
 		view: View;
@@ -105,7 +104,7 @@
 				? 'h-6 w-full p-0 justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'h-6 w-fit p-0 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
-			allowMultipleValues(property.type) && ' lg:h-6 p-0',
+			allowMultipleValues(property.type) && 'lg:h-5 p-0',
 			hasUnifiedBgColor() && `${THEME_COLORS[Color.GRAY]}`,
 			allowMultipleValues(property.type) && !isTableView() && 'bg-gray-200/40 dark:bg-gray-700/40'
 		)
@@ -187,7 +186,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: option.id === value,
@@ -195,10 +194,11 @@
 			}))
 		]}
 		onselect={(opt) => updPropertyRef(opt.id)}
-		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
+		searchable
+		arrow={false}
 	/>
 
 	{@render tooltipContent(`select-trigger-${property.id}-value-${item.id}`)}
@@ -207,7 +207,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
@@ -215,10 +215,11 @@
 			}))
 		]}
 		onselect={(options) => updPropertyRef(joinMultiselectOptions(options))}
-		searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
+		arrow={false}
+		searchable
 		isMulti
 	/>
 
@@ -228,7 +229,7 @@
 	<Select
 		id={`${property.id}-value-${item.id}`}
 		options={[
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				theme: THEME_COLORS[option.color],
@@ -240,6 +241,7 @@
 		triggerClass={buttonClass}
 		smTitle={property.name}
 		placeholder=""
+		arrow={false}
 		searchable
 		isMulti
 	/>
@@ -268,7 +270,7 @@
 		floatingAlign="start"
 		triggerClass={buttonClass}
 		floatingClass={tm(
-			'w-full max-w-lg p-1',
+			'w-full max-w-lg',
 			value && value.length < MAX_PROPERTY_TEXT_OVERVIEW_LENGTH && 'max-w-xs'
 		)}
 	>
@@ -276,20 +278,19 @@
 			{@render tooltipWrapper(content, false, !isTableView())}
 		{/snippet}
 
-		<form class="space-y-0.5">
-			<label for={property.id} class={labelClass}> {property.name} </label>
+		<label for={property.id} class={labelClass}> {property.name} </label>
 
-			<TextareaAutosize
-				{value}
-				id={property.id}
-				name={property.name}
-				placeholder="Empty"
-				maxlength={MAX_PROPERTY_TEXT_LENGTH}
-				oninput={handleOnInput}
-				onkeypress={handleEnterKeypress}
-				ghost
-			/>
-		</form>
+		<textarea
+    		{@attach autosizeTextarea(property.id)}
+			{value}
+			id={property.id}
+			name={property.name}
+			placeholder="Empty"
+			maxlength={MAX_PROPERTY_TEXT_LENGTH}
+			oninput={handleOnInput}
+			onkeypress={handleEnterKeypress}
+			class="textarea ghost"
+		></textarea>
 	</AdaptiveWrapper>
 {:else if property.type === PropertyType.NUMBER && shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
@@ -298,24 +299,22 @@
 			{@render tooltipWrapper(formatted, true, !isTableView())}
 		{/snippet}
 
-		<form class="space-y-0.5">
-			<label for={property.id} class={labelClass}>
-				{property.name}
-			</label>
+		<label for={property.id} class={labelClass}>
+			{property.name}
+		</label>
 
-			<input
-				id={property.id}
-				name={property.name}
-				placeholder="Empty"
-				class="input input-ghost"
-				type="text"
-				inputmode="numeric"
-				{value}
-				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
-				oninput={handleOnInput}
-				onkeypress={handleEnterKeypress}
-			/>
-		</form>
+		<input
+			id={property.id}
+			name={property.name}
+			placeholder="Empty"
+			class="input input-ghost"
+			type="text"
+			inputmode="numeric"
+			{value}
+			maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
+			oninput={handleOnInput}
+			onkeypress={handleEnterKeypress}
+		/>
 	</AdaptiveWrapper>
 {:else if property.type === PropertyType.URL && shouldShowTrigger()}
 	{@const content = truncateDomain(value, MAX_PROPERTY_LINK_OVERVIEW_LENGTH)}
@@ -324,7 +323,7 @@
 		floatingAlign="start"
 		triggerClass={buttonClass}
 		floatingClass={tm(
-			'w-full max-w-lg p-1',
+			'w-full max-w-lg',
 			value && value.length < MAX_PROPERTY_LINK_OVERVIEW_LENGTH && 'max-w-xs'
 		)}
 	>
@@ -354,21 +353,19 @@
 			{@render tooltipContent(id)}
 		{/snippet}
 
-		<form class="space-y-0.5">
-			<label for={property.id} class={labelClass}>
-				{property.name}
-			</label>
+		<label for={property.id} class={labelClass}>
+			{property.name}
+		</label>
 
-			<input
-				id={property.id}
-				name={property.name}
-				placeholder="Empty"
-				class="input input-ghost"
-				type="url"
-				{value}
-				oninput={handleOnInput}
-			/>
-		</form>
+		<input
+			id={property.id}
+			name={property.name}
+			placeholder="Empty"
+			class="input input-ghost"
+			type="url"
+			{value}
+			oninput={handleOnInput}
+		/>
 	</AdaptiveWrapper>
 {:else if shouldShowTrigger()}
 	<AdaptiveWrapper bind:open={wrapperState.isOpen} floatingAlign="start" triggerClass={buttonClass}>
@@ -376,21 +373,19 @@
 			{@render tooltipWrapper(value)}
 		{/snippet}
 
-		<form class="space-y-0.5">
-			<label for={property.id} class={labelClass}>
-				{property.name}
-			</label>
+		<label for={property.id} class={labelClass}>
+			{property.name}
+		</label>
 
-			<input
-				id={property.id}
-				name={property.name}
-				placeholder="Empty"
-				class="input input-ghost"
-				type={property.type.toLowerCase()}
-				{value}
-				oninput={handleOnInput}
-			/>
-		</form>
+		<input
+			id={property.id}
+			name={property.name}
+			placeholder="Empty"
+			class="input input-ghost"
+			type={property.type.toLowerCase()}
+			{value}
+			oninput={handleOnInput}
+		/>
 	</AdaptiveWrapper>
 {/if}
 

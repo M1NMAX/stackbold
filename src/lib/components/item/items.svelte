@@ -7,13 +7,7 @@
 		ItemListView,
 		ItemTableView
 	} from './index.js';
-	import {
-		Accordion,
-		AccordionItem,
-		Badge,
-		MockCheckbox,
-		Tooltip
-	} from '$lib/components/base/index.js';
+	import { Accordion, AccordionItem, Badge, MockCheckbox } from '$lib/components/base/index.js';
 	import { getOption, getPropertyColor } from '$lib/utils/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
 	import type { PropertyWithOptions } from '$lib/types.js';
@@ -102,7 +96,7 @@
 				<MockCheckbox checked={key === 'true'} />
 				{property.name}
 			{:else}
-				{@const option = getOption(property.optionsM, key)}
+				{@const option = getOption(property.options, key)}
 				{option ? option.value : `No ${property.name}`}
 			{/if}
 		</Badge>

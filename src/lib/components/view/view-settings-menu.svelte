@@ -13,6 +13,7 @@
 	import { ModalState } from '$lib/states/index.js';
 	import {
 		AdaptiveWrapper,
+		Badge,
 		Button,
 		buttonVariants,
 		Checkbox,
@@ -256,23 +257,25 @@
 				</RadioGroup>
 			{/key}
 		{:else}
-			{#each filterSelectedProperty.optionsM as option}
-				<Checkbox
-					checked={isFilterSeletect(view.filters, {
-						id: filterSelectedProperty.id,
-						value: option.id
-					})}
-					onclick={() => {
-						onClickFilterOption(filterSelectedProperty.id, option.id, filterSelectedProperty.type);
-					}}
-				>
-					<span class={['size-3.5 rounded-sm', THEME_COLORS[option.color]]}></span>
-
-					<span class="grow font-semibold">
-						{option.value}
-					</span>
-				</Checkbox>
-			{/each}
+			<div class="space-y-0.5">
+				{#each filterSelectedProperty.options as option}
+					<Checkbox
+						checked={isFilterSeletect(view.filters, {
+							id: filterSelectedProperty.id,
+							value: option.id
+						})}
+						onclick={() => {
+							onClickFilterOption(
+								filterSelectedProperty.id,
+								option.id,
+								filterSelectedProperty.type
+							);
+						}}
+					>
+						<Badge color={option.color}>{option.value}</Badge>
+					</Checkbox>
+				{/each}
+			</div>
 		{/if}
 		{@render clearBtn(filterSelectedProperty.id)}
 	{:else if content === CONTENT_OPTIONS.SORT}
@@ -365,8 +368,8 @@
 
 {#snippet activeFilters()}
 	{#if view.filters.length > 0}
-		<p class="w-full text-xs font-semibold px-2 py-0.5">Active filters</p>
-		<div class="w-full flex flex-wrap gap-1 px-2 pb-0.5">
+		<p class="w-full text-xs font-semibold px-1 py-0.5">Active filters</p>
+		<div class="w-full flex flex-wrap gap-1 px-1 pb-0.5">
 			{#each view.filters as filter}
 				{@const property = getProperty(filter.id)}
 				{#if property}
@@ -384,15 +387,14 @@
 						</Button>
 					{:else}
 						{#each filter.values as fv}
-							{@const option = getOption(property.optionsM, fv)}
+							{@const option = getOption(property.options, fv)}
 							{#if option}
 								<Button
 									theme="secondary"
 									variant="compact"
-									class="font-semibold"
+									class={tm('px-1 font-semibold', THEME_COLORS[option.color])}
 									onclick={() => onClickFilterOption(filter.id, option.id, property.type)}
 								>
-									<span class={tm('size-3.5 rounded-sm', THEME_COLORS[option.color])}></span>
 									<span>{option.value}</span>
 									<X />
 								</Button>
@@ -408,7 +410,7 @@
 				class="font-semibold"
 				onclick={() => clearAllFilter()}
 			>
-				Clear all
+				Clear
 			</Button>
 		</div>
 
@@ -439,12 +441,10 @@
 {#snippet clearBtn(id: string)}
 	{#if hasFilterValues(id)}
 		<HSeparator />
-		<div class="w-full px-1 pb-1">
-			<Button theme="ghost" class="h-8 w-full justify-start" onclick={() => clearFilter(id)}>
-				<Eraser />
-				Clear
-			</Button>
-		</div>
+		<Button theme="ghost" variant="menu" onclick={() => clearFilter(id)}>
+			<Eraser />
+			Clear
+		</Button>
 	{/if}
 {/snippet}
 
@@ -452,8 +452,10 @@
 	{@const Icon = sort.order === SortType.ASC ? MoveUp : MoveDown}
 	<div class="flex items-center justify-between gap-x-0.5 px-1 font-semibold">
 		<span class="grow flex items-center gap-x-1">
-			<PropertyIcon {key} class="size-3.5" />
-			{name}
+			<PropertyIcon {key} />
+			<span class="text-sm font-medium">
+				{name}
+			</span>
 		</span>
 		<Button theme="secondary" variant="compact" onclick={() => toggleOrder(sort)}>
 			<Icon />

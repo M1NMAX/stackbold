@@ -114,7 +114,7 @@
 								value={item.name}
 								oninput={handleOnInput}
 								maxlength={MAX_ITEM_NAME_LENGTH}
-								class="grow py-2 px-1 focus:outline-none bg-inherit"
+								class="grow py-1.5 px-1 focus:outline-none bg-inherit"
 							/>
 
 							<Button

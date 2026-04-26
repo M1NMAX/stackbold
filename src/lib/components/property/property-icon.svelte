@@ -12,4 +12,4 @@
 	const Icon = $derived(INPUT_ICONS[key.toLowerCase()]);
 </script>
 
-<Icon class={tm('size-5', className)} aria-level="Property type icon" />
+<Icon class={tm('size-4', className)} aria-level="Property type icon" />

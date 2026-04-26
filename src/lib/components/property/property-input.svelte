@@ -8,7 +8,6 @@
 		DEFAULT_COPY_TO_CLIPBOARD_MESSAGE,
 		MAX_PROPERTY_NUMERIC_LENGTH,
 		MAX_PROPERTY_TEXT_LENGTH,
-		MIN_SEARCHABLE_PROPERTY_SELECT,
 		PROPERTIES_THAT_USE_INPUT,
 		THEME_COLORS
 	} from '$lib/constant/index.js';
@@ -37,11 +36,11 @@
 		HSeparator,
 		buttonVariants,
 		Field,
-		TextareaAutosize,
 		Tooltip,
 		Badge
 	} from '$lib/components/base/index.js';
 	import type { PropertyWithOptions } from '$lib/types.js';
+	import { autosizeTextarea,  } from '$lib/actions/index.js';
 
 	type Props = {
 		property: PropertyWithOptions;
@@ -53,10 +52,9 @@
 	let { property, onchange, value, itemId }: Props = $props();
 
 	const wrapperState = new ModalState();
-
 	const toastState = getToastState();
-
 	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
+
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
@@ -82,6 +80,8 @@
 		navigator.clipboard.writeText(value);
 		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
+
+
 </script>
 
 {#if property.type === PropertyType.CHECKBOX}
@@ -103,7 +103,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.optionsM.map((option) => ({
+				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
 					isSelected: option.id === value,
@@ -112,8 +112,8 @@
 			]}
 			onselect={(opt) => onchange(opt.id)}
 			placeholder="Empty"
-			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			smTitle={property.name}
+			searchable
 		/>
 	</Field>
 {:else if property.type === PropertyType.MULTISELECT}
@@ -123,7 +123,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.optionsM.map((option) => ({
+				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
 					isSelected: selectedOptions.includes(option.id),
@@ -132,8 +132,8 @@
 			]}
 			onselect={(opts) => onchange(joinMultiselectOptions(opts))}
 			placeholder="Empty"
-			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			smTitle={property.name}
+			searchable
 			isMulti
 		/>
 	</Field>
@@ -144,7 +144,7 @@
 		<Select
 			id={property.id}
 			options={[
-				...property.optionsM.map((option) => ({
+				...property.options.map((option) => ({
 					id: option.id,
 					label: option.value,
 					theme: THEME_COLORS[option.color],
@@ -184,7 +184,7 @@
 				>
 					{#if value}
 						{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-						<Badge class="w-fit">{formatted}</Badge>
+						<Badge >{formatted}</Badge>
 					{/if}
 				</span>
 			</Field>
@@ -241,18 +241,21 @@
 		/>
 	</Field>
 {:else}
+{@const taId = `property-${property.id}-input`}
+
 	<Field>
-		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+		<Label for={taId} name={property.name} icon={property.type.toLowerCase()} />
 
 		{#if property.type === PropertyType.TEXT}
-			<TextareaAutosize
-				id={property.id}
+			<textarea
+    			{@attach autosizeTextarea(taId)}
+				id={taId}
 				name={property.name}
 				{value}
 				maxlength={MAX_PROPERTY_TEXT_LENGTH}
 				oninput={handleOnInput}
-				ghost
-			></TextareaAutosize>
+				class="textarea ghost"
+			></textarea>
 		{:else if property.type === PropertyType.NUMBER}
 			<input
 				id={property.id}

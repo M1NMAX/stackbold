@@ -33,8 +33,19 @@
 /*  Scrollbar */
 
 /* Form */
-form {
-	@apply space-y-4;
+
+.auth-form-container {
+	h1 {
+		@apply text-center text-3xl font-medium mb-6;
+	}
+
+	p {
+		@apply mb-6 text-center font-medium;
+	}
+
+	form {
+		@apply space-y-4;
+	}
 }
 
 .form-title {
@@ -79,11 +90,11 @@ input[type='number'] {
 }
 
 .input {
-	@apply h-9 md:h-7 w-full flex px-2 rounded-md border-0 bg-transparent text-base shadow-none file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 lg:h-7 w-full flex px-2 rounded-md border-0 bg-transparent text-base shadow-none file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
-		@apply outline-2 outline-primary;
+		@apply outline-2 outline-primary placeholder:text-secondary-foreground;
 	}
 
 	&.input-ghost {
@@ -91,6 +102,59 @@ input[type='number'] {
 		&:focus-within {
 			@apply outline-none;
 		}
+	}
+
+	&.secondary {
+		@apply h-9 w-full bg-secondary/60;
+
+		&:focus,
+		&:focus-within {
+			@apply bg-secondary/80 outline-none;
+		}
+	}
+
+	&.icon-left {
+		@apply pl-8;
+	}
+
+	&.icon-right {
+		@apply pr-8;
+	}
+}
+
+.input-left-icon {
+	@apply absolute inset-y-0 pl-2 flex items-center pointer-events-none;
+
+	& > svg {
+		@apply size-4;
+	}
+}
+
+.textarea {
+	@apply resize-none min-h-9 lg:min-h-7 h-auto w-full px-2 rounded-md bg-transparent text-base shadow-none placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+
+	&:focus,
+	&:focus-within {
+		@apply outline outline-primary outline-offset-0;
+		box-shadow: none;
+	}
+
+	&.ghost {
+		&:focus,
+		&:focus-within {
+			@apply outline-none;
+		}
+	}
+
+	&.bordered {
+		&:focus,
+		&:focus-within {
+			@apply outline-2 outline-secondary;
+		}
+	}
+
+	&.xl {
+		@apply min-h-9 text-2xl font-semibold py-0.5;
 	}
 }
 

@@ -22,7 +22,7 @@ async function loadTemplate(id: string) {
 		where: { id },
 		include: {
 			items: true,
-			properties: { include: { optionsM: true } }
+			properties: { include: { options: true } }
 		}
 	});
 }

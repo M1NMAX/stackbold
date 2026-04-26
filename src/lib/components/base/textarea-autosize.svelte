@@ -29,16 +29,16 @@
 		style:min-height={minHeight}
 		style:max-height={maxHeight}
 		class={tm(
-			'p-2 overflow-hidden text-base box-border border-0 invisible leading-[1.2]',
+			'p-2 overflow-hidden text-base box-border border-0 invisible leading-[1.2] break-words',
 			xl && 'text-2xl font-semibold'
 		)}>{value + '\n'}</pre>
 	<textarea
 		bind:value
 		{...rest}
 		class={tm(
-			'absolute top-0 h-full w-full flex p-2 box-border border-0 resize-none overflow-hidden rounded-md text-base bg-transparent leading-[1.2] placeholder:text-muted-foreground',
+			'absolute top-0 h-full w-full flex p-2 box-border shadow-none border-0 resize-none overflow-hidden break-words rounded-md text-base bg-transparent leading-[1.2] placeholder:text-muted-foreground',
 			'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
-			'focus:outline focus:outline-primary focus:outline-offset-0 focus:shadow-none',
+			'focus:outline focus:outline-primary focus:outline-offset-0 ',
 			ghost && 'focus:outline-none focus-visible:ring-0',
 			xl && 'text-2xl font-semibold'
 		)}

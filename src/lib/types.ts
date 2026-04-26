@@ -86,7 +86,7 @@ export type XPropertyOption = PropertyOption & {
 };
 
 export type PropertyWithOptions = Property & {
-	optionsM: XPropertyOption[];
+	options: XPropertyOption[];
 };
 
 export type OnChangeFn<T> = (value: T) => void;

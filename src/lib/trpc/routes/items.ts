@@ -175,7 +175,7 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 				collectionId,
 				OR: [{ type: { in: PROPERTIES_WITHOUT_REF } }, { id: { in: sortIds } }]
 			},
-			include: { optionsM: true }
+			include: { options: true }
 		})
 	]);
 
@@ -272,8 +272,8 @@ function sortItems(items: Item[], sorts: Sort[], properties: PropertyWithOptions
 				bValue = getPropertyRef(b.properties, sort.field)?.value || '';
 				const property = propertiesMap.get(sort.field);
 				if (property && PROPERTIES_WITH_LISTABLE_OPTIONS.includes(property.type)) {
-					aValue = getPropertyOption(property.optionsM, aValue)?.order.toString() || '';
-					bValue = getPropertyOption(property.optionsM, bValue)?.order.toString() || '';
+					aValue = getPropertyOption(property.options, aValue)?.order.toString() || '';
+					bValue = getPropertyOption(property.options, bValue)?.order.toString() || '';
 				}
 			}
 

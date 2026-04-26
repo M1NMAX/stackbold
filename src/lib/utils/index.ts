@@ -5,3 +5,4 @@ export * from './number';
 export * from './funs';
 export * from './file';
 export * from './property';
+export * from './superform';

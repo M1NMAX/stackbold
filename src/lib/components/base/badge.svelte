@@ -17,7 +17,7 @@
 <span
 	{id}
 	class={tm(
-		'h-6 flex items-center gap-x-1.5 px-1 rounded-md font-semibold text-sm [&_svg]:size-4',
+		'w-fit h-6 lg:h-5 flex items-center gap-x-1 px-1 rounded-sm font-semibold text-sm [&_svg]:size-3.5',
 		THEME_COLORS[color],
 		className
 	)}
