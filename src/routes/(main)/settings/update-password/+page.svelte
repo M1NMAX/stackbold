@@ -3,18 +3,16 @@
 	import { Breadcrumb, BreadcrumbItem, Button, Field, Label } from '$lib/components/base/index.js';
 	import { PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { getToastState } from '$lib/states/index.js';
-	import { superForm } from 'sveltekit-superforms/client';
+	import { useSuperForm } from '$lib/utils/index.js';
+	import { untrack } from 'svelte';
 
 	let { data } = $props();
 
 	const toastState = getToastState();
-	const { form, errors, enhance } = superForm(data.form, {
-		onResult: ({ result }) => {
-			if (result.type != 'failure') return;
-			if (result.data == null || result.data.form.errors._errors == null) return;
-			toastState.error(result.data.form.errors._errors);
-		}
-	});
+	const { form, errors, enhance } = useSuperForm(
+		untrack(() => data.form),
+		toastState
+	);
 </script>
 
 <svelte:head>
@@ -33,7 +31,7 @@
 <PageContent class="lg:justify-center items-center">
 	<h1 class="form-title">Change password</h1>
 	<form method="post" use:enhance class="form-container">
-		<Field class="py-1" errors={$errors.currentPassword}>
+		<Field errors={$errors.currentPassword}>
 			<Label for="currentPassword" name="Current password" />
 			<input
 				required
@@ -45,7 +43,7 @@
 			/>
 		</Field>
 
-		<Field class="py-1" errors={$errors.newPassword}>
+		<Field errors={$errors.newPassword}>
 			<Label for="newPassword" name="New password" />
 			<input
 				required
