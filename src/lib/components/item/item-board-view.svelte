@@ -54,18 +54,18 @@
 >
 	<div
 		class={tm(
-			'z-10 w-full py-1 px-1.5 rounded-md border-2 border-secondary shrink-0',
+			'z-0 lg:z-10 h-9 w-full flex items-center py-1 px-1.5 rounded-md border-2 border-secondary shrink-0',
 			isSticky && 'bg-secondary',
 			items.length > 0 && 'rounded-b-none'
 		)}
 		style="transform: translateY({Math.max(0, scrollTop - 130)}px)"
 	>
 		{@render header()}
-		{#if isSticky}
+		<!-- {#if isSticky}
 			<div
 				class="absolute -top-[200px] left-0 -z-10 w-full h-[200px] bg-secondary rounded-md"
 			></div>
-		{/if}
+		{/if} -->
 	</div>
 
 	{#if items.length > 0}
