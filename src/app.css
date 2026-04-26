@@ -33,8 +33,19 @@
 /*  Scrollbar */
 
 /* Form */
-form {
-	@apply space-y-4;
+
+.auth-form-container {
+	h1 {
+		@apply text-center text-3xl font-medium mb-6;
+	}
+
+	p {
+		@apply mb-6 text-center font-medium;
+	}
+
+	form {
+		@apply space-y-4;
+	}
 }
 
 .form-title {
