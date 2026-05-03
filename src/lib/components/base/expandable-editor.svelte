@@ -110,7 +110,7 @@
 		class="h-full w-full flex items-center justify-between gap-x-2 py-1 px-1.5 cursor-pointer bg-secondary/50 hover:bg-secondary/70"
 		onclick={() => onclickHeader()}
 	>
-		<Icon class="size-4" />
+		<Icon class="size-5 lg:size-4" />
 
 		<span class="grow">
 			{#if name}

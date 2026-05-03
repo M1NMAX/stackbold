@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Icon } from 'lucide-svelte';
 	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
+	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Eraser from 'lucide-svelte/icons/eraser';
 	import ListCollapse from 'lucide-svelte/icons/list-collapse';
 	import ListFilter from 'lucide-svelte/icons/list-filter';
-	import MoveDown from 'lucide-svelte/icons/move-down';
-	import MoveUp from 'lucide-svelte/icons/move-up';
 	import Settings from 'lucide-svelte/icons/settings-2';
 	import ToggleRight from 'lucide-svelte/icons/toggle-right';
 	import X from 'lucide-svelte/icons/x';
@@ -206,14 +206,15 @@
 	{:else if content === CONTENT_OPTIONS.VISIBILITY}
 		{@render header('Properties')}
 		{#each propertyState.properties as property}
-			<div draggable="true" class="flex justify-between items-center pr-1">
-				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+			<Label for={property.id} compact hoverEffect>
+				<PropertyIcon key={property.type} />
+				<span> {property.name} </span>
 				<Switch
 					id={property.id}
 					checked={isPropertyVisible(view, property.id)}
 					onchange={() => togglePropertyVisibility(property.id)}
 				/>
-			</div>
+			</Label>
 		{/each}
 	{:else if content === CONTENT_OPTIONS.FILTER}
 		{@render header('Filters')}
@@ -249,8 +250,7 @@
 						{@const filterMenuCheckboxId = useId('filter-menu-checkbox')}
 						<Label for={filterMenuCheckboxId} compact hoverEffect>
 							<MockCheckbox checked={value} />
-							<span class="grow font-semibold"> {value ? 'Checked' : 'Unchecked'} </span>
-
+							<span> {value ? 'Checked' : 'Unchecked'} </span>
 							<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()}></RadioGroupItem>
 						</Label>
 					{/each}
@@ -299,7 +299,7 @@
 					variant="menu"
 					onclick={() => addSort({ field: property.id, order: SortType.ASC })}
 				>
-					<PropertyIcon key={property.type} class="size-4 mr-0" />
+					<PropertyIcon key={property.type} />
 					{property.name}
 				</Button>
 			{/if}
@@ -316,7 +316,7 @@
 				{#if view.type !== ViewType.BOARD}
 					<Label for="collection-group-by-none" compact hoverEffect>
 						<PropertyIcon key="none" />
-						<span class="grow">{VALUE_NONE}</span>
+						<span>{VALUE_NONE}</span>
 						<RadioGroupItem id="collection-group-by-none" value="" />
 					</Label>
 				{/if}
@@ -325,29 +325,29 @@
 					{@const id = useId(`group-by-${property.id}`)}
 					<Label for={id} compact hoverEffect>
 						<PropertyIcon key={property.type} />
-						<span class="grow"> {property.name} </span>
+						<span> {property.name} </span>
 						<RadioGroupItem {id} value={property.id} />
 					</Label>
 				{/each}
 			</RadioGroup>
 			<HSeparator />
-			<div class="flex justify-between items-center pr-1">
-				<Label for={`view-${view.id}-hide-empty`} name="Hide empty groups" />
+			<Label for={`view-${view.id}-hide-empty`} compact hoverEffect>
+				<span>Hide empty groups</span>
 				<Switch
 					id={`view-${view.id}-hide-empty`}
 					checked={view.hideEmptyGroups ?? false}
 					onchange={() => toggleViewHideEmptyGroups()}
 				/>
-			</div>
+			</Label>
 
-			<div class="flex justify-between items-center pr-1">
-				<Label for={`view-${view.id}-hide-count`} name="Hide items count" />
+			<Label for={`view-${view.id}-hide-count`} compact hoverEffect>
+				<span>Hide items count</span>
 				<Switch
 					id={`view-${view.id}-hide-count`}
 					checked={view.hideItemCounts ?? false}
 					onchange={() => toggleViewHideItemCounts()}
 				/>
-			</div>
+			</Label>
 		{:else}
 			{@render empty('Existing properties do not support grouping')}
 		{/if}
@@ -449,11 +449,11 @@
 {/snippet}
 
 {#snippet activeSortRow(sort: Sort, name: string, key: PropertyType)}
-	{@const Icon = sort.order === SortType.ASC ? MoveUp : MoveDown}
+	{@const Icon = sort.order === SortType.ASC ? ArrowUp : ArrowDown}
 	<div class="flex items-center justify-between gap-x-0.5 px-1 font-semibold">
-		<span class="grow flex items-center gap-x-1">
+		<span class="grow flex items-center gap-2 lg:gap-1.5">
 			<PropertyIcon {key} />
-			<span class="text-sm font-medium">
+			<span class="text-base lg:text-sm font-medium">
 				{name}
 			</span>
 		</span>

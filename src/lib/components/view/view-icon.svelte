@@ -12,4 +12,4 @@
 	const Icon = $derived(VIEW_ICONS[key.toLowerCase()]);
 </script>
 
-<Icon class={tm('size-5', className)} aria-level="View type icon" />
+<Icon class={tm('size-5 lg:size-4', className)} aria-level="View type icon" />
