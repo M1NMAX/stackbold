@@ -346,7 +346,7 @@
 </div>
 
 {#snippet propertyOptions()}
-	<div class=" flex flex-col space-y-1.5 px-1">
+	<div class="flex flex-col space-y-1.5 px-1">
 		<div class="flex items-center justify-between space-x-1">
 			<span class="grow text-sm font-semibold">Options</span>
 			<Button theme="secondary" variant="cicon" onclick={() => newOptionInputState.toggle()}>

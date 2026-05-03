@@ -11,7 +11,6 @@
 		PropertyAggregatorMenu,
 		getPropertyState
 	} from '$lib/components/property';
-	import { fade } from 'svelte/transition';
 	import {
 		AdaptiveWrapper,
 		Button,
