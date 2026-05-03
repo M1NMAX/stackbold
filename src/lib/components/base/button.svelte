@@ -17,7 +17,7 @@
 				default: 'h-9 p-2',
 				menu: 'h-9 lg:h-7 w-full px-2 lg:px-1.5 justify-start rounded-none lg:rounded-sm',
 				icon: 'h-9 w-9',
-				compact: 'h-6 p-1 gap-1',
+				compact: 'h-7 lg:h-6 px-1.5 py-0 lg:p-1 gap-1',
 				cicon: 'size-8 lg:size-6 p-1'
 			}
 		},

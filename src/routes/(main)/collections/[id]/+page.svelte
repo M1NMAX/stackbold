@@ -336,8 +336,8 @@
 	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="relative w-full">
-				<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none">
-					<Plus class="size-4" />
+				<div class="input-left-icon">
+					<Plus  />
 				</div>
 				<label for="new-item-name" class="sr-only"> Item name</label>
 				<input
@@ -347,19 +347,20 @@
 					name="new-item-name"
 					placeholder="New item"
 					autocomplete="off"
-					class="h-9 w-full py-2 px-8 text-sm font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
+					class="input secondary icon-left !h-10 lg:!h-9"
 					onfocusout={() => shouldCleanNewItemInput()}
 					onescapekey={() => shouldCleanNewItemInput()}
 				/>
 			</form>
 		{:else}
+
 			<Button
 				theme="secondary"
-				class="grow flex justify-between items-center text-left text-base font-semibold text-muted-foreground"
+				class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
 				onclick={() => (isNewItemInputVisible = true)}
 			>
 				<Plus />
-				<span class="grow text-sm"> New item </span>
+				<span class="grow"> New item </span>
 				<Shortcut class="hidden lg:inline-flex">
 					<span>Alt</span>
 					<span>N</span>
