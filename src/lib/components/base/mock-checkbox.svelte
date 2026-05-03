@@ -10,7 +10,7 @@
 </script>
 
 {#if checked}
-	<Check class="stroke-[4px] bg-primary rounded-md" />
+	<Check class="stroke-[4px] bg-primary rounded-sm" />
 {:else}
 	<Square />
 {/if}

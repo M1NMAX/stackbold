@@ -17,7 +17,8 @@
 		VALUE_NONE,
 		MAX_PROPERTY_NAME_LENGTH,
 		NUMBER_FORMATS,
-		NUMBER_FORMAT_LABELS
+		NUMBER_FORMAT_LABELS,
+		SLIDE_PARAMS
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable, PropertyWithOptions } from '$lib/types';
@@ -33,7 +34,7 @@
 		Select
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { getCollectionState } from '$lib/components/collection/index.js';
 	import { getViewState } from '$lib/components/view/index.js';
 
@@ -357,20 +358,20 @@
 			</Button>
 		</div>
 
-		<input
-			transition:fade
-			onkeypress={handleKeypress}
-			id={newOptionInputId}
-			placeholder="Enter option value"
-			class={tm(
-				'h-8 w-full p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 hidden',
-				newOptionInputState.isOpen && 'block'
-			)}
-		/>
+		{#if newOptionInputState.isOpen}
+			<input
+				transition:slide={{ ...SLIDE_PARAMS }}
+				onkeypress={handleKeypress}
+				id={newOptionInputId}
+				placeholder="Enter new option"
+				class="input"
+			/>
+		{/if}
 
 		<div>
 			{#each property.options as option}
 				<ExpandableEditor
+					group="options"
 					isExpanded={isViewOptionExpanded(option.id)}
 					onclickHeader={() => onclickExpandableOptionEditor(option.id)}
 					ondragEditor={(dt) => {
@@ -380,7 +381,6 @@
 						const start = +dt.getData('text/plain');
 						await propertyState.orderPropertyOption(property.id, start, option.order);
 					}}
-					group="options"
 				>
 					{#snippet header()}
 						<Badge color={option.color}>{option.value}</Badge>

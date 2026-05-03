@@ -90,7 +90,7 @@ input[type='number'] {
 }
 
 .input {
-	@apply h-9 lg:h-7 w-full flex px-2 rounded-md border-0 bg-transparent text-base shadow-none file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
+	@apply h-9 lg:h-7 w-full flex px-2 rounded-sm border-0 bg-secondary text-base shadow-none file:border-0 file:bg-transparent file:text-foreground file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50;
 
 	&:focus,
 	&:focus-within {
@@ -98,6 +98,8 @@ input[type='number'] {
 	}
 
 	&.input-ghost {
+		@apply bg-transparent;
+
 		&:focus,
 		&:focus-within {
 			@apply outline-none;
@@ -105,7 +107,7 @@ input[type='number'] {
 	}
 
 	&.secondary {
-		@apply h-9 w-full bg-secondary/60;
+		@apply w-full bg-secondary/60;
 
 		&:focus,
 		&:focus-within {
