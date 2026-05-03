@@ -28,10 +28,7 @@
 <RadioGroup
 	{value}
 	{onchange}
-	class={tm(
-		'h-9 hidden gap-0.5 rounded-md bg-secondary/50',
-		showTabBtns ? 'lg:flex' : ' lg:hidden'
-	)}
+	class={tm('h-9 hidden gap-0.5 rounded-md bg-secondary/50', showTabBtns ? 'lg:flex' : 'lg:hidden')}
 >
 	{#each views as view}
 		{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
@@ -45,7 +42,7 @@
 		>
 			<RadioGroupItem value={view.shortId.toString()} id={`view-${view.id}`} class="sr-only" />
 			<Icon />
-			<span class="grow max-w-28 font-semibold text-nowrap text-ellipsis overflow-hidden">
+			<span class="max-w-28 text-nowrap text-ellipsis overflow-hidden">
 				{view.name}
 			</span>
 		</Label>
@@ -60,7 +57,7 @@
 	>
 		{#snippet trigger()}
 			<CurrentIcon />
-			<span class="max-w-20 md:max-w-28 font-semibold text-nowrap text-ellipsis overflow-hidden">
+			<span class="max-w-20 md:max-w-28 text-nowrap text-ellipsis overflow-hidden">
 				{view.name}
 			</span>
 		{/snippet}
@@ -77,7 +74,7 @@
 				{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}
 				<Label for={view.id} compact hoverEffect>
 					<Icon />
-					<span class="grow text-nowrap text-ellipsis overflow-hidden">{view.name} </span>
+					<span class="text-nowrap text-ellipsis overflow-hidden">{view.name} </span>
 					<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
 				</Label>
 			{/each}

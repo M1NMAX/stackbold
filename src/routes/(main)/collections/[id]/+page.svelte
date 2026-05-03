@@ -15,7 +15,6 @@
 		Button,
 		IconPicker,
 		Shortcut,
-		TextareaAutosize,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import {
@@ -37,7 +36,7 @@
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import StructurePage from './structure/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
-	import { escapeKeydown } from '$lib/actions/index.js';
+	import { escapeKeydown, autosizeTextarea } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
@@ -72,6 +71,7 @@
 
 	let isSmHeadingVisible = $state(false);
 	let isNewItemInputVisible = $state(false);
+
 
 	type PanelContentType = 'item' | 'structure' | null;
 
@@ -296,15 +296,18 @@
 			<span class="text-primary"> {renameCollectionError}</span>
 		{/if}
 		{#if !collection.isDescHidden}
-			<label for="description" class="sr-only"> Collection description </label>
+		{@const descriptionId = `collection-${collection.id}-description`}
 
-			<TextareaAutosize
-				id="description"
+			<label for={descriptionId} class="sr-only"> Collection description </label>
+
+			<textarea
+    			{@attach autosizeTextarea(descriptionId)}
+				id={descriptionId}
 				value={collection.description}
 				oninput={handleOnInputCollectionDesc}
 				spellcheck={false}
-				ghost
-			></TextareaAutosize>
+				class="textarea ghost"
+			></textarea>
 		{/if}
 
 		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">
@@ -333,8 +336,8 @@
 	<PageFooter class="flex">
 		{#if isNewItemInputVisible}
 			<form onsubmit={handleCreateItem} class="relative w-full">
-				<div class="absolute top-2.5 left-2 flex items-center pointer-events-none">
-					<Plus class="size-4" />
+				<div class="input-left-icon">
+					<Plus  />
 				</div>
 				<label for="new-item-name" class="sr-only"> Item name</label>
 				<input
@@ -344,19 +347,20 @@
 					name="new-item-name"
 					placeholder="New item"
 					autocomplete="off"
-					class="h-9 w-full py-2 px-8 text-sm font-semibold rounded-sm bg-secondary focus:placeholder:text-secondary-foreground focus:outline-none"
+					class="input secondary icon-left !h-10 lg:!h-9"
 					onfocusout={() => shouldCleanNewItemInput()}
 					onescapekey={() => shouldCleanNewItemInput()}
 				/>
 			</form>
 		{:else}
+
 			<Button
 				theme="secondary"
-				class="grow flex justify-between items-center text-left text-base font-semibold text-muted-foreground"
+				class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
 				onclick={() => (isNewItemInputVisible = true)}
 			>
 				<Plus />
-				<span class="grow text-sm"> New item </span>
+				<span class="grow"> New item </span>
 				<Shortcut class="hidden lg:inline-flex">
 					<span>Alt</span>
 					<span>N</span>

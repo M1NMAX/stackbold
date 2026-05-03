@@ -1,26 +1,24 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms/client';
 	import { Button, Field, Label } from '$lib/components/base/index.js';
 	import { getToastState } from '$lib/states/index.js';
+	import { useSuperForm } from '$lib/utils/index.js';
+	import { untrack } from 'svelte';
 
 	let { data } = $props();
 
 	const toastState = getToastState();
-	const { form, errors, enhance } = superForm(data.form, {
-		onResult: ({ result }) => {
-			if (result.type != 'failure') return;
-			if (result.data == null || result.data.form.errors._errors == null) return;
-			toastState.error(result.data.form.errors._errors);
-		}
-	});
+	const { form, errors, enhance } = useSuperForm(
+		untrack(() => data.form),
+		toastState
+	);
 </script>
 
-<div>
-	<h1 class="form-title">Two-factor authentication</h1>
-	<p class="form-subtitle">Enter the code from your authenticator app.</p>
+<div class="auth-form-container">
+	<h1>Two-factor authentication</h1>
+	<p>Enter the code from your authenticator app.</p>
 
 	<form method="post" use:enhance>
-		<Field class="py-1" errors={$errors.code}>
+		<Field errors={$errors.code}>
 			<Label for="code" name="Code" />
 			<input
 				id="code"
@@ -28,7 +26,7 @@
 				name="code"
 				required
 				bind:value={$form.code}
-				class="input input-ghost"
+				class="input ghost"
 				autocomplete="one-time-code"
 			/>
 		</Field>

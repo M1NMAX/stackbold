@@ -87,7 +87,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 			items: true,
 			properties: {
 				orderBy: { order: 'asc' },
-				include: { optionsM: { orderBy: { order: 'asc' } } }
+				include: { options: { orderBy: { order: 'asc' } } }
 			}
 		}
 	});
@@ -105,7 +105,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 		snapshots.set(`${property.name}-${property.order}`, {
 			id: property.id,
 			optionsIds: new Map<string, string>(
-				property.optionsM.map((o) => [`${o.value}-${o.order}`, o.id])
+				property.options.map((o) => [`${o.value}-${o.order}`, o.id])
 			)
 		});
 	}
@@ -122,7 +122,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 			include: {
 				properties: {
 					orderBy: { order: 'asc' },
-					include: { optionsM: { orderBy: { order: 'asc' } } }
+					include: { options: { orderBy: { order: 'asc' } } }
 				}
 			}
 		});
@@ -136,7 +136,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 			newSnapshots.set(snap.id, {
 				id: property.id,
 				optionsIds: new Map<string, string>(
-					property.optionsM.flatMap((o) => {
+					property.options.flatMap((o) => {
 						const oldOption = snap.optionsIds.get(`${o.value}-${o.order}`);
 						return oldOption ? [[oldOption, o.id]] : [];
 					})
@@ -214,13 +214,11 @@ export async function duplicateCollection(id: string, ownerId: string) {
 function mapPropertyData(property: PropertyWithOptions) {
 	const base = omit(property, [...BASE_FIELDS, 'collectionId']);
 
-	const optionData = property.optionsM.map((option) =>
-		omit(option, [...BASE_FIELDS, 'propertyId'])
-	);
+	const optionData = property.options.map((option) => omit(option, [...BASE_FIELDS, 'propertyId']));
 
 	return {
 		...base,
-		optionsM: { create: [...optionData] }
+		options: { create: [...optionData] }
 	};
 }
 

@@ -22,7 +22,7 @@
 		{property.name}
 	{:else}
 		{@const result = hasOptions(property.type)
-			? (getOption(property.optionsM, value)?.value ?? '')
+			? (getOption(property.options, value)?.value ?? '')
 			: value}
 		{result.substring(0, 55)}
 	{/if}

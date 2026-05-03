@@ -14,11 +14,11 @@
 		PROPERTY_UNIVERSAL_AGGREGATORS,
 		VALUE_NONE
 	} from '$lib/constant/index.js';
-	import type { Aggregator, Property } from '@prisma/client';
-	import type { Nullable } from '$lib/types.js';
+	import type { Aggregator } from '@prisma/client';
+	import type { Nullable, PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
-		property: Property;
+		property: PropertyWithOptions;
 		calculated: string;
 		onchange: (aggregator: Nullable<Aggregator>) => void;
 	};

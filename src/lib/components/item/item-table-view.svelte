@@ -11,7 +11,6 @@
 		PropertyAggregatorMenu,
 		getPropertyState
 	} from '$lib/components/property';
-	import { fade } from 'svelte/transition';
 	import {
 		AdaptiveWrapper,
 		Button,
@@ -79,7 +78,7 @@
 				<tr class="text-muted-foreground text-sm">
 					<th scope="col" class="text-left rounded-t-md hover:bg-muted/90 py-2 px-4 cursor-pointer">
 						<span class="flex items-center">
-							<PropertyIcon key={PropertyType.TEXT} class="size-4 mr-2" />
+							<PropertyIcon key={PropertyType.TEXT} class="mr-2" />
 							Name
 						</span>
 					</th>
@@ -89,7 +88,7 @@
 							class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-4 md:px-2 cursor-pointer"
 						>
 							<span class="flex items-center">
-								<PropertyIcon key={property.type} class="size-4 mr-2" />
+								<PropertyIcon key={property.type} class="mr-2" />
 								{property.name}
 							</span>
 						</th>
@@ -114,7 +113,7 @@
 								value={item.name}
 								oninput={handleOnInput}
 								maxlength={MAX_ITEM_NAME_LENGTH}
-								class="grow py-2 px-1 focus:outline-none bg-inherit"
+								class="grow py-1.5 px-1 focus:outline-none bg-inherit"
 							/>
 
 							<Button
@@ -183,14 +182,15 @@
 		<MenuTitle title="Property visibility" />
 
 		{#each propertyState.properties as property (property.id)}
-			<div class="flex justify-between items-center pr-1">
-				<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
+			<Label for={property.id} compact hoverEffect>
+				<PropertyIcon key={property.type} />
+				<span> {property.name} </span>
 				<Switch
 					id={property.id}
 					checked={isPropertyVisible(view, property.id)}
 					onchange={() => togglePropertyVisibility(property.id)}
 				/>
-			</div>
+			</Label>
 		{/each}
 	</AdaptiveWrapper>
 {/snippet}

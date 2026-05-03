@@ -1,17 +1,23 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms/client';
 	import { Button, Field, Label } from '$lib/components/base/index.js';
+	import { untrack } from 'svelte';
+	import { getToastState } from '$lib/states/index.js';
+	import { useSuperForm } from '$lib/utils/index.js';
 
 	let { data } = $props();
 
-	const { form, errors, enhance } = superForm(data.form);
+	const toastState = getToastState();
+	const { form, errors, enhance } = useSuperForm(
+		untrack(() => data.form),
+		toastState
+	);
 </script>
 
-<div>
-	<h1 class="form-title mb-6">Forgot your password</h1>
+<div class="auth-form-container">
+	<h1>Forgot your password</h1>
 
 	<form method="post" use:enhance>
-		<Field class="py-1" errors={$errors.email}>
+		<Field errors={$errors.email}>
 			<Label for="email" name="Email" />
 			<input
 				id="email"
@@ -19,7 +25,7 @@
 				name="email"
 				required
 				bind:value={$form.email}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		</Field>
 		<Button type="submit" class="w-full">Reset password</Button>

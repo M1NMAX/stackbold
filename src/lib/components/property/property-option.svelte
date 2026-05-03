@@ -87,7 +87,7 @@
 		type="text"
 		name="name"
 		oninput={handleOnInput}
-		class="input input-ghost"
+		class="input ghost"
 		maxlength={MAX_PROPERTY_OPTION_NAME_LENGTH}
 	/>
 </Field>

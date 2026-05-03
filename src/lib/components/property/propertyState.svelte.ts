@@ -43,7 +43,6 @@ export class PropertyState {
 				defaultValue: null,
 				aggregator: null,
 				options: [],
-				optionsM: [],
 				order,
 				collectionId,
 				targetCollection: null,
@@ -157,7 +156,7 @@ export class PropertyState {
 		const tmpId = crypto.randomUUID();
 
 		try {
-			const order = target.optionsM.length + 1;
+			const order = target.options.length + 1;
 			const date = new Date();
 
 			const option = {
@@ -170,7 +169,7 @@ export class PropertyState {
 				updatedAt: date
 			};
 
-			this.#updProperty(pid, { ...target, optionsM: [...target.optionsM, option] });
+			this.#updProperty(pid, { ...target, options: [...target.options, option] });
 			await trpc().properties.addOption.mutate({ propertyId: pid, value });
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
@@ -186,11 +185,11 @@ export class PropertyState {
 		}
 
 		try {
-			const optionsM = target.optionsM.map((opt) =>
+			const options = target.options.map((opt) =>
 				opt.id !== option.id ? opt : { ...opt, ...option }
 			);
 
-			this.#updProperty(pid, { ...target, optionsM });
+			this.#updProperty(pid, { ...target, options });
 
 			await trpc().properties.updateOption.mutate(option);
 		} catch (error) {
@@ -212,9 +211,9 @@ export class PropertyState {
 		}
 
 		try {
-			const optionsM = target.optionsM.filter((opt) => opt.id !== oid);
+			const options = target.options.filter((opt) => opt.id !== oid);
 
-			this.#updProperty(pid, { ...target, optionsM });
+			this.#updProperty(pid, { ...target, options });
 
 			await trpc().properties.removeOption.mutate(oid);
 		} catch (error) {

@@ -59,7 +59,7 @@
 		<PageTitle
 			small
 			icon="collections"
-			title="Collections 1"
+			title="Collections"
 			class={isSmHeadingVisible ? 'flex-1' : 'flex lg:hidden'}
 		/>
 

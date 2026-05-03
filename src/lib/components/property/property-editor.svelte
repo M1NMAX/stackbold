@@ -8,7 +8,6 @@
 	import { getPropertyState, PropertyOption } from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
-		MIN_SEARCHABLE_PROPERTY_SELECT,
 		NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS,
 		PROPERTIES_WITH_LISTABLE_OPTIONS,
 		PROPERTY_AGGREGATOR_LABELS,
@@ -18,7 +17,8 @@
 		VALUE_NONE,
 		MAX_PROPERTY_NAME_LENGTH,
 		NUMBER_FORMATS,
-		NUMBER_FORMAT_LABELS
+		NUMBER_FORMAT_LABELS,
+		SLIDE_PARAMS
 	} from '$lib/constant/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import type { UpdProperty, SelectOption, Nullable, PropertyWithOptions } from '$lib/types';
@@ -34,7 +34,7 @@
 		Select
 	} from '$lib/components/base/index.js';
 	import { tick } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { getCollectionState } from '$lib/components/collection/index.js';
 	import { getViewState } from '$lib/components/view/index.js';
 
@@ -131,7 +131,7 @@
 		let options: SelectOption[] = [];
 
 		options.push(
-			...property.optionsM.map((option) => ({
+			...property.options.map((option) => ({
 				id: option.id,
 				label: option.value,
 				isSelected: property.defaultValue === option.id,
@@ -220,7 +220,7 @@
 		type="text"
 		name="name"
 		oninput={handleOnInput}
-		class="input input-ghost"
+		class="input ghost"
 		maxlength={MAX_PROPERTY_NAME_LENGTH}
 	/>
 </Field>
@@ -307,7 +307,7 @@
 		<Label for={getIdWithPrefix('property-ext-target-property')} name="Target Property" />
 		<Select
 			id={getIdWithPrefix('property-ext-target-property')}
-			options={property.optionsM.map((opt) => ({
+			options={property.options.map((opt) => ({
 				id: opt.id,
 				label: opt.value,
 				icon: opt.extra ? opt.extra.toLowerCase() : '',
@@ -346,7 +346,7 @@
 </div>
 
 {#snippet propertyOptions()}
-	<div class=" flex flex-col space-y-1.5 px-1">
+	<div class="flex flex-col space-y-1.5 px-1">
 		<div class="flex items-center justify-between space-x-1">
 			<span class="grow text-sm font-semibold">Options</span>
 			<Button theme="secondary" variant="cicon" onclick={() => newOptionInputState.toggle()}>
@@ -358,20 +358,20 @@
 			</Button>
 		</div>
 
-		<input
-			transition:fade
-			onkeypress={handleKeypress}
-			id={newOptionInputId}
-			placeholder="Enter option value"
-			class={tm(
-				'h-8 w-full p-1 rounded-sm border border-input bg-secondary text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 hidden',
-				newOptionInputState.isOpen && 'block'
-			)}
-		/>
+		{#if newOptionInputState.isOpen}
+			<input
+				transition:slide={{ ...SLIDE_PARAMS }}
+				onkeypress={handleKeypress}
+				id={newOptionInputId}
+				placeholder="Type a new option"
+				class="input"
+			/>
+		{/if}
 
 		<div>
-			{#each property.optionsM as option}
+			{#each property.options as option}
 				<ExpandableEditor
+					group="options"
 					isExpanded={isViewOptionExpanded(option.id)}
 					onclickHeader={() => onclickExpandableOptionEditor(option.id)}
 					ondragEditor={(dt) => {
@@ -381,10 +381,9 @@
 						const start = +dt.getData('text/plain');
 						await propertyState.orderPropertyOption(property.id, start, option.order);
 					}}
-					group="options"
 				>
 					{#snippet header()}
-						<Badge color={option.color} class="w-fit h-5">{option.value}</Badge>
+						<Badge color={option.color}>{option.value}</Badge>
 					{/snippet}
 					<PropertyOption {option} />
 				</ExpandableEditor>
@@ -400,8 +399,8 @@
 			id={getIdWithPrefix('property-default-value')}
 			options={setupDefaultOptionSelectOptions()}
 			onselect={(opt) => updProperty({ id: property.id, defaultValue: opt.id || null })}
-			searchable={property.optionsM.length >= MIN_SEARCHABLE_PROPERTY_SELECT}
 			placeholder={VALUE_NOT_DEFINED}
+			searchable
 		/>
 	</Field>
 {/snippet}

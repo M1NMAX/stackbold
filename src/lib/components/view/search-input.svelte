@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
+	import { Button } from '$lib/components/base/index.js';
 
 	type Props = {
 		value?: string;
@@ -10,19 +11,25 @@
 </script>
 
 <div class="relative w-full">
-	<div class="absolute inset-y-0 pl-2 flex items-center pointer-events-none">
-		<Search class="size-4" />
+	<div class="input-left-icon">
+		<Search />
 	</div>
 	<input
-		class="w-full h-9 px-8 text-base font-semibold rounded-md bg-secondary/60 focus-within:bg-secondary/80 focus:placeholder:text-secondary-foreground focus:outline-none"
+		class="input secondary icon-left icon-right !h-9 lg:!h-9"
 		{placeholder}
 		{...rest}
 		bind:value
 	/>
 
 	{#if value && value.length > 0}
-		<button class="absolute inset-y-0 right-0 pr-2 flex items-center" onclick={() => (value = '')}>
-			<X class="size-4" />
-		</button>
+		<Button
+			type="button"
+			theme="ghost"
+			variant="icon"
+			class="absolute inset-y-0 right-0"
+			onclick={() => (value = '')}
+		>
+			<X />
+		</Button>
 	{/if}
 </div>
