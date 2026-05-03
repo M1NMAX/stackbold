@@ -13,6 +13,7 @@
 	import { Button, buttonVariants, Dialog, Field, Label } from '$lib/components/base/index.js';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { getDeleteModalState, getToastState, ModalState } from '$lib/states/index.js';
+	import { untrack } from 'svelte';
 
 	let { data } = $props();
 
@@ -40,22 +41,25 @@
 
 	const addUserModal = new ModalState();
 
-	const { form, message, errors, enhance } = superForm(data.form, {
-		onResult({ result }) {
-			switch (result.type) {
-				case 'success':
-					addUserModal.close();
-					toastState.success('User added successfully');
+	const { form, message, errors, enhance } = superForm(
+		untrack(() => data.form),
+		{
+			onResult({ result }) {
+				switch (result.type) {
+					case 'success':
+						addUserModal.close();
+						toastState.success('User added successfully');
 
-					invalidate('/admin');
-					break;
+						invalidate('/admin');
+						break;
 
-				case 'error':
-					toastState.error('Unable to add user');
-					break;
+					case 'error':
+						toastState.error('Unable to add user');
+						break;
+				}
 			}
 		}
-	});
+	);
 
 	async function deleteUser(id: string, name: string) {
 		try {
