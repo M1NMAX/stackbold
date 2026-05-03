@@ -237,7 +237,7 @@
 			{value}
 			oninput={handleOnInput}
 			maxlength={MAX_PROPERTY_TEXT_LENGTH}
-			class="input input-ghost"
+			class="input ghost"
 		/>
 	</Field>
 {:else}
@@ -264,7 +264,7 @@
 				{value}
 				maxlength={MAX_PROPERTY_NUMERIC_LENGTH}
 				oninput={handleOnInput}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		{/if}
 	</Field>

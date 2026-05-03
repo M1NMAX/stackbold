@@ -31,11 +31,11 @@
 	}
 </script>
 
-<div class="flex flex-col gap-y-2">
-	<div class="grid grid-cols-7 grid-flow-rows gap-x-4 md:gap-x-2">
+<div class="flex flex-col gap-y-2 px-1 lg:px-0">
+	<div class="grid grid-cols-7 grid-flow-rows gap-x-4 md:gap-x-2 justify-items-stretch">
 		<button
 			type="button"
-			class={buttonVariants({ theme: 'ghost', variant: 'icon' })}
+			class={buttonVariants({ theme: 'ghost', className: 'w-full min-w-9 h-10 lg:h-9' })}
 			onclick={previousMonth}
 		>
 			<ChevronLeft />
@@ -47,38 +47,36 @@
 
 		<button
 			type="button"
-			class={buttonVariants({ theme: 'ghost', variant: 'icon' })}
+			class={buttonVariants({ theme: 'ghost', className: 'w-full min-w-9 h-10 lg:h-9' })}
 			onclick={nextMonth}
 		>
 			<ChevronRight />
 		</button>
 	</div>
 
-	<div class="grid grid-cols-7 grid-flow-rows">
+	<div class="grid grid-cols-7 grid-flow-rows gap-y-2 gap-x-4 md:gap-x-2">
 		{#each Object.keys(WEEK_DAYS) as key (key)}
-			<span
-				class="flex items-center justify-center text-[0.8rem] font-normal text-muted-foreground"
-			>
+			<span class="flex items-center justify-center text-sm font-normal text-muted-foreground">
 				{WEEK_DAYS[+key].slice(0, 2)}
 			</span>
 		{/each}
 	</div>
-	<div class="grid grid-cols-7 grid-flow-rows gap-y-2 gap-x-4 md:gap-x-2">
+	<div class="grid grid-cols-7 grid-flow-rows gap-y-2 gap-x-4 md:gap-x-2 justify-items-stretch">
 		{#each month.days as day}
 			<button
 				type="button"
 				disabled={day.isDisabled}
 				onclick={() => onClickDay(day.date)}
-				class={tm(
-					buttonVariants({
-						theme: 'ghost',
-						variant: 'icon'
-					}),
-					'size-9 flex items-center justify-center rounded-md text-sm',
-					day.isSelected && 'bg-primary hover:bg-primary/90',
-					day.isSelected && day.isDisabled && 'bg-accent/70',
-					day.isToday && 'bg-accent'
-				)}
+				class={buttonVariants({
+					theme: 'ghost',
+					variant: 'icon',
+					className: tm(
+						'w-full min-h-10 lg:min-h-9',
+						day.isSelected && 'bg-primary hover:bg-primary/90',
+						day.isSelected && day.isDisabled && 'bg-accent/70',
+						day.isToday && 'bg-accent'
+					)
+				})}
 			>
 				{day.date.day}
 			</button>

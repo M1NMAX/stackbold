@@ -25,7 +25,7 @@
 				name="email"
 				required
 				bind:value={$form.email}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		</Field>
 		<Button type="submit" class="w-full">Reset password</Button>

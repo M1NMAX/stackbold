@@ -50,7 +50,7 @@
 				name="code"
 				required
 				bind:value={$form.code}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		</Field>
 		<Button type="submit" class="w-full">Save</Button>

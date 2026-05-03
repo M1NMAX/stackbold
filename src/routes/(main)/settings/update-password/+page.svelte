@@ -38,7 +38,7 @@
 				id="currentPassword"
 				type="password"
 				name="currentPassword"
-				class="input input-ghost"
+				class="input ghost"
 				bind:value={$form.currentPassword}
 			/>
 		</Field>
@@ -50,7 +50,7 @@
 				id="newPassword"
 				type="password"
 				name="newPassword"
-				class="input input-ghost"
+				class="input ghost"
 				bind:value={$form.newPassword}
 			/>
 		</Field>

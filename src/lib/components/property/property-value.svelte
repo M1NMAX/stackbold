@@ -104,7 +104,7 @@
 				? 'h-6 w-full p-0 justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
 				: 'h-6 w-fit p-0 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
-			allowMultipleValues(property.type) && 'lg:h-5 p-0',
+			allowMultipleValues(property.type) && 'lg:h-5 p-0 lg:p-0',
 			hasUnifiedBgColor() && `${THEME_COLORS[Color.GRAY]}`,
 			allowMultipleValues(property.type) && !isTableView() && 'bg-gray-200/40 dark:bg-gray-700/40'
 		)
@@ -307,7 +307,7 @@
 			id={property.id}
 			name={property.name}
 			placeholder="Empty"
-			class="input input-ghost"
+			class="input ghost"
 			type="text"
 			inputmode="numeric"
 			{value}
@@ -361,7 +361,7 @@
 			id={property.id}
 			name={property.name}
 			placeholder="Empty"
-			class="input input-ghost"
+			class="input ghost"
 			type="url"
 			{value}
 			oninput={handleOnInput}
@@ -381,7 +381,7 @@
 			id={property.id}
 			name={property.name}
 			placeholder="Empty"
-			class="input input-ghost"
+			class="input ghost"
 			type={property.type.toLowerCase()}
 			{value}
 			oninput={handleOnInput}
@@ -419,7 +419,7 @@
 	<HSeparator />
 	<Button
 		theme="ghost"
-		class="h-8 w-full font-semibold justify-start"
+		variant="menu"
 		disabled={value === ''}
 		onclick={() => {
 			updPropertyRef('');

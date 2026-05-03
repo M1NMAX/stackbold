@@ -14,7 +14,12 @@
 	<div class="input-left-icon">
 		<Search />
 	</div>
-	<input class="input secondary icon-left icon-right" {placeholder} {...rest} bind:value />
+	<input
+		class="input secondary icon-left icon-right !h-9 lg:!h-9"
+		{placeholder}
+		{...rest}
+		bind:value
+	/>
 
 	{#if value && value.length > 0}
 		<Button

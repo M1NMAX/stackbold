@@ -227,13 +227,11 @@
 	id={triggerId}
 	type="button"
 	onclick={() => menuState.toggle()}
-	class={tm(
-		buttonVariants({
-			theme: 'secondary',
-			variant: 'menu',
-			className: tm(triggerClass, 'bg-transparent hover:bg-transparent overflow-y-hidden relative')
-		})
-	)}
+	class={buttonVariants({
+		theme: 'secondary',
+		variant: 'menu',
+		className: tm(triggerClass, 'bg-transparent hover:bg-transparent overflow-y-hidden relative')
+	})}
 >
 	{#each selectedToRender as opt}
 		{@render option(opt)}
@@ -279,7 +277,7 @@
 			</div>
 			<input
 				id={searchInputId}
-				class="input input-ghost icon-left icon-right"
+				class="input ghost icon-left icon-right"
 				placeholder="Search for an option"
 				bind:value={search}
 				type="text"
@@ -326,12 +324,16 @@
 					role="option"
 					tabindex="-1"
 					aria-selected={option.isSelected}
-					class={tm(
-						'h-9 lg:h-7 w-full flex items-center gap-x-1.5 py-1 px-2 lg:py-1.5 lg:px-1 rounded-none lg:rounded-sm cursor-pointer',
-						highlighted == option.id && 'bg-secondary text-secondary-foreground'
-					)}
 					onclick={() => selectOption(option)}
 					onmouseover={() => highlightOption(option.id)}
+					class={buttonVariants({
+						theme: 'ghost',
+						variant: 'menu',
+						className: tm(
+							'flex py-1 px-2 lg:py-1.5 lg:px-1',
+							highlighted == option.id && 'bg-secondary text-secondary-foreground'
+						)
+					})}
 				>
 					{#if option.theme}
 						<span class="grow">
@@ -359,7 +361,7 @@
 
 {#snippet icon(key: string)}
 	{@const Icon = APP_ICONS[key.toLowerCase()]}
-	<Icon class="size-4" />
+	<Icon class="size-5 lg:size-4" />
 {/snippet}
 
 {#snippet option(opt: SelectOption)}
