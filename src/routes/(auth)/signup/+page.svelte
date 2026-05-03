@@ -29,7 +29,7 @@
 				name="name"
 				required
 				bind:value={$form.name}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		</Field>
 
@@ -41,7 +41,7 @@
 				name="email"
 				required
 				bind:value={$form.email}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		</Field>
 		<Field errors={$errors.password}>
@@ -52,7 +52,7 @@
 				name="password"
 				required
 				bind:value={$form.password}
-				class="input input-ghost"
+				class="input ghost"
 			/>
 		</Field>
 		<Button type="submit" class="w-full">Sign up</Button>

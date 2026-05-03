@@ -30,7 +30,7 @@
 				id="email"
 				type="text"
 				name="email"
-				class="input input-ghost"
+				class="input ghost"
 				bind:value={$form.email}
 			/>
 		</Field>
@@ -42,7 +42,7 @@
 				id="password"
 				type="password"
 				name="password"
-				class="input input-ghost"
+				class="input ghost"
 				bind:value={$form.password}
 			/>
 		</Field>

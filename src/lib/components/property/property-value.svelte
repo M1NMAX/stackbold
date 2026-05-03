@@ -307,7 +307,7 @@
 			id={property.id}
 			name={property.name}
 			placeholder="Empty"
-			class="input input-ghost"
+			class="input ghost"
 			type="text"
 			inputmode="numeric"
 			{value}
@@ -361,7 +361,7 @@
 			id={property.id}
 			name={property.name}
 			placeholder="Empty"
-			class="input input-ghost"
+			class="input ghost"
 			type="url"
 			{value}
 			oninput={handleOnInput}
@@ -381,7 +381,7 @@
 			id={property.id}
 			name={property.name}
 			placeholder="Empty"
-			class="input input-ghost"
+			class="input ghost"
 			type={property.type.toLowerCase()}
 			{value}
 			oninput={handleOnInput}

@@ -39,7 +39,7 @@
 				id="name"
 				type="text"
 				name="name"
-				class="input input-ghost"
+				class="input ghost"
 				bind:value={$form.name}
 			/>
 		</Field>

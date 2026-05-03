@@ -28,10 +28,7 @@
 <RadioGroup
 	{value}
 	{onchange}
-	class={tm(
-		'h-9 hidden gap-0.5 rounded-md bg-secondary/50',
-		showTabBtns ? 'lg:flex' : ' lg:hidden'
-	)}
+	class={tm('h-9 hidden gap-0.5 rounded-md bg-secondary/50', showTabBtns ? 'lg:flex' : 'lg:hidden')}
 >
 	{#each views as view}
 		{@const Icon = VIEW_ICONS[view.type.toLowerCase()]}

@@ -277,8 +277,8 @@
 			</div>
 			<input
 				id={searchInputId}
-				class="input input-ghost icon-left icon-right"
-				placeholder="Search"
+				class="input ghost icon-left icon-right"
+				placeholder="Search for an option"
 				bind:value={search}
 				type="text"
 				role="combobox"

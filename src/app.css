@@ -97,7 +97,7 @@ input[type='number'] {
 		@apply outline-2 outline-primary placeholder:text-secondary-foreground;
 	}
 
-	&.input-ghost {
+	&.ghost {
 		@apply bg-transparent;
 
 		&:focus,

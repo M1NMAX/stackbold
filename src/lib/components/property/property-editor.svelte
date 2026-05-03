@@ -220,7 +220,7 @@
 		type="text"
 		name="name"
 		oninput={handleOnInput}
-		class="input input-ghost"
+		class="input ghost"
 		maxlength={MAX_PROPERTY_NAME_LENGTH}
 	/>
 </Field>
@@ -363,7 +363,7 @@
 				transition:slide={{ ...SLIDE_PARAMS }}
 				onkeypress={handleKeypress}
 				id={newOptionInputId}
-				placeholder="Enter new option"
+				placeholder="Type a new option"
 				class="input"
 			/>
 		{/if}
