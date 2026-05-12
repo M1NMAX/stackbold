@@ -33,7 +33,7 @@
 	</p>
 
 	<div class="flex items-center justify-end space-x-2">
-		<Button theme="outline" onclick={close}>Cancel</Button>
+		<Button theme="secondary" onclick={close}>Cancel</Button>
 		<Button theme="destructive" onclick={handleConfirm}>Confirm</Button>
 	</div>
 </Dialog>
