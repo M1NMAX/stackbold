@@ -102,9 +102,9 @@
 		tm(
 			isTableView()
 				? 'h-6 w-full p-0 justify-start rounded-none border-0 bg-transparent hover:bg-transparent'
-				: 'h-6 w-fit p-0 rounded-md font-semibold hover:bg-current/90 hover:text-white',
+				: 'h-6 lg:h-5 w-fit p-0 lg:p-0 rounded-md font-semibold hover:bg-current/90 hover:text-white',
 			isPropertyNumerical(property) && 'justify-end',
-			allowMultipleValues(property.type) && 'lg:h-5 p-0 lg:p-0',
+			allowMultipleValues(property.type) && isTableView() && 'lg:h-7 p-0 lg:p-0',
 			hasUnifiedBgColor() && `${THEME_COLORS[Color.GRAY]}`,
 			allowMultipleValues(property.type) && !isTableView() && 'bg-gray-200/40 dark:bg-gray-700/40'
 		)
