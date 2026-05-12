@@ -43,7 +43,8 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || true,
 				isTemplate: false,
-				views: []
+				views: [],
+				_count: { items: 0 }
 			});
 
 			const result = await trpc().collections.create.mutate({ ...args });

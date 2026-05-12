@@ -2,31 +2,60 @@
 	import Plus from 'lucide-svelte/icons/plus';
 	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
+	import { SortMenu } from '$lib/components/view/index.js';
 	import type { Collection } from '@prisma/client';
-	import { tm } from '$lib/utils/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
 	import { DEFAULT_SORT_OPTIONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
-	import { Button } from '$lib/components/base/index.js';
+	import { Button, ExpandableSearchInput, VSelector } from '$lib/components/base/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
+	const TAB_OPTIONS = [
+		{
+			id: 'all',
+			label: 'All'
+		},
+		{
+			id: 'favourites',
+			label: 'Favourites',
+			icon: 'star'
+		}
+	];
+
+	const SORT_STORAGE_KEY = 'collection-sort';
 	const collectionState = getCollectionState();
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<Collection>[])];
+
+	let tab = $state(TAB_OPTIONS[0].id);
 	let sort = $state(sortOptions[0]);
+	let isSmHeadingVisible = $state(false);
 
 	let search = $state('');
 	let collections = $derived.by(() => {
 		const searchTerm = search.toLowerCase() || '';
 
 		return collectionState.collections
-			.filter((collection) => collection.name.toLowerCase().includes(searchTerm))
+			.filter((collection) => {
+				const match = collection.name.toLowerCase().includes(searchTerm);
+				if (tab == 'all') return match;
+				else return collection.isPinned && match;
+			})
 			.sort(sortFun(sort.field, sort.order));
 	});
 
-	const SORT_STORAGE_KEY = 'collection-sort';
+	async function createCollection() {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
+	}
+
+	function handleScroll(e: Event) {
+		const targetEl = e.target as HTMLDivElement;
+
+		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
+		else isSmHeadingVisible = false;
+	}
+
 	$effect(() => {
 		const savedSort = localStorage.getItem(SORT_STORAGE_KEY);
 		if (savedSort) sort = JSON.parse(savedSort);
@@ -35,18 +64,6 @@
 	$effect(() => {
 		localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(sort));
 	});
-
-	let isSmHeadingVisible = $state(false);
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
-	}
-
-	async function createCollection() {
-		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
-	}
 </script>
 
 <svelte:head>
@@ -56,33 +73,42 @@
 <PageContainer>
 	<PageHeader>
 		<SidebarOpenBtn />
-		<PageTitle
-			small
-			icon="collections"
-			title="Collections"
-			class={isSmHeadingVisible ? 'flex-1' : 'flex lg:hidden'}
-		/>
 
-		<div class="flex lg:hidden items-center space-x-2">
-			<Button theme="ghost" variant="icon" onclick={() => createCollection()}>
+		<div class="w-full flex lg:hidden items-center justify-between gap-x-2">
+			<UserMenu user={data.user} />
+			<PageTitle
+				small
+				icon="collections"
+				title="Collections"
+				class={isSmHeadingVisible ? 'flex-1' : 'grow flex lg:hidden'}
+			/>
+
+			<Button theme="secondary" variant="icon" onclick={() => createCollection()}>
 				<Plus />
 			</Button>
-			<UserMenu user={data.user} />
 		</div>
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
-		<PageTitle icon="collections" title="Collections" class="hidden lg:flex" />
+		<div class="hidden lg:flex items-center justify-between pb-2">
+			<PageTitle icon="collections" title="Collections" class="hidden lg:flex" />
 
+			<Button class="hidden md:flex" onclick={() => createCollection()}>
+				<Plus />
+				<span> New collection </span>
+			</Button>
+		</div>
 		<div class="space-y-2">
-			<div class="w-full flex justify-between space-x-1 md:space-x-2">
-				<SearchInput placeholder="Find Collection" bind:value={search} />
+			<div class="w-full flex justify-between gap-x-1 md:gap-x-2">
+				<VSelector value={tab} options={TAB_OPTIONS} onchange={(v) => (tab = v)}></VSelector>
 
-				<SortMenu options={sortOptions} bind:value={sort} />
-				<Button class="hidden md:flex" onclick={() => createCollection()}>New</Button>
+				<div class="flex items-center">
+					<ExpandableSearchInput placeholder="Find collection" bind:value={search} />
+					<SortMenu options={sortOptions} bind:value={sort} />
+				</div>
 			</div>
 
 			{#if collections.length > 0}
-				<div class={tm('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2')}>
+				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
 					{#each collections as collection (collection.id)}
 						<CollectionOverview {collection} />
 					{/each}

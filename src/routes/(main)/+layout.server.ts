@@ -18,5 +18,6 @@ export const load: LayoutServerLoad = async (event) => {
 	]);
 
 	const items = tItems.map((item) => ({ ...item, type: 'item' }));
+
 	return { collections, groups, items, user: event.locals.user };
 };

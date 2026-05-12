@@ -3,9 +3,9 @@
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
 	import File from 'lucide-svelte/icons/file';
-	import FolderPlus from 'lucide-svelte/icons/folder-plus';
 	import PackagePlus from 'lucide-svelte/icons/package-plus';
 	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
+	import Plus from 'lucide-svelte/icons/plus';
 	import LibraryBig from 'lucide-svelte/icons/library-big';
 	import Search from 'lucide-svelte/icons/search';
 	import {
@@ -71,7 +71,7 @@
 
 	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
-			if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.shiftKey && e.key === '/')) {
+			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
 				globalSearchModal.open();
 			}
@@ -176,7 +176,7 @@
 
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				<Button theme="secondary" class="grow h-9" onclick={() => createCollection()}>
-					<FolderPlus />
+					<Plus />
 					<span> New collection </span>
 				</Button>
 				<Button
@@ -227,7 +227,7 @@
 			groupState.createGroup({ name: NEW_GROUP_NAME });
 		}}
 	>
-		<FolderPlus />
+		<Plus />
 		<span> New collection </span>
 	</CommandItem>
 
