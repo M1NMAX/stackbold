@@ -184,7 +184,7 @@
 	});
 </script>
 
-<Tooltip triggerBy={id} align="end">View settings</Tooltip>
+<Tooltip triggerBy={id} align="end">Settings</Tooltip>
 <AdaptiveWrapper
 	{id}
 	bind:open={menuState.isOpen}

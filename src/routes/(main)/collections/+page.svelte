@@ -98,10 +98,10 @@
 			</Button>
 		</div>
 		<div class="space-y-2">
-			<div class="w-full flex justify-between gap-x-1 md:gap-x-2">
+			<div class="w-full flex justify-between gap-x-1 lg:gap-x-1.5">
 				<VSelector value={tab} options={TAB_OPTIONS} onchange={(v) => (tab = v)}></VSelector>
 
-				<div class="flex items-center">
+				<div class="flex items-center gap-x-1 lg:gap-x-1.5">
 					<ExpandableSearchInput placeholder="Find collection" bind:value={search} />
 					<SortMenu options={sortOptions} bind:value={sort} />
 				</div>

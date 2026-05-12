@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
-	import { Button } from '$lib/components/base/index.js';
+	import { Button, Tooltip } from '$lib/components/base/index.js';
 	import { ModalState } from '$lib/states/index.js';
 	import { useId } from '$lib/utils/index.js';
 	import { clickOutside, escapeKeydown } from '$lib/actions/index.js';
@@ -15,6 +15,7 @@
 	let { value = $bindable(), placeholder = 'Search' }: Props = $props();
 
 	const id = useId();
+	const btnId = useId();
 	const expandState = new ModalState();
 
 	function handleClose() {
@@ -44,7 +45,10 @@
 </script>
 
 {#if !expandState.isOpen}
-	<Button theme="ghost" variant="icon" onclick={() => expandState.open()}><Search /></Button>
+	<Tooltip triggerBy={btnId} align="end">Search</Tooltip>
+	<Button id={btnId} theme="ghost" variant="icon" onclick={() => expandState.open()}>
+		<Search />
+	</Button>
 {:else}
 	<div
 		use:clickOutside

@@ -310,7 +310,7 @@
 			></textarea>
 		{/if}
 
-		<div class="flex justify-between gap-x-1 md:gap-x-2 mb-0.5">
+		<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
     		<VSelector
                 title="Views"
           		value={view.shortId.toString()}
@@ -322,7 +322,7 @@
           		onchange={onViewChange}
             />
 
-    		<div class="flex items-center">
+    		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
           		<ExpandableSearchInput placeholder="Find item" bind:value={search} />
      			<ViewSettingsMenu {view} />
             </div>
