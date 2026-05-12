@@ -1,3 +1,4 @@
+export * from './date';
 export * from './str';
 export * from './sort';
 export * from './style';
