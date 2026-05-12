@@ -32,6 +32,7 @@ export { default as TabContent } from './tab-content.svelte';
 export { default as TextareaAutosize } from './textarea-autosize.svelte';
 export { default as Toaster } from './toaster.svelte';
 export { default as Tooltip } from './tooltip.svelte';
+export { default as VSelector } from './v-selector.svelte';
 
 //To exports types and snippets
 export * from './button.svelte';
