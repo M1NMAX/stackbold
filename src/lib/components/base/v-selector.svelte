@@ -78,8 +78,8 @@
 			compact={!inline}
 			hoverEffect
 			class={tm(
-				inline ? 'justify-center py-1.5 px-2.5 rounded-md border-2 font-semibold' : '',
-				inline && selected.id == opt.id ? 'bg-secondary' : ''
+				inline ? 'justify-center py-1.5 px-2.5 !rounded-lg border-2 font-semibold' : '',
+				inline && selected.id == opt.id ? 'bg-secondary' : 'lg:text-muted-foreground'
 			)}
 		>
 			{#if opt.icon}

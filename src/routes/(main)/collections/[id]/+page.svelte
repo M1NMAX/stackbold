@@ -17,9 +17,7 @@
 		IconPicker,
 		Shortcut,
 		Tooltip,
-
 		VSelector
-
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
