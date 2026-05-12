@@ -1,8 +1,7 @@
 <script lang="ts">
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
-	import Dna from 'lucide-svelte/icons/dna';
 	import Egg from 'lucide-svelte/icons/egg';
-	import FolderPlus from 'lucide-svelte/icons/folder-plus';
+	import Plus from 'lucide-svelte/icons/plus';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
@@ -20,6 +19,10 @@
 			.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 			.slice(0, 8);
 	});
+
+	async function onclickNewCollection() {
+		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
+	}
 </script>
 
 <svelte:head>
@@ -36,7 +39,21 @@
 	</PageHeader>
 
 	<PageContent>
-		{#if updCollections.length > 0}
+		{#if updCollections.length === 0}
+			<div class="h-full max-w-lg flex flex-col justify-center gap-y-4 mx-auto">
+				<div class="flex flex-col items-center">
+					<Egg class="size-16 fill-primary text-primary" />
+					<p class="text-center text-base font-medium">
+						There has been no recent activity in this account.
+					</p>
+				</div>
+
+				<Button onclick={onclickNewCollection} class="w-full">
+					<Plus />
+					<span> New collection</span>
+				</Button>
+			</div>
+		{:else}
 			<section class="space-y-1">
 				<div class="flex items-centers justify-between">
 					<h2 class="text-lg font-semibold">Recents</h2>
@@ -80,27 +97,6 @@
 					{/each}
 				</div>
 			</section>
-		{:else}
-			<div class="grid grid-cols-1 gap-2 max-w-lg mx-auto">
-				<div class="flex flex-col items-center justify-between py-10">
-					<Egg class="size-16 fill-primary text-primary" />
-
-					<p class="text-xl font-medium">Wow, such empty</p>
-				</div>
-
-				<Button
-					onclick={() => collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true)}
-					class="h-12 w-full"
-				>
-					<FolderPlus />
-					<span> Create Collection</span>
-				</Button>
-
-				<Button href="/templates" theme="secondary" class="h-12 w-full">
-					<Dna />
-					<span> Browser Templates</span>
-				</Button>
-			</div>
 		{/if}
 	</PageContent>
 </PageContainer>
