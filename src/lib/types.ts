@@ -79,6 +79,7 @@ export type SelectOption = {
 
 export type CollectionWithViews = Collection & {
 	views: { shortId: number }[];
+	_count: { items: number };
 };
 
 export type XPropertyOption = PropertyOption & {

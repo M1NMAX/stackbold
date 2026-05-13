@@ -7,7 +7,6 @@ import { ViewType } from '@prisma/client';
 import { capitalizeFirstLetter, omit } from '$lib/utils/index.js';
 import { listObjects, removeObjects } from '$lib/server/minio';
 import type { PropertiesSnapshot, PropertyWithOptions } from '$lib/types.js';
-import type { map } from 'zod/v3';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -26,7 +25,7 @@ export const collections = createTRPCRouter({
 	list: protectedProcedure.query(async ({ ctx: { userId } }) => {
 		return await prisma.collection.findMany({
 			where: { ownerId: userId },
-			include: { views: true },
+			include: { views: { select: { shortId: true } }, _count: { select: { items: true } } },
 			orderBy: { name: 'asc' }
 		});
 	}),
@@ -75,7 +74,7 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 			icon: DEFAULT_COLLECTION_ICON,
 			views: { create: [defaultView] }
 		},
-		include: { views: { select: { shortId: true } } }
+		include: { views: { select: { shortId: true } }, _count: { select: { items: true } } }
 	});
 }
 
@@ -206,7 +205,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 
 		return await tx.collection.findUniqueOrThrow({
 			where: { id: collection.id },
-			include: { views: { select: { shortId: true } } }
+			include: { views: { select: { shortId: true } }, _count: { select: { items: true } } }
 		});
 	});
 }

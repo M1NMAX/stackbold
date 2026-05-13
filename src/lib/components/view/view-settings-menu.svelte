@@ -184,12 +184,15 @@
 	});
 </script>
 
-<Tooltip triggerBy={id} align="end">View settings</Tooltip>
+<Tooltip triggerBy={id} align="end">Settings</Tooltip>
 <AdaptiveWrapper
 	{id}
 	bind:open={menuState.isOpen}
-	triggerClass={buttonVariants({ theme: 'secondary', variant: 'icon' })}
 	floatingAlign="end"
+	triggerClass={buttonVariants({
+		theme: menuState.isOpen ? 'secondary' : 'ghost',
+		variant: 'icon'
+	})}
 >
 	{#snippet trigger()}
 		<Settings />
