@@ -19,8 +19,7 @@
 		},
 		{
 			id: 'favourites',
-			label: 'Favourites',
-			icon: 'star'
+			label: 'Favourites'
 		}
 	];
 
