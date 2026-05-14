@@ -21,8 +21,8 @@
 	{disabled}
 	onclick={() => tabsState.setValue(value)}
 	class={tm(
-		'h-10 grow flex items-center justify-center whitespace-nowrap rounded-t-md px-2 py-1.5 font-semibold transition-all',
-		tabsState.isSelected(value) && 'bg-secondary/70 shadow-sm border-b-2 border-primary'
+		'h-10 lg:h-9 flex items-center justify-center py-1.5 px-2.5 whitespace-nowrap font-semibold border-2 rounded-lg shadow-sm transition-all hover:bg-secondary/70',
+		tabsState.isSelected(value) ? 'bg-secondary' : 'text-muted-foreground'
 	)}
 >
 	{@render children()}

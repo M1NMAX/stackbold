@@ -70,6 +70,10 @@ export const items = createTRPCRouter({
 
 	search: protectedProcedure.query(async ({ ctx: { userId } }) => await listSearchableItem(userId)),
 
+	dashboard: protectedProcedure.query(
+		async ({ ctx: { userId } }) => await listDashboardItem(userId)
+	),
+
 	load: protectedProcedure
 		.input(z.string())
 		.query(({ input }) => prisma.item.findUnique({ where: { id: input } })),
@@ -294,6 +298,15 @@ async function listSearchableItem(userId: string) {
 			updatedAt: true,
 			collection: { select: { id: true, name: true } }
 		}
+	});
+}
+
+async function listDashboardItem(userId: string) {
+	return await prisma.item.findMany({
+		where: { collection: { ownerId: userId } },
+		include: { collection: { select: { id: true, name: true, icon: true } } },
+		orderBy: { createdAt: 'desc' },
+		take: 10
 	});
 }
 

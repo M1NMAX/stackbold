@@ -69,8 +69,9 @@ import FileText from 'lucide-svelte/icons/file-text';
 // Others
 import File from 'lucide-svelte/icons/file';
 import Home from 'lucide-svelte/icons/home';
-import Library from 'lucide-svelte/icons/library';
+import Library from 'lucide-svelte/icons/library-big';
 import Dna from 'lucide-svelte/icons/dna';
+import Gallery from 'lucide-svelte/icons/gallery-vertical-end';
 import Settings from 'lucide-svelte/icons/settings';
 import Search from 'lucide-svelte/icons/search';
 import Shield from 'lucide-svelte/icons/shield';
@@ -165,7 +166,8 @@ export const PAGE_ICONS: IconBundle = {
 	item: File,
 	search: Search,
 	security: Shield,
-	structure: Layout
+	structure: Layout,
+	gallery: Gallery
 };
 
 export const APP_ICONS = {

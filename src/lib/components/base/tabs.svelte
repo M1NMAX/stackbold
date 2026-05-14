@@ -29,7 +29,7 @@
 </script>
 
 <div class={tm('flex flex-col gap-y-1', className)}>
-	<div role="tablist" class={tm('flex rounded-md mb-2 bg-secondary/60', triggersClass)}>
+	<div role="tablist" class={tm('flex gap-x-1 mb-1', triggersClass)}>
 		{@render triggers()}
 	</div>
 

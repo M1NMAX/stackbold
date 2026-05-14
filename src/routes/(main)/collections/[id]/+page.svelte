@@ -13,9 +13,11 @@
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
+		ExpandableSearchInput,
 		IconPicker,
 		Shortcut,
-		Tooltip
+		Tooltip,
+		VSelector
 	} from '$lib/components/base/index.js';
 	import {
 		PageContainer,
@@ -40,8 +42,6 @@
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import {
-		SearchInput,
-		ViewSelector,
 		ViewSettingsMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
@@ -306,20 +306,26 @@
 				value={collection.description}
 				oninput={handleOnInputCollectionDesc}
 				spellcheck={false}
-				class="textarea ghost"
+				class="textarea ghost mb-2"
 			></textarea>
 		{/if}
 
-		<div class="flex justify-between gap-x-1.5 pb-1.5 bg-card">
-			<ViewSelector
-				views={viewState.views}
-				value={view.shortId.toString()}
-				onchange={onViewChange}
-			/>
+		<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
+    		<VSelector
+                title="Views"
+          		value={view.shortId.toString()}
+          		options={viewState.views.map(v => ({
+              		id: v.shortId.toString(),
+              		icon: v.type,
+              		label: v.name,
+          		}))}
+          		onchange={onViewChange}
+            />
 
-			<SearchInput placeholder="Find Item" bind:value={search} />
-
-			<ViewSettingsMenu {view} />
+    		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
+          		<ExpandableSearchInput placeholder="Find item" bind:value={search} />
+     			<ViewSettingsMenu {view} />
+            </div>
 		</div>
 
 		{#if isEmpty || items.length === 0}

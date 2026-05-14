@@ -52,14 +52,14 @@
 <AdaptiveWrapper
 	{id}
 	bind:open={menuState.isOpen}
-	triggerClass={buttonVariants({ theme: 'secondary' })}
 	floatingAlign="end"
+	triggerClass={buttonVariants({
+		theme: menuState.isOpen ? 'secondary' : 'ghost',
+		variant: 'icon'
+	})}
 >
 	{#snippet trigger()}
 		<CurrentIcon />
-		<span class="hidden md:block">
-			{value.label}
-		</span>
 	{/snippet}
 	<MenuTitle title="Sort by" />
 
@@ -70,7 +70,7 @@
 			{@const Icon = SORT_ICONS[joinOptionProperties(option, 1)]}
 			<Label for={optId} compact hoverEffect>
 				<Icon />
-				<span class="grow">{option.label} </span>
+				<span>{option.label} </span>
 				<RadioGroupItem id={optId} value={optValue}></RadioGroupItem>
 			</Label>
 		{/each}

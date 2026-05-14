@@ -2,12 +2,14 @@
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
 	import { Button } from '$lib/components/base/index.js';
+	import { useId } from '$lib/utils/index.js';
 
 	type Props = {
+		id?: string;
 		value?: string;
 		placeholder?: string;
 	};
-	let { value = $bindable(), placeholder = 'Search', ...rest }: Props = $props();
+	let { id = useId(), value = $bindable(), placeholder = 'Search', ...rest }: Props = $props();
 </script>
 
 <div class="relative w-full">
@@ -15,10 +17,11 @@
 		<Search />
 	</div>
 	<input
-		class="input secondary icon-left icon-right !h-9 lg:!h-9"
+		{id}
 		{placeholder}
-		{...rest}
 		bind:value
+		class="input secondary icon-left icon-right !h-9 lg:!h-9"
+		{...rest}
 	/>
 
 	{#if value && value.length > 0}

@@ -27,11 +27,11 @@
 <label
 	for={forProp}
 	class={tm(
-		'grow flex items-center gap-2 lg:gap-x-1.5 px-2 text-base lg:text-sm text-white font-medium select-none',
+		'grow flex items-center gap-2 lg:gap-x-1.5 px-2 text-base lg:text-sm text-secondary-foreground font-medium select-none',
 		'[&_svg]:pointer-events-none [&_svg]:size-5 lg:[&_svg]:size-4 [&_svg]:shrink-0',
 		compact ? 'h-9 lg:h-7 [&>span]:grow' : 'py-0.5',
 		hoverEffect &&
-			'rounded-none lg:rounded-sm hover:bg-secondary hover:text-secondary-foreground cursor-pointer',
+			'transition-colors rounded-none lg:rounded-sm hover:bg-secondary hover:text-secondary-foreground cursor-pointer',
 		className
 	)}
 >
