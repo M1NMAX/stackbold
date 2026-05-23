@@ -35,7 +35,7 @@
 			type="button"
 			theme="ghost"
 			variant="cicon"
-			class="absolute top-1.5 right-1.5"
+			class="absolute top-0.5 lg:top-1.5 right-0.5 lg:right-1.5"
 			onclick={() => (value = '')}
 		>
 			<X />

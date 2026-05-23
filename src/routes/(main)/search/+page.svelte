@@ -1,41 +1,74 @@
 <script lang="ts">
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
 	import Hash from 'lucide-svelte/icons/hash';
-	import { SearchInput } from '$lib/components/base/index.js';
-	import type { Searchable } from '$lib/types';
+	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page';
+	import { Empty, HSeparator, SearchInput } from '$lib/components/base/index.js';
+	import type { SearchableCollection, SearchableCollectionAsOption } from '$lib/types';
 	import { COLLECTION_ICONS } from '$lib/constant/icons.js';
+	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
+	import { applyFilter, escapeRegex, preSearchData, tm, useId } from '$lib/utils/index.js';
+	import { tick } from 'svelte';
+	import { DEBOUNCE_INTERVAL } from '$lib/constant/index.js';
+	import { trpc } from '$lib/trpc/client.js';
+	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import { UserMenu } from '$lib/components/user/index.js';
+	import { getToastState } from '$lib/states/index.js';
 
 	let { data } = $props();
+
+	const toastState = getToastState();
+	const searchInputId = useId();
+	const collectionState = getCollectionState();
+
 	let search = $state('');
+	let result = $state<SearchableCollection[]>([]);
+	let filtered = $state<SearchableCollection[]>([]);
+	let hasFetched = $state(false);
+	let isLoading = $state(false);
 
-	let searchableItems = $derived.by(() => {
-		const collections = data.collections.map(
-			(collection) =>
-				({
-					id: collection.id,
-					name: collection.name,
-					type: 'collection',
-					updatedAt: collection.updatedAt,
-					icon: collection.icon
-				}) as Searchable
-		);
+	$effect(() => {
+		const escaped = escapeRegex(search);
 
-		return collections.concat(data.items);
-	});
-
-	let filtered = $derived.by(() => {
-		const searchTerm = search.toLowerCase() || '';
-
-		return [...searchableItems].filter((item) => item.name.toLowerCase().includes(searchTerm));
-	});
-
-	function getUrl(target: Searchable) {
-		if (target.type === 'collection') {
-			return `/collections/${target.id}`;
-		} else {
-			return `/collections/${target.collection.id}/item/${target.id}`;
+		if (escaped.length < 3) {
+			result = [];
+			filtered = preSearchData(collectionState.collections);
+			hasFetched = false;
+			return;
 		}
-	}
+
+		if (hasFetched) {
+			filtered = applyFilter(result, escaped);
+			return;
+		}
+
+		let cancelled = false;
+		isLoading = true;
+		const timer = setTimeout(async () => {
+			try {
+				const data = await trpc().collections.search.query(escaped);
+				if (cancelled) return;
+
+				result = data;
+				filtered = applyFilter(data, escaped);
+				hasFetched = true;
+			} catch (err) {
+				if (!cancelled) toastState.error();
+			} finally {
+				if (!cancelled) isLoading = false;
+			}
+		}, DEBOUNCE_INTERVAL / 4);
+
+		return () => {
+			cancelled = true;
+			clearTimeout(timer);
+			isLoading = false;
+		};
+	});
+
+	$effect(() => {
+		const inputEl = document.getElementById(searchInputId) as HTMLInputElement;
+		if (!inputEl) return;
+		tick().then(() => inputEl.focus());
+	});
 </script>
 
 <svelte:head>
@@ -44,38 +77,85 @@
 
 <PageContainer>
 	<PageHeader>
-		<h1 class="text-xl font-semibold">{search.length > 0 ? 'Results' : 'Search'}</h1>
+		<SidebarOpenBtn />
+
+		<UserMenu user={data.user} />
+		<PageTitle small icon="search" title="Search" class="grow" />
 	</PageHeader>
 
-	<PageContent class="grow">
-		{#each filtered as item}
-			<a
-				href={getUrl(item)}
-				data-testid="collection-overview"
-				class="flex items-center p-1.5 space-x-2 rounded bg-secondary/40 hover:bg-secondary/60"
-			>
-				{@render searchableElement(item)}
-			</a>
-		{/each}
-	</PageContent>
+	<PageContent>
+		<SearchInput id={searchInputId} bind:value={search} placeholder="Search" />
 
-	<div class="p-2">
-		<SearchInput bind:value={search} placeholder="Search" />
-	</div>
+		{#if isLoading}
+			{@render skeleton()}
+		{:else if filtered.length > 0}
+			{@const isRecent = result.length === 0}
+			<div>
+				<p class="text-sm font-medium px-0.5 pb-0.5">{isRecent ? 'Recents' : 'Results'}</p>
+
+				{#each filtered as collection, i (collection.id)}
+					{#if i !== 0}
+						<HSeparator class="my-0.5" />
+					{/if}
+					{@render option({
+						id: collection.id,
+						name: collection.name,
+						icon: collection.icon,
+						type: 'collection',
+						url: `/collections/${collection.id}?view=${getCollectionView(collection)}`
+					})}
+
+					{#each collection.items as item (item.id)}
+						{@render option({
+							id: item.id,
+							name: item.name,
+							type: 'item',
+							url: `/collections/${collection.id}/item/${item.id}`
+						})}
+					{/each}
+				{/each}
+			</div>
+		{:else}
+			{@const isSearchResult = search.length > 3 && filtered.length === 0}
+			<Empty text={isSearchResult ? 'No results' : 'There has been no recent activity'} />
+		{/if}
+	</PageContent>
 </PageContainer>
 
-{#snippet searchableElement(el: Searchable)}
-	{#if el.type === 'collection'}
-		{@const Icon = COLLECTION_ICONS[el.icon]}
+{#snippet option(opt: SearchableCollectionAsOption)}
+	{#if 'url' in opt}
+		<a
+			href={opt.url}
+			class={tm(
+				'flex items-center py-1.5 px-2 font-medium rounded-sm hover:bg-secondary/70 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0',
+				opt.type === 'item' ? 'pl-4' : ''
+			)}
+		>
+			{#if opt.type === 'item'}
+				<span
+					class="relative flex-shrink-0 w-3 h-5 before:absolute before:left-0 before:-top-2.5 before:bottom-1/2 before:w-2 before:h-full before:border-l before:border-b before:rounded-bl-sm before:border-secondary-foreground"
+				>
+				</span>
+			{/if}
 
-		<Icon class="size-5" />
-		<span> {el.name} </span>
-	{:else}
-		<Hash class="size-5" />
-		<span class="flex flex-col">
-			<span> {el.name} </span>
+			{#if opt.icon}
+				{@const Icon = COLLECTION_ICONS[opt.icon]}
+				<Icon />
+			{:else}
+				<Hash />
+			{/if}
 
-			<span class="text-xs font-medium"> in {el.collection.name} </span>
-		</span>
+			<span class="ml-2"> {opt.name}</span>
+		</a>
 	{/if}
+{/snippet}
+{#snippet skeleton()}
+	<div class="flex flex-col gap-y-2 p-1">
+		{#each { length: 20 } as s}
+			<div class="h-6 w-full flex items-center gap-x-2">
+				<span class="size-5 rounded-md bg-secondary/50"> </span>
+				<span class=" grow h-5 rounded-md bg-secondary/50"> </span>
+			</div>
+		{/each}
+	</div>
 {/snippet}

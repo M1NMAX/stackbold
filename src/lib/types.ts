@@ -58,6 +58,17 @@ export type SelectOption = {
 	theme?: string;
 };
 
+export type SearchableCollectionAsOption =
+	| {
+			id: string;
+			isSelected: boolean;
+			name: string;
+			icon?: string;
+			type: 'collection' | 'item';
+			onclick: () => void;
+	  }
+	| { id: string; name: string; icon?: string; url: string; type: 'collection' | 'item' };
+
 export type SearchableCollection = {
 	id: string;
 	name: string;

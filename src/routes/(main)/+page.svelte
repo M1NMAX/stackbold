@@ -80,7 +80,7 @@
 
 							<h2 class="grow text-base font-semibold text-nowrap truncate">{item.name}</h2>
 
-							<span class="text-xs">
+							<span class="text-xs shrink-0">
 								{timeAgo(item.createdAt)}
 							</span>
 						</a>
