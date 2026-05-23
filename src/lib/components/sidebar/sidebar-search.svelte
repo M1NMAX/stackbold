@@ -3,8 +3,7 @@
 	import CornerDownLeft from 'lucide-svelte/icons/corner-down-left';
 	import Hash from 'lucide-svelte/icons/hash';
 	import type { SearchableCollection } from '$lib/types.js';
-	import { Dialog, Empty, HSeparator, Shortcut } from '$lib/components/base/index.js';
-	import { SearchInput } from '$lib/components/view/index.js';
+	import { Dialog, Empty, HSeparator, SearchInput, Shortcut } from '$lib/components/base/index.js';
 	import { trpc } from '$lib/trpc/client';
 	import { escapeRegex, tm, useId } from '$lib/utils/index.js';
 	import { tick } from 'svelte';

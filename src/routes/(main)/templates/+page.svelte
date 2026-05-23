@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { goto, preloadData, pushState } from '$app/navigation';
-	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
+	import { SortMenu } from '$lib/components/view/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import {
@@ -11,7 +11,7 @@
 		TEMPLATE_PANEL_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils/index.js';
-	import { Button } from '$lib/components/base/index.js';
+	import { Button, SearchInput } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';

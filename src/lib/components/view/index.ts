@@ -1,4 +1,3 @@
-export { default as SearchInput } from './search-input.svelte';
 export { default as SortMenu } from './sort-menu.svelte';
 export { default as SortArrow } from './sort-arrow.svelte';
 export { default as AddView } from './view-add.svelte';

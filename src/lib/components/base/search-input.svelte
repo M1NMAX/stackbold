@@ -34,8 +34,8 @@
 		<Button
 			type="button"
 			theme="ghost"
-			variant="icon"
-			class="absolute inset-y-0 right-0"
+			variant="cicon"
+			class="absolute top-1.5 right-1.5"
 			onclick={() => (value = '')}
 		>
 			<X />
