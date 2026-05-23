@@ -1,11 +1,10 @@
 <script lang="ts">
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
-	import Egg from 'lucide-svelte/icons/egg';
 	import Plus from 'lucide-svelte/icons/plus';
 	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
-	import { Badge, Button, HSeparator } from '$lib/components/base/index.js';
+	import { Badge, Button, Empty, HSeparator } from '$lib/components/base/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { COLLECTION_ICONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 	import { timeAgo } from '$lib/utils/index.js';
@@ -41,12 +40,7 @@
 	<PageContent>
 		{#if updCollections.length === 0}
 			<div class="h-full max-w-lg flex flex-col justify-center gap-y-4 mx-auto">
-				<div class="flex flex-col items-center">
-					<Egg class="size-16 fill-primary text-primary" />
-					<p class="text-center text-base font-medium">
-						There has been no recent activity in this account.
-					</p>
-				</div>
+				<Empty icon text="There has been no recent activity in this account" class="h-auto" />
 
 				<Button onclick={onclickNewCollection} class="w-full">
 					<Plus />

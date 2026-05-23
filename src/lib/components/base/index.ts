@@ -12,6 +12,7 @@ export { default as Command } from './command.svelte';
 export { default as CommandItem } from './command-item.svelte';
 export { default as Dialog } from './dialog.svelte';
 export { default as Drawer } from './drawer.svelte';
+export { default as Empty } from './empty.svelte';
 export { default as ExpandableEditor } from './expandable-editor.svelte';
 export { default as ExpandableSearchInput } from './expandable-search-input.svelte';
 export { default as Field } from './field.svelte';
