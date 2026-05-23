@@ -2,14 +2,20 @@
 	import Search from 'lucide-svelte/icons/search';
 	import X from 'lucide-svelte/icons/x';
 	import { Button } from '$lib/components/base/index.js';
-	import { useId } from '$lib/utils/index.js';
+	import { tm, useId } from '$lib/utils/index.js';
+	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	type Props = {
-		id?: string;
-		value?: string;
-		placeholder?: string;
-	};
-	let { id = useId(), value = $bindable(), placeholder = 'Search', ...rest }: Props = $props();
+		variant?: 'secondary' | 'ghost';
+	} & HTMLInputAttributes;
+
+	let {
+		id = useId(),
+		value = $bindable(),
+		placeholder = 'Search',
+		variant = 'secondary',
+		...rest
+	}: Props = $props();
 </script>
 
 <div class="relative w-full">
@@ -20,7 +26,7 @@
 		{id}
 		{placeholder}
 		bind:value
-		class="input secondary icon-left icon-right !h-9 lg:!h-9"
+		class={tm('input icon-left icon-right !h-9 lg:!h-9', variant)}
 		{...rest}
 	/>
 

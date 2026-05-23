@@ -44,25 +44,6 @@ export type UpdOption = RouterInputs['properties']['updateOption'];
 
 export type Filter = { id: string; values: string[] };
 
-export type Searchable =
-	| {
-			id: string;
-			name: string;
-			type: 'collection';
-			updatedAt: Date;
-			icon: string;
-	  }
-	| {
-			id: string;
-			name: string;
-			type: 'item';
-			updatedAt: Date;
-			collection: {
-				id: string;
-				name: string;
-			};
-	  };
-
 export type Align = 'start' | 'center' | 'end';
 export type Placement = 'top' | 'right' | 'bottom' | 'left';
 
@@ -75,6 +56,14 @@ export type SelectOption = {
 	isSelected: boolean;
 	icon?: string;
 	theme?: string;
+};
+
+export type SearchableCollection = {
+	id: string;
+	name: string;
+	icon: string;
+	views: { shortId: number }[];
+	items: { id: string; name: string }[];
 };
 
 export type CollectionWithViews = Collection & {

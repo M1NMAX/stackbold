@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
-	import File from 'lucide-svelte/icons/file';
 	import PackagePlus from 'lucide-svelte/icons/package-plus';
 	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
 	import Plus from 'lucide-svelte/icons/plus';
@@ -12,16 +11,15 @@
 		SidebarCollection,
 		SidebarGroup,
 		SidebarItem,
+		SidebarSearch,
 		setSidebarState
 	} from '$lib/components/sidebar/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
-	import { goto } from '$app/navigation';
 	import { Button, Command, CommandItem, Shortcut } from '$lib/components/base/index.js';
 	import { ModalState, setMoveCollectionModalState } from '$lib/states/index.js';
 	import { setGroupState } from '$lib/components/group/index.js';
 	import { setCollectionState } from '$lib/components/collection/index.js';
 	import {
-		COLLECTION_ICONS,
 		NEW_COLLECTION_NAME,
 		NEW_GROUP_NAME,
 		PAGE_ICONS,
@@ -32,15 +30,13 @@
 
 	let { data, children } = $props();
 	const user = $derived(data.user);
-	const collections = $derived(data.collections);
-	const items = $derived(data.items);
 
 	let activeUrl = $state<string>('');
 
 	const collectionState = setCollectionState(() => data.collections);
 	const groupState = setGroupState(() => data.groups);
 
-	const globalSearchModal = new ModalState();
+	const searchModal = new ModalState();
 	const moveCollectionModal = setMoveCollectionModalState();
 	const sidebarState = setSidebarState();
 	const favouritesState = new ModalState(true);
@@ -73,7 +69,7 @@
 		function handleKeydown(e: KeyboardEvent) {
 			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
-				globalSearchModal.open();
+				searchModal.open();
 			}
 		}
 
@@ -106,11 +102,7 @@
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				<UserMenu {user} />
-				<Button
-					theme="secondary"
-					class="grow h-8 justify-start"
-					onclick={() => globalSearchModal.open()}
-				>
+				<Button theme="secondary" class="grow h-8 justify-start" onclick={() => searchModal.open()}>
 					<Search />
 					<span class="grow text-left">Search</span>
 
@@ -218,60 +210,7 @@
 	</div>
 </div>
 
-<!-- Search dialog -->
-<Command bind:open={globalSearchModal.isOpen}>
-	<CommandItem
-		value="new collection"
-		onselect={() => {
-			globalSearchModal.close();
-			groupState.createGroup({ name: NEW_GROUP_NAME });
-		}}
-	>
-		<Plus />
-		<span> New collection </span>
-	</CommandItem>
-
-	<CommandItem
-		value="new group"
-		onselect={() => {
-			globalSearchModal.close();
-			createCollection();
-		}}
-	>
-		<PackagePlus />
-		<span> New group </span>
-	</CommandItem>
-	{#each collections as collection}
-		{@const Icon = COLLECTION_ICONS[collection.icon]}
-		<CommandItem
-			value={collection.name}
-			onselect={() => {
-				goto(`/collections/${collection.id}`);
-				globalSearchModal.close();
-			}}
-		>
-			<Icon />
-			<span>{collection.name}</span>
-		</CommandItem>
-	{/each}
-	{#each items as item}
-		{#if item.type === 'item'}
-			<CommandItem
-				value={`${item.collection.name} ${item.name}`}
-				onselect={() => {
-					goto(`/collections/${item.collection.id}?id=${item.id}`);
-					globalSearchModal.close();
-				}}
-			>
-				<File />
-				<span>
-					{item.name}
-					<span class="text-xs font-light"> - {item.collection.name}</span>
-				</span>
-			</CommandItem>
-		{/if}
-	{/each}
-</Command>
+<SidebarSearch bind:open={searchModal.isOpen}></SidebarSearch>
 
 <!-- Move collection dialog -->
 {#if moveCollectionModal.detail}

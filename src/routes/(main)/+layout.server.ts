@@ -11,13 +11,10 @@ export const load: LayoutServerLoad = async (event) => {
 
 	const caller = createCaller(await createContext(event));
 
-	const [groups, collections, tItems] = await Promise.all([
+	const [groups, collections] = await Promise.all([
 		caller.groups.list(),
-		caller.collections.list(),
-		caller.items.search()
+		caller.collections.list()
 	]);
 
-	const items = tItems.map((item) => ({ ...item, type: 'item' }));
-
-	return { collections, groups, items, user: event.locals.user };
+	return { collections, groups, user: event.locals.user };
 };
