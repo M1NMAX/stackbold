@@ -7,7 +7,7 @@
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
 	import { DEFAULT_SORT_OPTIONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
-	import { Button, ExpandableSearchInput, VSelector } from '$lib/components/base/index.js';
+	import { Button, Empty, ExpandableSearchInput, VSelector } from '$lib/components/base/index.js';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
@@ -113,7 +113,7 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="py-10 text-center text-lg font-semibold">No collection found</p>
+				<Empty text="No results " />
 			{/if}
 		</div>
 	</PageContent>

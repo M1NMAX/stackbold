@@ -8,7 +8,7 @@
 	import debounce from 'debounce';
 	import { DEBOUNCE_INTERVAL, MAX_VIEW_NAME_LENGTH } from '$lib/constant/index.js';
 	import type { UpdView } from '$lib/types.js';
-	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
+	import { getDeleteModalState } from '$lib/states/index.js';
 
 	type Props = {
 		view: View;

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { BASE_FIELDS, DEFAULT_COLLECTION_ICON, NAME_FIELD } from '$lib/constant/index.js';
 import { ViewType } from '@prisma/client';
-import { capitalizeFirstLetter, omit } from '$lib/utils/index.js';
+import { capitalizeFirstLetter, escapeRegex, omit } from '$lib/utils/index.js';
 import { listObjects, removeObjects } from '$lib/server/minio';
 import type { PropertiesSnapshot, PropertyWithOptions } from '$lib/types.js';
 
@@ -29,6 +29,11 @@ export const collections = createTRPCRouter({
 			orderBy: { name: 'asc' }
 		});
 	}),
+
+	search: protectedProcedure
+		.input(z.string())
+		.query(async ({ input, ctx: { userId } }) => await searchCollections(userId, input)),
+
 	load: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		return await prisma.collection.findUnique({
 			where: { id: input },
@@ -55,6 +60,30 @@ export const collections = createTRPCRouter({
 		.input(z.string())
 		.mutation(async ({ input, ctx: { userId } }) => deleteCollection(input, userId))
 });
+
+async function searchCollections(userId: string, searchTerm: string) {
+	const escaped = escapeRegex(searchTerm);
+
+	return await prisma.collection.findMany({
+		where: {
+			ownerId: userId,
+			OR: [
+				{ name: { contains: escaped, mode: 'insensitive' } },
+				{ items: { some: { name: { contains: escaped, mode: 'insensitive' } } } }
+			]
+		},
+		select: {
+			id: true,
+			name: true,
+			icon: true,
+			views: { select: { shortId: true } },
+			items: {
+				where: { name: { contains: escaped, mode: 'insensitive' } },
+				select: { id: true, name: true }
+			}
+		}
+	});
+}
 
 async function createCollection(args: z.infer<typeof collectionCreateSchema>, userId: string) {
 	const defaultView = {

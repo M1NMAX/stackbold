@@ -3,7 +3,7 @@ export function timeAgo(date: Date) {
 	const past = new Date(date).getTime();
 	const diff = Math.floor((past - now) / 1000); // negative = past
 
-	const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+	const rtf = new Intl.RelativeTimeFormat('en', { style: 'short', numeric: 'auto' });
 
 	const intervals: [Intl.RelativeTimeFormatUnit, number][] = [
 		['year', 31536000],

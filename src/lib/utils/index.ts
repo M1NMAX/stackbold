@@ -1,3 +1,4 @@
+export * from './collection';
 export * from './date';
 export * from './str';
 export * from './sort';
