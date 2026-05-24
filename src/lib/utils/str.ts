@@ -38,3 +38,7 @@ export function getTRPCErrorMsg(error: unknown) {
 	if (!(error instanceof TRPCClientError)) return null;
 	return error.message;
 }
+
+export function escapeRegex(s: string) {
+	return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

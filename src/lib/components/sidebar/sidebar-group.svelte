@@ -74,7 +74,10 @@
 
 <div class="w-full relative group/cgroup">
 	{#if isRenaming}
-		<div class="px-2">
+		<div class="relative w-full px-2">
+			<div class="input-left-icon">
+				{@render icon()}
+			</div>
 			<input
 				use:clickOutside
 				use:escapeKeydown
@@ -84,7 +87,7 @@
 				name="name"
 				autocomplete="off"
 				value={group.name}
-				class="input"
+				class="input icon-left"
 				maxlength={MAX_GROUP_NAME_LENGTH}
 				onclickoutside={(e) => saveName((e.target as HTMLInputElement).value)}
 				onescapekey={() => (isRenaming = false)}
@@ -95,14 +98,9 @@
 		<button
 			onclick={() => wrapperState.toggle()}
 			aria-expanded={wrapperState.isOpen}
-			class="w-full flex items-center gap-1.5 py-0.5 px-4 hover:bg-secondary/70"
+			class="w-full flex items-center gap-x-1.5 py-0.5 px-4 hover:bg-secondary/70"
 		>
-			<ChevronRight
-				class={tm(
-					'size-4 shrink-0 transition-transform',
-					wrapperState.isOpen ? 'rotate-90' : 'rotate-0'
-				)}
-			/>
+			{@render icon()}
 			<span>
 				{group.name}
 			</span>
@@ -142,3 +140,12 @@
 		</div>
 	{/if}
 </div>
+
+{#snippet icon()}
+	<ChevronRight
+		class={tm(
+			'size-4 shrink-0 transition-transform',
+			wrapperState.isOpen ? 'rotate-90' : 'rotate-0'
+		)}
+	/>
+{/snippet}

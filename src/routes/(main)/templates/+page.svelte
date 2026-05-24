@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { goto, preloadData, pushState } from '$app/navigation';
-	import { SearchInput, SortMenu } from '$lib/components/view/index.js';
+	import { SortMenu } from '$lib/components/view/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import {
@@ -11,13 +11,14 @@
 		TEMPLATE_PANEL_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils/index.js';
-	import { Button } from '$lib/components/base/index.js';
+	import { Button, SearchInput } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
+	import ExpandableSearchInput from '$lib/components/base/expandable-search-input.svelte';
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 	let { data } = $props();
@@ -88,8 +89,9 @@
 		<PageTitle icon="templates" title="Templates" />
 
 		<div class="space-y-2">
-			<div class="w-full flex justify-between space-x-1 md:space-x-2">
-				<SearchInput placeholder="Find Template" bind:value={search} />
+			<div class="w-full flex justify-end gap-x-1 md:gap-x-1.5">
+				<ExpandableSearchInput placeholder="Find template" bind:value={search} />
+
 				<SortMenu options={sortOptions} bind:value={sort} />
 			</div>
 
@@ -100,7 +102,7 @@
 						href={`/templates/${template.id}`}
 						onclick={(e) => clickTemplate(e, template.id)}
 						class={tm(
-							'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary/50 hover:bg-secondary/60 overflow-hidden',
+							'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary/50 hover:bg-secondary/70 overflow-hidden',
 							template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
 						)}
 					>

@@ -68,8 +68,6 @@ const fileUploadSchema = z.object({
 export const items = createTRPCRouter({
 	list: protectedProcedure.input(itemListSchema).query(async ({ input }) => await listItems(input)),
 
-	search: protectedProcedure.query(async ({ ctx: { userId } }) => await listSearchableItem(userId)),
-
 	dashboard: protectedProcedure.query(
 		async ({ ctx: { userId } }) => await listDashboardItem(userId)
 	),
@@ -286,18 +284,6 @@ function sortItems(items: Item[], sorts: Sort[], properties: PropertyWithOptions
 		}
 
 		return 0;
-	});
-}
-
-async function listSearchableItem(userId: string) {
-	return await prisma.item.findMany({
-		where: { collection: { ownerId: userId } },
-		select: {
-			id: true,
-			name: true,
-			updatedAt: true,
-			collection: { select: { id: true, name: true } }
-		}
 	});
 }
 

@@ -81,7 +81,10 @@
 </script>
 
 {#if isRenaming}
-	<div class={tm('py-0.5 pr-0.5', asChild ? 'pl-5' : 'pl-2.5')}>
+	<div class={tm('relative py-0.5 pr-0.5', asChild ? 'pl-5' : 'pl-2.5')}>
+		<div class="input-left-icon">
+			<Icon />
+		</div>
 		<input
 			use:clickOutside
 			use:escapeKeydown
@@ -91,7 +94,7 @@
 			name="name"
 			autocomplete="off"
 			value={collection.name}
-			class="input"
+			class="input icon-left"
 			maxlength={MAX_COLLECTION_NAME_LENGTH}
 			onclickoutside={(e) => saveName((e.target as HTMLInputElement).value)}
 			onescapekey={() => (isRenaming = false)}
