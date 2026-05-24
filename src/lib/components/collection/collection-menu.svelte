@@ -1,18 +1,13 @@
 <script lang="ts">
 	import Copy from 'lucide-svelte/icons/copy';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
 	import Eye from 'lucide-svelte/icons/eye';
 	import EyeOff from 'lucide-svelte/icons/eye-off';
 	import Trash from 'lucide-svelte/icons/trash';
 	import Star from 'lucide-svelte/icons/star';
 	import StarOff from 'lucide-svelte/icons/star-off';
 	import type { Collection } from '@prisma/client';
-	import {
-		getDeleteModalState,
-		getMoveCollectionModalState,
-		ModalState
-	} from '$lib/states/index.js';
+	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { getCollectionState } from './index.js';
 	import {
 		AdaptiveWrapper,
@@ -30,7 +25,6 @@
 	let wrapper = new ModalState();
 
 	const collectionState = getCollectionState();
-	const moveCollectionModal = getMoveCollectionModalState();
 	const deleteModal = getDeleteModalState();
 
 	async function duplicateCollection() {
@@ -62,14 +56,6 @@
 			fun: async () => await collectionState.deleteCollection(collection.id, true)
 		});
 	}
-
-	function moveCollection() {
-		wrapper.close();
-		moveCollectionModal.open({
-			collectionId: collection.id,
-			currentGroupId: collection.groupId
-		});
-	}
 </script>
 
 <AdaptiveWrapper
@@ -99,11 +85,6 @@
 			<EyeOff />
 			<span> Hide description </span>
 		{/if}
-	</Button>
-
-	<Button theme="ghost" variant="menu" onclick={() => moveCollection()}>
-		<CornerUpRight />
-		<span>Move</span>
 	</Button>
 
 	<Button theme="ghost" variant="menu" onclick={() => duplicateCollection()}>
