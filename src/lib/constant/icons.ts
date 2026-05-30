@@ -69,6 +69,7 @@ import FileText from 'lucide-svelte/icons/file-text';
 // Others
 import File from 'lucide-svelte/icons/file';
 import Home from 'lucide-svelte/icons/home';
+import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
 import BrickWallShield from '@lucide/svelte/icons/brick-wall-shield';
 import Library from 'lucide-svelte/icons/library-big';
 import Dna from 'lucide-svelte/icons/dna';
@@ -165,6 +166,7 @@ export const FILE_ICONS: IconBundle = {
 export const PAGE_ICONS: IconBundle = {
 	...COLLECTION_ICONS,
 	home: Home,
+	dashboard: LayoutDashboard,
 	dashboardadmin: BrickWallShield,
 	collections: Library,
 	templates: Dna,

@@ -45,11 +45,15 @@
 	floatingAlign="start"
 	triggerClass={buttonVariants({
 		theme: 'secondary',
-		className: tm('size-9 lg:size-8 p-0.5', className)
+		className: tm('size-9 lg:size-8 p-0.5 rounded-full lg:rounded-sm', className)
 	})}
 >
 	{#snippet trigger()}
-		<img src={avatarUrl} class="h-full w-full object-contain rounded-sm" alt="avatar" />
+		<img
+			src={avatarUrl}
+			class="h-full w-full object-contain rounded-full lg:rounded-sm"
+			alt="avatar"
+		/>
 	{/snippet}
 
 	{#if user.role === 'ADMIN'}

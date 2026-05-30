@@ -79,12 +79,12 @@
 	<PageHeader>
 		<SidebarOpenBtn />
 
-		<UserMenu user={data.user} />
-		<PageTitle small icon="search" title="Search" class="grow" />
+		<PageTitle small title="Search" />
+		<UserMenu user={data.user} class="flex lg:hidden" />
 	</PageHeader>
 
 	<PageContent>
-		<SearchInput id={searchInputId} bind:value={search} placeholder="Search" />
+		<SearchInput id={searchInputId} bind:value={search} placeholder="Find collections and items" />
 
 		{#if isLoading}
 			{@render skeleton()}

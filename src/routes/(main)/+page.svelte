@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ArrowRight from 'lucide-svelte/icons/arrow-right';
 	import Plus from 'lucide-svelte/icons/plus';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page/index.js';
+	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
 	import { Badge, Button, Empty, HSeparator } from '$lib/components/base/index.js';
@@ -29,12 +29,11 @@
 </svelte:head>
 
 <PageContainer>
-	<PageHeader class="justify-start lg:justify-between">
+	<PageHeader>
 		<SidebarOpenBtn />
 
-		<div class="block lg:hidden">
-			<UserMenu user={data.user} />
-		</div>
+		<PageTitle small title="Stackbold" class="flex lg:hidden" />
+		<UserMenu user={data.user} class="flex lg:hidden" />
 	</PageHeader>
 
 	<PageContent>

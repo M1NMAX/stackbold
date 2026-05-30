@@ -73,19 +73,11 @@
 	<PageHeader>
 		<SidebarOpenBtn />
 
-		<div class="w-full flex lg:hidden items-center justify-between gap-x-2">
-			<UserMenu user={data.user} />
-			<PageTitle
-				small
-				icon="collections"
-				title="Collections"
-				class={isSmHeadingVisible ? 'flex-1' : 'grow flex lg:hidden'}
-			/>
-
-			<Button theme="secondary" variant="icon" onclick={() => createCollection()}>
-				<Plus />
-			</Button>
-		</div>
+		<PageTitle small title="Collections" class="flex lg:hidden" />
+		<Button theme="ghost" variant="icon" class="flex lg:hidden" onclick={() => createCollection()}>
+			<Plus />
+		</Button>
+		<UserMenu user={data.user} class="flex lg:hidden" />
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
 		<div class="hidden lg:flex items-center justify-between pb-2">

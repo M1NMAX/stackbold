@@ -42,7 +42,7 @@
 	const favouritesState = new ModalState(true);
 
 	const SIDEBAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Dashboard', url: '/', icon: 'dashboard' },
 		{ label: 'Templates', url: '/templates', icon: 'templates' },
 		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
