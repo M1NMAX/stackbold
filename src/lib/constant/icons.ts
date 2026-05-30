@@ -69,13 +69,18 @@ import FileText from 'lucide-svelte/icons/file-text';
 // Others
 import File from 'lucide-svelte/icons/file';
 import Home from 'lucide-svelte/icons/home';
+import BrickWallShield from '@lucide/svelte/icons/brick-wall-shield';
 import Library from 'lucide-svelte/icons/library-big';
 import Dna from 'lucide-svelte/icons/dna';
 import Gallery from 'lucide-svelte/icons/gallery-vertical-end';
 import Settings from 'lucide-svelte/icons/settings';
+import ShieldCog from '@lucide/svelte/icons/shield-cog';
 import Search from 'lucide-svelte/icons/search';
 import Shield from 'lucide-svelte/icons/shield';
 import Layout from 'lucide-svelte/icons/layout-dashboard';
+import Users from 'lucide-svelte/icons/users';
+import Megaphone from 'lucide-svelte/icons/megaphone';
+import HeartPulse from 'lucide-svelte/icons/heart-pulse';
 
 type IconBundle = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,14 +165,19 @@ export const FILE_ICONS: IconBundle = {
 export const PAGE_ICONS: IconBundle = {
 	...COLLECTION_ICONS,
 	home: Home,
+	dashboardadmin: BrickWallShield,
 	collections: Library,
 	templates: Dna,
 	settings: Settings,
+	settingsadmin: ShieldCog,
 	item: File,
 	search: Search,
 	security: Shield,
 	structure: Layout,
-	gallery: Gallery
+	gallery: Gallery,
+	users: Users,
+	release: Megaphone,
+	pulse: HeartPulse
 };
 
 export const APP_ICONS = {
