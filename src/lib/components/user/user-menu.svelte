@@ -1,10 +1,11 @@
 <script lang="ts">
-	import Lock from 'lucide-svelte/icons/lock';
-	import LogOut from 'lucide-svelte/icons/log-out';
-	import Moon from 'lucide-svelte/icons/moon';
-	import Settings from 'lucide-svelte/icons/settings';
-	import SunDim from 'lucide-svelte/icons/sun-dim';
-	import SunMoon from 'lucide-svelte/icons/sun-moon';
+	import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
+	import BrickWallShield from '@lucide/svelte/icons/brick-wall-shield';
+	import LogOut from '@lucide/svelte/icons/log-out';
+	import Moon from '@lucide/svelte/icons/moon';
+	import Settings from '@lucide/svelte/icons/settings';
+	import SunDim from '@lucide/svelte/icons/sun-dim';
+	import SunMoon from '@lucide/svelte/icons/sun-moon';
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
@@ -20,12 +21,15 @@
 	} from '$lib/components/base/index.js';
 	import { ModalState } from '$lib/states/index.js';
 	import { slide } from 'svelte/transition';
+	import { tm } from '$lib/utils/index.js';
 
 	type Props = {
 		user: User;
+		inAdmin?: boolean;
+		class?: string;
 	};
 
-	let { user }: Props = $props();
+	let { user, inAdmin = false, class: className }: Props = $props();
 	let avatarUrl = $derived(`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`);
 
 	const modeWrapper = new ModalState();
@@ -41,7 +45,7 @@
 	floatingAlign="start"
 	triggerClass={buttonVariants({
 		theme: 'secondary',
-		className: 'size-9 lg:size-8 p-0.5'
+		className: tm('size-9 lg:size-8 p-0.5', className)
 	})}
 >
 	{#snippet trigger()}
@@ -49,10 +53,17 @@
 	{/snippet}
 
 	{#if user.role === 'ADMIN'}
-		<Button theme="ghost" variant="menu" onclick={() => goto('/admin')}>
-			<Lock class="size-4" />
-			<span>Admin</span>
-		</Button>
+		{#if inAdmin}
+			<Button theme="ghost" variant="menu" onclick={() => goto('/')}>
+				<LayoutDashboard />
+				<span>App</span>
+			</Button>
+		{:else}
+			<Button theme="ghost" variant="menu" onclick={() => goto('/admin')}>
+				<BrickWallShield />
+				<span>Admin</span>
+			</Button>
+		{/if}
 		<HSeparator />
 	{/if}
 
@@ -66,19 +77,19 @@
 			<RadioGroup value={$mode ?? 'system'} onchange={handleModeChange} class="w-full">
 				<Label for="light" compact hoverEffect>
 					<SunDim />
-					<span class="grow">Ligh</span>
+					<span>Ligh</span>
 					<RadioGroupItem id="light" value="light" />
 				</Label>
 
 				<Label for="dark" compact hoverEffect>
 					<Moon />
-					<span class="grow"> Dark </span>
+					<span> Dark </span>
 					<RadioGroupItem id="dark" value="dark" />
 				</Label>
 
 				<Label for="system" compact hoverEffect>
 					<SunMoon />
-					<span class="grow">System </span>
+					<span>System </span>
 					<RadioGroupItem id="system" value="system" />
 				</Label>
 			</RadioGroup>

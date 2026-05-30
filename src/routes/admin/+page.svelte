@@ -60,7 +60,7 @@
 	<PageHeader>
 		<SidebarOpenBtn />
 		<PageTitle small icon="dashboardadmin" title="Admin" />
-		<UserMenu user={data.user} class="flex lg:hidden" />
+		<UserMenu inAdmin user={data.user} class="flex lg:hidden" />
 	</PageHeader>
 	<PageContent onscroll={handleScroll}>
 		<div class="flex flex-col gap-y-3">

@@ -46,7 +46,7 @@
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				{#if data.user}
-					<UserMenu user={data.user} />
+					<UserMenu inAdmin user={data.user} />
 				{/if}
 
 				<Button
