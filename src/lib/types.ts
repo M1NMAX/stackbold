@@ -8,6 +8,7 @@ import type {
 	SlideParams,
 	TransitionConfig
 } from 'svelte/transition';
+import type { HEALTH_STATUS } from './constant';
 
 export type Nullable<T> = T | null;
 
@@ -107,3 +108,5 @@ export type ReadableBox<T> = {
 export type WritableBox<T> = ReadableBox<T> & {
 	current: T;
 };
+
+export type HealthStatus = (typeof HEALTH_STATUS)[keyof typeof HEALTH_STATUS];

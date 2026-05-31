@@ -1,5 +1,3 @@
-import { createContext } from '$lib/trpc/context';
-import { createCaller } from '$lib/trpc/router';
 import { redirect } from '@sveltejs/kit';
 import { Role } from '@prisma/client';
 import type { LayoutServerLoad } from './$types';
@@ -11,9 +9,5 @@ export const load: LayoutServerLoad = async (event) => {
 		redirect(302, '/2fa');
 	if (event.locals.user.role !== Role.ADMIN) redirect(302, '/');
 
-	const caller = createCaller(await createContext(event));
-
-	const templates = await caller.templates.list();
-
-	return { templates, user: event.locals.user };
+	return { user: event.locals.user };
 };

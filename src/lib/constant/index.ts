@@ -1,5 +1,5 @@
-import type { Colors } from '$lib/types';
-import { Aggregator, PropertyType } from '@prisma/client';
+import type { Colors, HealthStatus } from '$lib/types';
+import { Aggregator, Color, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
@@ -84,6 +84,12 @@ export const APP_BUCKET = 'app';
 export const DEFAULT_PRESIGNED_URL_UPLOAD_DURATION = 60 * 60;
 export const DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION = 60 * 60;
 
+export const DATABASE_DEGRADED_MS = 200;
+export const STORAGE_DEGRADED_MS = 500;
+
+export const THIRTY_DAY_AGO = 30 * 24 * 60 * 60 * 1000;
+export const SIXTY_DAY_AGO = 30 * 24 * 60 * 60 * 1000;
+
 export const LOCALE = 'en-US';
 export const WEEK_DAYS: { [key: number]: string } = {
 	0: 'Sunday',
@@ -143,3 +149,15 @@ export const NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS: Aggregator[] = [
 ];
 
 export const SLIDE_PARAMS = { delay: 10, duration: 150 };
+
+export const HEALTH_STATUS = {
+	HEALTHY: 'healthy',
+	DEGRADED: 'degraded',
+	UNHEALTHY: 'unheathy'
+} as const;
+
+export const HEALTH_STATUS_COLORS: Record<HealthStatus, Color> = {
+	healthy: Color.GREEN,
+	degraded: Color.YELLOW,
+	unheathy: Color.RED
+};

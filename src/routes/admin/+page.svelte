@@ -4,6 +4,7 @@
 	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
 	import { COLLECTION_ICONS, PAGE_ICONS } from '$lib/constant/icons.js';
+	import { HEALTH_STATUS_COLORS } from '$lib/constant/index.js';
 	import { timeAgo } from '$lib/utils/index.js';
 	import { Color } from '@prisma/client';
 
@@ -19,20 +20,6 @@
 	};
 
 	let { data } = $props();
-
-	let isSmHeadingVisible = $state(false);
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
-	}
-
-	const services = [
-		{ name: 'API', status: 'Healthy', color: Color.GREEN },
-		{ name: 'Database', status: 'Degraded', color: Color.YELLOW },
-		{ name: 'Storage', status: 'Unhealthy', color: Color.RED }
-	];
 
 	const releases = [
 		{
@@ -62,19 +49,19 @@
 		<PageTitle small icon="dashboardadmin" title="Admin" />
 		<UserMenu inAdmin user={data.user} class="flex lg:hidden" />
 	</PageHeader>
-	<PageContent onscroll={handleScroll}>
+	<PageContent>
 		<div class="flex flex-col gap-y-3">
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
 				<Card icon="pulse" title="System">
-					{#each services as svc, i}
+					{#each data.systems as sys, i (sys.name)}
 						<div class="flex items-center justify-between text-sm">
-							<span class="text-muted-foreground">{svc.name}</span>
-							<Badge color={svc.color}>
-								{svc.status}
+							<span class="text-muted-foreground">{sys.name}</span>
+							<Badge color={HEALTH_STATUS_COLORS[sys.status]}>
+								{sys.status}
 							</Badge>
 						</div>
 
-						{#if i + 1 !== services.length}
+						{#if i + 1 !== data.systems.length}
 							<HSeparator class="my-0" />
 						{/if}
 					{/each}
@@ -85,8 +72,8 @@
 						icon: 'users',
 						title: 'Users',
 						counters: [
-							{ label: 'Total', counter: '12,840', grow: '+240 (4%)' },
-							{ label: 'MAU', counter: '9,215', grow: '+40 (1%)' }
+							{ label: 'Total', ...data.users.total },
+							{ label: 'MAU', ...data.users.mau }
 						]
 					})}
 
@@ -94,8 +81,8 @@
 						icon: 'collections',
 						title: 'Collections',
 						counters: [
-							{ label: 'Total', counter: '178', grow: '+20 (2%)' },
-							{ label: 'Avg items', counter: '8875', grow: '+179 (13%)' }
+							{ label: 'Total', ...data.collections.total },
+							{ label: 'Items', ...data.collections.items }
 						]
 					})}
 				</Card>
@@ -151,8 +138,9 @@
 			{content.title}
 		</h2>
 		<div class="grow flex items-center gap-x-8">
-			{@render counter({ label: 'Total', counter: '178', grow: '+20 (2%)' })}
-			{@render counter({ label: 'Avg items', counter: '8875', grow: '+179 (13%)' })}
+			{#each content.counters as c (`${c.label}-${c.counter}`)}
+				{@render counter(c)}
+			{/each}
 		</div>
 	</div>
 {/snippet}
