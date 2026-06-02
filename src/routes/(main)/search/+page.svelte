@@ -78,9 +78,8 @@
 <PageContainer>
 	<PageHeader>
 		<SidebarOpenBtn />
-
-		<PageTitle small title="Search" />
 		<UserMenu user={data.user} class="flex lg:hidden" />
+		<PageTitle small title="Search" />
 	</PageHeader>
 
 	<PageContent>

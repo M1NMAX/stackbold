@@ -30,9 +30,7 @@
 	import { SortMenu } from '$lib/components/view/index.js';
 	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
 	import { Role } from '@prisma/client';
-	import { superForm } from 'sveltekit-superforms/client';
 	import { untrack } from 'svelte';
-	import { invalidate } from '$app/navigation';
 
 	const { data } = $props();
 	const TAB_OPTIONS = [
@@ -71,8 +69,8 @@
 <PageContainer>
 	<PageHeader>
 		<SidebarOpenBtn />
+		<UserMenu inAdmin user={data.user} class="flex lg:hidden" />
 		<PageTitle small title="Users" class="flex lg:hidden" />
-
 		<Button
 			theme="secondary"
 			variant="icon"
@@ -81,7 +79,6 @@
 		>
 			<UserPlus />
 		</Button>
-		<UserMenu inAdmin user={data.user} class="flex lg:hidden" />
 	</PageHeader>
 
 	<PageContent>

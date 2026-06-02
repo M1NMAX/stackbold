@@ -11,7 +11,7 @@
 		TEMPLATE_PANEL_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils/index.js';
-	import { Button, SearchInput } from '$lib/components/base/index.js';
+	import { Button } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
@@ -48,14 +48,6 @@
 		}
 	}
 
-	let isSmHeadingVisible = $state(false);
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
-	}
-
 	function filterTemplates() {
 		const searchTerm = search.toLowerCase() || '';
 
@@ -77,17 +69,13 @@
 			<ChevronLeft />
 		</Button>
 
-		<PageTitle
-			icon="templates"
-			title="Templates"
-			small
-			class={isSmHeadingVisible ? 'flex-1' : 'hidden'}
-		/>
+		<PageTitle title="Templates" small />
 	</PageHeader>
 
-	<PageContent class="pt-8 hd-scroll" onscroll={handleScroll}>
-		<PageTitle icon="templates" title="Templates" />
-
+	<PageContent>
+		<div class="hidden lg:flex items-center justify-between pb-2">
+			<PageTitle icon="templates" title="Templates" />
+		</div>
 		<div class="space-y-2">
 			<div class="w-full flex justify-end gap-x-1 md:gap-x-1.5">
 				<ExpandableSearchInput placeholder="Find template" bind:value={search} />

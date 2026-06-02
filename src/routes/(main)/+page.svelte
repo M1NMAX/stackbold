@@ -32,8 +32,8 @@
 	<PageHeader>
 		<SidebarOpenBtn />
 
-		<PageTitle small title="Stackbold" class="flex lg:hidden" />
 		<UserMenu user={data.user} class="flex lg:hidden" />
+		<PageTitle small title="Stackbold" class="flex lg:hidden" />
 	</PageHeader>
 
 	<PageContent>

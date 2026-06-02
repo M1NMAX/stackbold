@@ -58,12 +58,16 @@
 <PageContainer>
 	<PageHeader>
 		<SidebarOpenBtn />
-
+		<UserMenu user={data.user} class="flex lg:hidden" />
 		<PageTitle small title="Collections" class="flex lg:hidden" />
-		<Button theme="ghost" variant="icon" class="flex lg:hidden" onclick={() => createCollection()}>
+		<Button
+			theme="secondary"
+			variant="icon"
+			class="flex lg:hidden"
+			onclick={() => createCollection()}
+		>
 			<Plus />
 		</Button>
-		<UserMenu user={data.user} class="flex lg:hidden" />
 	</PageHeader>
 	<PageContent>
 		<div class="hidden lg:flex items-center justify-between pb-2">

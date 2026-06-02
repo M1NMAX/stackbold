@@ -46,8 +46,8 @@
 <PageContainer>
 	<PageHeader>
 		<SidebarOpenBtn />
-		<PageTitle small icon="dashboardadmin" title="Admin" />
 		<UserMenu inAdmin user={data.user} class="flex lg:hidden" />
+		<PageTitle small title="Admin" />
 	</PageHeader>
 	<PageContent>
 		<div class="flex flex-col gap-y-3">
