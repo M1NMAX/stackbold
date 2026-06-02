@@ -13,14 +13,8 @@
 	let { data } = $props();
 
 	const TAB_OPTIONS = [
-		{
-			id: 'all',
-			label: 'All'
-		},
-		{
-			id: 'favourites',
-			label: 'Favourites'
-		}
+		{ id: 'all', label: 'All' },
+		{ id: 'favourites', label: 'Favourites' }
 	];
 
 	const SORT_STORAGE_KEY = 'collection-sort';
@@ -29,7 +23,6 @@
 
 	let tab = $state(TAB_OPTIONS[0].id);
 	let sort = $state(sortOptions[0]);
-	let isSmHeadingVisible = $state(false);
 
 	let search = $state('');
 	let collections = $derived.by(() => {
@@ -46,13 +39,6 @@
 
 	async function createCollection() {
 		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
-	}
-
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
 	}
 
 	$effect(() => {
@@ -79,7 +65,7 @@
 		</Button>
 		<UserMenu user={data.user} class="flex lg:hidden" />
 	</PageHeader>
-	<PageContent onscroll={handleScroll}>
+	<PageContent>
 		<div class="hidden lg:flex items-center justify-between pb-2">
 			<PageTitle icon="collections" title="Collections" class="hidden lg:flex" />
 

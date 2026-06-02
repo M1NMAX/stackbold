@@ -67,7 +67,7 @@
 					{/each}
 				</Card>
 
-				<Card class="flex flex-col lg:flex-row gap-y-3 lg:gap-x-2">
+				<Card url="/admin/users" class="flex flex-col lg:flex-row gap-y-3 lg:gap-x-2">
 					{@render cardSection({
 						icon: 'users',
 						title: 'Users',

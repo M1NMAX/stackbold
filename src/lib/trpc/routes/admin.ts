@@ -14,6 +14,7 @@ export const admin = createTRPCRouter({
 	healthSummary: adminProcedure.query(healthSummary),
 	usersSummary: adminProcedure.query(usersSummary),
 	collectionsSummary: adminProcedure.query(collectionsSummary),
+	listUsers: adminProcedure.query(listUsers),
 
 	list: adminProcedure.query(async () => {
 		return await prisma.user.findMany({
@@ -65,6 +66,22 @@ async function usersSummary() {
 			grow: calculateGrow(mau.length, mauPrevPeriod.length)
 		}
 	};
+}
+
+async function listUsers() {
+	return await prisma.user.findMany({
+		select: {
+			name: true,
+			email: true,
+			emailVerified: true,
+			createdAt: true,
+			role: true,
+			_count: { select: { collections: true } },
+			sessions: { select: { updatedAt: true }, distinct: ['userId'] }
+		},
+
+		orderBy: { name: 'asc' }
+	});
 }
 
 async function collectionsSummary() {

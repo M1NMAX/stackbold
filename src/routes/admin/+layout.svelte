@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/base';
 	import { setSidebarState, SidebarItem } from '$lib/components/sidebar';
 	import { UserMenu } from '$lib/components/user/index.js';
@@ -28,6 +29,9 @@
 	function isBottomBarItemActive() {
 		return BOTTOM_BAR_ITEMS.map((item) => item.url).includes(activeUrl);
 	}
+	$effect(() => {
+		activeUrl = page.url.pathname;
+	});
 </script>
 
 <div class="h-dvh w-screen flex flex-col overflow-hidden bg-secondary dark:bg-background">

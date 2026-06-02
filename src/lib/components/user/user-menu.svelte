@@ -12,6 +12,7 @@
 	import type { User } from '$lib/server/user';
 	import {
 		AdaptiveWrapper,
+		Avatar,
 		Button,
 		buttonVariants,
 		HSeparator,
@@ -22,6 +23,7 @@
 	import { ModalState } from '$lib/states/index.js';
 	import { slide } from 'svelte/transition';
 	import { tm } from '$lib/utils/index.js';
+	import { Role } from '@prisma/client';
 
 	type Props = {
 		user: User;
@@ -30,7 +32,6 @@
 	};
 
 	let { user, inAdmin = false, class: className }: Props = $props();
-	let avatarUrl = $derived(`https://api.dicebear.com/7.x/shapes/svg?seed=${user.name}`);
 
 	const modeWrapper = new ModalState();
 
@@ -49,14 +50,10 @@
 	})}
 >
 	{#snippet trigger()}
-		<img
-			src={avatarUrl}
-			class="h-full w-full object-contain rounded-full lg:rounded-sm"
-			alt="avatar"
-		/>
+		<Avatar seed={user.name} class="size-full" />
 	{/snippet}
 
-	{#if user.role === 'ADMIN'}
+	{#if user.role === Role.ADMIN}
 		{#if inAdmin}
 			<Button theme="ghost" variant="menu" onclick={() => goto('/')}>
 				<LayoutDashboard />
