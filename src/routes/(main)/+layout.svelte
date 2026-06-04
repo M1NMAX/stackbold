@@ -102,7 +102,7 @@
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
 				<UserMenu {user} />
-				<Button theme="secondary" class="grow h-8 justify-start" onclick={() => searchModal.open()}>
+				<Button theme="secondary" class="grow justify-start" onclick={() => searchModal.open()}>
 					<Search />
 					<span class="grow text-left">Search</span>
 
@@ -113,7 +113,7 @@
 				</Button>
 				<Button
 					theme="secondary"
-					class="h-8"
+					variant="icon"
 					onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 				>
 					<PanelLeftInactive />

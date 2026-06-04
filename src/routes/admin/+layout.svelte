@@ -49,13 +49,11 @@
 			)}
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
-				{#if data.user}
-					<UserMenu inAdmin user={data.user} />
-				{/if}
+				<UserMenu inAdmin user={data.user} />
 
 				<Button
 					theme="secondary"
-					class="h-8"
+					variant="icon"
 					onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 				>
 					<PanelLeftInactive />

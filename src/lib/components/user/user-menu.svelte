@@ -46,11 +46,11 @@
 	floatingAlign="start"
 	triggerClass={buttonVariants({
 		theme: 'secondary',
-		className: tm('size-9 lg:size-8 p-0.5 rounded-full lg:rounded-sm', className)
+		className: tm('p-0.5 rounded-full lg:rounded-sm', className)
 	})}
 >
 	{#snippet trigger()}
-		<Avatar seed={user.name} class="size-full" />
+		<Avatar seed={user.name} />
 	{/snippet}
 
 	{#if user.role === Role.ADMIN}
