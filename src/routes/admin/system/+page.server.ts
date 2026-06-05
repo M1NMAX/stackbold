@@ -5,12 +5,5 @@ import { createCaller } from '$lib/trpc/router';
 export const load: PageServerLoad = async (event) => {
 	const caller = createCaller(await createContext(event));
 
-	const [system, users, collections, templates] = await Promise.all([
-		caller.admin.systemSummary(),
-		caller.admin.usersSummary(),
-		caller.admin.collectionsSummary(),
-		caller.templates.list()
-	]);
-
-	return { system, users, collections, templates };
+	return { system: await caller.admin.systemSummary() };
 };

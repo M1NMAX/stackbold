@@ -110,3 +110,10 @@ export type WritableBox<T> = ReadableBox<T> & {
 };
 
 export type HealthStatus = (typeof HEALTH_STATUS)[keyof typeof HEALTH_STATUS];
+
+export type ServiceHealth = {
+	name: string;
+	status: HealthStatus;
+	latency: number;
+	error?: string;
+};

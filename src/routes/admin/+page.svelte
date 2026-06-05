@@ -52,16 +52,19 @@
 	<PageContent>
 		<div class="flex flex-col gap-y-3">
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-				<Card icon="pulse" title="System">
-					{#each data.systems as sys, i (sys.name)}
-						<div class="flex items-center justify-between text-sm">
-							<span class="text-muted-foreground">{sys.name}</span>
-							<Badge color={HEALTH_STATUS_COLORS[sys.status]}>
-								{sys.status}
+				<Card url="/admin/system" icon="pulse" title="System">
+					{#each data.system.services as service, i (service.name)}
+						<div class="flex items-center justify-between">
+							<div class="grow font-semibold">
+								<span>{service.name} </span>
+								<span class=" text-xs text-muted-foreground"> {service.latency}ms</span>
+							</div>
+							<Badge color={HEALTH_STATUS_COLORS[service.status]}>
+								{service.status}
 							</Badge>
 						</div>
 
-						{#if i + 1 !== data.systems.length}
+						{#if i + 1 !== data.system.services.length}
 							<HSeparator class="my-0" />
 						{/if}
 					{/each}

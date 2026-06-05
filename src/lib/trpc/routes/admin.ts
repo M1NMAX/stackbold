@@ -8,29 +8,32 @@ import {
 import { removeObject, statObject, uploadObject } from '$lib/server/minio';
 import { prisma } from '$lib/server/prisma';
 import { adminProcedure, createTRPCRouter } from '$lib/trpc/t';
+import type { ServiceHealth } from '$lib/types';
 import { TRPCError } from '@trpc/server';
 
 export const admin = createTRPCRouter({
-	healthSummary: adminProcedure.query(healthSummary),
+	ping: adminProcedure.query(() => ({ pong: true, ts: new Date().toISOString() })),
+	systemSummary: adminProcedure.query(systemSummary),
 	usersSummary: adminProcedure.query(usersSummary),
 	collectionsSummary: adminProcedure.query(collectionsSummary),
-	listUsers: adminProcedure.query(listUsers),
-
-	list: adminProcedure.query(async () => {
-		return await prisma.user.findMany({
-			select: { id: true, name: true, email: true, role: true, emailVerified: true },
-			orderBy: { name: 'asc' }
-		});
-	})
+	listUsers: adminProcedure.query(listUsers)
 });
 
-async function healthSummary() {
+async function systemSummary() {
+	const start = performance.now();
 	const [db, st] = await Promise.allSettled([checkDb(), checkStorage()]);
-	return [
-		{ name: 'App', status: HEALTH_STATUS.HEALTHY },
-		{ name: 'Databse', status: settleServiceStatus(db, DATABASE_DEGRADED_MS) },
-		{ name: 'Storage', status: settleServiceStatus(st, STORAGE_DEGRADED_MS) }
+
+	const services = [
+		{ name: 'App', status: HEALTH_STATUS.HEALTHY, latency: Math.round(performance.now() - start) },
+		{ name: 'Databse', ...settleServiceStatus(db, DATABASE_DEGRADED_MS) },
+		{ name: 'Storage', ...settleServiceStatus(st, STORAGE_DEGRADED_MS) }
 	];
+
+	return {
+		checkedAt: new Date().toISOString(),
+		overall: overallStatus(services),
+		services
+	};
 }
 
 async function usersSummary() {
@@ -153,9 +156,18 @@ function calculateGrow(current: number, previous: number) {
 
 function settleServiceStatus(
 	result: PromiseSettledResult<{ latency: number }>,
-	degradedThresholdMs: number
+	thresholdMs: number
 ) {
-	if (result.status === 'rejected') return HEALTH_STATUS.UNHEALTHY;
-	if (result.value.latency > degradedThresholdMs) return HEALTH_STATUS.DEGRADED;
+	if (result.status === 'rejected') return { status: HEALTH_STATUS.UNHEALTHY, latency: 0 };
+
+	const latency = result.value.latency;
+	if (latency > thresholdMs) return { status: HEALTH_STATUS.DEGRADED, latency };
+
+	return { status: HEALTH_STATUS.HEALTHY, latency };
+}
+
+function overallStatus(services: ServiceHealth[]) {
+	if (services.some((s) => s.status === HEALTH_STATUS.UNHEALTHY)) return HEALTH_STATUS.UNHEALTHY;
+	if (services.some((s) => s.status === HEALTH_STATUS.DEGRADED)) return HEALTH_STATUS.DEGRADED;
 	return HEALTH_STATUS.HEALTHY;
 }

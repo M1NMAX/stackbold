@@ -195,7 +195,7 @@
 			<Field errors={$errors.role}>
 				<Label for="role" name="Role" />
 
-				<RadioGroup value={$form.role} onchange={(v) => ($form.role = v)}>
+				<RadioGroup value={$form.role} onchange={(v) => ($form.role = v as Role)}>
 					{#each Object.values(Role) as role (role)}
 						{@const id = `role-${role}`}
 						<Label for={id} compact hoverEffect>
