@@ -59,7 +59,7 @@
 	</PageHeader>
 	<PageContent>
 		<div class="hidden lg:flex items-center justify-between pb-2">
-			<PageTitle icon="pulse" title="System" />
+			<PageTitle icon="system" title="System" />
 		</div>
 
 		<div class="w-full flex items-center justify-between gap-x-1 md:gap-x-1.5">

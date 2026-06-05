@@ -12,11 +12,10 @@
 	let activeUrl = $state<string>('/admin');
 	const SIDEBAR_ITEMS = [
 		{ label: 'Dashboard', url: '/admin', icon: 'dashboardadmin' },
-		{ label: 'System', url: '/admin/system', icon: 'pulse' },
+		{ label: 'System', url: '/admin/system', icon: 'system' },
 		{ label: 'Users', url: '/admin/users', icon: 'users' },
 		{ label: 'Release', url: '/admin/release', icon: 'release' },
-		{ label: 'Templates', url: '/admin/templates', icon: 'templates' },
-		{ label: 'Settings', url: '/admin/settings', icon: 'settingsadmin' }
+		{ label: 'Templates', url: '/admin/templates', icon: 'templates' }
 	];
 
 	const BOTTOM_BAR_ITEMS = [

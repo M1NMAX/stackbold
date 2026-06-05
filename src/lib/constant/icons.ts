@@ -179,7 +179,7 @@ export const PAGE_ICONS: IconBundle = {
 	gallery: Gallery,
 	users: Users,
 	release: Megaphone,
-	pulse: HeartPulse
+	system: HeartPulse
 };
 
 export const APP_ICONS = {

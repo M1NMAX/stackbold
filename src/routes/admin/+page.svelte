@@ -52,7 +52,7 @@
 	<PageContent>
 		<div class="flex flex-col gap-y-3">
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-				<Card url="/admin/system" icon="pulse" title="System">
+				<Card url="/admin/system" icon="system" title="System">
 					{#each data.system.services as service, i (service.name)}
 						<div class="flex items-center justify-between">
 							<div class="grow font-semibold">
