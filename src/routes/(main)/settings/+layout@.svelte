@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { PageContainer } from '$lib/components/page/index.js';
-
 	let { children } = $props();
 </script>
 
-<PageContainer class="h-dvh">
+<main
+	class="grow h-dvh flex flex-col gap-y-1 rounded-md bg-card text-secondary-foreground overflow-hidden"
+>
 	{@render children()}
-</PageContainer>
+</main>

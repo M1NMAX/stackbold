@@ -16,5 +16,5 @@ export const load: LayoutServerLoad = async (event) => {
 		caller.collections.list()
 	]);
 
-	return { collections, groups, user: event.locals.user };
+	return { collections, groups, user: { ...event.locals.user, inAdmin: false } };
 };

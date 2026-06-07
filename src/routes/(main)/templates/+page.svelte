@@ -1,9 +1,8 @@
 <script lang="ts">
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { SortMenu } from '$lib/components/view/index.js';
-	import { sortFun, type SortOption } from '$lib/utils/sort';
-	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
+	import { sortFun, type SortOption } from '$lib/utils/index.js';
+	import { PageContainer } from '$lib/components/page/index.js';
 	import {
 		COLLECTION_ICONS,
 		DEFAULT_SORT_OPTIONS,
@@ -11,14 +10,12 @@
 		TEMPLATE_PANEL_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils/index.js';
-	import { Button } from '$lib/components/base/index.js';
 	import { getContext } from 'svelte';
 	import { ModalState } from '$lib/states/index.js';
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
-	import ExpandableSearchInput from '$lib/components/base/expandable-search-input.svelte';
+	import { ExpandableSearchInput } from '$lib/components/base/index.js';
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
 	let { data } = $props();
@@ -60,55 +57,39 @@
 	}
 </script>
 
-<svelte:head><title>Templates - Stackbold</title></svelte:head>
+<PageContainer
+	icon="templates"
+	title="Templates"
+	class={tm(templatePanel.isOpen && 'w-0 md:w-1/2')}
+>
+	<div class="w-full flex justify-end gap-x-1 md:gap-x-1.5">
+		<ExpandableSearchInput placeholder="Find template" bind:value={search} />
 
-<PageContainer class={tm(templatePanel.isOpen && 'w-0 md:w-1/2')}>
-	<PageHeader>
-		<SidebarOpenBtn />
-		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
-			<ChevronLeft />
-		</Button>
+		<SortMenu options={sortOptions} bind:value={sort} />
+	</div>
 
-		<PageTitle title="Templates" small />
-	</PageHeader>
-
-	<PageContent>
-		<div class="hidden lg:flex items-center justify-between pb-2">
-			<PageTitle icon="templates" title="Templates" />
-		</div>
-		<div class="space-y-2">
-			<div class="w-full flex justify-end gap-x-1 md:gap-x-1.5">
-				<ExpandableSearchInput placeholder="Find template" bind:value={search} />
-
-				<SortMenu options={sortOptions} bind:value={sort} />
+	{#each templates as template (template.id)}
+		{@const Icon = COLLECTION_ICONS[template.icon]}
+		<a
+			href={`/templates/${template.id}`}
+			onclick={(e) => clickTemplate(e, template.id)}
+			class={tm(
+				'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary/50 hover:bg-secondary/70 overflow-hidden',
+				template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
+			)}
+		>
+			<div class="w-full flex items-center space-x-2">
+				<Icon class="size-5" />
+				<span class="text-lg font-semibold">{template.name}</span>
 			</div>
 
-			<div class="space-y-2">
-				{#each templates as template (template.id)}
-					{@const Icon = COLLECTION_ICONS[template.icon]}
-					<a
-						href={`/templates/${template.id}`}
-						onclick={(e) => clickTemplate(e, template.id)}
-						class={tm(
-							'w-full flex flex-col items-start p-2 space-y-2 rounded bg-secondary/50 hover:bg-secondary/70 overflow-hidden',
-							template.id === active && 'rounded-r-none border-r-2 border-primary bg-secondary/80'
-						)}
-					>
-						<div class="w-full flex items-center space-x-2">
-							<Icon class="size-5" />
-							<span class="text-lg font-semibold">{template.name}</span>
-						</div>
-
-						<p class="">{template.description}</p>
-					</a>
-				{:else}
-					<div class="h-[80px] w-full flex items-center justify-center rounded bg-secondary/40">
-						<p class=" font-semibold text-xl">Template not found</p>
-					</div>
-				{/each}
-			</div>
+			<p class="">{template.description}</p>
+		</a>
+	{:else}
+		<div class="h-[80px] w-full flex items-center justify-center rounded bg-secondary/40">
+			<p class=" font-semibold text-xl">Template not found</p>
 		</div>
-	</PageContent>
+	{/each}
 </PageContainer>
 
 {#if page.state.template}

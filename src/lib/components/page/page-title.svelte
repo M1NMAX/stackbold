@@ -11,7 +11,7 @@
 	let { icon, title, small = false, class: className }: Props = $props();
 </script>
 
-<div class={tm('grow flex items-center gap-x-2 min-w-0 ', className)}>
+<div class={tm('flex items-center gap-x-2 min-w-0 ', className)}>
 	{#if icon}
 		{@const Icon = PAGE_ICONS[icon]}
 

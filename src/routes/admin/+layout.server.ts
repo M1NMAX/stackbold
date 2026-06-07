@@ -9,5 +9,5 @@ export const load: LayoutServerLoad = async (event) => {
 		redirect(302, '/2fa');
 	if (event.locals.user.role !== Role.ADMIN) redirect(302, '/');
 
-	return { user: event.locals.user };
+	return { user: { ...event.locals.user, inAdmin: true } };
 };

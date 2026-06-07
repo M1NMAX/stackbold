@@ -1,16 +1,12 @@
 <script lang="ts">
 	import Plus from 'lucide-svelte/icons/plus';
-	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
+	import { PageContainer } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SortMenu } from '$lib/components/view/index.js';
 	import type { Collection } from '@prisma/client';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
-	import { DEFAULT_SORT_OPTIONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
-	import { UserMenu } from '$lib/components/user/index.js';
+	import { DEFAULT_SORT_OPTIONS, NEW_COLLECTION_NAME, PAGE_ICONS } from '$lib/constant/index.js';
 	import { Button, Empty, ExpandableSearchInput, VSelector } from '$lib/components/base/index.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
-
-	let { data } = $props();
 
 	const TAB_OPTIONS = [
 		{ id: 'all', label: 'All' },
@@ -51,15 +47,8 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Collections - Stackbold</title>
-</svelte:head>
-
-<PageContainer>
-	<PageHeader>
-		<SidebarOpenBtn />
-		<UserMenu user={data.user} class="flex lg:hidden" />
-		<PageTitle small title="Collections" class="flex lg:hidden" />
+<PageContainer icon="collections" title="Collections" isBase>
+	{#snippet topActions()}
 		<Button
 			theme="secondary"
 			variant="icon"
@@ -68,35 +57,35 @@
 		>
 			<Plus />
 		</Button>
-	</PageHeader>
-	<PageContent>
-		<div class="hidden lg:flex items-center justify-between pb-2">
-			<PageTitle icon="collections" title="Collections" class="hidden lg:flex" />
+	{/snippet}
+	{#snippet actionsRow()}
+		{@const Icon = PAGE_ICONS['collections']}
+		<Icon />
 
-			<Button class="hidden md:flex" onclick={() => createCollection()}>
-				<Plus />
-				<span> New collection </span>
-			</Button>
+		<h1 class="grow text-2xl font-semibold">Collections</h1>
+
+		<Button class="hidden md:flex" onclick={() => createCollection()}>
+			<Plus />
+			<span> New collection </span>
+		</Button>
+	{/snippet}
+
+	<div class="w-full flex justify-between gap-x-1 lg:gap-x-1.5">
+		<VSelector value={tab} options={TAB_OPTIONS} onchange={(v) => (tab = v)}></VSelector>
+
+		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
+			<ExpandableSearchInput placeholder="Find collection" bind:value={search} />
+			<SortMenu options={sortOptions} bind:value={sort} />
 		</div>
-		<div class="space-y-2">
-			<div class="w-full flex justify-between gap-x-1 lg:gap-x-1.5">
-				<VSelector value={tab} options={TAB_OPTIONS} onchange={(v) => (tab = v)}></VSelector>
+	</div>
 
-				<div class="flex items-center gap-x-1 lg:gap-x-1.5">
-					<ExpandableSearchInput placeholder="Find collection" bind:value={search} />
-					<SortMenu options={sortOptions} bind:value={sort} />
-				</div>
-			</div>
-
-			{#if collections.length > 0}
-				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-					{#each collections as collection (collection.id)}
-						<CollectionOverview {collection} />
-					{/each}
-				</div>
-			{:else}
-				<Empty text="No results " />
-			{/if}
+	{#if collections.length > 0}
+		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+			{#each collections as collection (collection.id)}
+				<CollectionOverview {collection} />
+			{/each}
 		</div>
-	</PageContent>
+	{:else}
+		<Empty text="No results " />
+	{/if}
 </PageContainer>

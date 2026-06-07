@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { page } from '$app/state';
 	import Boxes from 'lucide-svelte/icons/boxes';
 	import PackagePlus from 'lucide-svelte/icons/package-plus';
@@ -23,13 +23,15 @@
 		NEW_COLLECTION_NAME,
 		NEW_GROUP_NAME,
 		PAGE_ICONS,
-		SLIDE_PARAMS
+		SLIDE_PARAMS,
+		USER_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { slide } from 'svelte/transition';
+	import type { XUser } from '$lib/types.js';
 
 	let { data, children } = $props();
-	const user = $derived(data.user);
+	setContext<XUser>(USER_CTX_KEY, (() => data.user)());
 
 	let activeUrl = $state<string>('');
 
@@ -48,7 +50,7 @@
 	];
 
 	const BOTTOM_BAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Dashboard', url: '/', icon: 'dashboard' },
 		{ label: 'Search', url: '/search', icon: 'search' },
 		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
@@ -101,7 +103,7 @@
 			)}
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
-				<UserMenu {user} />
+				<UserMenu />
 				<Button theme="secondary" class="grow justify-start" onclick={() => searchModal.open()}>
 					<Search />
 					<span class="grow text-left">Search</span>

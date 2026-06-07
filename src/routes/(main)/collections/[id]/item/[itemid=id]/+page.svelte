@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import Copy from 'lucide-svelte/icons/copy';
 	import X from 'lucide-svelte/icons/x';
 	import Ellipsis from 'lucide-svelte/icons/ellipsis';
@@ -14,13 +13,7 @@
 	} from '$lib/components/base/index.js';
 	import { getItemState } from '$lib/components/item/index.js';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
-	import {
-		PageContainer,
-		PageContent,
-		PageFooter,
-		PageHeader,
-		PageTitle
-	} from '$lib/components/page/index.js';
+	import { PageContainer, PageFooter } from '$lib/components/page/index.js';
 	import { getPropertyState, PropertyInput } from '$lib/components/property/index.js';
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
@@ -34,14 +27,12 @@
 	import { getPropertyRefValue, tm } from '$lib/utils/index.js';
 	import type { PropertyRef } from '@prisma/client';
 	import { getViewState } from '$lib/components/view/index.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
-	import { autosizeTextarea, } from '$lib/actions/index.js';
+	import { autosizeTextarea } from '$lib/actions/index.js';
 
 	let { data } = $props();
 
-	let isSmHeadingVisible = $state(false);
-	let isReady = $state(false)
+	let isReady = $state(false);
 	const collectionState = getCollectionState();
 	const viewState = getViewState();
 	const propertyState = getPropertyState();
@@ -59,13 +50,6 @@
 		history.back();
 		itemState.active = null;
 		if (data.insidePanel) panelState.close();
-	}
-
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
 	}
 
 	async function updItem(args: Omit<RouterInputs['items']['update'], 'id'>) {
@@ -116,43 +100,32 @@
 	}
 
 	$effect(() => {
-     	if (!data.insidePanel) {
-        isReady = true;
-        return;
-      }
+		if (!data.insidePanel) {
+			isReady = true;
+			return;
+		}
 
-     const timer = setTimeout(() => {
-     	isReady = true;
-     	}, 100);
+		const timer = setTimeout(() => {
+			isReady = true;
+		}, 100);
 
-      return () => clearTimeout(timer)
-	})
-
+		return () => clearTimeout(timer);
+	});
 </script>
 
-<svelte:head>
-	<title>Collection Item - Stackbold</title>
-</svelte:head>
-
-<PageContainer>
-	<PageHeader
-		class={tm(!isSmHeadingVisible && data.insidePanel ? 'justify-end' : 'justify-between')}
-	>
+<PageContainer title={item ? item.name : ''} sidebar={!data.insidePanel}>
+	{#snippet topActions()}
 		{#if data.insidePanel}
-			<PageTitle
-				small
-				icon="item"
-				title={item.name}
-				class={tm(isSmHeadingVisible ? 'flex-1' : 'hidden')}
-			/>
 			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 				<X />
 			</Button>
 		{:else}
-			<SidebarOpenBtn />
-			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => goBack()}>
-				<ChevronLeft />
-			</Button>
+			{@render menu()}
+		{/if}
+	{/snippet}
+
+	{#snippet breadcrumbs()}
+		{#if !data.insidePanel}
 			<Breadcrumb class="hidden lg:flex">
 				<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
 				<BreadcrumbItem
@@ -162,30 +135,25 @@
 				/>
 				<BreadcrumbItem icon="item" name={item.name} last />
 			</Breadcrumb>
-			<PageTitle
-				icon="item"
-				title={item.name}
-				class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
-				small
-			/>
-
-			{@render menu()}
 		{/if}
-	</PageHeader>
+	{/snippet}
 
-	<PageContent onscroll={handleScroll}>
+	{#snippet actionsRow()}
+		{#key isReady}
+			<textarea
+    			{@attach autosizeTextarea(`item-${item.id}-name`)}
+				name="name"
+				value={item.name}
+				oninput={handleUpdItemName}
+				spellcheck={false}
+				maxlength={MAX_ITEM_NAME_LENGTH}
+				placeholder="Name"
+				class="textarea ghost xl"
+			></textarea>
+		{/key}
+	{/snippet}
 
 	{#key isReady}
-		<textarea
-			{@attach autosizeTextarea(`item-${item.id}-name`)}
-			name="name"
-			value={item.name}
-			oninput={handleUpdItemName}
-			spellcheck={false}
-			maxlength={MAX_ITEM_NAME_LENGTH}
-			placeholder="Name"
-			class="textarea ghost xl"
-		></textarea>
 		{#each propertyState.properties as property}
 			<PropertyInput
 				{property}
@@ -195,10 +163,14 @@
 			/>
 		{/each}
 	{/key}
-	</PageContent>
-	<PageFooter class={tm(data.insidePanel ? 'flex justify-end' : 'hidden')}>
-		{@render menu()}
-	</PageFooter>
+
+	{#snippet footer()}
+		{#if data.insidePanel}
+			<PageFooter class="flex items-center justify-end">
+				{@render menu()}
+			</PageFooter>
+		{/if}
+	{/snippet}
 </PageContainer>
 
 {#snippet menu()}

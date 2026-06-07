@@ -15,9 +15,7 @@
 		RadioGroupItem,
 		VSelector
 	} from '$lib/components/base/index.js';
-	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
-	import { UserMenu } from '$lib/components/user/index.js';
+	import { PageContainer } from '$lib/components/page/index.js';
 	import {
 		capitalizeFirstLetter,
 		pluralize,
@@ -28,7 +26,7 @@
 	} from '$lib/utils/index.js';
 	import { fullDateFormat, getToastState, ModalState } from '$lib/states/index.js';
 	import { SortMenu } from '$lib/components/view/index.js';
-	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
+	import { DEFAULT_SORT_OPTIONS, PAGE_ICONS } from '$lib/constant/index.js';
 	import { Role } from '@prisma/client';
 	import { untrack } from 'svelte';
 
@@ -66,11 +64,8 @@
 	);
 </script>
 
-<PageContainer>
-	<PageHeader>
-		<SidebarOpenBtn />
-		<UserMenu inAdmin user={data.user} class="flex lg:hidden" />
-		<PageTitle small title="Users" class="flex lg:hidden" />
+<PageContainer icon="users" title="Users" isBase>
+	{#snippet topActions()}
 		<Button
 			theme="secondary"
 			variant="icon"
@@ -79,79 +74,76 @@
 		>
 			<UserPlus />
 		</Button>
-	</PageHeader>
+	{/snippet}
+	{#snippet actionsRow()}
+		{@const Icon = PAGE_ICONS['users']}
+		<Icon />
 
-	<PageContent>
-		<div class="hidden lg:flex items-center justify-between pb-2">
-			<PageTitle icon="users" title="Users" class="hidden lg:flex" />
+		<h1 class="grow text-2xl font-semibold">Users</h1>
+		<Button class="hidden md:flex" onclick={() => addUserModal.open()}>
+			<UserPlus />
+			<span> Invite user </span>
+		</Button>
+	{/snippet}
 
-			<Button class="hidden md:flex" onclick={() => addUserModal.open()}>
-				<UserPlus />
-				<span> Invite user </span>
-			</Button>
+	<div class="w-full flex justify-between gap-x-1 lg:gap-x-1.5">
+		<VSelector value={tab} options={TAB_OPTIONS} onchange={(v) => (tab = v)}></VSelector>
+
+		<div class="w-full flex justify-end gap-x-1 md:gap-x-1.5">
+			<ExpandableSearchInput placeholder="Find user" bind:value={search} />
+
+			<SortMenu options={sortOptions} bind:value={sort} />
 		</div>
+	</div>
 
-		<div class="w-full flex justify-betweenust gap-x-1 lg:gap-x-1.5">
-			<VSelector value={tab} options={TAB_OPTIONS} onchange={(v) => (tab = v)}></VSelector>
-
-			<div class="w-full flex justify-end gap-x-1 md:gap-x-1.5">
-				<ExpandableSearchInput placeholder="Find user" bind:value={search} />
-
-				<SortMenu options={sortOptions} bind:value={sort} />
-			</div>
-		</div>
-
-		<div class="space-y-2">
-			{#if users.length > 0}
-				<div class="hidden lg:block">
-					<table class="w-full">
-						<thead>
-							<tr class="p-1 text-sm text-muted-foreground border-b-2 border-secondary">
-								<th class="t-header clickable"> User </th>
-								<th class="t-header"> Collections </th>
-								<th class="t-header"> Joined </th>
-								<th class="t-header"> Last session </th>
-								<th> --- </th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each users as user (user.email)}
-								<tr class="border-b-2 border-secondary hover:bg-muted/40 group">
-									<td class="t-data flex items-center gap-x-3">
-										{@render userDetail(user.name, user.email)}
-									</td>
-									<td> {user._count.collections} </td>
-									<td> {fullDateFormat(user.createdAt)} </td>
-									<td>
-										{user.sessions.length !== 0 ? timeAgo(user.sessions[0].updatedAt) : '---'}
-									</td>
-									<td> <ArrowRight class="size-3.5 group-hover:size-4" /> </td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-
-				<div class="grid lg:hidden grid-cols-1 md:grid-cols-2 gap-y-2.5">
+	{#if users.length > 0}
+		<div class="hidden lg:block">
+			<table class="w-full">
+				<thead>
+					<tr class="p-1 text-sm text-muted-foreground border-b-2 border-secondary">
+						<th class="t-header clickable"> User </th>
+						<th class="t-header"> Collections </th>
+						<th class="t-header"> Joined </th>
+						<th class="t-header"> Last session </th>
+						<th> --- </th>
+					</tr>
+				</thead>
+				<tbody>
 					{#each users as user (user.email)}
-						<Card class="flex flex-row items-center gap-x-3 p-2">
-							{@render userDetail(user.name, user.email)}
-							<div class="flex flex-col justify-end text-xs text-right">
-								<span class="font-semibold">
-									{pluralize(user._count.collections, 'collection', 's')}
-								</span>
-								<span>
-									{user.sessions.length !== 0 ? timeAgo(user.sessions[0].updatedAt) : ''}
-								</span>
-							</div>
-						</Card>
+						<tr class="border-b-2 border-secondary hover:bg-muted/40 group">
+							<td class="t-data flex items-center gap-x-3">
+								{@render userDetail(user.name, user.email)}
+							</td>
+							<td> {user._count.collections} </td>
+							<td> {fullDateFormat(user.createdAt)} </td>
+							<td>
+								{user.sessions.length !== 0 ? timeAgo(user.sessions[0].updatedAt) : '---'}
+							</td>
+							<td> <ArrowRight class="size-3.5 group-hover:size-4" /> </td>
+						</tr>
 					{/each}
-				</div>
-			{:else}
-				<Empty text="No results" />
-			{/if}
+				</tbody>
+			</table>
 		</div>
-	</PageContent>
+
+		<div class="grid lg:hidden grid-cols-1 md:grid-cols-2 gap-y-2.5">
+			{#each users as user (user.email)}
+				<Card class="flex flex-row items-center gap-x-3 p-2">
+					{@render userDetail(user.name, user.email)}
+					<div class="flex flex-col justify-end text-xs text-right">
+						<span class="font-semibold">
+							{pluralize(user._count.collections, 'collection', 's')}
+						</span>
+						<span>
+							{user.sessions.length !== 0 ? timeAgo(user.sessions[0].updatedAt) : ''}
+						</span>
+					</div>
+				</Card>
+			{/each}
+		</div>
+	{:else}
+		<Empty text="No results" />
+	{/if}
 </PageContainer>
 
 <Dialog bind:open={addUserModal.isOpen} title="New user">

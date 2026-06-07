@@ -9,7 +9,7 @@
 	import { mode, setMode } from 'mode-watcher';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import type { User } from '$lib/server/user';
+	import type { XUser } from '$lib/types.js';
 	import {
 		AdaptiveWrapper,
 		Avatar,
@@ -24,14 +24,15 @@
 	import { slide } from 'svelte/transition';
 	import { tm } from '$lib/utils/index.js';
 	import { Role } from '@prisma/client';
+	import { getContext } from 'svelte';
+	import { USER_CTX_KEY } from '$lib/constant/index.js';
 
 	type Props = {
-		user: User;
-		inAdmin?: boolean;
 		class?: string;
 	};
 
-	let { user, inAdmin = false, class: className }: Props = $props();
+	let { class: className }: Props = $props();
+	const user = getContext<XUser>(USER_CTX_KEY);
 
 	const modeWrapper = new ModalState();
 
@@ -46,7 +47,7 @@
 	floatingAlign="start"
 	triggerClass={buttonVariants({
 		theme: 'secondary',
-		className: tm('p-0.5 rounded-full lg:rounded-sm', className)
+		className: tm('p-0.5 rounded-full', className)
 	})}
 >
 	{#snippet trigger()}
@@ -54,7 +55,7 @@
 	{/snippet}
 
 	{#if user.role === Role.ADMIN}
-		{#if inAdmin}
+		{#if user.inAdmin}
 			<Button theme="ghost" variant="menu" onclick={() => goto('/')}>
 				<LayoutDashboard />
 				<span>App</span>

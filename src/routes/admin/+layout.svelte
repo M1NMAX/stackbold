@@ -1,13 +1,17 @@
 <script lang="ts">
+	import PanelLeftInactive from '@lucide/svelte/icons/panel-left-inactive';
+	import type { XUser } from '$lib/types.js';
 	import { page } from '$app/state';
-	import { Button } from '$lib/components/base';
-	import { setSidebarState, SidebarItem } from '$lib/components/sidebar';
+	import { Button } from '$lib/components/base/index.js';
+	import { setSidebarState, SidebarItem } from '$lib/components/sidebar/index.js';
 	import { UserMenu } from '$lib/components/user/index.js';
-	import { PAGE_ICONS } from '$lib/constant';
-	import { tm } from '$lib/utils';
-	import { PanelLeftInactive } from 'lucide-svelte';
+	import { PAGE_ICONS, USER_CTX_KEY } from '$lib/constant/index.js';
+	import { tm } from '$lib/utils/index.js';
+	import { setContext } from 'svelte';
 
 	let { data, children } = $props();
+
+	setContext<XUser>(USER_CTX_KEY, (() => data.user)());
 
 	let activeUrl = $state<string>('/admin');
 	const SIDEBAR_ITEMS = [
@@ -48,7 +52,7 @@
 			)}
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
-				<UserMenu inAdmin user={data.user} />
+				<UserMenu />
 
 				<Button
 					theme="secondary"
