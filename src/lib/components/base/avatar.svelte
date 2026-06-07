@@ -13,5 +13,5 @@
 <img
 	{src}
 	alt="user avatat"
-	class={tm('size-9 lg:size-8 rounded-full lg:rounded-sm object-contain', className)}
+	class={tm('size-9 lg:size-8 rounded-full object-contain', className)}
 />
