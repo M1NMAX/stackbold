@@ -41,7 +41,7 @@
 <RadioGroup
 	{value}
 	{onchange}
-	class={tm('hidden h-9 gap-x-1', showTabBtns ? 'lg:flex' : 'lg:hidden')}
+	class={tm('hidden h-9 gap-x-1.5', showTabBtns ? 'lg:flex' : 'lg:hidden')}
 >
 	{@render content(true)}
 </RadioGroup>
@@ -50,7 +50,10 @@
 	<AdaptiveWrapper
 		bind:open={menuState.isOpen}
 		floatingAlign="start"
-		triggerClass={buttonVariants({ theme: menuState.isOpen ? 'secondary' : 'ghost' })}
+		triggerClass={buttonVariants({
+			theme: 'secondary',
+			class: 'rounded-xl min-w-14'
+		})}
 	>
 		{#snippet trigger()}
 			{#if selected.icon}
@@ -78,8 +81,10 @@
 			compact={!inline}
 			hoverEffect
 			class={tm(
-				inline ? 'justify-center py-1.5 px-2.5 !rounded-lg border-2 font-semibold max-w-xs' : '',
-				inline && selected.id == opt.id ? 'bg-secondary' : 'lg:text-muted-foreground'
+				inline
+					? 'min-w-14 justify-center py-1.5 px-2.5 !rounded-xl border-2 font-semibold max-w-xs'
+					: '',
+				inline && selected.id == opt.id ? 'bg-secondary text-secondary-foreground' : ''
 			)}
 		>
 			{#if opt.icon}
