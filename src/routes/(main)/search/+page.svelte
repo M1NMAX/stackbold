@@ -68,10 +68,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Search - Stackbold</title>
-</svelte:head>
-
 <PageContainer title="Search" isBase>
 	<SearchInput id={searchInputId} bind:value={search} placeholder="Find collections and items" />
 

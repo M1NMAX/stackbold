@@ -14,7 +14,6 @@
 		title: string;
 		children: Snippet;
 		isBase?: boolean;
-		dynamic?: boolean;
 		sidebar?: boolean;
 		breadcrumbs?: Snippet;
 		actionsRow?: Snippet;
@@ -28,7 +27,6 @@
 		title,
 		children,
 		isBase = false,
-		dynamic = true,
 		sidebar = true,
 		breadcrumbs,
 		actionsRow,
@@ -62,6 +60,7 @@
 		<div
 			class={tm(
 				'flex items-center justify-between gap-x-2',
+				isSmHeadingVisible ? 'pb-1 border-b' : '',
 				!sidebar && !isSmHeadingVisible && topActions != null ? 'justify-end' : ''
 			)}
 		>
@@ -89,10 +88,13 @@
 				</Button>
 			{/if}
 
-			{#if isSmHeadingVisible}
+			{#if isBase || isSmHeadingVisible}
 				<h1
 					transition:fly={{ y: -8, duration: ANIMATION_DURATION }}
-					class="grow text-xl font-semibold"
+					class={tm(
+						'grow text-xl font-semibold',
+						isBase && !isSmHeadingVisible ? 'block lg:hidden' : ''
+					)}
 				>
 					{title}
 				</h1>
@@ -106,7 +108,7 @@
 		{#if !isSmHeadingVisible}
 			<div
 				transition:fly={{ y: 8, duration: ANIMATION_DURATION }}
-				class="w-full flex items-center gap-x-2 lg:pb-2 pt-2 lg:pt-4"
+				class={tm('w-full flex items-center gap-x-2 pt-2 lg:pt-4', isBase && 'hidden lg:flex')}
 			>
 				{#if actionsRow}
 					{@render actionsRow()}

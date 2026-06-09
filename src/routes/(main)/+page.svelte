@@ -26,7 +26,7 @@
 	<title>Dashboard - Stackbold</title>
 </svelte:head>
 
-<PageContainer icon="dashboard" title="Dashboard" isBase dynamic={false}>
+<PageContainer icon="dashboard" title="Dashboard" isBase>
 	{#if updCollections.length === 0}
 		<div class="h-full max-w-lg flex flex-col justify-center gap-y-4 mx-auto">
 			<Empty icon text="There has been no recent activity in this account" class="h-auto" />
