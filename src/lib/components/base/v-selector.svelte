@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import {
 		AdaptiveWrapper,
 		buttonVariants,
@@ -51,7 +52,7 @@
 		bind:open={menuState.isOpen}
 		floatingAlign="start"
 		triggerClass={buttonVariants({
-			theme: 'secondary',
+			theme: 'outline',
 			class: 'rounded-xl min-w-14'
 		})}
 	>
@@ -63,6 +64,8 @@
 			<span class="max-w-20 md:max-w-28 text-nowrap text-ellipsis overflow-hidden">
 				{selected.label}
 			</span>
+
+			<ChevronDown class={tm('size-3', menuState.isOpen ? 'rotate-180' : 'rotate-0')} />
 		{/snippet}
 
 		{#if title}
