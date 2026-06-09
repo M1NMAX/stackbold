@@ -3,19 +3,18 @@ import { browser } from '$app/environment';
 
 class SidebarState {
 	KEY = 'sidebarstate';
-	#first = true;
 	#open = $state(false);
 
 	constructor(initial: boolean) {
 		this.#open = initial;
+
+		if (browser) {
+			const saved = localStorage.getItem(this.KEY);
+			if (saved) this.#open = saved === 'true';
+		}
 	}
 
 	get isOpen() {
-		if (!this.#first || !browser) return this.#open;
-
-		const saved = localStorage.getItem(this.KEY);
-		if (saved) this.#open = saved === 'true';
-		this.#first = false;
 		return this.#open;
 	}
 
