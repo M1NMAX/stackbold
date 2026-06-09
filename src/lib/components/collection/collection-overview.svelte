@@ -17,9 +17,9 @@
 <a
 	href="/collections/{collection.id}?view={getCollectionView(collection)}"
 	data-testid="collection-overview"
-	class="flex items-center gap-x-2 p-2 rounded-md bg-secondary/50 hover:bg-secondary/70"
+	class="flex items-center gap-x-2 p-2 rounded-md shadow-lg bg-secondary/50 hover:bg-secondary/70"
 >
-	<Icon class="size-7" />
+	<Icon class="size-6" />
 	<div class="grow flex flex-col">
 		<h2 class="grow text-sm font-semibold text-nowrap truncate">
 			{collection.name}

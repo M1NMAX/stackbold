@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
+	import Dna from '@lucide/svelte/icons/dna';
 	import Plus from '@lucide/svelte/icons/plus';
 	import { PageContainer } from '$lib/components/page/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
@@ -22,10 +23,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Dashboard - Stackbold</title>
-</svelte:head>
-
 <PageContainer icon="dashboard" title="Dashboard" isBase>
 	{#if updCollections.length === 0}
 		<div class="h-full max-w-lg flex flex-col justify-center gap-y-4 mx-auto">
@@ -39,9 +36,9 @@
 	{:else}
 		<section class="space-y-1">
 			<div class="flex items-centers justify-between">
-				<h2 class="text-lg font-semibold">Recents</h2>
+				<h2 class="text-base font-semibold">Recents</h2>
 
-				<Button href="/collections" theme="ghost" variant="icon">
+				<Button href="/collections" theme="ghost" variant="cicon">
 					<ArrowRight />
 				</Button>
 			</div>
@@ -52,8 +49,14 @@
 				{/each}
 			</div>
 		</section>
-		<section class="mt-5 space-y-1">
-			<h2 class="text-lg font-semibold">Recently added items</h2>
+
+		<Button href="/templates" theme="outline" class="w-full mt-1">
+			<Dna />
+			<span class="grow">Browser templates </span>
+			<ArrowRight />
+		</Button>
+		<section class="space-y-1 mt-1 p-1 rounded-md shadow-md bg-secondary/50">
+			<h2 class="px-1 text-base font-semibold">Recently added items</h2>
 
 			<div>
 				{#each data.items as item, i (item.id)}

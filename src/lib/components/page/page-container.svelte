@@ -126,7 +126,7 @@
 	<div
 		{onscroll}
 		class={tm(
-			'h-full w-full flex flex-col gap-y-2 mx-auto py-2 px-2 md:px-4 overflow-x-hidden overflow-y-auto hd-scroll',
+			'h-full w-full flex flex-col gap-y-2 py-2 px-2 md:px-4 mx-auto overflow-x-hidden overflow-y-auto hd-scroll',
 			contentClass
 		)}
 	>
