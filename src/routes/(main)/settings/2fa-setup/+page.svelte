@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { renderSVG } from 'uqr';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import { Breadcrumb, BreadcrumbItem, Button, Label, Field } from '$lib/components/base/index.js';
 	import { PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { getToastState } from '$lib/states/index.js';

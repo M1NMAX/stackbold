@@ -3,8 +3,8 @@
 	import { slide } from 'svelte/transition';
 	import { INPUT_ICONS, SLIDE_PARAMS, VIEW_ICONS } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
-	import ChevronRight from 'lucide-svelte/icons/chevron-right';
-	import Grip from 'lucide-svelte/icons/grip-vertical';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import Grip from '@lucide/svelte/icons/grip-vertical';
 
 	type Props = {
 		icon?: string;

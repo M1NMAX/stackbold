@@ -1,7 +1,8 @@
 <script lang="ts" generics="IsMulti extends boolean = false">
-	import Check from 'lucide-svelte/icons/check';
-	import Search from 'lucide-svelte/icons/search';
-	import X from 'lucide-svelte/icons/x';
+	import Check from '@lucide/svelte/icons/check';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import Search from '@lucide/svelte/icons/search';
+	import X from '@lucide/svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
 	import { APP_ICONS, THEME_COLORS, SCREEN_LG_MEDIA_QUERY } from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
@@ -18,7 +19,6 @@
 	import { tick } from 'svelte';
 	import type { SelectOption } from '$lib/types';
 	import { Color } from '@prisma/client';
-	import { ChevronDown } from 'lucide-svelte';
 
 	type SingleSelect = (option: SelectOption) => void;
 	type MultiSelect = (option: SelectOption[]) => void;

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Trash from 'lucide-svelte/icons/trash';
+	import Trash from '@lucide/svelte/icons/trash';
 	import {
 		DEBOUNCE_INTERVAL,
 		MAX_PROPERTY_OPTION_NAME_LENGTH,

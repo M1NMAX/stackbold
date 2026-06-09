@@ -1,9 +1,9 @@
 <script lang="ts">
-	import CircleAlert from 'lucide-svelte/icons/circle-alert';
-	import CircleCheck from 'lucide-svelte/icons/circle-check';
-	import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
-	import Loader from 'lucide-svelte/icons/loader';
-	import X from 'lucide-svelte/icons/x';
+	import CircleAlert from '@lucide/svelte/icons/circle-alert';
+	import CircleCheck from '@lucide/svelte/icons/circle-check';
+	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+	import Loader from '@lucide/svelte/icons/loader';
+	import X from '@lucide/svelte/icons/x';
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 	import { buttonVariants } from './button.svelte';

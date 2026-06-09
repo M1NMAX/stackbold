@@ -1,87 +1,87 @@
 // Input
-import Calendar from 'lucide-svelte/icons/calendar';
-import SquareCheck from 'lucide-svelte/icons/square-check';
-import SquareSlash from 'lucide-svelte/icons/square-slash';
-import Hash from 'lucide-svelte/icons/hash';
-import Link from 'lucide-svelte/icons/link';
-import List from 'lucide-svelte/icons/list';
-import Text from 'lucide-svelte/icons/text';
-import Logs from 'lucide-svelte/icons/logs';
-import CalendarClock from 'lucide-svelte/icons/calendar-clock';
-import FolderSymlink from 'lucide-svelte/icons/folder-symlink';
-import Combine from 'lucide-svelte/icons/combine';
-import Paperclip from 'lucide-svelte/icons/paperclip';
+import Calendar from '@lucide/svelte/icons/calendar';
+import SquareCheck from '@lucide/svelte/icons/square-check';
+import SquareSlash from '@lucide/svelte/icons/square-slash';
+import Hash from '@lucide/svelte/icons/hash';
+import Link from '@lucide/svelte/icons/link';
+import List from '@lucide/svelte/icons/list';
+import Text from '@lucide/svelte/icons/text';
+import Logs from '@lucide/svelte/icons/logs';
+import CalendarClock from '@lucide/svelte/icons/calendar-clock';
+import FolderSymlink from '@lucide/svelte/icons/folder-symlink';
+import Combine from '@lucide/svelte/icons/combine';
+import Paperclip from '@lucide/svelte/icons/paperclip';
 
 // Theme
-import Moon from 'lucide-svelte/icons/moon';
-import SunDim from 'lucide-svelte/icons/sun-dim';
-import SunMoon from 'lucide-svelte/icons/sun-moon';
+import Moon from '@lucide/svelte/icons/moon';
+import SunDim from '@lucide/svelte/icons/sun-dim';
+import SunMoon from '@lucide/svelte/icons/sun-moon';
 
 // Sort
-import ArrowDownAZ from 'lucide-svelte/icons/arrow-down-az';
-import ArrowDownZA from 'lucide-svelte/icons/arrow-down-za';
-import CalendarArrowDown from 'lucide-svelte/icons/calendar-arrow-down';
-import CalendarArrowUp from 'lucide-svelte/icons/calendar-arrow-up';
-import ClockArrowDown from 'lucide-svelte/icons/clock-arrow-down';
-import ClockArrowUp from 'lucide-svelte/icons/clock-arrow-up';
+import ArrowDownAZ from '@lucide/svelte/icons/arrow-down-az';
+import ArrowDownZA from '@lucide/svelte/icons/arrow-down-za';
+import CalendarArrowDown from '@lucide/svelte/icons/calendar-arrow-down';
+import CalendarArrowUp from '@lucide/svelte/icons/calendar-arrow-up';
+import ClockArrowDown from '@lucide/svelte/icons/clock-arrow-down';
+import ClockArrowUp from '@lucide/svelte/icons/clock-arrow-up';
 
 // Collection
-import Activity from 'lucide-svelte/icons/activity';
-import AlarmClock from 'lucide-svelte/icons/alarm-clock';
-import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
-import Anchor from 'lucide-svelte/icons/anchor';
-import Annoyed from 'lucide-svelte/icons/annoyed';
-import Apple from 'lucide-svelte/icons/apple';
-import Archive from 'lucide-svelte/icons/archive';
-import Armchair from 'lucide-svelte/icons/armchair';
-import Angry from 'lucide-svelte/icons/angry';
-import Axe from 'lucide-svelte/icons/axe';
-import Award from 'lucide-svelte/icons/award';
-import Baby from 'lucide-svelte/icons/baby';
-import Smile from 'lucide-svelte/icons/smile';
-import Heart from 'lucide-svelte/icons/heart';
-import Star from 'lucide-svelte/icons/star';
-import Folder from 'lucide-svelte/icons/folder';
-import Medal from 'lucide-svelte/icons/medal';
-import Backpack from 'lucide-svelte/icons/backpack';
-import Banana from 'lucide-svelte/icons/banana';
-import CalendarDays from 'lucide-svelte/icons/calendar-days';
-import ListTodo from 'lucide-svelte/icons/list-todo';
-import BookOpenCheck from 'lucide-svelte/icons/book-open-check';
-import Clapperboard from 'lucide-svelte/icons/clapperboard';
-import Film from 'lucide-svelte/icons/film';
-import Banknote from 'lucide-svelte/icons/banknote';
-import Landmark from 'lucide-svelte/icons/landmark';
-import Gem from 'lucide-svelte/icons/gem';
-import Wallet from 'lucide-svelte/icons/wallet';
+import Activity from '@lucide/svelte/icons/activity';
+import AlarmClock from '@lucide/svelte/icons/alarm-clock';
+import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+import Anchor from '@lucide/svelte/icons/anchor';
+import Annoyed from '@lucide/svelte/icons/annoyed';
+import Apple from '@lucide/svelte/icons/apple';
+import Archive from '@lucide/svelte/icons/archive';
+import Armchair from '@lucide/svelte/icons/armchair';
+import Angry from '@lucide/svelte/icons/angry';
+import Axe from '@lucide/svelte/icons/axe';
+import Award from '@lucide/svelte/icons/award';
+import Baby from '@lucide/svelte/icons/baby';
+import Smile from '@lucide/svelte/icons/smile';
+import Heart from '@lucide/svelte/icons/heart';
+import Star from '@lucide/svelte/icons/star';
+import Folder from '@lucide/svelte/icons/folder';
+import Medal from '@lucide/svelte/icons/medal';
+import Backpack from '@lucide/svelte/icons/backpack';
+import Banana from '@lucide/svelte/icons/banana';
+import CalendarDays from '@lucide/svelte/icons/calendar-days';
+import ListTodo from '@lucide/svelte/icons/list-todo';
+import BookOpenCheck from '@lucide/svelte/icons/book-open-check';
+import Clapperboard from '@lucide/svelte/icons/clapperboard';
+import Film from '@lucide/svelte/icons/film';
+import Banknote from '@lucide/svelte/icons/banknote';
+import Landmark from '@lucide/svelte/icons/landmark';
+import Gem from '@lucide/svelte/icons/gem';
+import Wallet from '@lucide/svelte/icons/wallet';
 
 //views
-import Kanban from 'lucide-svelte/icons/kanban';
-import StretchHorizontal from 'lucide-svelte/icons/stretch-horizontal';
-import Table from 'lucide-svelte/icons/table';
+import Kanban from '@lucide/svelte/icons/kanban';
+import StretchHorizontal from '@lucide/svelte/icons/stretch-horizontal';
+import Table from '@lucide/svelte/icons/table';
 
 // files
-import FileVolume from 'lucide-svelte/icons/file-volume';
-import FileVideo from 'lucide-svelte/icons/file-video';
-import FileImage from 'lucide-svelte/icons/file-image';
-import FileText from 'lucide-svelte/icons/file-text';
+import FileVolume from '@lucide/svelte/icons/file-volume';
+import FileVideo from '@lucide/svelte/icons/file-video';
+import FileImage from '@lucide/svelte/icons/file-image';
+import FileText from '@lucide/svelte/icons/file-text';
 
 // Others
-import File from 'lucide-svelte/icons/file';
-import Home from 'lucide-svelte/icons/home';
+import File from '@lucide/svelte/icons/file';
+import Home from '@lucide/svelte/icons/home';
 import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
 import BrickWallShield from '@lucide/svelte/icons/brick-wall-shield';
-import Library from 'lucide-svelte/icons/library-big';
-import Dna from 'lucide-svelte/icons/dna';
-import Gallery from 'lucide-svelte/icons/gallery-vertical-end';
-import Settings from 'lucide-svelte/icons/settings';
+import Library from '@lucide/svelte/icons/library-big';
+import Dna from '@lucide/svelte/icons/dna';
+import Gallery from '@lucide/svelte/icons/gallery-vertical-end';
+import Settings from '@lucide/svelte/icons/settings';
 import ShieldCog from '@lucide/svelte/icons/shield-cog';
-import Search from 'lucide-svelte/icons/search';
-import Shield from 'lucide-svelte/icons/shield';
-import Layout from 'lucide-svelte/icons/layout-dashboard';
-import Users from 'lucide-svelte/icons/users';
-import Megaphone from 'lucide-svelte/icons/megaphone';
-import HeartPulse from 'lucide-svelte/icons/heart-pulse';
+import Search from '@lucide/svelte/icons/search';
+import Shield from '@lucide/svelte/icons/shield';
+import Layout from '@lucide/svelte/icons/layout-dashboard';
+import Users from '@lucide/svelte/icons/users';
+import Megaphone from '@lucide/svelte/icons/megaphone';
+import HeartPulse from '@lucide/svelte/icons/heart-pulse';
 
 type IconBundle = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

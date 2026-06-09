@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import Copy from '@lucide/svelte/icons/copy';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import { Breadcrumb, BreadcrumbItem, Button } from '$lib/components/base/index.js';
 	import { PageContent, PageHeader } from '$lib/components/page/index.js';
 	import { browser } from '$app/environment';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ArrowDown from 'lucide-svelte/icons/arrow-down';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import type { Snippet } from 'svelte';
 	import { type Item, type View } from '@prisma/client';
 	import { getItemState, ItemCard } from './index.js';

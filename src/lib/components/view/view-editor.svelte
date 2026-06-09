@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import Trash from 'lucide-svelte/icons/trash';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Trash from '@lucide/svelte/icons/trash';
 	import { capitalizeFirstLetter } from '$lib/utils/index.js';
 	import { ViewType, type View } from '@prisma/client';
 	import { Button, Field, HSeparator, Label, Select } from '$lib/components/base/index.js';

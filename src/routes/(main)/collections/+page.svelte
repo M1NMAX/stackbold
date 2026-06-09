@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Plus from 'lucide-svelte/icons/plus';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { PageContainer } from '$lib/components/page/index.js';
 	import { sortFun, type SortOption } from '$lib/utils/sort';
 	import { SortMenu } from '$lib/components/view/index.js';

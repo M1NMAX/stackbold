@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Menu from 'lucide-svelte/icons/menu';
+	import Menu from '@lucide/svelte/icons/menu';
 	import { getSidebarState } from './index.js';
 	import { Button } from '$lib/components/base/index.js';
 	import { tm } from '$lib/utils/index.js';

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
 	import { page } from '$app/state';
-	import Boxes from 'lucide-svelte/icons/boxes';
-	import PackagePlus from 'lucide-svelte/icons/package-plus';
-	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
-	import Plus from 'lucide-svelte/icons/plus';
-	import LibraryBig from 'lucide-svelte/icons/library-big';
-	import Search from 'lucide-svelte/icons/search';
+	import Boxes from '@lucide/svelte/icons/boxes';
+	import PackagePlus from '@lucide/svelte/icons/package-plus';
+	import PanelLeftInactive from '@lucide/svelte/icons/panel-left-inactive';
+	import Plus from '@lucide/svelte/icons/plus';
+	import LibraryBig from '@lucide/svelte/icons/library-big';
+	import Search from '@lucide/svelte/icons/search';
 	import {
 		SidebarCollection,
 		SidebarGroup,

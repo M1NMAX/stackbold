@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Check from 'lucide-svelte/icons/check';
-	import Square from 'lucide-svelte/icons/square';
+	import Check from '@lucide/svelte/icons/check';
+	import Square from '@lucide/svelte/icons/square';
 
 	type Props = {
 		checked?: boolean;

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import Download from 'lucide-svelte/icons/download';
-	import Plus from 'lucide-svelte/icons/plus';
-	import Trash from 'lucide-svelte/icons/trash';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import Download from '@lucide/svelte/icons/download';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Trash from '@lucide/svelte/icons/trash';
 	import {
 		AdaptiveWrapper,
 		Badge,

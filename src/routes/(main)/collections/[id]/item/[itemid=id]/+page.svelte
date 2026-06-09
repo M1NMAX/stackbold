@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import X from 'lucide-svelte/icons/x';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import Trash from 'lucide-svelte/icons/trash';
+	import Copy from '@lucide/svelte/icons/copy';
+	import X from '@lucide/svelte/icons/x';
+	import Ellipsis from '@lucide/svelte/icons/ellipsis';
+	import Trash from '@lucide/svelte/icons/trash';
 	import {
 		AdaptiveWrapper,
 		Breadcrumb,
