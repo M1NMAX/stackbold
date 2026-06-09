@@ -16,8 +16,8 @@
 	let activeUrl = $state<string>('/admin');
 	const SIDEBAR_ITEMS = [
 		{ label: 'Dashboard', url: '/admin', icon: 'dashboardadmin' },
-		{ label: 'System', url: '/admin/system', icon: 'system' },
 		{ label: 'Users', url: '/admin/users', icon: 'users' },
+		{ label: 'System', url: '/admin/system', icon: 'system' },
 		{ label: 'Release', url: '/admin/release', icon: 'release' },
 		{ label: 'Templates', url: '/admin/templates', icon: 'templates' }
 	];

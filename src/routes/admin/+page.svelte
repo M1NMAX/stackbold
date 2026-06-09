@@ -24,44 +24,15 @@
 			version: 'v0.82.3',
 			date: '2025-05-28',
 			relativeDate: '1 day ago',
-			badgeColor: undefined,
+			badgeColor: Color.GREEN,
 			changes: ['Bulk import via CSV', 'Improved sharing permissions', 'Performance fixes']
-		},
-		{
-			version: 'v0.82.2',
-			date: '2025-05-22',
-			relativeDate: '1 week ago',
-			badgeColor: Color.RED,
-			changes: ['Templates gallery', 'Drag-and-drop reordering', 'Dark mode']
 		}
 	];
 </script>
 
-<svelte:head>
-	<title>Admin - Stackbold</title>
-</svelte:head>
-
 <PageContainer icon="dashboardadmin" title="Admin" isBase>
 	<div class="flex flex-col gap-y-3">
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-			<Card url="/admin/system" icon="system" title="System">
-				{#each data.system.services as service, i (service.name)}
-					<div class="flex items-center justify-between">
-						<div class="grow font-semibold">
-							<span>{service.name} </span>
-							<span class=" text-xs text-muted-foreground"> {service.latency}ms</span>
-						</div>
-						<Badge color={HEALTH_STATUS_COLORS[service.status]}>
-							{service.status}
-						</Badge>
-					</div>
-
-					{#if i + 1 !== data.system.services.length}
-						<HSeparator class="my-0" />
-					{/if}
-				{/each}
-			</Card>
-
 			<Card url="/admin/users" class="flex flex-col lg:flex-row gap-y-3 lg:gap-x-2">
 				{@render cardSection({
 					icon: 'users',
@@ -80,6 +51,23 @@
 						{ label: 'Items', ...data.collections.items }
 					]
 				})}
+			</Card>
+			<Card url="/admin/system" icon="system" title="System">
+				{#each data.system.services as service, i (service.name)}
+					<div class="flex items-center justify-between">
+						<div class="grow font-semibold">
+							<span>{service.name} </span>
+							<span class=" text-xs text-muted-foreground"> {service.latency}ms</span>
+						</div>
+						<Badge color={HEALTH_STATUS_COLORS[service.status]}>
+							{service.status}
+						</Badge>
+					</div>
+
+					{#if i + 1 !== data.system.services.length}
+						<HSeparator class="my-0" />
+					{/if}
+				{/each}
 			</Card>
 		</div>
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
