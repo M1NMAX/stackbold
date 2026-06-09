@@ -33,7 +33,7 @@
 <PageContainer icon="dashboardadmin" title="Admin" isBase>
 	<div class="flex flex-col gap-y-3">
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-			<Card url="/admin/users" class="flex flex-col lg:flex-row gap-y-3 lg:gap-x-2">
+			<Card href="/admin/users" class="flex flex-col lg:flex-row gap-y-3 lg:gap-x-2">
 				{@render cardSection({
 					icon: 'users',
 					title: 'Users',
@@ -52,7 +52,7 @@
 					]
 				})}
 			</Card>
-			<Card url="/admin/system" icon="system" title="System">
+			<Card href="/admin/system" icon="system" title="System">
 				{#each data.system.services as service, i (service.name)}
 					<div class="flex items-center justify-between">
 						<div class="grow font-semibold">
@@ -90,7 +90,7 @@
 				{/each}
 			</Card>
 
-			<Card url="/admin/templates" icon="dna" title="Templates">
+			<Card href="/admin/templates" icon="dna" title="Templates">
 				<div>
 					{#each data.templates as template, i (template.id)}
 						{@const Icon = COLLECTION_ICONS[template.icon]}
