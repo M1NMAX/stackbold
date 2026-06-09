@@ -3,6 +3,7 @@
 	import { getCollectionView } from './index.js';
 	import type { CollectionWithViews } from '$lib/types';
 	import { pluralize } from '$lib/utils/index.js';
+	import { Card } from '$lib/components/base/index.js';
 
 	type Props = {
 		collection: CollectionWithViews;
@@ -14,10 +15,9 @@
 	const items = $derived(collection._count.items);
 </script>
 
-<a
+<Card
 	href="/collections/{collection.id}?view={getCollectionView(collection)}"
-	data-testid="collection-overview"
-	class="flex items-center gap-x-2 p-2 rounded-md shadow-lg bg-secondary/50 hover:bg-secondary/70"
+	class="flex flex-row items-center"
 >
 	<Icon class="size-6" />
 	<div class="grow flex flex-col">
@@ -29,4 +29,4 @@
 			{items === 0 ? 'Empty' : pluralize(items, 'item', 's')}
 		</span>
 	</div>
-</a>
+</Card>

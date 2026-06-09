@@ -19,7 +19,7 @@
 	{href}
 	{onclick}
 	class={tm(
-		'flex flex-col gap-y-2 p-3 border-2 rounded-md shadow-md bg-secondary/50 hover:bg-secondary/70',
+		'flex flex-col gap-2 p-2 border rounded-md shadow-md bg-secondary/50 hover:bg-secondary/70',
 		className
 	)}
 >
