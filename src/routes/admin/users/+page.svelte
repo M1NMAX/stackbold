@@ -128,7 +128,7 @@
 
 		<div class="grid lg:hidden grid-cols-1 md:grid-cols-2 gap-y-2.5">
 			{#each users as user (user.email)}
-				<Card class="flex flex-row items-center gap-x-3 p-2">
+				<Card class="flex flex-row items-center gap-x-3">
 					{@render userDetail(user.name, user.email)}
 					<div class="flex flex-col justify-end text-xs text-right">
 						<span class="font-semibold">
@@ -214,7 +214,7 @@
 		</span>
 		<span class="flex items-center text-sm">
 			{email}
-			<BadgeCheck class="ml-1 size-4 text-primary" />
+			<BadgeCheck class="ml-1 size-4.5 fill-primary text-card" />
 		</span>
 	</div>
 {/snippet}

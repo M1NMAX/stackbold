@@ -4,7 +4,7 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import { PageContainer } from '$lib/components/page/index.js';
 	import { CollectionOverview, getCollectionState } from '$lib/components/collection/index.js';
-	import { Badge, Button, Empty, HSeparator } from '$lib/components/base/index.js';
+	import { Badge, Button, Card, Empty, HSeparator } from '$lib/components/base/index.js';
 	import { COLLECTION_ICONS, NEW_COLLECTION_NAME } from '$lib/constant/index.js';
 	import { timeAgo } from '$lib/utils/index.js';
 
@@ -50,20 +50,23 @@
 			</div>
 		</section>
 
-		<Button href="/templates" theme="outline" class="w-full mt-1">
+		<Card
+			href="/templates"
+			class="flex flex-row items-center justify-between py-1.5 px-2 [&>svg]:size-4"
+		>
 			<Dna />
 			<span class="grow">Browser templates </span>
 			<ArrowRight />
-		</Button>
-		<section class="space-y-1 mt-1 p-1 rounded-md shadow-md bg-secondary/50">
-			<h2 class="px-1 text-base font-semibold">Recently added items</h2>
+		</Card>
 
-			<div>
+		<section class="space-y-1 mt-1">
+			<h2 class="px-1 text-base font-semibold">Recently added items</h2>
+			<div class="space-y-1.5">
 				{#each data.items as item, i (item.id)}
 					{@const Icon = COLLECTION_ICONS[item.collection.icon]}
-					<a
+					<Card
 						href={`/collections/${item.collection.id}/item/${item.id}`}
-						class="flex items-center justify-between gap-x-1 py-1 px-1.5 rounded-sm hover:bg-secondary/70 cursor-pointer"
+						class="flex flex-row items-center justify-between py-1 px-1.5"
 					>
 						<Badge>
 							<Icon />
@@ -75,11 +78,7 @@
 						<span class="text-xs shrink-0">
 							{timeAgo(item.createdAt)}
 						</span>
-					</a>
-
-					{#if i + 1 !== data.items.length}
-						<HSeparator class="my-0.5" />
-					{/if}
+					</Card>
 				{/each}
 			</div>
 		</section>
