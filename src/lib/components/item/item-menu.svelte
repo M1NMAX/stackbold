@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
-	import Trash from 'lucide-svelte/icons/trash';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Ellipsis from '@lucide/svelte/icons/ellipsis';
+	import PanelLeftOpen from '@lucide/svelte/icons/panel-left-open';
+	import Trash from '@lucide/svelte/icons/trash';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { getItemState } from './index.js';
 	import {

@@ -1,5 +1,5 @@
-import type { Colors } from '$lib/types';
-import { Aggregator, PropertyType } from '@prisma/client';
+import type { Colors, HealthStatus } from '$lib/types';
+import { Aggregator, Color, PropertyType } from '@prisma/client';
 
 export * from './icons';
 
@@ -55,6 +55,7 @@ export const DEBOUNCE_INTERVAL = 1000;
 
 export const COLLECTION_PAGE_PANEL_CTX_KEY = Symbol('COLLECTION_PAGE_PANEL_CTX_KEY');
 export const TEMPLATE_PANEL_CTX_KEY = Symbol('TEMPLATE_PANEL_CTX_KEY');
+export const USER_CTX_KEY = Symbol('USER_CTX_KEY');
 export const MAX_VISIBLE_VIEWS_TAB = 3;
 export const MAX_COLLECTION_NAME_LENGTH = 50;
 export const MAX_VIEW_NAME_LENGTH = 50;
@@ -83,6 +84,12 @@ export const NEW_GROUP_NAME = 'New group';
 export const APP_BUCKET = 'app';
 export const DEFAULT_PRESIGNED_URL_UPLOAD_DURATION = 60 * 60;
 export const DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION = 60 * 60;
+
+export const DATABASE_DEGRADED_MS = 200;
+export const STORAGE_DEGRADED_MS = 500;
+
+export const THIRTY_DAY_AGO = 30 * 24 * 60 * 60 * 1000;
+export const SIXTY_DAY_AGO = 30 * 24 * 60 * 60 * 1000;
 
 export const LOCALE = 'en-US';
 export const WEEK_DAYS: { [key: number]: string } = {
@@ -142,4 +149,18 @@ export const NUMBERICAL_PROPERTY_EXCLUSIVE_AGGREGATORS: Aggregator[] = [
 	Aggregator.AVG
 ];
 
-export const SLIDE_PARAMS = { delay: 10, duration: 150 };
+export const ANIMATION_DURATION = 150;
+
+export const SLIDE_PARAMS = { delay: 10, duration: ANIMATION_DURATION };
+
+export const HEALTH_STATUS = {
+	HEALTHY: 'healthy',
+	DEGRADED: 'degraded',
+	UNHEALTHY: 'unheathy'
+} as const;
+
+export const HEALTH_STATUS_COLORS: Record<HealthStatus, Color> = {
+	healthy: Color.GREEN,
+	degraded: Color.YELLOW,
+	unheathy: Color.RED
+};

@@ -24,3 +24,12 @@ export function timeAgo(date: Date) {
 
 	return 'just now';
 }
+
+export function formatIsoTime(iso: string) {
+	return new Date(iso).toLocaleTimeString([], {
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false
+	});
+}

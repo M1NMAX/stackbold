@@ -1,15 +1,15 @@
 <script lang="ts">
-	import type { Icon } from 'lucide-svelte';
-	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
-	import ArrowDown from 'lucide-svelte/icons/arrow-down';
-	import ArrowUp from 'lucide-svelte/icons/arrow-up';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import Eraser from 'lucide-svelte/icons/eraser';
-	import ListCollapse from 'lucide-svelte/icons/list-collapse';
-	import ListFilter from 'lucide-svelte/icons/list-filter';
-	import Settings from 'lucide-svelte/icons/settings-2';
-	import ToggleRight from 'lucide-svelte/icons/toggle-right';
-	import X from 'lucide-svelte/icons/x';
+	import type { LucideIcon } from '@lucide/svelte';
+	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
+	import ArrowUp from '@lucide/svelte/icons/arrow-up';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import Eraser from '@lucide/svelte/icons/eraser';
+	import ListCollapse from '@lucide/svelte/icons/list-collapse';
+	import ListFilter from '@lucide/svelte/icons/list-filter';
+	import Settings from '@lucide/svelte/icons/settings-2';
+	import ToggleRight from '@lucide/svelte/icons/toggle-right';
+	import X from '@lucide/svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
 	import {
 		AdaptiveWrapper,
@@ -69,7 +69,7 @@
 	type MenuItem = {
 		label: string;
 		value: ContentType;
-		icon: typeof Icon;
+		icon: LucideIcon;
 	};
 
 	let { view }: Props = $props();

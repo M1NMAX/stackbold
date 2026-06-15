@@ -1,7 +1,7 @@
 <script lang="ts">
-	import ArrowDown from 'lucide-svelte/icons/arrow-down';
-	import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
-	import ToggleRight from 'lucide-svelte/icons/toggle-right';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
+	import PanelLeftOpen from '@lucide/svelte/icons/panel-left-open';
+	import ToggleRight from '@lucide/svelte/icons/toggle-right';
 	import { aggregatePropertyValue, isPropertyVisible, tm } from '$lib/utils/index.js';
 	import { type Item, PropertyType, type View } from '@prisma/client';
 	import { getItemState, ItemMenu } from './index.js';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import ChevronRight from 'lucide-svelte/icons/chevron-right';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import { slide } from 'svelte/transition';
 	import { box, getAccordionState } from '$lib/states/index.js';
 	import { tm, useId } from '$lib/utils/index.js';

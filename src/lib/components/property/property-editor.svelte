@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import Plus from 'lucide-svelte/icons/plus';
-	import X from 'lucide-svelte/icons/x';
-	import Trash from 'lucide-svelte/icons/trash';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Plus from '@lucide/svelte/icons/plus';
+	import X from '@lucide/svelte/icons/x';
+	import Trash from '@lucide/svelte/icons/trash';
 	import { Aggregator, PropertyType, type Property } from '@prisma/client';
 	import { capitalizeFirstLetter, isPropertyNumerical, tm, useId } from '$lib/utils/index.js';
 	import { getPropertyState, PropertyOption } from './index.js';

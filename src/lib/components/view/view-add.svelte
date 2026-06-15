@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Plus from 'lucide-svelte/icons/plus';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { getViewState, ViewIcon } from './index.js';
 	import { ViewType } from '@prisma/client';
 	import {

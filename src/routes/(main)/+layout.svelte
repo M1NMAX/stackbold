@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 	import { page } from '$app/state';
-	import Boxes from 'lucide-svelte/icons/boxes';
-	import PackagePlus from 'lucide-svelte/icons/package-plus';
-	import PanelLeftInactive from 'lucide-svelte/icons/panel-left-inactive';
-	import Plus from 'lucide-svelte/icons/plus';
-	import LibraryBig from 'lucide-svelte/icons/library-big';
-	import Search from 'lucide-svelte/icons/search';
+	import Boxes from '@lucide/svelte/icons/boxes';
+	import PackagePlus from '@lucide/svelte/icons/package-plus';
+	import PanelLeftInactive from '@lucide/svelte/icons/panel-left-inactive';
+	import Plus from '@lucide/svelte/icons/plus';
+	import LibraryBig from '@lucide/svelte/icons/library-big';
+	import Search from '@lucide/svelte/icons/search';
 	import {
 		SidebarCollection,
 		SidebarGroup,
@@ -23,13 +23,15 @@
 		NEW_COLLECTION_NAME,
 		NEW_GROUP_NAME,
 		PAGE_ICONS,
-		SLIDE_PARAMS
+		SLIDE_PARAMS,
+		USER_CTX_KEY
 	} from '$lib/constant/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import { slide } from 'svelte/transition';
+	import type { XUser } from '$lib/types.js';
 
 	let { data, children } = $props();
-	const user = $derived(data.user);
+	setContext<XUser>(USER_CTX_KEY, (() => data.user)());
 
 	let activeUrl = $state<string>('');
 
@@ -42,13 +44,13 @@
 	const favouritesState = new ModalState(true);
 
 	const SIDEBAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Dashboard', url: '/', icon: 'dashboard' },
 		{ label: 'Templates', url: '/templates', icon: 'templates' },
 		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
 
 	const BOTTOM_BAR_ITEMS = [
-		{ label: 'Home', url: '/', icon: 'home' },
+		{ label: 'Dashboard', url: '/', icon: 'dashboard' },
 		{ label: 'Search', url: '/search', icon: 'search' },
 		{ label: 'Collections', url: '/collections', icon: 'collections' }
 	];
@@ -101,8 +103,8 @@
 			)}
 		>
 			<div class="flex items-start justify-between gap-x-1.5 px-4">
-				<UserMenu {user} />
-				<Button theme="secondary" class="grow h-8 justify-start" onclick={() => searchModal.open()}>
+				<UserMenu />
+				<Button theme="secondary" class="grow justify-start" onclick={() => searchModal.open()}>
 					<Search />
 					<span class="grow text-left">Search</span>
 
@@ -113,7 +115,7 @@
 				</Button>
 				<Button
 					theme="secondary"
-					class="h-8"
+					variant="icon"
 					onclick={() => (sidebarState.isOpen = !sidebarState.isOpen)}
 				>
 					<PanelLeftInactive />

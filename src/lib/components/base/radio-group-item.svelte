@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Check from 'lucide-svelte/icons/check';
+	import Check from '@lucide/svelte/icons/check';
 	import { getRadioGroupState } from '$lib/states/index.js';
 	import { tm } from '$lib/utils/index.js';
 	import type { Snippet } from 'svelte';

@@ -1,4 +1,4 @@
-import type { Collection, Color, Item, Property, PropertyOption } from '@prisma/client';
+import type { Collection, Color, Item, Property, PropertyOption, Role } from '@prisma/client';
 import type { RouterInputs } from '$lib/trpc/router';
 import type {
 	BlurParams,
@@ -8,8 +8,22 @@ import type {
 	SlideParams,
 	TransitionConfig
 } from 'svelte/transition';
+import type { HEALTH_STATUS } from './constant';
 
 export type Nullable<T> = T | null;
+
+export type User = {
+	id: string;
+	email: string;
+	name: string;
+	role: Role;
+	emailVerified: boolean;
+	registered2FA: boolean;
+};
+
+export interface XUser extends User {
+	inAdmin: boolean;
+}
 
 export type Toast =
 	| { id: string; type: 'action'; message: string; action: { label: string; onclick: () => void } }
@@ -106,4 +120,13 @@ export type ReadableBox<T> = {
 
 export type WritableBox<T> = ReadableBox<T> & {
 	current: T;
+};
+
+export type HealthStatus = (typeof HEALTH_STATUS)[keyof typeof HEALTH_STATUS];
+
+export type ServiceHealth = {
+	name: string;
+	status: HealthStatus;
+	latency: number;
+	error?: string;
 };

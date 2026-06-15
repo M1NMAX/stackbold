@@ -1,9 +1,8 @@
 <script lang="ts">
-	import Layout from 'lucide-svelte/icons/layout-dashboard';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import FileMinus from 'lucide-svelte/icons/file-minus';
-	import FolderMinus from 'lucide-svelte/icons/folder-minus';
-	import Plus from 'lucide-svelte/icons/plus';
+	import Layout from '@lucide/svelte/icons/layout-dashboard';
+	import FileMinus from '@lucide/svelte/icons/file-minus';
+	import FolderMinus from '@lucide/svelte/icons/folder-minus';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { Items, getItemState } from '$lib/components/item/index.js';
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
@@ -20,11 +19,7 @@
 		VSelector
 	} from '$lib/components/base/index.js';
 	import {
-		PageContainer,
-		PageContent,
-		PageFooter,
-		PageHeader,
-		PageTitle
+		PageContainer, PageFooter
 	} from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
@@ -45,14 +40,12 @@
 		ViewSettingsMenu,
 		getViewState
 	} from '$lib/components/view/index.js';
-	import { getSidebarState, SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 
 	let { data } = $props();
 
 	const collectionState = getCollectionState();
 	const viewState = getViewState();
 	const itemState = getItemState();
-	const sidebarState = getSidebarState();
 
 	const collection = $derived(collectionState.getCollection(data.cid)!);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
@@ -69,9 +62,7 @@
 	let itemName = $state('');
 	let renameCollectionError = $state<string | null>(null);
 
-	let isSmHeadingVisible = $state(false);
 	let isNewItemInputVisible = $state(false);
-
 
 	type PanelContentType = 'item' | 'structure' | null;
 
@@ -118,14 +109,6 @@
 			collectionId: collection.id
 		});
 		itemName = '';
-	}
-
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-		scrollTop = targetEl.scrollTop;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
 	}
 
 	async function onClickOpenStructure() {
@@ -237,143 +220,130 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{collection && collection.name} - Stackbold</title>
-</svelte:head>
 
-<PageContainer class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
-	<PageHeader class={tm(sidebarState.isOpen && 'lg:justify-end')}>
-		<SidebarOpenBtn />
 
-		<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => history.back()}>
-			<ChevronLeft />
-		</Button>
-
-		<Breadcrumb class="hidden lg:flex">
-			<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
-			<BreadcrumbItem icon={collection.icon} name={collection.name} last />
-		</Breadcrumb>
-
-		<PageTitle
-			small
-			icon={collection.icon}
-			title={collection.name}
-			class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
-		/>
-
-		<div class="flex justify-end items-center gap-x-1.5">
-			<Button
+<PageContainer icon={collection.icon} title={collection ? collection.name : ''}
+    class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
+    {#snippet topActions()}
+        <div class="flex justify-end items-center gap-x-1.5">
+ 			<Button
 				id={`collection-${collection.id}-struct-btn`}
 				theme="secondary"
 				variant="icon"
 				onclick={() => onClickOpenStructure()}
-			>
+ 			>
 				<Layout />
-			</Button>
-			<Tooltip triggerBy={`collection-${collection.id}-struct-btn`} align="end" placement="bottom">
+ 			</Button>
+ 			<Tooltip triggerBy={`collection-${collection.id}-struct-btn`} align="end" placement="bottom">
 				Collection structure
-			</Tooltip>
-			<CollectionMenu {collection} />
-		</div>
-	</PageHeader>
+ 			</Tooltip>
+ 			<CollectionMenu {collection} />
+  		</div>
+    {/snippet}
 
-	<PageContent class="relative" onscroll={handleScroll}>
-		<div class="flex items-center space-x-2">
-			<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
+    {#snippet breadcrumbs()}
+        <Breadcrumb class="hidden lg:flex lg:grow">
+			<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
+			<BreadcrumbItem icon={collection.icon} name={collection.name} last />
+		</Breadcrumb>
+    {/snippet}
 
-			<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
-			<input
-				role="heading"
-				aria-level="1"
-				value={collection.name}
-				type="text"
-				maxlength={MAX_COLLECTION_NAME_LENGTH}
-				oninput={handleOnInputCollectionName}
-				class="grow font-semibold text-2xl md:text-3xl focus:outline-none bg-transparent"
-			/>
-		</div>
-		{#if renameCollectionError}
-			<span class="text-primary"> {renameCollectionError}</span>
-		{/if}
-		{#if !collection.isDescHidden}
-		{@const descriptionId = `collection-${collection.id}-description`}
 
-			<label for={descriptionId} class="sr-only"> Collection description </label>
+    {#snippet actionsRow()}
+        <IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
+		<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+		<input
+			role="heading"
+			aria-level="1"
+			value={collection.name}
+			type="text"
+			maxlength={MAX_COLLECTION_NAME_LENGTH}
+			oninput={handleOnInputCollectionName}
+			class="grow font-semibold text-2xl md:text-3xl focus:outline-none bg-transparent"
+		/>
+    {/snippet}
 
-			<textarea
-    			{@attach autosizeTextarea(descriptionId)}
-				id={descriptionId}
-				value={collection.description}
-				oninput={handleOnInputCollectionDesc}
-				spellcheck={false}
-				class="textarea ghost mb-2"
-			></textarea>
-		{/if}
+	{#if renameCollectionError}
+		<span class="text-primary"> {renameCollectionError}</span>
+	{/if}
+	{#if !collection.isDescHidden}
+    	{@const descriptionId = `collection-${collection.id}-description`}
+		<label for={descriptionId} class="sr-only"> Collection description </label>
+		<textarea
+ 			{@attach autosizeTextarea(descriptionId)}
+			id={descriptionId}
+			value={collection.description}
+			oninput={handleOnInputCollectionDesc}
+			spellcheck={false}
+			class="textarea ghost mb-2"
+		></textarea>
+	{/if}
 
-		<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
-    		<VSelector
-                title="Views"
-          		value={view.shortId.toString()}
-          		options={viewState.views.map(v => ({
-              		id: v.shortId.toString(),
-              		icon: v.type,
-              		label: v.name,
-          		}))}
-          		onchange={onViewChange}
-            />
+	<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
+  		<VSelector
+            title="Views"
+      		value={view.shortId.toString()}
+      		options={viewState.views.map(v => ({
+          		id: v.shortId.toString(),
+          		icon: v.type,
+          		label: v.name,
+      		}))}
+      		onchange={onViewChange}
+        />
 
-    		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
-          		<ExpandableSearchInput placeholder="Find item" bind:value={search} />
-     			<ViewSettingsMenu {view} />
-            </div>
-		</div>
+  		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
+      		<ExpandableSearchInput placeholder="Find item" bind:value={search} />
+ 			<ViewSettingsMenu {view} />
+        </div>
+	</div>
 
-		{#if isEmpty || items.length === 0}
-			{@render noItem()}
-		{:else}
-			<Items
-				{view}
-				{items}
-				scrollTop={isLargeScreen.current ? scrollTop : 0}
-				clickOpenItem={(id) => clickItem(id)}
-			/>
-		{/if}
-	</PageContent>
-	<PageFooter class="flex">
-		{#if isNewItemInputVisible}
-			<form onsubmit={handleCreateItem} class="relative w-full">
-				<div class="input-left-icon">
-					<Plus  />
-				</div>
-				<label for="new-item-name" class="sr-only"> Item name</label>
-				<input
-					bind:value={itemName}
-					use:escapeKeydown
-					id="new-item-name"
-					name="new-item-name"
-					placeholder="New item"
-					autocomplete="off"
-					class="input secondary icon-left !h-10 lg:!h-9"
-					onfocusout={() => shouldCleanNewItemInput()}
-					onescapekey={() => shouldCleanNewItemInput()}
-				/>
-			</form>
-		{:else}
+	{#if isEmpty || items.length === 0}
+		{@render noItem()}
+	{:else}
+		<Items
+			{view}
+			{items}
+			scrollTop={isLargeScreen.current ? scrollTop : 0}
+			clickOpenItem={(id) => clickItem(id)}
+		/>
 
-			<Button
-				theme="secondary"
-				class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
-				onclick={() => (isNewItemInputVisible = true)}
-			>
-				<Plus />
-				<span class="grow"> New item </span>
-				<Shortcut class="hidden lg:inline-flex">
-					<span>Alt</span>
-					<span>N</span>
-				</Shortcut>
-			</Button>
-		{/if}
-	</PageFooter>
+	{/if}
+	{#snippet footer()}
+    	<PageFooter class="flex">
+    		{#if isNewItemInputVisible}
+    			<form onsubmit={handleCreateItem} class="relative w-full">
+    				<div class="input-left-icon">
+    					<Plus  />
+    				</div>
+    				<label for="new-item-name" class="sr-only"> Item name</label>
+    				<input
+    					bind:value={itemName}
+    					use:escapeKeydown
+    					id="new-item-name"
+    					name="new-item-name"
+    					placeholder="New item"
+    					autocomplete="off"
+    					class="input secondary icon-left !h-10 lg:!h-9"
+    					onfocusout={() => shouldCleanNewItemInput()}
+    					onescapekey={() => shouldCleanNewItemInput()}
+    				/>
+    			</form>
+    		{:else}
+    			<Button
+    				theme="secondary"
+    				class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
+    				onclick={() => (isNewItemInputVisible = true)}
+    			>
+    				<Plus />
+    				<span class="grow"> New item </span>
+    				<Shortcut class="hidden lg:inline-flex">
+    					<span>Alt</span>
+    					<span>N</span>
+    				</Shortcut>
+    			</Button>
+    		{/if}
+    	</PageFooter>
+	{/snippet}
 </PageContainer>
 
 <!-- Sliding panel -->

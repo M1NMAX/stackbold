@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tm } from '$lib/utils/index.js';
-	import Egg from 'lucide-svelte/icons/egg';
+	import Egg from '@lucide/svelte/icons/egg';
 
 	type Props = {
 		icon?: boolean;

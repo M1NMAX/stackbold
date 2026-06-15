@@ -125,6 +125,8 @@ model Session {
   expiresAt         DateTime
   role              Role
   twoFactorVerified Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Group {

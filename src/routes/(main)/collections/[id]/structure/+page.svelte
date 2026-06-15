@@ -1,15 +1,8 @@
 <script lang="ts">
-	import ArrowDown from 'lucide-svelte/icons/arrow-down';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import X from 'lucide-svelte/icons/x';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
+	import X from '@lucide/svelte/icons/x';
 	import { ModalState } from '$lib/states/index.js';
-	import {
-		PageContainer,
-		PageContent,
-		PageFooter,
-		PageHeader,
-		PageTitle
-	} from '$lib/components/page/index.js';
+	import { PageContainer, PageFooter } from '$lib/components/page/index.js';
 	import { AddProperty, getPropertyState, PropertyEditor } from '$lib/components/property/index.js';
 	import {
 		Breadcrumb,
@@ -21,10 +14,9 @@
 		ExpandableEditor
 	} from '$lib/components/base/index.js';
 	import { COLLECTION_PAGE_PANEL_CTX_KEY } from '$lib/constant/index.js';
-	import { capitalizeFirstLetter, tm } from '$lib/utils/index.js';
+	import { capitalizeFirstLetter } from '$lib/utils/index.js';
 	import { getContext } from 'svelte';
 	import { AddView, getViewState, ViewEditor } from '$lib/components/view/index.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
 	import { getCollectionState, getCollectionView } from '$lib/components/collection/index.js';
 
 	const TABS_OPTIONS = { PROPERTIES: 'PROPERTIES', VIEWS: 'VIEWS' } as const;
@@ -40,7 +32,6 @@
 
 	let expandedPropertyEditor = $state<string | null>(null);
 	let expandedViewEdit = $state<string | null>(null);
-	let isSmHeadingVisible = $state(false);
 	let currentTab = $state<Tab>(TABS_OPTIONS.PROPERTIES);
 
 	function goBack() {
@@ -48,13 +39,6 @@
 		if (data.insidePanel) {
 			panelState.close();
 		}
-	}
-
-	function handleScroll(e: Event) {
-		const targetEl = e.target as HTMLDivElement;
-
-		if (targetEl.scrollTop > 0) isSmHeadingVisible = true;
-		else isSmHeadingVisible = false;
 	}
 
 	function handleTabChange(value: string) {
@@ -78,30 +62,22 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Collection Structure - Stackbold</title>
-</svelte:head>
-
-<PageContainer>
-	<PageHeader
-		class={tm(!isSmHeadingVisible && data.insidePanel ? 'justify-end' : 'justify-between')}
-	>
+<PageContainer
+	icon="structure"
+	title="Structure"
+	sidebar={!data.insidePanel}
+	contentClass="px-0 md:px-0"
+>
+	{#snippet topActions()}
 		{#if data.insidePanel}
-			<PageTitle
-				small
-				icon="structure"
-				title="Structure"
-				class={tm(isSmHeadingVisible ? 'grow' : 'hidden')}
-			/>
-
 			<Button theme="secondary" variant="icon" onclick={() => goBack()}>
 				<X />
 			</Button>
-		{:else}
-			<SidebarOpenBtn />
-			<Button theme="secondary" variant="icon" class="lg:hidden" onclick={() => goBack()}>
-				<ChevronLeft />
-			</Button>
+		{/if}
+	{/snippet}
+
+	{#snippet breadcrumbs()}
+		{#if !data.insidePanel}
 			<Breadcrumb class="hidden lg:flex">
 				<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
 				<BreadcrumbItem
@@ -111,45 +87,39 @@
 				/>
 				<BreadcrumbItem icon="structure" name="Structure" last />
 			</Breadcrumb>
-			<PageTitle
-				small
-				icon="structure"
-				title="Structure"
-				class={isSmHeadingVisible ? 'grow flex lg:hidden' : 'hidden'}
-			/>
 		{/if}
-	</PageHeader>
-	<PageContent onscroll={handleScroll} class="px-0 md:px-0">
-		<PageTitle icon="structure" title="Structure" class="px-2 md:px-4" />
+	{/snippet}
 
-		<Tabs value={TABS_OPTIONS.PROPERTIES} onChange={handleTabChange} triggersClass="mx-2 md:mx-4">
-			{#snippet triggers()}
-				{#each Object.keys(TABS_OPTIONS) as tab}
-					{@const value = TABS_OPTIONS[tab as Tab]}
-					<TabTrigger {value}>{capitalizeFirstLetter(value)}</TabTrigger>
-				{/each}
-			{/snippet}
-
+	<Tabs value={TABS_OPTIONS.PROPERTIES} onChange={handleTabChange} triggersClass="mx-2 md:mx-4">
+		{#snippet triggers()}
 			{#each Object.keys(TABS_OPTIONS) as tab}
 				{@const value = TABS_OPTIONS[tab as Tab]}
-
-				<TabContent {value}>
-					{#if tab === TABS_OPTIONS.PROPERTIES}
-						{@render propertiesEditors()}
-					{:else if tab === TABS_OPTIONS.VIEWS}
-						{@render viewsEditors()}
-					{/if}
-				</TabContent>
+				<TabTrigger {value}>{capitalizeFirstLetter(value)}</TabTrigger>
 			{/each}
-		</Tabs>
-	</PageContent>
-	<PageFooter>
-		{#if currentTab === TABS_OPTIONS.PROPERTIES}
-			<AddProperty refresh={data.insidePanel} />
-		{:else if currentTab === TABS_OPTIONS.VIEWS}
-			<AddView />
-		{/if}
-	</PageFooter>
+		{/snippet}
+
+		{#each Object.keys(TABS_OPTIONS) as tab}
+			{@const value = TABS_OPTIONS[tab as Tab]}
+
+			<TabContent {value}>
+				{#if tab === TABS_OPTIONS.PROPERTIES}
+					{@render propertiesEditors()}
+				{:else if tab === TABS_OPTIONS.VIEWS}
+					{@render viewsEditors()}
+				{/if}
+			</TabContent>
+		{/each}
+	</Tabs>
+
+	{#snippet footer()}
+		<PageFooter>
+			{#if currentTab === TABS_OPTIONS.PROPERTIES}
+				<AddProperty refresh={data.insidePanel} />
+			{:else if currentTab === TABS_OPTIONS.VIEWS}
+				<AddView />
+			{/if}
+		</PageFooter>
+	{/snippet}
 </PageContainer>
 
 {#snippet viewsEditors()}

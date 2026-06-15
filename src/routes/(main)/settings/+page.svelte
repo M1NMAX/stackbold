@@ -10,7 +10,7 @@
 		Select,
 		Field
 	} from '$lib/components/base/index.js';
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import { PageContent, PageHeader, PageTitle } from '$lib/components/page/index.js';
 	import { goto } from '$app/navigation';
 	import { capitalizeFirstLetter } from '$lib/utils/index.js';
