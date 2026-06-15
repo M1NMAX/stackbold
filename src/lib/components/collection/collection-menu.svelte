@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import Eye from 'lucide-svelte/icons/eye';
-	import EyeOff from 'lucide-svelte/icons/eye-off';
-	import Trash from 'lucide-svelte/icons/trash';
-	import Star from 'lucide-svelte/icons/star';
-	import StarOff from 'lucide-svelte/icons/star-off';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Ellipsis from '@lucide/svelte/icons/ellipsis';
+	import Eye from '@lucide/svelte/icons/eye';
+	import EyeOff from '@lucide/svelte/icons/eye-off';
+	import Trash from '@lucide/svelte/icons/trash';
+	import Star from '@lucide/svelte/icons/star';
+	import StarOff from '@lucide/svelte/icons/star-off';
 	import type { Collection } from '@prisma/client';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { getCollectionState } from './index.js';

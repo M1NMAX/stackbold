@@ -1,250 +1,136 @@
 <script lang="ts">
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import UserPlus from 'lucide-svelte/icons/user-plus';
-	import Trash from 'lucide-svelte/icons/trash-2';
-	import { fade } from 'svelte/transition';
-	import type { User } from '@prisma/client';
-	import { capitalizeFirstLetter, tm, sortFun, type SortOption } from '$lib/utils';
-	import { PageContainer, PageContent, PageHeader } from '$lib/components/page';
-	import { SortArrow, SortMenu } from '$lib/components/view/index.js';
-	import { superForm } from 'sveltekit-superforms/client';
-	import { trpc } from '$lib/trpc/client';
-	import { invalidate, invalidateAll } from '$app/navigation';
-	import {
-		Button,
-		buttonVariants,
-		Dialog,
-		Field,
-		Label,
-		SearchInput
-	} from '$lib/components/base/index.js';
-	import { DEFAULT_SORT_OPTIONS } from '$lib/constant';
-	import { getDeleteModalState, getToastState, ModalState } from '$lib/states/index.js';
-	import { untrack } from 'svelte';
+	import { Badge, Card, HSeparator } from '$lib/components/base/index.js';
+	import { PageContainer } from '$lib/components/page/index.js';
+	import { COLLECTION_ICONS, PAGE_ICONS } from '$lib/constant/icons.js';
+	import { HEALTH_STATUS_COLORS } from '$lib/constant/index.js';
+	import { timeAgo } from '$lib/utils/index.js';
+	import { Color } from '@prisma/client';
+
+	type Counter = {
+		label: string;
+		counter: string;
+		grow: string;
+	};
+	type SectionContent = {
+		icon: string;
+		title: string;
+		counters: Counter[];
+	};
 
 	let { data } = $props();
 
-	const USER_FIELDS = ['name', 'email', 'emailVerified', 'role'];
-
-	type UserWithoutPassword = Omit<User, 'password'>;
-	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
-	let sort = $state(sortOptions[0]);
-	const toastState = getToastState();
-
-	let search = $state('');
-	let users = $derived.by(() => {
-		const searchTerm = search.toLowerCase() || '';
-
-		return data.users
-			.filter((user) => {
-				const searchableTerms = `${user.name} ${user.email} ${user.role}`;
-
-				return searchableTerms.toLowerCase().includes(searchTerm);
-			})
-			.sort(sortFun(sort.field, sort.order));
-	});
-
-	const deleteModal = getDeleteModalState();
-
-	const addUserModal = new ModalState();
-
-	const { form, message, errors, enhance } = superForm(
-		untrack(() => data.form),
+	const releases = [
 		{
-			onResult({ result }) {
-				switch (result.type) {
-					case 'success':
-						addUserModal.close();
-						toastState.success('User added successfully');
-
-						invalidate('/admin');
-						break;
-
-					case 'error':
-						toastState.error('Unable to add user');
-						break;
-				}
-			}
+			version: 'v0.82.3',
+			date: '2025-05-28',
+			relativeDate: '1 day ago',
+			badgeColor: Color.GREEN,
+			changes: ['Bulk import via CSV', 'Improved sharing permissions', 'Performance fixes']
 		}
-	);
-
-	async function deleteUser(id: string, name: string) {
-		try {
-			await trpc().users.delete.mutate(id);
-
-			await invalidateAll();
-
-			toastState.success(`User [${name}] deleted successfully`);
-		} catch (error) {
-			toastState.error();
-		}
-	}
-
-	function clickHead(head: string) {
-		const field = head as keyof UserWithoutPassword | string;
-		const order = sort.order === 'asc' ? 'desc' : 'asc';
-		// @ts-expect-error
-		sort = { ...sort, field, order };
-	}
-
-	function goBack() {
-		history.back();
-	}
+	];
 </script>
 
-<svelte:head>
-	<title>Admin - Stackbold</title>
-</svelte:head>
+<PageContainer icon="dashboardadmin" title="Admin" isBase>
+	<div class="flex flex-col gap-y-3">
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+			<Card href="/admin/users" class="flex flex-col lg:flex-row gap-y-3 lg:gap-x-2">
+				{@render cardSection({
+					icon: 'users',
+					title: 'Users',
+					counters: [
+						{ label: 'Total', ...data.users.total },
+						{ label: 'MAU', ...data.users.mau }
+					]
+				})}
 
-<PageContainer class="h-dvh">
-	<PageHeader class="justify-between">
-		<Button theme="secondary" variant="icon" onclick={() => goBack()}><ChevronLeft /></Button>
+				{@render cardSection({
+					icon: 'collections',
+					title: 'Collections',
+					counters: [
+						{ label: 'Total', ...data.collections.total },
+						{ label: 'Items', ...data.collections.items }
+					]
+				})}
+			</Card>
+			<Card href="/admin/system" icon="system" title="System">
+				{#each data.system.services as service, i (service.name)}
+					<div class="flex items-center justify-between">
+						<div class="grow font-semibold">
+							<span>{service.name} </span>
+							<span class=" text-xs text-muted-foreground"> {service.latency}ms</span>
+						</div>
+						<Badge color={HEALTH_STATUS_COLORS[service.status]}>
+							{service.status}
+						</Badge>
+					</div>
 
-		<h1 class="md:hidden grow font-semibold text-2xl">Admin</h1>
-	</PageHeader>
-	<PageContent class="h-full relative">
-		<h1 class="hidden md:block font-semibold text-4xl pb-2">Admin</h1>
-		<div class="flex justify-between space-x-2">
-			<SearchInput placeholder="Find User" bind:value={search} />
-
-			<SortMenu options={sortOptions} bind:value={sort} />
-			<Button class="hidden md:flex" onclick={() => addUserModal.open()}>New user</Button>
+					{#if i + 1 !== data.system.services.length}
+						<HSeparator class="my-0" />
+					{/if}
+				{/each}
+			</Card>
 		</div>
-
-		<div class=" overflow-x-auto">
-			<table class="w-full table-auto">
-				<thead>
-					<tr class="text-sm text-muted-foreground">
-						{#each USER_FIELDS as field}
-							<th
-								scope="col"
-								class="text-left text-nowrap rounded-t-md hover:bg-muted/90 py-2 px-1 cursor-pointer"
-							>
-								<!-- svelte-ignore a11y_click_events_have_key_events  -->
-								<!-- svelte-ignore a11y_no_static_element_interactions -->
-								<div class="flex justify-between items-center" onclick={() => clickHead(field)}>
-									<span>{capitalizeFirstLetter(field)}</span>
-
-									<SortArrow bind:order={sort.order} />
-								</div>
-							</th>
-						{/each}
-
-						<th scope="col" class="text-left" title="Row actions"> </th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each users as user (user.id)}
-						<tr class="text-nowrap font-medium text-base border-y border-secondary hover:bg-muted">
-							{#each USER_FIELDS as field}
-								{@const value = user[field as keyof typeof user]}
-
-								<td>{field === 'role' ? capitalizeFirstLetter(value.toString()) : value}</td>
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
+			<Card icon="release" title="Release">
+				{#each releases as release, i (release.version)}
+					<div>
+						<div class="w-full flex items-center justify-between">
+							<Badge color={release.badgeColor}>{release.version}</Badge>
+							<span class="text-xs text-muted-foreground"> {release.relativeDate} </span>
+						</div>
+						<ul class="text-sm text-muted-foreground list-disc list-inside space-y-0.5">
+							{#each release.changes as c}
+								<li>{c}</li>
 							{/each}
+						</ul>
+					</div>
+					{#if i + 1 !== releases.length}
+						<HSeparator />
+					{/if}
+				{/each}
+			</Card>
 
-							<td>
-								<!-- svelte-ignore a11y_click_events_have_key_events -->
-								<!-- svelte-ignore a11y_no_static_element_interactions -->
-								<div
-									title="Delete"
-									onclick={() => {
-										deleteModal.open({
-											type: 'user',
-											id: user.id,
-											name: user.name,
-											fun: async () => {
-												await deleteUser(user.id, user.name);
-											}
-										});
-									}}
-									class={tm(
-										buttonVariants({
-											theme: 'ghost',
-											className: 'w-fit p-1 rounded-sm hover:text-primary cursor-pointer'
-										})
-									)}
-								>
-									<Trash />
-								</div>
-							</td>
-						</tr>
-					{:else}
-						<tr>
-							<td colspan={Object.keys(users[0]).length}>
-								<div class="text-center text-lg" in:fade>No users found.</div>
-							</td>
-						</tr>
+			<Card href="/admin/templates" icon="dna" title="Templates">
+				<div>
+					{#each data.templates as template, i (template.id)}
+						{@const Icon = COLLECTION_ICONS[template.icon]}
+						<div class="flex items-center justify-between gap-x-2">
+							<Icon class="size-4" />
+							<span class="grow"> {template.name} </span>
+
+							<span class="text-xs shrink-0">
+								{timeAgo(template.updatedAt)}
+							</span>
+						</div>
+						{#if i + 1 !== data.templates.length}
+							<HSeparator class="my-0" />
+						{/if}
 					{/each}
-				</tbody>
-			</table>
+				</div>
+			</Card>
 		</div>
-		<Button
-			onclick={() => addUserModal.open()}
-			class="fixed md:hidden bottom-4 right-4 z-10 h-12 w-12 rounded-full"
-		>
-			<UserPlus />
-		</Button>
-	</PageContent>
+	</div>
 </PageContainer>
 
-<Dialog bind:open={addUserModal.isOpen} title="New user">
-	{#if $message}
-		<div class="form-error-msg">
-			{$message}
+{#snippet cardSection(content: SectionContent)}
+	{@const Icon = PAGE_ICONS[content.icon]}
+	<div class="w-full lg:w-1/2 flex flex-col gap-y-2">
+		<h2 class="flex items-center gap-x-2 font-semibold text-sm">
+			<Icon class="size-4" />
+			{content.title}
+		</h2>
+		<div class="grow flex items-center gap-x-8">
+			{#each content.counters as c (`${c.label}-${c.counter}`)}
+				{@render counter(c)}
+			{/each}
 		</div>
-	{/if}
-	<form method="post" use:enhance>
-		<Field errors={$errors.name}>
-			<Label for="name" name="Name" />
-			<input
-				id="name"
-				type="text"
-				name="name"
-				required
-				bind:value={$form.name}
-				class="input ghost"
-			/>
-		</Field>
+	</div>
+{/snippet}
 
-		<Field errors={$errors.email}>
-			<Label for="email" name="Email" />
-			<input
-				id="email"
-				type="text"
-				name="email"
-				required
-				bind:value={$form.email}
-				class="input ghost"
-			/>
-		</Field>
-		<Field errors={$errors.password}>
-			<Label for="password" name="Password" />
-			<input
-				id="password"
-				type="password"
-				name="password"
-				required
-				bind:value={$form.password}
-				class="input ghost"
-			/>
-		</Field>
-
-		<div class="flex gap-x-2">
-			<h3>Role:</h3>
-
-			<label>
-				<input id="role" type="radio" name="role" value="MEMBER" bind:group={$form.role} />
-				Member
-			</label>
-
-			<label>
-				<input id="role" type="radio" name="role" value="ADMIN" bind:group={$form.role} />
-				Admin
-			</label>
-		</div>
-
-		<div>
-			<Button type="submit" class="w-full">Create</Button>
-		</div>
-	</form>
-</Dialog>
+{#snippet counter(c: Counter)}
+	<div class="flex flex-col">
+		<span class="text-xs text-muted-foreground"> {c.label}</span>
+		<span class="grow text-4xl font-semibold">{c.counter}</span>
+		<span class="text-right text-base font-semibold text-green-600"> {c.grow} </span>
+	</div>
+{/snippet}

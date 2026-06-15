@@ -1,7 +1,7 @@
 <script lang="ts">
-	import ArrowDownUp from 'lucide-svelte/icons/arrow-down-up';
-	import CornerDownLeft from 'lucide-svelte/icons/corner-down-left';
-	import Hash from 'lucide-svelte/icons/hash';
+	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
+	import CornerDownLeft from '@lucide/svelte/icons/corner-down-left';
+	import Hash from '@lucide/svelte/icons/hash';
 	import type { SearchableCollection, SearchableCollectionAsOption } from '$lib/types.js';
 	import { Dialog, Empty, HSeparator, SearchInput, Shortcut } from '$lib/components/base/index.js';
 	import { trpc } from '$lib/trpc/client';

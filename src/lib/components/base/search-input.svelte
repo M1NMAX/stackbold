@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Search from 'lucide-svelte/icons/search';
-	import X from 'lucide-svelte/icons/x';
+	import Search from '@lucide/svelte/icons/search';
+	import X from '@lucide/svelte/icons/x';
 	import { Button } from '$lib/components/base/index.js';
 	import { tm, useId } from '$lib/utils/index.js';
 	import type { HTMLInputAttributes } from 'svelte/elements';

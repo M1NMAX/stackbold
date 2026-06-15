@@ -189,6 +189,18 @@ input[type='number'] {
 	}
 }
 
+.t-header {
+	@apply p-1 text-left rounded-t-md;
+
+	&.clickable {
+		@apply hover:bg-muted/90;
+	}
+}
+
+.t-data {
+	@apply py-0.5 px-1;
+}
+
 @layer base {
 	:root {
 		--background: 0 0% 100%;

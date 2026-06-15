@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import Eraser from 'lucide-svelte/icons/eraser';
+	import Copy from '@lucide/svelte/icons/copy';
+	import Eraser from '@lucide/svelte/icons/eraser';
 	import { PropertyType } from '@prisma/client';
 	import { getLocalTimeZone, parseAbsolute, parseDate } from '@internationalized/date';
 	import {

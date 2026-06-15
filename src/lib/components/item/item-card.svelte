@@ -3,8 +3,8 @@
 </script>
 
 <script lang="ts">
-	import Check from 'lucide-svelte/icons/check';
-	import PencilLine from 'lucide-svelte/icons/pencil-line';
+	import Check from '@lucide/svelte/icons/check';
+	import PencilLine from '@lucide/svelte/icons/pencil-line';
 	import { ItemMenu, getItemState } from './index.js';
 	import { PropertyValue, getPropertyState } from '$lib/components/property/index.js';
 	import { ViewType, type Item, type View } from '@prisma/client';

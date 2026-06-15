@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ArrowDown from 'lucide-svelte/icons/arrow-down';
-	import ArrowUp from 'lucide-svelte/icons/arrow-up';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
+	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import type { OrderType } from '$lib/utils/sort';
 
 	type Props = {

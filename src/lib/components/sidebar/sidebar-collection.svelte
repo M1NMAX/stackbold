@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Copy from 'lucide-svelte/icons/copy';
-	import CornerUpRight from 'lucide-svelte/icons/corner-up-right';
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import PencilLine from 'lucide-svelte/icons/pencil-line';
-	import Trash from 'lucide-svelte/icons/trash';
-	import StarOff from 'lucide-svelte/icons/star-off';
+	import Copy from '@lucide/svelte/icons/copy';
+	import CornerUpRight from '@lucide/svelte/icons/corner-up-right';
+	import Ellipsis from '@lucide/svelte/icons/ellipsis';
+	import PencilLine from '@lucide/svelte/icons/pencil-line';
+	import Trash from '@lucide/svelte/icons/trash';
+	import StarOff from '@lucide/svelte/icons/star-off';
 	import {
 		AdaptiveWrapper,
 		Button,

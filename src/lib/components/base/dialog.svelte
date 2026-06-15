@@ -1,5 +1,5 @@
 <script lang="ts">
-	import X from 'lucide-svelte/icons/x';
+	import X from '@lucide/svelte/icons/x';
 	import type { Snippet } from 'svelte';
 	import { Button } from '$lib/components/base/index.js';
 	import { fade } from 'svelte/transition';

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import {
 		AdaptiveWrapper,
 		buttonVariants,
@@ -41,7 +42,7 @@
 <RadioGroup
 	{value}
 	{onchange}
-	class={tm('hidden h-9 gap-x-1', showTabBtns ? 'lg:flex' : 'lg:hidden')}
+	class={tm('hidden h-9 gap-x-1.5', showTabBtns ? 'lg:flex' : 'lg:hidden')}
 >
 	{@render content(true)}
 </RadioGroup>
@@ -50,7 +51,10 @@
 	<AdaptiveWrapper
 		bind:open={menuState.isOpen}
 		floatingAlign="start"
-		triggerClass={buttonVariants({ theme: menuState.isOpen ? 'secondary' : 'ghost' })}
+		triggerClass={buttonVariants({
+			theme: 'outline',
+			class: 'rounded-xl min-w-14'
+		})}
 	>
 		{#snippet trigger()}
 			{#if selected.icon}
@@ -60,6 +64,8 @@
 			<span class="max-w-20 md:max-w-28 text-nowrap text-ellipsis overflow-hidden">
 				{selected.label}
 			</span>
+
+			<ChevronDown class={tm('size-3', menuState.isOpen ? 'rotate-180' : 'rotate-0')} />
 		{/snippet}
 
 		{#if title}
@@ -78,8 +84,10 @@
 			compact={!inline}
 			hoverEffect
 			class={tm(
-				inline ? 'justify-center py-1.5 px-2.5 !rounded-lg border-2 font-semibold max-w-xs' : '',
-				inline && selected.id == opt.id ? 'bg-secondary' : 'lg:text-muted-foreground'
+				inline
+					? 'min-w-14 justify-center py-1.5 px-2.5 !rounded-xl border-2 font-semibold max-w-xs'
+					: '',
+				inline && selected.id == opt.id ? 'bg-secondary text-secondary-foreground' : ''
 			)}
 		>
 			{#if opt.icon}

@@ -57,3 +57,16 @@ export async function removeObjects(objectsList: string[]) {
 	if (objectsList.length === 0) return;
 	await minioClient.removeObjects(APP_BUCKET, objectsList);
 }
+
+export async function statObject(objectName: string) {
+	return await minioClient.statObject(APP_BUCKET, objectName);
+}
+
+export async function uploadObject(objectName: string, object: Buffer | string) {
+	const size = Buffer.isBuffer(object) ? object.byteLength : Buffer.byteLength(object);
+	await minioClient.putObject(APP_BUCKET, objectName, object, size);
+}
+
+export async function removeObject(objectName: string) {
+	await minioClient.removeObject(APP_BUCKET, objectName);
+}

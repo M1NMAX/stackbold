@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
-	import ChevronRight from 'lucide-svelte/icons/chevron-right';
+	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 	import { buttonVariants } from './index.js';
 	import { createMonth } from '$lib/states/index.js';

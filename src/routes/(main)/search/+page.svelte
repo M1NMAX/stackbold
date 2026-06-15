@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Hash from 'lucide-svelte/icons/hash';
-	import { PageContainer, PageContent, PageHeader, PageTitle } from '$lib/components/page';
+	import Hash from '@lucide/svelte/icons/hash';
+	import { PageContainer } from '$lib/components/page';
 	import { Empty, HSeparator, SearchInput } from '$lib/components/base/index.js';
 	import type { SearchableCollection, SearchableCollectionAsOption } from '$lib/types';
 	import { COLLECTION_ICONS } from '$lib/constant/icons.js';
@@ -9,11 +9,8 @@
 	import { tick } from 'svelte';
 	import { DEBOUNCE_INTERVAL } from '$lib/constant/index.js';
 	import { trpc } from '$lib/trpc/client.js';
-	import { SidebarOpenBtn } from '$lib/components/sidebar/index.js';
-	import { UserMenu } from '$lib/components/user/index.js';
-	import { getToastState } from '$lib/states/index.js';
 
-	let { data } = $props();
+	import { getToastState } from '$lib/states/index.js';
 
 	const toastState = getToastState();
 	const searchInputId = useId();
@@ -71,55 +68,42 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Search - Stackbold</title>
-</svelte:head>
+<PageContainer title="Search" isBase>
+	<SearchInput id={searchInputId} bind:value={search} placeholder="Find collections and items" />
 
-<PageContainer>
-	<PageHeader>
-		<SidebarOpenBtn />
+	{#if isLoading}
+		{@render skeleton()}
+	{:else if filtered.length > 0}
+		{@const isRecent = result.length === 0}
+		<div>
+			<p class="text-sm font-medium px-0.5 pb-0.5">{isRecent ? 'Recents' : 'Results'}</p>
 
-		<UserMenu user={data.user} />
-		<PageTitle small icon="search" title="Search" class="grow" />
-	</PageHeader>
+			{#each filtered as collection, i (collection.id)}
+				{#if i !== 0}
+					<HSeparator class="my-0.5" />
+				{/if}
+				{@render option({
+					id: collection.id,
+					name: collection.name,
+					icon: collection.icon,
+					type: 'collection',
+					url: `/collections/${collection.id}?view=${getCollectionView(collection)}`
+				})}
 
-	<PageContent>
-		<SearchInput id={searchInputId} bind:value={search} placeholder="Search" />
-
-		{#if isLoading}
-			{@render skeleton()}
-		{:else if filtered.length > 0}
-			{@const isRecent = result.length === 0}
-			<div>
-				<p class="text-sm font-medium px-0.5 pb-0.5">{isRecent ? 'Recents' : 'Results'}</p>
-
-				{#each filtered as collection, i (collection.id)}
-					{#if i !== 0}
-						<HSeparator class="my-0.5" />
-					{/if}
+				{#each collection.items as item (item.id)}
 					{@render option({
-						id: collection.id,
-						name: collection.name,
-						icon: collection.icon,
-						type: 'collection',
-						url: `/collections/${collection.id}?view=${getCollectionView(collection)}`
+						id: item.id,
+						name: item.name,
+						type: 'item',
+						url: `/collections/${collection.id}/item/${item.id}`
 					})}
-
-					{#each collection.items as item (item.id)}
-						{@render option({
-							id: item.id,
-							name: item.name,
-							type: 'item',
-							url: `/collections/${collection.id}/item/${item.id}`
-						})}
-					{/each}
 				{/each}
-			</div>
-		{:else}
-			{@const isSearchResult = search.length > 3 && filtered.length === 0}
-			<Empty text={isSearchResult ? 'No results' : 'There has been no recent activity'} />
-		{/if}
-	</PageContent>
+			{/each}
+		</div>
+	{:else}
+		{@const isSearchResult = search.length > 3 && filtered.length === 0}
+		<Empty text={isSearchResult ? 'No results' : 'There has been no recent activity'} />
+	{/if}
 </PageContainer>
 
 {#snippet option(opt: SearchableCollectionAsOption)}
