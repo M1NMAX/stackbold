@@ -90,7 +90,7 @@
 				{/each}
 			</Card>
 
-			<Card href="/admin/templates" icon="dna" title="Templates">
+			<Card href="/admin/templates" icon="templates" title="Templates">
 				<div>
 					{#each data.templates as template, i (template.id)}
 						{@const Icon = COLLECTION_ICONS[template.icon]}
