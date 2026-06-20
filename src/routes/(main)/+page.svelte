@@ -44,37 +44,38 @@
 			</div>
 		</section>
 
+		<section>
+			<h2 class="px-1 text-base font-semibold">Recently updated</h2>
+			{#each data.items as item, i (item.id)}
+				{@const Icon = COLLECTION_ICONS[item.collection.icon]}
+				<a
+					href={`/collections/${item.collection.id}/item/${item.id}`}
+					class="flex items-center justify-between gap-x-1 py-1 px-1.5 rounded-sm hover:bg-secondary/70 cursor-pointer"
+				>
+					<Badge>
+						<Icon />
+						<span class="text-nowrap truncate"> {item.collection.name} </span>
+					</Badge>
+
+					<span class="grow text-base font-semibold text-nowrap truncate">{item.name}</span>
+
+					<span class="text-xs shrink-0">
+						{timeAgo(item.updatedAt)}
+					</span>
+				</a>
+
+				{#if i + 1 !== data.items.length}
+					<HSeparator class="my-0.5" />
+				{/if}
+			{/each}
+		</section>
 		<Card
 			href="/templates"
 			class="flex flex-row items-center justify-between py-1.5 px-2 [&>svg]:size-4"
 		>
 			<Dna />
-			<span class="grow">Browser templates </span>
+			<span class="grow">Browse templates </span>
 			<ArrowRight />
 		</Card>
-
-		<section class="space-y-1 mt-1">
-			<h2 class="px-1 text-base font-semibold">Recently added items</h2>
-			<div class="space-y-1.5">
-				{#each data.items as item, i (item.id)}
-					{@const Icon = COLLECTION_ICONS[item.collection.icon]}
-					<Card
-						href={`/collections/${item.collection.id}/item/${item.id}`}
-						class="flex flex-row items-center justify-between py-1 px-1.5"
-					>
-						<Badge>
-							<Icon />
-							<span class="text-nowrap truncate"> {item.collection.name} </span>
-						</Badge>
-
-						<h2 class="grow text-base font-semibold text-nowrap truncate">{item.name}</h2>
-
-						<span class="text-xs shrink-0">
-							{timeAgo(item.createdAt)}
-						</span>
-					</Card>
-				{/each}
-			</div>
-		</section>
 	{/if}
 </PageContainer>
