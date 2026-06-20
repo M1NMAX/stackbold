@@ -12,19 +12,13 @@
 
 	const collectionState = getCollectionState();
 
-	const updCollections = $derived.by(() => {
-		return [...collectionState.collections]
-			.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-			.slice(0, 8);
-	});
-
 	async function onclickNewCollection() {
 		await collectionState.createCollection({ name: NEW_COLLECTION_NAME }, true);
 	}
 </script>
 
-<PageContainer icon="dashboard" title="Dashboard" isBase>
-	{#if updCollections.length === 0}
+<PageContainer icon="dashboard" title="Dashboard" isBase contentClass="gap-y-3">
+	{#if data.collections.length === 0}
 		<div class="h-full max-w-lg flex flex-col justify-center gap-y-4 mx-auto">
 			<Empty icon text="There has been no recent activity in this account" class="h-auto" />
 
@@ -35,7 +29,7 @@
 		</div>
 	{:else}
 		<section class="space-y-1">
-			<div class="flex items-centers justify-between">
+			<div class="flex items-center justify-between">
 				<h2 class="text-base font-semibold">Recents</h2>
 
 				<Button href="/collections" theme="ghost" variant="cicon">
@@ -43,9 +37,9 @@
 				</Button>
 			</div>
 
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-				{#each updCollections as collection (collection.id)}
-					<CollectionOverview {collection} />
+			<div class="w-full flex gap-x-2 overflow-x-auto hd-scroll">
+				{#each data.collections as collection (collection.id)}
+					<CollectionOverview {collection} class="min-w-36 lg:min-w-40" />
 				{/each}
 			</div>
 		</section>

@@ -145,6 +145,7 @@ model Collection {
   icon         String
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  accessedAt   DateTime   @default(now())
   isPinned     Boolean    @default(true)
   description  String     @default("")
   isDescHidden Boolean    @default(true)

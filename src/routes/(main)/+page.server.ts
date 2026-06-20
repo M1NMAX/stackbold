@@ -7,7 +7,11 @@ import { createContext } from '$lib/trpc/context';
 export const load: PageServerLoad = async (event) => {
 	const caller = createCaller(await createContext(event));
 
-	return { items: await caller.items.dashboard() };
+	const [collections, items] = await Promise.all([
+		caller.collections.recent(),
+		caller.items.dashboard()
+	]);
+	return { collections, items };
 };
 
 export const actions: Actions = {

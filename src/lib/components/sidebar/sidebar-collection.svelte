@@ -22,6 +22,7 @@
 	import type { CollectionWithViews } from '$lib/types.js';
 	import { clickOutside, escapeKeydown, enterKeydown } from '$lib/actions/index.js';
 	import { tick } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	type Props = {
 		collection: CollectionWithViews;
@@ -41,12 +42,14 @@
 
 	async function removeFromFavorites() {
 		await collectionState.updCollection({ id: collection.id, isPinned: false });
+		await invalidateAll();
 	}
 
 	async function saveName(name: string) {
 		isRenaming = false;
 		if (collection.name === name) return;
 		await collectionState.updCollection({ id: collection.id, name });
+		await invalidateAll();
 	}
 
 	function startRenaming() {
@@ -67,7 +70,10 @@
 			type: 'collection',
 			id: collection.id,
 			name: collection.name,
-			fun: async () => await collectionState.deleteCollection(collection.id, active)
+			fun: async () => {
+				await collectionState.deleteCollection(collection.id, active);
+				await invalidateAll();
+			}
 		});
 	}
 

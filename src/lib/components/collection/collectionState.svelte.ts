@@ -38,6 +38,7 @@ export class CollectionState {
 				groupId: args.groupId || null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
+				accessedAt: new Date(),
 				icon: args.icon || DEFAULT_COLLECTION_ICON,
 				isDescHidden: args.isDescHidden || true,
 				description: args.description || '',
