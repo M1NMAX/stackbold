@@ -18,8 +18,7 @@
 		{ label: 'Dashboard', url: '/admin', icon: 'dashboardadmin' },
 		{ label: 'Users', url: '/admin/users', icon: 'users' },
 		{ label: 'System', url: '/admin/system', icon: 'system' },
-		{ label: 'Release', url: '/admin/release', icon: 'release' },
-		{ label: 'Templates', url: '/admin/templates', icon: 'templates' }
+		{ label: 'Release', url: '/admin/release', icon: 'release' }
 	];
 
 	const BOTTOM_BAR_ITEMS = [

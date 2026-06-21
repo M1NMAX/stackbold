@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { Badge, Card, HSeparator } from '$lib/components/base/index.js';
 	import { PageContainer } from '$lib/components/page/index.js';
-	import { COLLECTION_ICONS, PAGE_ICONS } from '$lib/constant/icons.js';
+	import { PAGE_ICONS } from '$lib/constant/icons.js';
 	import { HEALTH_STATUS_COLORS } from '$lib/constant/index.js';
-	import { timeAgo } from '$lib/utils/index.js';
 	import { Color } from '@prisma/client';
 
 	type Counter = {
@@ -88,25 +87,6 @@
 						<HSeparator />
 					{/if}
 				{/each}
-			</Card>
-
-			<Card href="/admin/templates" icon="templates" title="Templates">
-				<div>
-					{#each data.templates as template, i (template.id)}
-						{@const Icon = COLLECTION_ICONS[template.icon]}
-						<div class="flex items-center justify-between gap-x-2">
-							<Icon class="size-4" />
-							<span class="grow"> {template.name} </span>
-
-							<span class="text-xs shrink-0">
-								{timeAgo(template.updatedAt)}
-							</span>
-						</div>
-						{#if i + 1 !== data.templates.length}
-							<HSeparator class="my-0" />
-						{/if}
-					{/each}
-				</div>
 			</Card>
 		</div>
 	</div>
