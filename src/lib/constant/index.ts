@@ -1,5 +1,5 @@
 import type { Colors, HealthStatus } from '$lib/types';
-import { Aggregator, Color, PropertyType } from '@prisma/client';
+import { Aggregator, Color, PropertyType, TemplateCategory } from '@prisma/client';
 
 export * from './icons';
 
@@ -8,11 +8,11 @@ export const BASE_FIELDS = ['id', 'updatedAt', 'createdAt'] as const;
 export const THEME_COLORS: Colors = {
 	SLATE: 'bg-slate-200 text-slate-700 dark:bg-slate-700/60 dark:text-slate-100',
 	GRAY: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-100',
-	RED: 'bg-red-500 text-white dark:bg-red-800 dark:text-red-100',
-	GREEN: 'bg-green-500 text-white dark:bg-green-800 dark:text-green-100',
+	RED: 'bg-red-600 text-white dark:bg-red-800 dark:text-red-100',
+	GREEN: 'bg-green-600 text-white dark:bg-green-800 dark:text-green-100',
 	BLUE: 'bg-blue-600 text-white dark:bg-blue-800 dark:text-blue-100',
-	YELLOW: 'bg-yellow-400 text-white dark:bg-yellow-500 dark:text-yellow-100',
-	ORANGE: 'bg-orange-500 text-white dark:bg-orange-700 dark:text-orange-100'
+	YELLOW: 'bg-yellow-600 text-white dark:bg-yellow-500 dark:text-yellow-50',
+	ORANGE: 'bg-orange-600 text-white dark:bg-orange-700 dark:text-orange-100'
 };
 
 export const PROPERTY_AGGREGATOR_LABELS: Record<string, string> = {
@@ -163,4 +163,18 @@ export const HEALTH_STATUS_COLORS: Record<HealthStatus, Color> = {
 	healthy: Color.GREEN,
 	degraded: Color.YELLOW,
 	unheathy: Color.RED
+};
+
+export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
+	[TemplateCategory.PRODUCTIVITY]: 'Productivity',
+	[TemplateCategory.PERSONAL_LIFE]: 'Personal Life',
+	[TemplateCategory.FINANCE_SHOPPING]: 'Finance & Shopping',
+	[TemplateCategory.HOBBIES_ENTERTAINMENT]: 'Hobbies & Entertainment'
+};
+
+export const TEMPLATE_CATEGORY_COLORS: Record<TemplateCategory, Color> = {
+	[TemplateCategory.PRODUCTIVITY]: Color.BLUE,
+	[TemplateCategory.PERSONAL_LIFE]: Color.ORANGE,
+	[TemplateCategory.FINANCE_SHOPPING]: Color.GREEN,
+	[TemplateCategory.HOBBIES_ENTERTAINMENT]: Color.YELLOW
 };

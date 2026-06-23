@@ -4,9 +4,13 @@
 	import { sortFun, type SortOption } from '$lib/utils/index.js';
 	import { PageContainer } from '$lib/components/page/index.js';
 	import {
+		COLLECTION_ICONS,
 		DEFAULT_SORT_OPTIONS,
 		SCREEN_LG_MEDIA_QUERY,
-		TEMPLATE_PANEL_CTX_KEY
+		TEMPLATE_CATEGORY_COLORS,
+		TEMPLATE_CATEGORY_LABELS,
+		TEMPLATE_PANEL_CTX_KEY,
+		THEME_COLORS
 	} from '$lib/constant/index.js';
 	import { tm, noCheck } from '$lib/utils/index.js';
 	import { getContext } from 'svelte';
@@ -14,16 +18,23 @@
 	import TemplatePage from './[id]/+page.svelte';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { Card, Empty, ExpandableSearchInput, VSelector } from '$lib/components/base/index.js';
-
-	const TAB_OPTIONS = [{ id: 'all', label: 'All' }];
+	import {
+		Badge,
+		Card,
+		Empty,
+		ExpandableSearchInput,
+		VSelector
+	} from '$lib/components/base/index.js';
+	import { Color, TemplateCategory } from '@prisma/client';
 
 	const sortOptions = [...(DEFAULT_SORT_OPTIONS as SortOption<unknown>[])];
+
+	const TAB_OPTIONS = $derived(setupTabOptions());
 
 	let { data } = $props();
 
 	let active = $state('');
-	let tab = $state(TAB_OPTIONS[0].id);
+	let tab = $state((() => TAB_OPTIONS[0].id)());
 	let sort = $state(sortOptions[0]);
 	let search = $state('');
 	let templates = $derived(filterTemplates());
@@ -54,9 +65,27 @@
 		return data.templates
 			.filter((template) => {
 				const searchableTerms = `${template.name} ${template.description}`;
-				return searchableTerms.toLowerCase().includes(searchTerm);
+				const match = searchableTerms.toLowerCase().includes(searchTerm);
+
+				if (tab === 'all') return match;
+				return template.templateCategory === tab && match;
 			})
 			.sort(sortFun(sort.field, sort.order));
+	}
+
+	function setupTabOptions() {
+		let options: { id: string; label: string }[] = [];
+
+		options.push({ id: 'all', label: 'All' });
+
+		options.push(
+			...Object.values(TemplateCategory).map((category) => ({
+				id: category.toString(),
+				label: TEMPLATE_CATEGORY_LABELS[category]
+			}))
+		);
+
+		return options;
 	}
 </script>
 
@@ -75,17 +104,32 @@
 	</div>
 
 	{#if templates.length > 0}
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+		<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
 			{#each templates as template (template.id)}
-				<Card
-					icon={template.icon}
-					title={template.name}
-					href={`/templates/${template.id}`}
-					onclick={(e) => clickTemplate(e, template.id)}
-					class={tm(template.id === active ? 'border-primary' : '')}
-				>
-					<p class="text-sm font-medium">{template.description}</p>
-				</Card>
+				{@const Icon = COLLECTION_ICONS[template.icon]}
+				{@const category = template.templateCategory}
+
+				{#if category}
+					<Card
+						href={`/templates/${template.id}`}
+						onclick={(e) => clickTemplate(e, template.id)}
+						class={tm(template.id === active ? 'border-primary' : '')}
+					>
+						<div class={tm('size-8 p-1 rounded-lg', THEME_COLORS[Color.GRAY])}>
+							<Icon class="size-6" />
+						</div>
+
+						<h2 class="text-sm font-semibold text-nowrap truncate">
+							{template.name}
+						</h2>
+						<p class="grow text-sm font-medium">{template.description}</p>
+
+						<Badge
+							color={TEMPLATE_CATEGORY_COLORS[category]}
+							text={TEMPLATE_CATEGORY_LABELS[category]}
+						></Badge>
+					</Card>
+				{/if}
 			{/each}
 		</div>
 	{:else}
