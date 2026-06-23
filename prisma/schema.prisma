@@ -15,6 +15,13 @@ enum Role {
   MEMBER @map("member")
 }
 
+enum TemplateCategory {
+  PRODUCTIVITY          @map("Productivity")
+  PERSONAL_LIFE         @map("Personal Life")
+  FINANCE_SHOPPING      @map("Finance & Shopping")
+  HOBBIES_ENTERTAINMENT @map("Hobbies & Entertainment")
+}
+
 enum Color {
   SLATE  @map("slate")
   GRAY   @map("gray")
@@ -140,23 +147,25 @@ model Group {
 }
 
 model Collection {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  icon         String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  accessedAt   DateTime   @default(now())
-  isPinned     Boolean    @default(true)
-  description  String     @default("")
-  isDescHidden Boolean    @default(true)
-  isTemplate   Boolean    @default(false)
-  views        View[]
-  properties   Property[]
-  items        Item[]
-  owner        User?      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId      String?    @db.ObjectId
-  group        Group?     @relation(fields: [groupId], references: [id])
-  groupId      String?    @db.ObjectId
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  icon               String
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  accessedAt         DateTime          @default(now())
+  isPinned           Boolean           @default(true)
+  description        String            @default("")
+  isDescHidden       Boolean           @default(true)
+  isTemplate         Boolean           @default(false)
+  templateUsageCount Int               @default(0)
+  templateCategory   TemplateCategory?
+  views              View[]
+  properties         Property[]
+  items              Item[]
+  owner              User?             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId            String?           @db.ObjectId
+  group              Group?            @relation(fields: [groupId], references: [id])
+  groupId            String?           @db.ObjectId
 }
 
 model View {
