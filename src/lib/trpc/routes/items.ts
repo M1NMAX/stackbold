@@ -291,7 +291,7 @@ async function listDashboardItem(userId: string) {
 	return await prisma.item.findMany({
 		where: { collection: { ownerId: userId } },
 		include: { collection: { select: { id: true, name: true, icon: true } } },
-		orderBy: { createdAt: 'desc' },
+		orderBy: { updatedAt: 'desc' },
 		take: 10
 	});
 }

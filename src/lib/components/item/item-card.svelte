@@ -120,7 +120,7 @@
 		</div>
 	{:else}
 		<div class="w-full flex justify-between items-center gap-x-1.5">
-			<p class="text-md font-semibold grow truncate">
+			<p class="text-base font-semibold grow truncate">
 				{item.name}
 			</p>
 			<div

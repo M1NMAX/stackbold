@@ -80,12 +80,12 @@
 	</div>
 
 	{#if collections.length > 0}
-		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+		<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
 			{#each collections as collection (collection.id)}
 				<CollectionOverview {collection} />
 			{/each}
 		</div>
 	{:else}
-		<Empty text="No results " />
+		<Empty text="No results" />
 	{/if}
 </PageContainer>

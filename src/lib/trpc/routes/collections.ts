@@ -30,13 +30,23 @@ export const collections = createTRPCRouter({
 		});
 	}),
 
+	recent: protectedProcedure.query(async ({ ctx: { userId } }) => {
+		return await prisma.collection.findMany({
+			where: { ownerId: userId },
+			include: { views: { select: { shortId: true } }, _count: { select: { items: true } } },
+			orderBy: { accessedAt: 'desc' },
+			take: 10
+		});
+	}),
+
 	search: protectedProcedure
 		.input(z.string())
 		.query(async ({ input, ctx: { userId } }) => await searchCollections(userId, input)),
 
 	load: protectedProcedure.input(z.string()).query(async ({ input }) => {
-		return await prisma.collection.findUnique({
+		return await prisma.collection.update({
 			where: { id: input },
+			data: { accessedAt: new Date() },
 			include: { views: { orderBy: [{ order: 'asc' }, { shortId: 'asc' }] } }
 		});
 	}),

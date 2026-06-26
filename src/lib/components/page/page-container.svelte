@@ -92,7 +92,7 @@
 				<h1
 					transition:fly={{ y: -8, duration: ANIMATION_DURATION }}
 					class={tm(
-						'grow text-xl font-semibold',
+						'grow text-lg font-semibold',
 						isBase && !isSmHeadingVisible ? 'block lg:hidden' : ''
 					)}
 				>

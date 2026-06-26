@@ -16,7 +16,7 @@
 	const tooltipId = useId('template-prop-tooltip');
 </script>
 
-<Badge id={tooltipId} {color} class="cursor-default">
+<Badge id={tooltipId} {color} class="max-w-full text-ellipsis cursor-default">
 	{#if property.type === PropertyType.CHECKBOX}
 		<MockCheckbox checked={value === 'true'} />
 		{property.name}
@@ -24,7 +24,9 @@
 		{@const result = hasOptions(property.type)
 			? (getOption(property.options, value)?.value ?? '')
 			: value}
-		{result.substring(0, 55)}
+		<span class="truncate min-w-0">
+			{result.substring(0, 55)}
+		</span>
 	{/if}
 </Badge>
 
