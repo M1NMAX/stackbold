@@ -6,8 +6,8 @@ import { duplicateCollection } from './collections';
 export const templates = createTRPCRouter({
 	list: protectedProcedure.query(async () => await listTemplates()),
 	load: protectedProcedure.input(z.string()).query(async ({ input }) => await loadTemplate(input)),
-	turn: protectedProcedure.input(z.string()).mutation(async ({ input, ctx: { userId } }) => {
-		return await duplicateCollection(input, userId);
+	turn: protectedProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+		return await turnTemplateIntoCollection(input, ctx.userId);
 	})
 });
 
@@ -17,6 +17,7 @@ async function listTemplates() {
 		orderBy: { createdAt: 'asc' }
 	});
 }
+
 async function loadTemplate(id: string) {
 	return await prisma.collection.findUniqueOrThrow({
 		where: { id },
@@ -25,4 +26,17 @@ async function loadTemplate(id: string) {
 			properties: { include: { options: true } }
 		}
 	});
+}
+
+async function turnTemplateIntoCollection(id: string, userId: string) {
+	const result = await duplicateCollection(id, userId);
+
+	if (result) {
+		await prisma.collection.update({
+			where: { id },
+			data: { templateUsageCount: { increment: 1 } }
+		});
+	}
+
+	return result;
 }

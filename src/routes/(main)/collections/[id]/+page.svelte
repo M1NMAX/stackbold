@@ -18,9 +18,7 @@
 		Tooltip,
 		VSelector
 	} from '$lib/components/base/index.js';
-	import {
-		PageContainer, PageFooter
-	} from '$lib/components/page/index.js';
+	import { PageContainer, PageFooter } from '$lib/components/page/index.js';
 	import { page } from '$app/state';
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
@@ -36,10 +34,7 @@
 	import { escapeKeydown, autosizeTextarea } from '$lib/actions/index.js';
 	import { getNameSchema } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
-	import {
-		ViewSettingsMenu,
-		getViewState
-	} from '$lib/components/view/index.js';
+	import { ViewSettingsMenu, getViewState } from '$lib/components/view/index.js';
 
 	let { data } = $props();
 
@@ -195,6 +190,7 @@
 		search = '';
 	});
 
+
 	$effect(() => {
 		if (!isNewItemInputVisible) return;
 
@@ -220,37 +216,37 @@
 	});
 </script>
 
-
-
-<PageContainer icon={collection.icon} title={collection ? collection.name : ''}
-    class={tm(panelState.isOpen && 'w-0 md:w-1/2')}>
-    {#snippet topActions()}
-        <div class="flex justify-end items-center gap-x-1.5">
- 			<Button
+<PageContainer
+	icon={collection.icon}
+	title={collection ? collection.name : ''}
+	class={tm(panelState.isOpen && 'w-0 md:w-1/2')}
+>
+	{#snippet topActions()}
+		<div class="flex justify-end items-center gap-x-1.5">
+			<Button
 				id={`collection-${collection.id}-struct-btn`}
 				theme="secondary"
 				variant="icon"
 				onclick={() => onClickOpenStructure()}
- 			>
+			>
 				<Layout />
- 			</Button>
- 			<Tooltip triggerBy={`collection-${collection.id}-struct-btn`} align="end" placement="bottom">
+			</Button>
+			<Tooltip triggerBy={`collection-${collection.id}-struct-btn`} align="end" placement="bottom">
 				Collection structure
- 			</Tooltip>
- 			<CollectionMenu {collection} />
-  		</div>
-    {/snippet}
+			</Tooltip>
+			<CollectionMenu {collection} />
+		</div>
+	{/snippet}
 
-    {#snippet breadcrumbs()}
-        <Breadcrumb class="hidden lg:flex lg:grow">
+	{#snippet breadcrumbs()}
+		<Breadcrumb class="hidden lg:flex lg:grow">
 			<BreadcrumbItem icon="collections" name="Collections" link="/collections" />
 			<BreadcrumbItem icon={collection.icon} name={collection.name} last />
 		</Breadcrumb>
-    {/snippet}
+	{/snippet}
 
-
-    {#snippet actionsRow()}
-        <IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
+	{#snippet actionsRow()}
+		<IconPicker name={collection.icon} onIconChange={(icon) => updCollection({ icon })} />
 		<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
 		<input
 			role="heading"
@@ -261,13 +257,13 @@
 			oninput={handleOnInputCollectionName}
 			class="grow font-semibold text-2xl md:text-3xl focus:outline-none bg-transparent"
 		/>
-    {/snippet}
+	{/snippet}
 
 	{#if renameCollectionError}
 		<span class="text-primary"> {renameCollectionError}</span>
 	{/if}
 	{#if !collection.isDescHidden}
-    	{@const descriptionId = `collection-${collection.id}-description`}
+		{@const descriptionId = `collection-${collection.id}-description`}
 		<label for={descriptionId} class="sr-only"> Collection description </label>
 		<textarea
  			{@attach autosizeTextarea(descriptionId)}
@@ -280,21 +276,21 @@
 	{/if}
 
 	<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
-  		<VSelector
-            title="Views"
-      		value={view.shortId.toString()}
-      		options={viewState.views.map(v => ({
-          		id: v.shortId.toString(),
-          		icon: v.type,
-          		label: v.name,
-      		}))}
-      		onchange={onViewChange}
-        />
+		<VSelector
+			title="Views"
+			value={view.shortId.toString()}
+			options={viewState.views.map((v) => ({
+				id: v.shortId.toString(),
+				icon: v.type,
+				label: v.name
+			}))}
+			onchange={onViewChange}
+		/>
 
-  		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
-      		<ExpandableSearchInput placeholder="Find item" bind:value={search} />
- 			<ViewSettingsMenu {view} />
-        </div>
+		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
+			<ExpandableSearchInput placeholder="Find item" bind:value={search} />
+			<ViewSettingsMenu {view} />
+		</div>
 	</div>
 
 	{#if isEmpty || items.length === 0}
@@ -306,43 +302,42 @@
 			scrollTop={isLargeScreen.current ? scrollTop : 0}
 			clickOpenItem={(id) => clickItem(id)}
 		/>
-
 	{/if}
 	{#snippet footer()}
-    	<PageFooter class="flex">
-    		{#if isNewItemInputVisible}
-    			<form onsubmit={handleCreateItem} class="relative w-full">
-    				<div class="input-left-icon">
-    					<Plus  />
-    				</div>
-    				<label for="new-item-name" class="sr-only"> Item name</label>
-    				<input
-    					bind:value={itemName}
-    					use:escapeKeydown
-    					id="new-item-name"
-    					name="new-item-name"
-    					placeholder="New item"
-    					autocomplete="off"
-    					class="input secondary icon-left !h-10 lg:!h-9"
-    					onfocusout={() => shouldCleanNewItemInput()}
-    					onescapekey={() => shouldCleanNewItemInput()}
-    				/>
-    			</form>
-    		{:else}
-    			<Button
-    				theme="secondary"
-    				class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
-    				onclick={() => (isNewItemInputVisible = true)}
-    			>
-    				<Plus />
-    				<span class="grow"> New item </span>
-    				<Shortcut class="hidden lg:inline-flex">
-    					<span>Alt</span>
-    					<span>N</span>
-    				</Shortcut>
-    			</Button>
-    		{/if}
-    	</PageFooter>
+		<PageFooter class="flex">
+			{#if isNewItemInputVisible}
+				<form onsubmit={handleCreateItem} class="relative w-full">
+					<div class="input-left-icon">
+						<Plus />
+					</div>
+					<label for="new-item-name" class="sr-only"> Item name</label>
+					<input
+						bind:value={itemName}
+						use:escapeKeydown
+						id="new-item-name"
+						name="new-item-name"
+						placeholder="New item"
+						autocomplete="off"
+						class="input secondary icon-left !h-10 lg:!h-9"
+						onfocusout={() => shouldCleanNewItemInput()}
+						onescapekey={() => shouldCleanNewItemInput()}
+					/>
+				</form>
+			{:else}
+				<Button
+					theme="secondary"
+					class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
+					onclick={() => (isNewItemInputVisible = true)}
+				>
+					<Plus />
+					<span class="grow"> New item </span>
+					<Shortcut class="hidden lg:inline-flex">
+						<span>Alt</span>
+						<span>N</span>
+					</Shortcut>
+				</Button>
+			{/if}
+		</PageFooter>
 	{/snippet}
 </PageContainer>
 
