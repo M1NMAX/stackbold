@@ -72,6 +72,24 @@ import FileVideo from '@lucide/svelte/icons/file-video';
 import FileImage from '@lucide/svelte/icons/file-image';
 import FileText from '@lucide/svelte/icons/file-text';
 
+//editor
+import Heading1 from '@lucide/svelte/icons/heading-1';
+import Heading2 from '@lucide/svelte/icons/heading-2';
+import Heading3 from '@lucide/svelte/icons/heading-3';
+import Type from '@lucide/svelte/icons/type';
+import ListOrdered from '@lucide/svelte/icons/list-ordered';
+import ListBullet from '@lucide/svelte/icons/list';
+import ListTodo from '@lucide/svelte/icons/list-todo';
+import Quote from '@lucide/svelte/icons/quote';
+import Code from '@lucide/svelte/icons/code';
+import Minus from '@lucide/svelte/icons/minus';
+import Image from '@lucide/svelte/icons/image';
+
+//editor toolbar
+import Bold from '@lucide/svelte/icons/bold';
+import Italic from '@lucide/svelte/icons/italic';
+import Underline from '@lucide/svelte/icons/underline';
+
 // Others
 import File from '@lucide/svelte/icons/file';
 import Home from '@lucide/svelte/icons/home';
@@ -172,6 +190,29 @@ export const FILE_ICONS: IconBundle = {
 	video: FileVideo,
 	image: FileImage,
 	text: FileText
+};
+
+export const EDITOR_ICONS: IconBundle = {
+	heading1: Heading1,
+	heading2: Heading2,
+	heading3: Heading3,
+	text: Type,
+	ordered: ListOrdered,
+	bullet: ListBullet,
+	todo: ListTodo,
+	quote: Quote,
+	code: Code,
+	divider: Minus,
+	table: Table,
+	image: Image
+};
+
+export const EDITOR_TOOLBAR_ICONS = {
+	bold: Bold,
+	italic: Italic,
+	underline: Underline,
+	code: Code,
+	link: Link
 };
 
 export const PAGE_ICONS: IconBundle = {
