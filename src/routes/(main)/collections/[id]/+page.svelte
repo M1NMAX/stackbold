@@ -32,9 +32,11 @@
 	import StructurePage from './structure/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
 	import { escapeKeydown, autosizeTextarea } from '$lib/actions/index.js';
-	import { getNameSchema } from '$lib/schema';
+	import { getNameSchema, type Content } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { ViewSettingsMenu, getViewState } from '$lib/components/view/index.js';
+	import { Editor } from '$lib/components/editor';
+	import type { JSONContent } from '@tiptap/core';
 
 	let { data } = $props();
 
@@ -185,11 +187,17 @@
 		isNewItemInputVisible = false;
 	}
 
+	function toEditorContent(value: unknown): JSONContent {
+		if (value && typeof value === 'object' && !Array.isArray(value) && 'type' in value) {
+			return value as JSONContent;
+		}
+		return { type: 'doc', content: [{ type: 'paragraph' }] } as JSONContent;
+	}
+
 	$effect(() => {
 		data.cid;
 		search = '';
 	});
-
 
 	$effect(() => {
 		if (!isNewItemInputVisible) return;
@@ -263,45 +271,39 @@
 		<span class="text-primary"> {renameCollectionError}</span>
 	{/if}
 	{#if !collection.isDescHidden}
-		{@const descriptionId = `collection-${collection.id}-description`}
-		<label for={descriptionId} class="sr-only"> Collection description </label>
-		<textarea
- 			{@attach autosizeTextarea(descriptionId)}
-			id={descriptionId}
-			value={collection.description}
-			oninput={handleOnInputCollectionDesc}
-			spellcheck={false}
-			class="textarea ghost mb-2"
-		></textarea>
-	{/if}
-
-	<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
-		<VSelector
-			title="Views"
-			value={view.shortId.toString()}
-			options={viewState.views.map((v) => ({
-				id: v.shortId.toString(),
-				icon: v.type,
-				label: v.name
-			}))}
-			onchange={onViewChange}
+		<Editor
+			content={toEditorContent(collection.content)}
+			onUpdate={(content) => updCollectionDebounced({ content: content as Content })}
 		/>
-
-		<div class="flex items-center gap-x-1 lg:gap-x-1.5">
-			<ExpandableSearchInput placeholder="Find item" bind:value={search} />
-			<ViewSettingsMenu {view} />
-		</div>
-	</div>
-
-	{#if isEmpty || items.length === 0}
-		{@render noItem()}
 	{:else}
-		<Items
-			{view}
-			{items}
-			scrollTop={isLargeScreen.current ? scrollTop : 0}
-			clickOpenItem={(id) => clickItem(id)}
-		/>
+		<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
+			<VSelector
+				title="Views"
+				value={view.shortId.toString()}
+				options={viewState.views.map((v) => ({
+					id: v.shortId.toString(),
+					icon: v.type,
+					label: v.name
+				}))}
+				onchange={onViewChange}
+			/>
+
+			<div class="flex items-center gap-x-1 lg:gap-x-1.5">
+				<ExpandableSearchInput placeholder="Find item" bind:value={search} />
+				<ViewSettingsMenu {view} />
+			</div>
+		</div>
+
+		{#if isEmpty || items.length === 0}
+			{@render noItem()}
+		{:else}
+			<Items
+				{view}
+				{items}
+				scrollTop={isLargeScreen.current ? scrollTop : 0}
+				clickOpenItem={(id) => clickItem(id)}
+			/>
+		{/if}
 	{/if}
 	{#snippet footer()}
 		<PageFooter class="flex">
