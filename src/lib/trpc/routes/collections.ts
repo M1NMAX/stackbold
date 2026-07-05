@@ -7,6 +7,7 @@ import { ViewType } from '@prisma/client';
 import { capitalizeFirstLetter, escapeRegex, omit } from '$lib/utils/index.js';
 import { listObjects, removeObjects } from '$lib/server/minio';
 import type { PropertiesSnapshot, PropertyWithOptions } from '$lib/types.js';
+import { contentSchema } from '$lib/schema';
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
@@ -18,8 +19,13 @@ const collectionCreateSchema = z.object({
 });
 
 const collectionUpdateSchema = collectionCreateSchema
-	.extend({ id: z.string() })
+	.extend({ id: z.string(), content: contentSchema.optional() })
 	.partial({ name: true });
+
+const defaultContent = {
+	type: 'doc',
+	content: [{ type: 'paragraph' }]
+};
 
 export const collections = createTRPCRouter({
 	list: protectedProcedure.query(async ({ ctx: { userId } }) => {
@@ -111,6 +117,7 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 			...args,
 			ownerId: userId,
 			icon: DEFAULT_COLLECTION_ICON,
+			content: defaultContent,
 			views: { create: [defaultView] }
 		},
 		include: { views: { select: { shortId: true } }, _count: { select: { items: true } } }
@@ -154,6 +161,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 				...rest,
 				ownerId,
 				isTemplate: false,
+				content: defaultContent,
 				name: target.isTemplate ? rest.name : `${rest.name} copy`,
 				properties: { create: [...propertiesData] }
 			},

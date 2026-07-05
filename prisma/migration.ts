@@ -4,7 +4,12 @@ const prisma = new PrismaClient();
 async function migrate() {
 	// console.log('No migration available ');
 
-	await prisma.collection.updateMany({ data: { accessedAt: new Date() } });
+	const defaultContent = {
+		type: 'doc',
+		content: [{ type: 'paragraph' }]
+	};
+
+	await prisma.collection.updateMany({ data: { content: defaultContent } });
 }
 
 migrate()

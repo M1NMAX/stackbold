@@ -55,6 +55,28 @@ export const createUserSchema = passwordSchema.extend({
 	role: z.enum(Role).optional()
 });
 
+const tiptapMark: z.ZodType<any> = z.object({
+	type: z.string(),
+	attrs: z.record(z.string(), z.any()).optional()
+});
+
+const tiptapNode: z.ZodType<any> = z.lazy(() =>
+	z.object({
+		type: z.string(),
+		attrs: z.record(z.string(), z.any()).optional(),
+		content: z.array(tiptapNode).optional(),
+		marks: z.array(tiptapMark).optional(),
+		text: z.string().optional()
+	})
+);
+
+export const contentSchema = z.object({
+	type: z.literal('doc'),
+	content: z.array(tiptapNode).optional()
+});
+
+export type Content = z.infer<typeof contentSchema>;
+
 export function getNameSchema({
 	min = 1,
 	max = 20,
