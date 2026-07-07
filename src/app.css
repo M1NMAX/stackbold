@@ -245,7 +245,7 @@ input[type='number'] {
 
 .editor-content .ProseMirror ul,
 .editor-content .ProseMirror ol {
-	@apply pl-8 my-1 mx-0;
+	@apply pl-5 my-1 mx-0;
 }
 
 .editor-content .ProseMirror li {
@@ -369,19 +369,19 @@ input[type='number'] {
 
 /* ─── Drag handle ─────────────────────────────────────────────────────── */
 .drag-handle {
-	@apply absolute z-50 h-8 flex items-center cursor-grab rounded-md select-none opacity-100 transition-all -translate-x-2;
+	@apply z-50 h-8 flex items-center justify-center p-0.5 cursor-grab rounded-md select-none opacity-100 transition-opacity;
+}
 
-	&:hover {
-		@apply bg-secondary;
-	}
+.drag-handle:hover {
+	@apply bg-secondary;
+}
 
-	& .dragging {
-		@apply cursor-grabbing opacity-50;
-	}
+.drag-handle.dragging {
+	@apply cursor-grabbing opacity-50;
+}
 
-	& .hide {
-		@apply opacity-0 pointer-events-none;
-	}
+.drag-handle.hide {
+	@apply opacity-0 pointer-events-none;
 }
 
 @layer base {

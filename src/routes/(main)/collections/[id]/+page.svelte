@@ -228,6 +228,7 @@
 	icon={collection.icon}
 	title={collection ? collection.name : ''}
 	class={tm(panelState.isOpen && 'w-0 md:w-1/2')}
+	contentClass="md:px-6"
 >
 	{#snippet topActions()}
 		<div class="flex justify-end items-center gap-x-1.5">

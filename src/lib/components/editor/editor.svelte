@@ -14,6 +14,7 @@
 	import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 	import { NodeSelection } from '@tiptap/pm/state';
 	import tippy, { type Instance as TippyInstance } from 'tippy.js';
+	import type { VirtualElement } from '@floating-ui/dom';
 	import { CommandMenu, Toolbar } from './index.js';
 	import {
 		COMMANDS,
@@ -51,8 +52,9 @@
 
 	let blockMenuTippy: TippyInstance | null = null;
 	let blockMenuInstance: ReturnType<typeof mount> | null = null;
-	let blockMenuNode: ProseMirrorNode | null = null;
 	let blockMenuSelectedIndex = $state(0);
+	let blockMenuNode: ProseMirrorNode | null = null;
+	let blockMenuPos: number | null = null;
 
 	function buildCommandRenderer(): CommandRenderFactory {
 		return () => {
@@ -225,15 +227,12 @@
 	}
 
 	function openBlockMenu(handleEl: HTMLElement, editor: Editor) {
-		if (!blockMenuNode) return;
-
-		const pos = findNodePosition(blockMenuNode);
-		if (pos === null) return;
+		if (!blockMenuNode || blockMenuPos === null) return;
 
 		blockMenuSelectedIndex = 0;
 
 		const el = document.createElement('div');
-		renderBlockMenu(el, editor, pos);
+		renderBlockMenu(el, editor, blockMenuPos);
 
 		blockMenuTippy?.destroy();
 		blockMenuTippy = tippy(handleEl, {
@@ -253,6 +252,34 @@
 		});
 
 		blockMenuTippy.show();
+	}
+
+	function getDragHandleVirtualElement() {
+		if (!editor || blockMenuPos === null) return null;
+
+		const view = editor.view;
+		const editorRect = view.dom.getBoundingClientRect();
+
+		let nodeEl: HTMLElement | null = null;
+
+		try {
+			const dom = view.nodeDOM(blockMenuPos);
+			if (dom instanceof HTMLElement) {
+				nodeEl = dom;
+			}
+		} catch {
+			nodeEl = null;
+		}
+
+		if (!nodeEl) return null;
+
+		const nodeRect = nodeEl.getBoundingClientRect();
+
+		const handleColumnX = Math.max(8, editorRect.left + 4);
+
+		return {
+			getBoundingClientRect: () => new DOMRect(handleColumnX, nodeRect.top, 1, nodeRect.height)
+		};
 	}
 
 	onMount(() => {
@@ -275,13 +302,17 @@
 				CodeBlockLowlight.configure({ lowlight }),
 				DragHandle.configure({
 					nested: true,
+					getReferencedVirtualElement: getDragHandleVirtualElement,
 					computePositionConfig: {
-						strategy: 'absolute',
+						strategy: 'fixed',
 						placement: 'left'
 					},
+
 					onNodeChange: ({ node }) => {
 						blockMenuNode = node;
+						blockMenuPos = node ? findNodePosition(node) : null;
 					},
+
 					render: () => {
 						const el = document.createElement('div');
 						el.classList.add('drag-handle');
@@ -295,6 +326,7 @@
 							e.stopPropagation();
 							if (editor) openBlockMenu(el, editor);
 						});
+
 						return el;
 					}
 				}),
