@@ -14,7 +14,6 @@
 	import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 	import { NodeSelection } from '@tiptap/pm/state';
 	import tippy, { type Instance as TippyInstance } from 'tippy.js';
-	import type { VirtualElement } from '@floating-ui/dom';
 	import { CommandMenu, Toolbar } from './index.js';
 	import {
 		COMMANDS,
@@ -43,6 +42,8 @@
 
 	let toolbarFloatEl: HTMLDivElement | null = $state(null);
 	let toolbarTippy: TippyInstance | null = null;
+
+	let toolbarIsEditingLink = $state(false);
 
 	let commandTippy: TippyInstance | null = null;
 	let commandInstance: ReturnType<typeof mount> | null = null;
@@ -282,13 +283,22 @@
 		};
 	}
 
+	function focusIsInsideToolbar() {
+		const active = document.activeElement;
+		if (!active) return false;
+		return toolbarFloatEl?.contains(active) || toolbarTippy?.popper?.contains(active);
+	}
+
 	onMount(() => {
 		const commandRenderer = buildCommandRenderer();
 
 		editor = new Editor({
 			element: editorEl,
 			extensions: [
-				StarterKit.configure({ codeBlock: false }),
+				StarterKit.configure({
+					codeBlock: false,
+					link: { openOnClick: false, enableClickSelection: true }
+				}),
 				Placeholder.configure({
 					placeholder: ({ node }) => {
 						if (node.type.name === 'heading') return 'Heading…';
@@ -359,9 +369,10 @@
 			});
 		}
 		editor.on('blur', () => {
-			setTimeout(() => {
+			requestAnimationFrame(() => {
+				if (toolbarIsEditingLink || focusIsInsideToolbar()) return;
 				toolbarTippy?.hide();
-			}, 150);
+			});
 		});
 	});
 
@@ -378,7 +389,13 @@
 
 	<div bind:this={toolbarFloatEl}>
 		{#if editor}
-			<Toolbar {editor} {version} />
+			<Toolbar
+				{editor}
+				{version}
+				onEditingLinkChange={(editing) => {
+					toolbarIsEditingLink = editing;
+				}}
+			/>
 		{/if}
 	</div>
 </div>
