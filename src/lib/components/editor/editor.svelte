@@ -37,13 +37,13 @@
 	const lowlight = createLowlight(common);
 
 	let version = $state(0);
+	let editor = $state<Editor | null>(null);
 	let editorEl: HTMLDivElement;
-	let editor: Editor | null = $state(null);
 
-	let toolbarFloatEl: HTMLDivElement | null = $state(null);
+	let toolbarFloatEl = $state<HTMLDivElement | null>(null);
 	let toolbarTippy: TippyInstance | null = null;
-
 	let toolbarIsEditingLink = $state(false);
+	let toolbarResetToken = $state(0);
 
 	let commandTippy: TippyInstance | null = null;
 	let commandInstance: ReturnType<typeof mount> | null = null;
@@ -176,7 +176,7 @@
 		const { selection } = editor.state;
 
 		if (selection.empty || selection instanceof NodeSelection) {
-			toolbarTippy?.hide();
+			closeToolbar();
 			return;
 		}
 
@@ -289,6 +289,11 @@
 		return toolbarFloatEl?.contains(active) || toolbarTippy?.popper?.contains(active);
 	}
 
+	function closeToolbar() {
+		toolbarResetToken++;
+		toolbarTippy?.hide();
+	}
+
 	onMount(() => {
 		const commandRenderer = buildCommandRenderer();
 
@@ -329,7 +334,7 @@
 
 						mount(GripVertical, {
 							target: el,
-							props: { size: 16, strokeWidth: 1.5, color: 'currentColor' }
+							props: { size: 20, strokeWidth: 1.5, color: 'currentColor' }
 						});
 
 						el.addEventListener('click', (e) => {
@@ -371,7 +376,7 @@
 		editor.on('blur', () => {
 			requestAnimationFrame(() => {
 				if (toolbarIsEditingLink || focusIsInsideToolbar()) return;
-				toolbarTippy?.hide();
+				closeToolbar();
 			});
 		});
 	});
@@ -392,6 +397,7 @@
 			<Toolbar
 				{editor}
 				{version}
+				resetToken={toolbarResetToken}
 				onEditingLinkChange={(editing) => {
 					toolbarIsEditingLink = editing;
 				}}

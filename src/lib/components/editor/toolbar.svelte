@@ -6,17 +6,18 @@
 	import X from '@lucide/svelte/icons/x';
 	import type { Editor } from '@tiptap/core';
 	import { Button } from '$lib/components/base/index.js';
-	import { tm, truncateDomain } from '$lib/utils/index.js';
+	import { normalizeUrl, tm, truncateDomain } from '$lib/utils/index.js';
 	import { EDITOR_TOOLBAR_ICONS } from '$lib/constant/index.js';
 	import { tick } from 'svelte';
 
 	type Props = {
 		editor: Editor;
 		version: number;
+		resetToken: number;
 		onEditingLinkChange?: (editing: boolean) => void;
 	};
 
-	let { editor, version, onEditingLinkChange }: Props = $props();
+	let { editor, version, resetToken, onEditingLinkChange }: Props = $props();
 
 	let mode = $state<'default' | 'link-view' | 'link-edit'>('default');
 	let linkUrl = $state('');
@@ -126,18 +127,6 @@
 		}
 	}
 
-	function normalizeUrl(url: string) {
-		const trimmed = url.trim();
-
-		if (!trimmed) return '';
-
-		if (/^https?:\/\//i.test(trimmed)) {
-			return trimmed;
-		}
-
-		return `https://${trimmed}`;
-	}
-
 	function applyLink() {
 		const url = normalizeUrl(linkUrl);
 
@@ -160,7 +149,6 @@
 
 	function openLink() {
 		const url = normalizeUrl(linkUrl || selectedLinkHref);
-
 		if (!url) return;
 
 		window.open(url, '_blank', 'noopener,noreferrer');
@@ -188,6 +176,15 @@
 
 	$effect(() => {
 		onEditingLinkChange?.(mode === 'link-edit' || mode === 'link-view');
+	});
+
+	$effect(() => {
+		resetToken;
+
+		mode = 'default';
+		linkUrl = '';
+		savedSelection = null;
+		onEditingLinkChange?.(false);
 	});
 
 	$effect(() => {

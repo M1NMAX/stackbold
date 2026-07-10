@@ -369,11 +369,11 @@ input[type='number'] {
 
 /* ─── Drag handle ─────────────────────────────────────────────────────── */
 .drag-handle {
-	@apply z-50 h-8 flex items-center justify-center p-0.5 cursor-grab rounded-md select-none opacity-100 transition-opacity;
+	@apply z-50 h-8 flex items-center justify-center p-0.5 cursor-grab rounded-md select-none opacity-50 transition-opacity;
 }
 
 .drag-handle:hover {
-	@apply bg-secondary;
+	@apply opacity-100;
 }
 
 .drag-handle.dragging {
