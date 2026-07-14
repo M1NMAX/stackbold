@@ -77,6 +77,7 @@
 		let instance: ReturnType<typeof mount> | null = null;
 		let props = $state<CommandMenuProps | null>(null);
 		let hiddenCb: (() => void) | null = null;
+		let currentOnSelect: ((item: CommandItem) => void) | null = null;
 
 		function destroy() {
 			if (tippyInstance) {
@@ -90,6 +91,7 @@
 			}
 			props = null;
 			hiddenCb = null;
+			currentOnSelect = null;
 		}
 
 		function moveSelection(delta: number) {
@@ -113,12 +115,13 @@
 				destroy();
 
 				hiddenCb = opts.onHidden ?? null;
+				currentOnSelect = opts.onSelect;
 
 				props = {
 					items: opts.items,
 					selectedIndex: 0,
 					onSelect: (item: CommandItem) => {
-						opts.onSelect(item);
+						currentOnSelect?.(item);
 						tippyInstance?.hide();
 					},
 					onMouseEnter: (index: number) => {
@@ -153,6 +156,10 @@
 					props.items = items;
 					props.selectedIndex = 0;
 				}
+			},
+
+			updateOnSelect(onSelect: (item: CommandItem) => void) {
+				currentOnSelect = onSelect;
 			},
 
 			updateReference(getReferenceClientRect: () => DOMRect) {
@@ -204,6 +211,7 @@
 				onUpdate(props) {
 					slashMenu.updateItems(props.items);
 					slashMenu.updateReference(() => props.clientRect?.() ?? new DOMRect());
+					slashMenu.updateOnSelect((item) => props.command(item));
 				},
 
 				onKeyDown({ event }) {
