@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tm } from '$lib/utils/index.js';
-	import { Button } from '$lib/components/base/index.js';
+	import { Button, Empty } from '$lib/components/base/index.js';
 	import type { CommandItem } from './extensions/index.js';
 	import { EDITOR_ICONS } from '$lib/constant/index.js';
 
@@ -8,9 +8,10 @@
 		items: CommandItem[];
 		selectedIndex: number;
 		onSelect: (item: CommandItem) => void;
+		onMouseEnter: (index: number) => void;
+		isItemActive?: (item: CommandItem) => boolean;
 	};
-
-	let { items, selectedIndex, onSelect }: Props = $props();
+	let { items, selectedIndex, onSelect, onMouseEnter, isItemActive }: Props = $props();
 </script>
 
 <div
@@ -20,27 +21,26 @@
 >
 	{#each items as item, i}
 		{@const Icon = EDITOR_ICONS[item.icon]}
-
+		{@const active = isItemActive?.(item) ?? false}
 		<Button
 			theme="ghost"
 			variant="menu"
 			class={tm(i === selectedIndex && 'bg-secondary/80')}
 			role="option"
 			aria-selected={i === selectedIndex}
+			onmouseenter={() => onMouseEnter(i)}
 			onmousedown={(e) => {
 				e.preventDefault();
 				onSelect(item);
 			}}
 		>
 			{#if Icon}
-				<Icon />
+				<Icon class={tm(active && 'text-primary')} />
 			{/if}
-
 			<span>{item.title}</span>
 		</Button>
 	{/each}
-
 	{#if items.length === 0}
-		<div class="p-1 text-base font-medium text-secondary-foreground">No results</div>
+		<Empty text="No results" />
 	{/if}
 </div>

@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core';
+import type { Node } from '@tiptap/pm/model';
 import { Extension } from '@tiptap/core';
 import Suggestion, { type SuggestionProps, type SuggestionKeyDownProps } from '@tiptap/suggestion';
 
@@ -109,4 +110,46 @@ export function createCommandsExtension(renderFactory: CommandRenderFactory): Ex
 			];
 		}
 	});
+}
+
+export function isCommandItemActiveForNode(item: CommandItem, editor: Editor, position: number) {
+	const resolvedPos = editor.state.doc.resolve(position);
+
+	for (let depth = 1; depth <= resolvedPos.depth; depth++) {
+		const result = matchByType(item, resolvedPos.node(depth));
+		if (result !== null) return result;
+	}
+
+	const nodeAtPos = editor.state.doc.nodeAt(position);
+	if (nodeAtPos) {
+		const result = matchByType(item, nodeAtPos);
+		if (result !== null) return result;
+	}
+
+	return false;
+}
+
+function matchByType(item: CommandItem, node: Node) {
+	switch (node.type.name) {
+		case 'heading':
+			return item.icon === `heading${node.attrs.level}`;
+		case 'bulletList':
+			return item.icon === 'bullet';
+		case 'orderedList':
+			return item.icon === 'ordered';
+		case 'taskList':
+			return item.icon === 'todo';
+		case 'blockquote':
+			return item.icon === 'quote';
+		case 'codeBlock':
+			return item.icon === 'code';
+		case 'horizontalRule':
+			return item.icon === 'divider';
+		case 'image':
+			return item.icon === 'image';
+		case 'paragraph':
+			return item.icon === 'text';
+		default:
+			return null;
+	}
 }

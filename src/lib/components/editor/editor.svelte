@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, mount, unmount } from 'svelte';
-	import { GripVertical } from '@lucide/svelte';
+	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import { Editor, type JSONContent } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
 	import Placeholder from '@tiptap/extension-placeholder';
@@ -18,9 +18,28 @@
 	import {
 		COMMANDS,
 		createCommandsExtension,
+		isCommandItemActiveForNode,
 		type CommandItem,
 		type CommandRenderFactory
 	} from './extensions/index.js';
+
+	type CommandMenuProps = {
+		items: CommandItem[];
+		selectedIndex: number;
+		onSelect: (item: CommandItem) => void;
+		onMouseEnter: (index: number) => void;
+		isItemActive?: (item: CommandItem) => boolean;
+	};
+
+	type MenuOpenOptions = {
+		anchorEl?: Element;
+		items: CommandItem[];
+		getReferenceClientRect: () => DOMRect;
+		isItemActive?: (item: CommandItem) => boolean;
+		onSelect: (item: CommandItem) => void;
+		onShow?: () => void;
+		onHidden?: () => void;
+	};
 
 	type Props = {
 		content?: string | JSONContent;
@@ -45,129 +64,228 @@
 	let toolbarIsEditingLink = $state(false);
 	let toolbarResetToken = $state(0);
 
-	let commandTippy: TippyInstance | null = null;
-	let commandInstance: ReturnType<typeof mount> | null = null;
-	let commandItems: CommandItem[] = $state([]);
-	let commandSelectedIdx = $state(0);
-	let commandCb: ((item: CommandItem) => void) | null = null;
+	type MenuController = ReturnType<typeof createMenuController>;
 
-	let blockMenuTippy: TippyInstance | null = null;
-	let blockMenuInstance: ReturnType<typeof mount> | null = null;
-	let blockMenuSelectedIndex = $state(0);
+	let slashMenu: MenuController;
+	let blockMenu: MenuController;
+
 	let blockMenuNode: ProseMirrorNode | null = null;
-	let blockMenuPos: number | null = null;
+	let blockMenuPosition: number | null = null;
+
+	function createMenuController() {
+		let tippyInstance: TippyInstance | null = null;
+		let instance: ReturnType<typeof mount> | null = null;
+		let props = $state<CommandMenuProps | null>(null);
+		let hiddenCb: (() => void) | null = null;
+
+		function destroy() {
+			if (tippyInstance) {
+				const t = tippyInstance;
+				tippyInstance = null; // prevent re-entrant destroy from onHidden
+				t.destroy();
+			}
+			if (instance) {
+				unmount(instance);
+				instance = null;
+			}
+			props = null;
+			hiddenCb = null;
+		}
+
+		function moveSelection(delta: number) {
+			if (!props) return;
+			const count = props.items.length || 1;
+			props.selectedIndex = (props.selectedIndex + delta + count) % count;
+		}
+
+		function selectCurrent() {
+			if (!props) return;
+			const item = props.items[props.selectedIndex];
+			if (item) props.onSelect(item);
+		}
+
+		return {
+			get isOpen() {
+				return props !== null;
+			},
+
+			open(opts: MenuOpenOptions) {
+				destroy();
+
+				hiddenCb = opts.onHidden ?? null;
+
+				props = {
+					items: opts.items,
+					selectedIndex: 0,
+					onSelect: (item: CommandItem) => {
+						opts.onSelect(item);
+						tippyInstance?.hide();
+					},
+					onMouseEnter: (index: number) => {
+						if (props) props.selectedIndex = index;
+					},
+					...(opts.isItemActive ? { isItemActive: opts.isItemActive } : {})
+				};
+
+				const el = document.createElement('div');
+				instance = mount(CommandMenu, { target: el, props });
+
+				tippyInstance = tippy(opts.anchorEl ?? document.body, {
+					getReferenceClientRect: opts.getReferenceClientRect,
+					appendTo: () => document.body,
+					content: el,
+					showOnCreate: true,
+					interactive: true,
+					arrow: false,
+					trigger: 'manual',
+					placement: 'bottom-start',
+					onShow: () => opts.onShow?.(),
+					onHidden: () => {
+						const cb = hiddenCb;
+						destroy();
+						cb?.();
+					}
+				});
+			},
+
+			updateItems(items: CommandItem[]) {
+				if (props) {
+					props.items = items;
+					props.selectedIndex = 0;
+				}
+			},
+
+			updateReference(getReferenceClientRect: () => DOMRect) {
+				tippyInstance?.setProps({ getReferenceClientRect });
+			},
+
+			handleKeyDown(event: KeyboardEvent) {
+				if (!props) return false;
+
+				if (event.key === 'Escape' || event.key === 'Tab') {
+					tippyInstance?.hide();
+					return true;
+				}
+				if (event.key === 'ArrowDown') {
+					moveSelection(1);
+					return true;
+				}
+				if (event.key === 'ArrowUp') {
+					moveSelection(-1);
+					return true;
+				}
+				if (event.key === 'Enter') {
+					selectCurrent();
+					tippyInstance?.hide();
+					return true;
+				}
+				return false;
+			},
+
+			hide() {
+				tippyInstance?.hide();
+			},
+
+			destroy
+		};
+	}
 
 	function buildCommandRenderer(): CommandRenderFactory {
 		return () => {
-			let el: HTMLDivElement;
-
 			return {
 				onStart(props) {
-					commandItems = props.items;
-					commandSelectedIdx = 0;
-					commandCb = props.command;
-
-					el = document.createElement('div');
-					commandInstance = mount(CommandMenu, {
-						target: el,
-						props: {
-							items: commandItems,
-							selectedIndex: commandSelectedIdx,
-							onSelect: (item: CommandItem) => {
-								commandCb?.(item);
-								commandTippy?.hide();
-							}
-						}
-					});
-
-					commandTippy = tippy(document.body, {
+					slashMenu.open({
+						items: props.items,
 						getReferenceClientRect: () => props.clientRect?.() ?? new DOMRect(),
-						appendTo: () => document.body,
-						content: el,
-						showOnCreate: true,
-						interactive: true,
-						arrow: false,
-						trigger: 'manual',
-						placement: 'bottom-start'
+						onSelect: (item) => props.command(item)
 					});
 				},
 
 				onUpdate(props) {
-					commandItems = props.items;
-					commandSelectedIdx = 0;
-					commandCb = props.command;
-
-					if (commandInstance) unmount(commandInstance);
-					commandInstance = mount(CommandMenu, {
-						target: el,
-						props: {
-							items: commandItems,
-							selectedIndex: commandSelectedIdx,
-							onSelect: (item: CommandItem) => {
-								commandCb?.(item);
-								commandTippy?.hide();
-							}
-						}
-					});
-
-					commandTippy?.setProps({
-						getReferenceClientRect: () => props.clientRect?.() ?? new DOMRect()
-					});
+					slashMenu.updateItems(props.items);
+					slashMenu.updateReference(() => props.clientRect?.() ?? new DOMRect());
 				},
 
 				onKeyDown({ event }) {
-					if (event.key === 'Escape') {
-						commandTippy?.hide();
-						return true;
-					}
-					if (event.key === 'ArrowDown') {
-						commandSelectedIdx = (commandSelectedIdx + 1) % (commandItems.length || 1);
-						refreshSlashMenu(el);
-						return true;
-					}
-					if (event.key === 'ArrowUp') {
-						commandSelectedIdx =
-							(commandSelectedIdx - 1 + (commandItems.length || 1)) % (commandItems.length || 1);
-						refreshSlashMenu(el);
-						return true;
-					}
-					if (event.key === 'Enter') {
-						const item = commandItems[commandSelectedIdx];
-
-						if (item) {
-							commandCb?.(item);
-							commandTippy?.hide();
-						}
-						return true;
-					}
-					return false;
+					return slashMenu.handleKeyDown(event);
 				},
 
 				onExit() {
-					commandTippy?.destroy();
-					commandTippy = null;
-					if (commandInstance) {
-						unmount(commandInstance);
-						commandInstance = null;
-					}
+					slashMenu.destroy();
 				}
 			};
 		};
 	}
 
-	function refreshSlashMenu(el: HTMLDivElement) {
-		if (commandInstance) unmount(commandInstance);
-		commandInstance = mount(CommandMenu, {
-			target: el,
-			props: {
-				items: commandItems,
-				selectedIndex: commandSelectedIdx,
-				onSelect: (item: CommandItem) => {
-					commandCb?.(item);
-					commandTippy?.hide();
-				}
+	function handleBlockMenuKeyDown(e: KeyboardEvent) {
+		if (blockMenu.handleKeyDown(e)) {
+			e.preventDefault();
+		}
+	}
+
+	function openBlockMenu(handleEl: HTMLElement, editorInstance: Editor) {
+		if (!blockMenuNode || blockMenuPosition === null) return;
+
+		const pos = blockMenuPosition;
+
+		blockMenu.open({
+			anchorEl: handleEl,
+			items: COMMANDS,
+			getReferenceClientRect: () => handleEl.getBoundingClientRect(),
+			isItemActive: (item) => isCommandItemActiveForNode(item, editorInstance, pos),
+			onSelect: (item) => {
+				editorInstance.chain().focus().setNodeSelection(pos).run();
+				item.command(editorInstance);
+			},
+			onShow: () => {
+				document.addEventListener('keydown', handleBlockMenuKeyDown, true);
+			},
+			onHidden: () => {
+				document.removeEventListener('keydown', handleBlockMenuKeyDown, true);
 			}
 		});
+	}
+
+	function findNodePosition(target: ProseMirrorNode) {
+		if (!editor) return null;
+
+		let result: number | null = null;
+		editor.state.doc.descendants((node, position) => {
+			if (result !== null) return false;
+			if (node === target) {
+				result = position;
+				return false;
+			}
+		});
+		return result;
+	}
+
+	function getDragHandleVirtualElement() {
+		if (!editor || blockMenuPosition === null) return null;
+
+		const view = editor.view;
+		const editorRect = view.dom.getBoundingClientRect();
+
+		let nodeEl: HTMLElement | null = null;
+
+		try {
+			const dom = view.nodeDOM(blockMenuPosition);
+			if (dom instanceof HTMLElement) {
+				nodeEl = dom;
+			}
+		} catch {
+			nodeEl = null;
+		}
+
+		if (!nodeEl) return null;
+
+		const nodeRect = nodeEl.getBoundingClientRect();
+
+		const handleColumnX = Math.max(8, editorRect.left + 4);
+
+		return {
+			getBoundingClientRect: () => new DOMRect(handleColumnX, nodeRect.top, 1, nodeRect.height)
+		};
 	}
 
 	function updateToolbar() {
@@ -197,92 +315,6 @@
 		toolbarTippy?.show();
 	}
 
-	function findNodePosition(target: ProseMirrorNode) {
-		if (!editor) return null;
-
-		let result: number | null = null;
-		editor.state.doc.descendants((node, position) => {
-			if (result !== null) return false;
-			if (node === target) {
-				result = position;
-				return false;
-			}
-		});
-		return result;
-	}
-
-	function renderBlockMenu(el: HTMLDivElement, editor: Editor, pos: number) {
-		if (blockMenuInstance) unmount(blockMenuInstance);
-		blockMenuInstance = mount(CommandMenu, {
-			target: el,
-			props: {
-				items: COMMANDS,
-				selectedIndex: blockMenuSelectedIndex,
-				onSelect: (item: CommandItem) => {
-					editor.chain().focus().setNodeSelection(pos).run();
-					item.command(editor);
-					blockMenuTippy?.hide();
-				}
-			}
-		});
-	}
-
-	function openBlockMenu(handleEl: HTMLElement, editor: Editor) {
-		if (!blockMenuNode || blockMenuPos === null) return;
-
-		blockMenuSelectedIndex = 0;
-
-		const el = document.createElement('div');
-		renderBlockMenu(el, editor, blockMenuPos);
-
-		blockMenuTippy?.destroy();
-		blockMenuTippy = tippy(handleEl, {
-			appendTo: () => document.body,
-			content: el,
-			interactive: true,
-			trigger: 'manual',
-			placement: 'bottom-start',
-			onHidden(instance) {
-				instance.destroy();
-				if (blockMenuTippy === instance) blockMenuTippy = null;
-				if (blockMenuInstance) {
-					unmount(blockMenuInstance);
-					blockMenuInstance = null;
-				}
-			}
-		});
-
-		blockMenuTippy.show();
-	}
-
-	function getDragHandleVirtualElement() {
-		if (!editor || blockMenuPos === null) return null;
-
-		const view = editor.view;
-		const editorRect = view.dom.getBoundingClientRect();
-
-		let nodeEl: HTMLElement | null = null;
-
-		try {
-			const dom = view.nodeDOM(blockMenuPos);
-			if (dom instanceof HTMLElement) {
-				nodeEl = dom;
-			}
-		} catch {
-			nodeEl = null;
-		}
-
-		if (!nodeEl) return null;
-
-		const nodeRect = nodeEl.getBoundingClientRect();
-
-		const handleColumnX = Math.max(8, editorRect.left + 4);
-
-		return {
-			getBoundingClientRect: () => new DOMRect(handleColumnX, nodeRect.top, 1, nodeRect.height)
-		};
-	}
-
 	function focusIsInsideToolbar() {
 		const active = document.activeElement;
 		if (!active) return false;
@@ -295,6 +327,9 @@
 	}
 
 	onMount(() => {
+		slashMenu = createMenuController();
+		blockMenu = createMenuController();
+
 		const commandRenderer = buildCommandRenderer();
 
 		editor = new Editor({
@@ -325,7 +360,7 @@
 
 					onNodeChange: ({ node }) => {
 						blockMenuNode = node;
-						blockMenuPos = node ? findNodePosition(node) : null;
+						blockMenuPosition = node ? findNodePosition(node) : null;
 					},
 
 					render: () => {
@@ -383,9 +418,9 @@
 
 	onDestroy(() => {
 		editor?.destroy();
-		commandTippy?.destroy();
+		slashMenu?.destroy();
+		blockMenu?.destroy();
 		toolbarTippy?.destroy();
-		if (commandInstance) unmount(commandInstance);
 	});
 </script>
 
