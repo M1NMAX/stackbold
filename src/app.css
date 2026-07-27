@@ -350,12 +350,87 @@ input[type='number'] {
 }
 
 /* ─── Images ──────────────────────────────────────────────────────────── */
-.editor-content .ProseMirror img {
-	@apply block max-w-full my-2 mx-0  rounded-md;
+
+.editor-content .ProseMirror .img-wrapper {
+	@apply relative inline-block max-w-2xl my-2 mx-1.5;
+
+	&.ProseMirror-selectednode {
+		@apply outline outline-primary rounded-lg;
+
+		> .actions {
+			@apply visible;
+		}
+	}
+	&:hover {
+		> .actions {
+			@apply visible;
+		}
+	}
+
+	> img {
+		@apply rounded-lg;
+	}
+
+	> .actions {
+		@apply absolute top-1 right-1 flex gap-x-1 lg:gap-x-1.5 rounded-sm bg-secondary invisible;
+
+		> .btn {
+			@apply size-9 flex items-center justify-center rounded-sm border-2 border-secondary text-muted-foreground hover:text-secondary-foreground;
+
+			> svg {
+				@apply size-5 lg:size-3.5;
+			}
+
+			&.danger {
+				@apply text-red-500 hover:text-secondary-foreground;
+			}
+		}
+	}
 }
 
-.editor-content .ProseMirror img.ProseMirror-selectednode {
-	@apply outline-2 outline-primary outline-offset-2;
+.editor-content .ProseMirror .attachment {
+	@apply max-w-2xl flex items-center gap-x-1 lg:gap-x-1.5 py-1.5 px-2 rounded-lg bg-secondary;
+
+	&.ProseMirror-selectednode {
+		@apply outline outline-primary rounded-lg;
+
+		> .actions {
+			@apply visible;
+		}
+	}
+
+	&:hover {
+		> .actions {
+			@apply visible;
+		}
+	}
+	> .infos {
+		@apply grow flex flex-col;
+
+		> .name {
+			@apply font-semibold;
+		}
+
+		> .meta {
+			@apply text-muted-foreground text-xs;
+		}
+	}
+
+	> .actions {
+		@apply flex gap-x-2 invisible;
+
+		> .btn {
+			@apply size-9 flex items-center justify-center rounded-sm border-2 border-secondary text-muted-foreground hover:text-secondary-foreground;
+
+			> svg {
+				@apply size-5 lg:size-4;
+			}
+
+			&.danger {
+				@apply text-red-500 hover:text-secondary-foreground;
+			}
+		}
+	}
 }
 
 /* ─── Placeholder ─────────────────────────────────────────────────────── */

@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/core';
 import type { Node } from '@tiptap/pm/model';
 import { Extension } from '@tiptap/core';
 import Suggestion, { type SuggestionProps, type SuggestionKeyDownProps } from '@tiptap/suggestion';
+import { MAX_FILE_SIZE } from '$lib/constant';
 
 export interface CommandItem {
 	icon: string;
@@ -9,72 +10,83 @@ export interface CommandItem {
 	command: (editor: Editor) => void;
 }
 
-export const COMMANDS: CommandItem[] = [
-	{
-		icon: 'text',
-		title: 'Text',
-		command: (editor) => editor.chain().focus().setParagraph().run()
-	},
-	{
-		icon: 'heading1',
-		title: 'Heading 1',
-		command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run()
-	},
-	{
-		icon: 'heading2',
-		title: 'Heading 2',
-		command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run()
-	},
-	{
-		icon: 'heading3',
-		title: 'Heading 3',
-		command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run()
-	},
-	{
-		icon: 'bullet',
-		title: 'Bullet List',
-		command: (editor) => editor.chain().focus().toggleBulletList().run()
-	},
-	{
-		icon: 'ordered',
-		title: 'Numbered List',
-		command: (editor) => editor.chain().focus().toggleOrderedList().run()
-	},
-	{
-		icon: 'todo',
-		title: 'To-do List',
-		command: (editor) => editor.chain().focus().toggleTaskList().run()
-	},
-	{
-		title: 'Quote',
-		icon: 'quote',
-		command: (editor) => editor.chain().focus().toggleBlockquote().run()
-	},
-	{
-		icon: 'code',
-		title: 'Code Block',
-		command: (editor) => editor.chain().focus().toggleCodeBlock().run()
-	},
-	{
-		icon: 'divider',
-		title: 'Divider',
-		command: (editor) => editor.chain().focus().setHorizontalRule().run()
-	},
-	{
-		icon: 'image',
-		title: 'Image',
-		command: (editor) => {
-			const url = window.prompt('Image URL');
-			if (url) {
-				editor.chain().focus().setImage({ src: url }).run();
-			}
-		}
-	}
-];
+export type UploadResult = {
+	filename: string;
+	url: string;
+	mimeType: string;
+	size: number;
+};
 
-export function filterCommands(query: string): CommandItem[] {
+export type UploadHandler = (file: File) => Promise<UploadResult | null>;
+
+export function createCommandList(uploadHandler: UploadHandler): CommandItem[] {
+	return [
+		{
+			icon: 'text',
+			title: 'Text',
+			command: (editor) => editor.chain().focus().setParagraph().run()
+		},
+		{
+			icon: 'heading1',
+			title: 'Heading 1',
+			command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run()
+		},
+		{
+			icon: 'heading2',
+			title: 'Heading 2',
+			command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run()
+		},
+		{
+			icon: 'heading3',
+			title: 'Heading 3',
+			command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run()
+		},
+		{
+			icon: 'bullet',
+			title: 'Bullet List',
+			command: (editor) => editor.chain().focus().toggleBulletList().run()
+		},
+		{
+			icon: 'ordered',
+			title: 'Numbered List',
+			command: (editor) => editor.chain().focus().toggleOrderedList().run()
+		},
+		{
+			icon: 'todo',
+			title: 'To-do List',
+			command: (editor) => editor.chain().focus().toggleTaskList().run()
+		},
+		{
+			icon: 'quote',
+			title: 'Quote',
+			command: (editor) => editor.chain().focus().toggleBlockquote().run()
+		},
+		{
+			icon: 'code',
+			title: 'Code Block',
+			command: (editor) => editor.chain().focus().toggleCodeBlock().run()
+		},
+		{
+			icon: 'divider',
+			title: 'Divider',
+			command: (editor) => editor.chain().focus().setHorizontalRule().run()
+		},
+		{
+			icon: 'image',
+			title: 'Image',
+			command: (editor) => triggerFileUpload(editor, true, uploadHandler)
+		},
+		{
+			icon: 'attachment',
+			title: 'Attachment',
+			command: (editor) => triggerFileUpload(editor, false, uploadHandler)
+		}
+	];
+}
+
+export function filterCommands(commands: CommandItem[], query: string): CommandItem[] {
 	const q = query.toLowerCase();
-	return COMMANDS.filter((item) => item.title.toLowerCase().includes(q));
+	return commands.filter((item) => item.title.toLowerCase().includes(q));
 }
 
 export type CommandRenderFactory = () => {
@@ -84,7 +96,10 @@ export type CommandRenderFactory = () => {
 	onExit?: () => void;
 };
 
-export function createCommandsExtension(renderFactory: CommandRenderFactory): Extension {
+export function createCommandsExtension(
+	renderFactory: CommandRenderFactory,
+	commands: CommandItem[]
+): Extension {
 	return Extension.create({
 		name: 'custom-commands',
 		addProseMirrorPlugins() {
@@ -92,19 +107,11 @@ export function createCommandsExtension(renderFactory: CommandRenderFactory): Ex
 				Suggestion<CommandItem>({
 					editor: this.editor,
 					char: '/',
-					command: ({
-						editor,
-						range,
-						props
-					}: {
-						editor: Editor;
-						range: { from: number; to: number };
-						props: CommandItem;
-					}) => {
+					command: ({ editor, range, props }) => {
 						editor.chain().focus().deleteRange(range).run();
 						props.command(editor);
 					},
-					items: ({ query }: { query: string }) => filterCommands(query),
+					items: ({ query }: { query: string }) => filterCommands(commands, query),
 					render: renderFactory
 				})
 			];
@@ -114,18 +121,15 @@ export function createCommandsExtension(renderFactory: CommandRenderFactory): Ex
 
 export function isCommandItemActiveForNode(item: CommandItem, editor: Editor, position: number) {
 	const resolvedPos = editor.state.doc.resolve(position);
-
 	for (let depth = 1; depth <= resolvedPos.depth; depth++) {
 		const result = matchByType(item, resolvedPos.node(depth));
 		if (result !== null) return result;
 	}
-
 	const nodeAtPos = editor.state.doc.nodeAt(position);
 	if (nodeAtPos) {
 		const result = matchByType(item, nodeAtPos);
 		if (result !== null) return result;
 	}
-
 	return false;
 }
 
@@ -152,4 +156,25 @@ function matchByType(item: CommandItem, node: Node) {
 		default:
 			return null;
 	}
+}
+
+function triggerFileUpload(editor: Editor, isImage: boolean, uploadHandler: UploadHandler) {
+	const input = document.createElement('input');
+	input.type = 'file';
+	input.accept = isImage ? 'image/*' : '*/*';
+	input.onchange = async () => {
+		const file = input.files?.[0];
+		if (!file) return;
+		if (file.size >= MAX_FILE_SIZE) return;
+
+		const result = await uploadHandler(file);
+		if (!result) return;
+
+		if (isImage) {
+			editor.chain().focus().setImage({ src: result.url, alt: result.filename }).run();
+		} else {
+			editor.chain().focus().setAttachment(result).run();
+		}
+	};
+	input.click();
 }

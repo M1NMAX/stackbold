@@ -4,7 +4,11 @@ import { getContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { getToastState } from '$lib/states';
 import type { CollectionWithViews } from '$lib/types';
-import { DEFAULT_COLLECTION_ICON, DEFAULT_COLLECTION_SHORT_VIEW_ID } from '$lib/constant/index.js';
+import {
+	DEFAULT_COLLECTION_ICON,
+	DEFAULT_COLLECTION_SHORT_VIEW_ID,
+	DEFAULT_EDITOR_CONTENT
+} from '$lib/constant/index.js';
 import { getTRPCErrorMsg } from '$lib/utils/index.js';
 
 export class CollectionState {
@@ -44,8 +48,11 @@ export class CollectionState {
 				description: args.description || '',
 				isPinned: args.isPinned || true,
 				isTemplate: false,
+				templateUsageCount: 0,
+				templateCategory: null,
 				views: [],
-				_count: { items: 0 }
+				_count: { items: 0 },
+				content: DEFAULT_EDITOR_CONTENT
 			});
 
 			const result = await trpc().collections.create.mutate({ ...args });
@@ -135,6 +142,50 @@ export class CollectionState {
 	async refresh() {
 		try {
 			this.collections = await trpc().collections.list.query();
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
+		}
+	}
+
+	async saveContent(args: RouterInputs['collections']['saveContent']) {
+		try {
+			await trpc().collections.saveContent.mutate({ ...args });
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
+		}
+	}
+
+	async getAttachmentUploadUrl(args: RouterInputs['collections']['attachmentUploadUrl']) {
+		try {
+			return await trpc().collections.attachmentUploadUrl.mutate({ ...args });
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
+		}
+
+		return null;
+	}
+
+	async confirmAttachment(args: RouterInputs['collections']['confirmAttachment']) {
+		try {
+			return await trpc().collections.confirmAttachment.mutate({ ...args });
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
+		}
+		return null;
+	}
+
+	async getAttachmentDownloadUrl(args: RouterInputs['collections']['downloadAttachment']) {
+		try {
+			return await trpc().collections.downloadAttachment.mutate({ ...args });
+		} catch (error) {
+			this.#toastState.error(getTRPCErrorMsg(error));
+		}
+		return null;
+	}
+
+	async orphanAttachment(args: RouterInputs['collections']['orphanAttachment']) {
+		try {
+			await trpc().collections.orphanAttachment.mutate({ ...args });
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
 		}

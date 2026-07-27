@@ -147,26 +147,39 @@ model Group {
 }
 
 model Collection {
-  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String                 @id @default(auto()) @map("_id") @db.ObjectId
   name               String
   icon               String
   content            Json
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  accessedAt         DateTime          @default(now())
-  isPinned           Boolean           @default(true)
-  description        String            @default("")
-  isDescHidden       Boolean           @default(true)
-  isTemplate         Boolean           @default(false)
-  templateUsageCount Int               @default(0)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  accessedAt         DateTime               @default(now())
+  isPinned           Boolean                @default(true)
+  description        String                 @default("")
+  isDescHidden       Boolean                @default(true)
+  isTemplate         Boolean                @default(false)
+  templateUsageCount Int                    @default(0)
   templateCategory   TemplateCategory?
   views              View[]
   properties         Property[]
   items              Item[]
-  owner              User?             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId            String?           @db.ObjectId
-  group              Group?            @relation(fields: [groupId], references: [id])
-  groupId            String?           @db.ObjectId
+  owner              User?                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId            String?                @db.ObjectId
+  group              Group?                 @relation(fields: [groupId], references: [id])
+  groupId            String?                @db.ObjectId
+  attachments        CollectionAttachment[]
+}
+
+model CollectionAttachment {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  key          String     @unique
+  filename     String
+  mimeType     String
+  size         Int
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String
+  createdAt    DateTime   @default(now())
+  orphanedAt   DateTime?
 }
 
 model View {

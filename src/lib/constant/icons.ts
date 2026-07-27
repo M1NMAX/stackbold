@@ -204,7 +204,8 @@ export const EDITOR_ICONS: IconBundle = {
 	code: Code,
 	divider: Minus,
 	table: Table,
-	image: Image
+	image: Image,
+	attachment: Paperclip
 };
 
 export const EDITOR_TOOLBAR_ICONS = {

@@ -7,7 +7,6 @@
 	import Typography from '@tiptap/extension-typography';
 	import TaskList from '@tiptap/extension-task-list';
 	import TaskItem from '@tiptap/extension-task-item';
-	import Image from '@tiptap/extension-image';
 	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 	import DragHandle from '@tiptap/extension-drag-handle';
 	import { createLowlight, common } from 'lowlight';
@@ -16,11 +15,14 @@
 	import tippy, { type Instance as TippyInstance } from 'tippy.js';
 	import { CommandMenu, Toolbar } from './index.js';
 	import {
-		COMMANDS,
+		Attachment,
+		ImageWithDelete,
 		createCommandsExtension,
 		isCommandItemActiveForNode,
 		type CommandItem,
-		type CommandRenderFactory
+		type CommandRenderFactory,
+		createCommandList,
+		type UploadResult
 	} from './extensions/index.js';
 
 	type CommandMenuProps = {
@@ -43,16 +45,22 @@
 
 	type Props = {
 		content?: string | JSONContent;
-		placeholder?: string;
-		onUpdate?: (content: JSONContent) => void;
+		onUpdate: (content: JSONContent) => void;
+		onUploadFile: (file: File) => Promise<UploadResult | null>;
+		onDownloadFile: (key: string) => void;
+		onDeleteFile: (key: string) => void;
 	};
 
 	let {
 		content = $bindable(''),
-		placeholder = "Write, type '/' for commands…",
-		onUpdate
+		onUpdate,
+		onUploadFile,
+		onDownloadFile,
+		onDeleteFile
 	}: Props = $props();
 
+	const PLACEHOLDER = "Write, type '/' for commands…";
+	const COMMANDS = createCommandList((() => onUploadFile)());
 	const lowlight = createLowlight(common);
 
 	let version = $state(0);
@@ -350,14 +358,20 @@
 				Placeholder.configure({
 					placeholder: ({ node }) => {
 						if (node.type.name === 'heading') return 'Heading…';
-						return placeholder;
+						return PLACEHOLDER;
 					}
 				}),
 				Typography,
 				TaskList,
 				TaskItem.configure({ nested: true }),
-				Image.configure({ allowBase64: true }),
 				CodeBlockLowlight.configure({ lowlight }),
+				Attachment.configure({ onDownload: onDownloadFile, onDelete: onDeleteFile }),
+				ImageWithDelete.configure({
+					allowBase64: true,
+					onDownload: onDownloadFile,
+					onDelete: onDeleteFile
+				}),
+				createCommandsExtension(commandRenderer, COMMANDS),
 				DragHandle.configure({
 					nested: true,
 					getReferencedVirtualElement: getDragHandleVirtualElement,
@@ -387,8 +401,7 @@
 
 						return el;
 					}
-				}),
-				createCommandsExtension(commandRenderer)
+				})
 			],
 			content,
 			onTransaction: () => {

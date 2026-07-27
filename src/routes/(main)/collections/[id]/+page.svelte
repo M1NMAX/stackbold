@@ -7,7 +7,7 @@
 	import debounce from 'debounce';
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import type { RouterInputs } from '$lib/trpc/router';
-	import { tm, noCheck } from '$lib/utils/index.js';
+	import { tm, noCheck, uploadFileToUrl, extractFilenameFromUrl } from '$lib/utils/index.js';
 	import {
 		Breadcrumb,
 		BreadcrumbItem,
@@ -23,15 +23,16 @@
 	import {
 		COLLECTION_PAGE_PANEL_CTX_KEY,
 		DEBOUNCE_INTERVAL,
+		DEFAULT_EDITOR_CONTENT,
 		MAX_COLLECTION_NAME_LENGTH,
 		SCREEN_LG_MEDIA_QUERY
 	} from '$lib/constant/index.js';
 	import { CollectionMenu, getCollectionState } from '$lib/components/collection/index.js';
-	import { ModalState } from '$lib/states/index.js';
+	import { getToastState, ModalState } from '$lib/states/index.js';
 	import ItemPage from './item/[itemid=id]/+page.svelte';
 	import StructurePage from './structure/+page.svelte';
 	import { getContext, onMount, tick } from 'svelte';
-	import { escapeKeydown, autosizeTextarea } from '$lib/actions/index.js';
+	import { escapeKeydown } from '$lib/actions/index.js';
 	import { getNameSchema, type Content } from '$lib/schema';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { ViewSettingsMenu, getViewState } from '$lib/components/view/index.js';
@@ -43,6 +44,7 @@
 	const collectionState = getCollectionState();
 	const viewState = getViewState();
 	const itemState = getItemState();
+	const toastState = getToastState();
 
 	const collection = $derived(collectionState.getCollection(data.cid)!);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
@@ -94,6 +96,64 @@
 		const description = (e.target as HTMLTextAreaElement).value;
 
 		updCollectionDebounced({ description });
+	}
+
+	async function saveContent(args: Omit<RouterInputs['collections']['saveContent'], 'id'>) {
+		await collectionState.saveContent({ ...args, id: collection.id });
+	}
+
+	const saveContentDebounced = debounce(saveContent, DEBOUNCE_INTERVAL);
+
+	async function handleUploadAttachment(file: File) {
+		const uploadUrl = await collectionState.getAttachmentUploadUrl({
+			collectionId: collection.id,
+			filename: file.name
+		});
+
+		if (!uploadUrl) return null;
+
+		const response = await uploadFileToUrl(uploadUrl, file);
+		if (!response.ok) return null;
+
+		return collectionState.confirmAttachment({
+			collectionId: collection.id,
+			filename: file.name,
+			mimeType: file.type,
+			size: file.size,
+			key: extractFilenameFromUrl(uploadUrl)
+		});
+	}
+
+	async function handleDownloadAttachment(key: string) {
+		if (!key || key.trim() === '') return;
+		const tid = toastState.loading('Downloading attachment...');
+
+		try {
+			const response = await collectionState.getAttachmentDownloadUrl({
+				collectionId: collection.id,
+				key
+			});
+
+			if (!response) return;
+			const link = document.createElement('a');
+			link.href = response.url;
+			link.download = response.filename;
+
+			link.style.display = 'none';
+			document.body.appendChild(link);
+			link.click();
+
+			document.body.removeChild(link);
+		} catch (_) {
+			toastState.error();
+		} finally {
+			toastState.remove(tid);
+		}
+	}
+
+	async function handleDeleteAttachment(key: string) {
+		if (!key || key.trim() === '') return;
+		await collectionState.orphanAttachment({ key, collectionId: collection.id });
 	}
 
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
@@ -187,11 +247,11 @@
 		isNewItemInputVisible = false;
 	}
 
-	function toEditorContent(value: unknown): JSONContent {
+	function toEditorContent(value: unknown) {
 		if (value && typeof value === 'object' && !Array.isArray(value) && 'type' in value) {
 			return value as JSONContent;
 		}
-		return { type: 'doc', content: [{ type: 'paragraph' }] } as JSONContent;
+		return DEFAULT_EDITOR_CONTENT as JSONContent;
 	}
 
 	$effect(() => {
@@ -274,7 +334,10 @@
 	{#if !collection.isDescHidden}
 		<Editor
 			content={toEditorContent(collection.content)}
-			onUpdate={(content) => updCollectionDebounced({ content: content as Content })}
+			onUpdate={(content) => saveContentDebounced({ content: content as Content })}
+			onUploadFile={handleUploadAttachment}
+			onDownloadFile={handleDownloadAttachment}
+			onDeleteFile={handleDeleteAttachment}
 		/>
 	{:else}
 		<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
