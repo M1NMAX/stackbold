@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Copy from '@lucide/svelte/icons/copy';
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
-	import Eye from '@lucide/svelte/icons/eye';
-	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import Trash from '@lucide/svelte/icons/trash';
+	import Scroll from '@lucide/svelte/icons/scroll';
 	import Star from '@lucide/svelte/icons/star';
 	import StarOff from '@lucide/svelte/icons/star-off';
+	import Layers from '@lucide/svelte/icons/layers';
 	import type { Collection } from '@prisma/client';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
 	import { getCollectionState } from './index.js';
@@ -40,13 +40,14 @@
 		});
 	}
 
-	async function toggleDescState() {
+	async function toggleMode() {
 		wrapper.close();
 		await collectionState.updCollection({
 			id: collection.id,
-			isDescHidden: !collection.isDescHidden
+			itemsOnly: !collection.itemsOnly
 		});
 	}
+
 	async function deleteCollection() {
 		wrapper.close();
 		deleteModal.open({
@@ -77,13 +78,13 @@
 		{/if}
 	</Button>
 
-	<Button theme="ghost" variant="menu" onclick={() => toggleDescState()}>
-		{#if collection.isDescHidden}
-			<Eye />
-			<span> Show description </span>
+	<Button theme="ghost" variant="menu" onclick={() => toggleMode()}>
+		{#if collection.itemsOnly}
+			<Scroll />
+			<span> Switch to document view </span>
 		{:else}
-			<EyeOff />
-			<span> Hide description </span>
+			<Layers />
+			<span> Switch to items view </span>
 		{/if}
 	</Button>
 

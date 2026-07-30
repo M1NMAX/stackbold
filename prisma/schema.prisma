@@ -156,7 +156,7 @@ model Collection {
   accessedAt         DateTime               @default(now())
   isPinned           Boolean                @default(true)
   description        String                 @default("")
-  isDescHidden       Boolean                @default(true)
+  itemsOnly          Boolean                @default(false)
   isTemplate         Boolean                @default(false)
   templateUsageCount Int                    @default(0)
   templateCategory   TemplateCategory?

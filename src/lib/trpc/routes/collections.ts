@@ -43,7 +43,7 @@ const collectionCreateSchema = z.object({
 	name: z.string(),
 	isPinned: z.boolean().optional(),
 	description: z.string().optional(),
-	isDescHidden: z.boolean().optional(),
+	itemsOnly: z.boolean().optional(),
 	groupId: z.string().nullable().optional()
 });
 

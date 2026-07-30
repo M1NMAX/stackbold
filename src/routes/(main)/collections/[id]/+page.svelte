@@ -331,14 +331,16 @@
 	{#if renameCollectionError}
 		<span class="text-primary"> {renameCollectionError}</span>
 	{/if}
-	{#if !collection.isDescHidden}
-		<Editor
-			content={toEditorContent(collection.content)}
-			onUpdate={(content) => saveContentDebounced({ content: content as Content })}
-			onUploadFile={handleUploadAttachment}
-			onDownloadFile={handleDownloadAttachment}
-			onDeleteFile={handleDeleteAttachment}
-		/>
+	{#if !collection.itemsOnly}
+		{#key collection.id}
+			<Editor
+				content={toEditorContent(collection.content)}
+				onUpdate={(content) => saveContentDebounced({ content: content as Content })}
+				onUploadFile={handleUploadAttachment}
+				onDownloadFile={handleDownloadAttachment}
+				onDeleteFile={handleDeleteAttachment}
+			/>
+		{/key}
 	{:else}
 		<div class="flex justify-between gap-x-1 lg:gap-x-1.5 mb-0.5">
 			<VSelector
@@ -370,40 +372,42 @@
 		{/if}
 	{/if}
 	{#snippet footer()}
-		<PageFooter class="flex">
-			{#if isNewItemInputVisible}
-				<form onsubmit={handleCreateItem} class="relative w-full">
-					<div class="input-left-icon">
+		{#if collection.itemsOnly}
+			<PageFooter class="flex">
+				{#if isNewItemInputVisible}
+					<form onsubmit={handleCreateItem} class="relative w-full">
+						<div class="input-left-icon">
+							<Plus />
+						</div>
+						<label for="new-item-name" class="sr-only"> Item name</label>
+						<input
+							bind:value={itemName}
+							use:escapeKeydown
+							id="new-item-name"
+							name="new-item-name"
+							placeholder="New item"
+							autocomplete="off"
+							class="input secondary icon-left !h-10 lg:!h-9"
+							onfocusout={() => shouldCleanNewItemInput()}
+							onescapekey={() => shouldCleanNewItemInput()}
+						/>
+					</form>
+				{:else}
+					<Button
+						theme="secondary"
+						class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
+						onclick={() => (isNewItemInputVisible = true)}
+					>
 						<Plus />
-					</div>
-					<label for="new-item-name" class="sr-only"> Item name</label>
-					<input
-						bind:value={itemName}
-						use:escapeKeydown
-						id="new-item-name"
-						name="new-item-name"
-						placeholder="New item"
-						autocomplete="off"
-						class="input secondary icon-left !h-10 lg:!h-9"
-						onfocusout={() => shouldCleanNewItemInput()}
-						onescapekey={() => shouldCleanNewItemInput()}
-					/>
-				</form>
-			{:else}
-				<Button
-					theme="secondary"
-					class="h-10 lg:h-9 grow justify-between text-left text-muted-foreground"
-					onclick={() => (isNewItemInputVisible = true)}
-				>
-					<Plus />
-					<span class="grow"> New item </span>
-					<Shortcut class="hidden lg:inline-flex">
-						<span>Alt</span>
-						<span>N</span>
-					</Shortcut>
-				</Button>
-			{/if}
-		</PageFooter>
+						<span class="grow"> New item </span>
+						<Shortcut class="hidden lg:inline-flex">
+							<span>Alt</span>
+							<span>N</span>
+						</Shortcut>
+					</Button>
+				{/if}
+			</PageFooter>
+		{/if}
 	{/snippet}
 </PageContainer>
 
