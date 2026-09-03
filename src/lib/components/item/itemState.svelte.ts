@@ -13,6 +13,10 @@ export class ItemState {
 	collectionId = $state('');
 	viewShortId = $state(0);
 
+	#pending = new Set<string>();
+	#inFlight = new Set<string>();
+	#isFlushScheduled = false;
+
 	constructor(items: Item[]) {
 		this.items = items;
 	}
@@ -25,11 +29,63 @@ export class ItemState {
 		this.items = this.items.filter((item) => item.id !== id);
 	}
 
+	#addItemSkeleton(id: string) {
+		const date = new Date();
+		return {
+			id,
+			name: '',
+			collectionId: this.collectionId,
+			createdAt: date,
+			updatedAt: date,
+			properties: []
+		};
+	}
+
+	#flush = () => {
+		const ids = [...this.#pending];
+		this.#pending.clear();
+		this.#isFlushScheduled = false;
+		if (!ids.length) return;
+
+		const CHUNK = 150;
+		for (let i = 0; i < ids.length; i += CHUNK) {
+			const chunk = ids.slice(i, i + CHUNK);
+			chunk.forEach((id) => this.#inFlight.add(id));
+
+			trpc()
+				.items.batch.query(chunk)
+				.then((response) => {
+					response.forEach((item) => this.#updItem(item.id, item));
+				})
+				.catch((error) => {
+					this.#toastState.error(getTRPCErrorMsg(error));
+				})
+				.finally(() => {
+					chunk.forEach((id) => this.#inFlight.delete(id));
+				});
+		}
+	};
+
+	#scheduleFlush() {
+		if (this.#isFlushScheduled) return;
+		this.#isFlushScheduled = true;
+		setTimeout(this.#flush, 0);
+	}
+
+	requestItem(id: string) {
+		const target = this.getItem(id);
+		if (!target) this.items.push(this.#addItemSkeleton(id));
+		if (this.#pending.has(id) || this.#inFlight.has(id)) return;
+
+		this.#pending.add(id);
+		this.#scheduleFlush();
+	}
+
 	getItem(id: string) {
 		return this.items.find((item) => item.id === id);
 	}
 
-	async createItem(args: RouterInputs['items']['create']) {
+	async createItem(args: RouterInputs['items']['create'], refresh: boolean = true) {
 		const tmpId = crypto.randomUUID();
 
 		try {
@@ -44,12 +100,14 @@ export class ItemState {
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
 			this.#updItem(tmpId, createdItem);
-			await this.refresh(this.viewShortId);
+			if (refresh) await this.refresh(this.viewShortId);
 			return createdItem.id;
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeItem(tmpId);
 		}
+
+		return null;
 	}
 
 	async updItem(args: RouterInputs['items']['update'], refresh: boolean = false) {
@@ -138,7 +196,7 @@ export class ItemState {
 	}
 }
 
-const ITEM_STATE_CTX_KEY = Symbol('ITEM_STATE_CTX_KEY');
+export const ITEM_STATE_CTX_KEY = Symbol('ITEM_STATE_CTX_KEY');
 
 export function setItemState(items: () => Item[]) {
 	return setContext(ITEM_STATE_CTX_KEY, new ItemState(items()));

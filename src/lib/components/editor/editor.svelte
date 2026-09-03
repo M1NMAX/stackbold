@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy, mount, unmount } from 'svelte';
+	import { onMount, onDestroy, mount, unmount, getContext } from 'svelte';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import { Editor, type JSONContent } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
@@ -17,6 +17,7 @@
 	import {
 		Attachment,
 		ImageWithDelete,
+		ItemEmbedNode,
 		createCommandsExtension,
 		isCommandItemActiveForNode,
 		type CommandItem,
@@ -24,6 +25,8 @@
 		createCommandList,
 		type UploadResult
 	} from './extensions/index.js';
+	import { ITEM_STATE_CTX_KEY } from '$lib/components/item/index.js';
+	import { PROPERTY_STATE_CTX_KEY } from '$lib/components/property/index.js';
 
 	type CommandMenuProps = {
 		items: CommandItem[];
@@ -49,6 +52,8 @@
 		onUploadFile: (file: File) => Promise<UploadResult | null>;
 		onDownloadFile: (key: string) => void;
 		onDeleteFile: (key: string) => void;
+		createItem: () => Promise<string | null>;
+		onClickItem: (id: string) => void;
 	};
 
 	let {
@@ -56,11 +61,18 @@
 		onUpdate,
 		onUploadFile,
 		onDownloadFile,
-		onDeleteFile
+		onDeleteFile,
+		createItem,
+		onClickItem
 	}: Props = $props();
 
+	const context = new Map([
+		[ITEM_STATE_CTX_KEY, getContext(ITEM_STATE_CTX_KEY)],
+		[PROPERTY_STATE_CTX_KEY, getContext(PROPERTY_STATE_CTX_KEY)]
+	]);
+
 	const PLACEHOLDER = "Write, type '/' for commands…";
-	const COMMANDS = createCommandList((() => onUploadFile)());
+	const COMMANDS = createCommandList((() => onUploadFile)(), (() => createItem)());
 	const lowlight = createLowlight(common);
 
 	let version = $state(0);
@@ -371,6 +383,7 @@
 					onDownload: onDownloadFile,
 					onDelete: onDeleteFile
 				}),
+				ItemEmbedNode.configure({ context, onClickItem }),
 				createCommandsExtension(commandRenderer, COMMANDS),
 				DragHandle.configure({
 					nested: true,

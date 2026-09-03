@@ -345,7 +345,7 @@ input[type='number'] {
 }
 
 /* ─── Horizontal rule ─────────────────────────────────────────────────── */
-.editor-content .ProseMirror hr {
+.editor-content .ProseMirror > hr {
 	@apply border-t-2 border-secondary my-6 mx-0;
 }
 
@@ -389,7 +389,7 @@ input[type='number'] {
 }
 
 .editor-content .ProseMirror .attachment {
-	@apply max-w-2xl flex items-center gap-x-1 lg:gap-x-1.5 py-1.5 px-2 rounded-lg bg-secondary;
+	@apply max-w-2xl flex items-center gap-x-1 lg:gap-x-1.5 py-1.5 px-2 my-3 rounded-lg bg-secondary;
 
 	&.ProseMirror-selectednode {
 		@apply outline outline-primary rounded-lg;

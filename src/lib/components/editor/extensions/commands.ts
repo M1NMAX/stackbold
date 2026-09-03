@@ -18,9 +18,18 @@ export type UploadResult = {
 };
 
 export type UploadHandler = (file: File) => Promise<UploadResult | null>;
+export type CreateItemHandler = () => Promise<string | null>;
 
-export function createCommandList(uploadHandler: UploadHandler): CommandItem[] {
+export function createCommandList(
+	uploadHandler: UploadHandler,
+	createItemHandler: CreateItemHandler
+): CommandItem[] {
 	return [
+		{
+			icon: 'item',
+			title: 'Item',
+			command: (editor) => triggerItemCreation(editor, createItemHandler)
+		},
 		{
 			icon: 'text',
 			title: 'Text',
@@ -153,6 +162,8 @@ function matchByType(item: CommandItem, node: Node) {
 			return item.icon === 'image';
 		case 'paragraph':
 			return item.icon === 'text';
+		case 'itemEmbed':
+			return item.icon === 'item';
 		default:
 			return null;
 	}
@@ -177,4 +188,11 @@ function triggerFileUpload(editor: Editor, isImage: boolean, uploadHandler: Uplo
 		}
 	};
 	input.click();
+}
+
+function triggerItemCreation(editor: Editor, createItemHandler: CreateItemHandler) {
+	createItemHandler().then((result) => {
+		if (!result) return;
+		editor.chain().focus().setItem({ id: result }).run();
+	});
 }

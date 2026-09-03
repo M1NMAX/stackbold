@@ -156,6 +156,10 @@
 		await collectionState.orphanAttachment({ key, collectionId: collection.id });
 	}
 
+	function handleEditorCreateItem() {
+		return itemState.createItem({ name: '', collectionId: collection.id }, false);
+	}
+
 	async function handleCreateItem(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 
@@ -339,6 +343,8 @@
 				onUploadFile={handleUploadAttachment}
 				onDownloadFile={handleDownloadAttachment}
 				onDeleteFile={handleDeleteAttachment}
+				createItem={handleEditorCreateItem}
+				onClickItem={clickItem}
 			/>
 		{/key}
 	{:else}

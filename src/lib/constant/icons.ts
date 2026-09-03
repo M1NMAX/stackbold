@@ -205,7 +205,8 @@ export const EDITOR_ICONS: IconBundle = {
 	divider: Minus,
 	table: Table,
 	image: Image,
-	attachment: Paperclip
+	attachment: Paperclip,
+	item: Hash
 };
 
 export const EDITOR_TOOLBAR_ICONS = {
