@@ -2,24 +2,82 @@ import { createTRPCRouter, protectedProcedure } from '$lib/trpc/t';
 import { prisma } from '$lib/server/prisma';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { BASE_FIELDS, DEFAULT_COLLECTION_ICON, NAME_FIELD } from '$lib/constant/index.js';
+import {
+	BASE_FIELDS,
+	DEFAULT_COLLECTION_ICON,
+	DEFAULT_EDITOR_CONTENT,
+	NAME_FIELD
+} from '$lib/constant/index.js';
 import { ViewType } from '@prisma/client';
-import { capitalizeFirstLetter, escapeRegex, omit } from '$lib/utils/index.js';
-import { listObjects, removeObjects } from '$lib/server/minio';
+import {
+	capitalizeFirstLetter,
+	escapeRegex,
+	extractFilenameFromUrl,
+	omit
+} from '$lib/utils/index.js';
+import {
+	deleteFile,
+	getFilePresignedDownloadUrl,
+	getFilePresignedUploadUrl,
+	listObjects,
+	removeObjects
+} from '$lib/server/minio';
 import type { PropertiesSnapshot, PropertyWithOptions } from '$lib/types.js';
+import { contentSchema } from '$lib/schema';
+import { randomUUID } from 'crypto';
+
+type PMNode = {
+	type?: string;
+	attrs?: Record<string, any>;
+	content?: PMNode[];
+	marks?: PMNode[];
+};
+
+const URL_ATTR_BY_TYPE: Record<string, string> = {
+	image: 'src',
+	attachment: 'url'
+};
 
 const collectionCreateSchema = z.object({
 	icon: z.string().optional(),
 	name: z.string(),
 	isPinned: z.boolean().optional(),
 	description: z.string().optional(),
-	isDescHidden: z.boolean().optional(),
+	itemsOnly: z.boolean().optional(),
 	groupId: z.string().nullable().optional()
 });
 
 const collectionUpdateSchema = collectionCreateSchema
 	.extend({ id: z.string() })
 	.partial({ name: true });
+
+const collectionSaveContentSchema = z.object({
+	id: z.string(),
+	content: contentSchema
+});
+
+const attachmentUploadUrlSchema = z.object({
+	collectionId: z.string(),
+	filename: z.string()
+});
+
+const attachmentConfirmSchema = z.object({
+	collectionId: z.string(),
+	filename: z.string(),
+	mimeType: z.string(),
+	size: z.number(),
+	key: z.string()
+});
+
+const downloadAttachmentSchema = z.object({
+	collectionId: z.string(),
+	key: z.string()
+});
+
+const orphanAttachmentSchema = z.object({
+	collectionId: z.string(),
+	key: z.string()
+});
 
 export const collections = createTRPCRouter({
 	list: protectedProcedure.query(async ({ ctx: { userId } }) => {
@@ -66,9 +124,29 @@ export const collections = createTRPCRouter({
 				await prisma.collection.update({ where: { id }, data: { ...rest } })
 		),
 
+	saveContent: protectedProcedure
+		.input(collectionSaveContentSchema)
+		.mutation(async ({ input }) => await saveContent(input)),
+
 	delete: protectedProcedure
 		.input(z.string())
-		.mutation(async ({ input, ctx: { userId } }) => deleteCollection(input, userId))
+		.mutation(async ({ input, ctx }) => deleteCollection(input, ctx.userId)),
+
+	attachmentUploadUrl: protectedProcedure
+		.input(attachmentUploadUrlSchema)
+		.mutation(async ({ input, ctx }) => attachmentUploadUrl(ctx.userId, input)),
+
+	confirmAttachment: protectedProcedure
+		.input(attachmentConfirmSchema)
+		.mutation(async ({ input, ctx }) => confirmAttachment(ctx.userId, input)),
+
+	downloadAttachment: protectedProcedure
+		.input(downloadAttachmentSchema)
+		.mutation(async ({ input, ctx }) => getDownloadAttachmentUrl(ctx.userId, input)),
+
+	orphanAttachment: protectedProcedure
+		.input(orphanAttachmentSchema)
+		.mutation(async ({ input, ctx }) => orphanAttachment(ctx.userId, input))
 });
 
 async function searchCollections(userId: string, searchTerm: string) {
@@ -111,6 +189,7 @@ async function createCollection(args: z.infer<typeof collectionCreateSchema>, us
 			...args,
 			ownerId: userId,
 			icon: DEFAULT_COLLECTION_ICON,
+			content: DEFAULT_EDITOR_CONTENT,
 			views: { create: [defaultView] }
 		},
 		include: { views: { select: { shortId: true } }, _count: { select: { items: true } } }
@@ -154,6 +233,7 @@ export async function duplicateCollection(id: string, ownerId: string) {
 				...rest,
 				ownerId,
 				isTemplate: false,
+				content: DEFAULT_EDITOR_CONTENT,
 				name: target.isTemplate ? rest.name : `${rest.name} copy`,
 				properties: { create: [...propertiesData] }
 			},
@@ -260,12 +340,140 @@ function mapPropertyData(property: PropertyWithOptions) {
 	};
 }
 
-async function deleteCollection(id: string, userId: string) {
-	const collection = await prisma.collection.findUniqueOrThrow({ where: { id } });
-	if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+async function saveContent(args: z.infer<typeof collectionSaveContentSchema>) {
+	const { id, content } = args;
 
-	const objectsList = await listObjects(`collections/collection-${collection.id}/`);
+	const referencedKeys = extractAttachmentKeys(content);
+
+	await prisma.$transaction([
+		prisma.collection.update({
+			where: { id },
+			data: { content }
+		}),
+
+		prisma.collectionAttachment.updateMany({
+			where: { collectionId: id, key: { in: referencedKeys } },
+			data: { orphanedAt: null }
+		}),
+
+		prisma.collectionAttachment.updateMany({
+			where: { collectionId: id, key: { notIn: referencedKeys } },
+			data: { orphanedAt: new Date() }
+		})
+	]);
+}
+
+function extractAttachmentKeys(doc: PMNode): string[] {
+	const keys = new Set<string>();
+
+	function walk(node: PMNode) {
+		if (!node) return;
+
+		const attrKey = node.type ? URL_ATTR_BY_TYPE[node.type] : undefined;
+		if (attrKey && node.attrs?.[attrKey]) {
+			keys.add(extractFilenameFromUrl(node.attrs[attrKey], false));
+		}
+
+		node.content?.forEach(walk);
+	}
+
+	walk(doc);
+	return [...keys];
+}
+
+async function deleteCollection(id: string, userId: string) {
+	await canAccessCollection(id, userId);
+
+	const objectsList = await listObjects(`collections/collection-${id}/`);
 	await removeObjects(objectsList);
 
 	await prisma.collection.delete({ where: { id } });
+}
+
+async function attachmentUploadUrl(
+	userId: string,
+	args: z.infer<typeof attachmentUploadUrlSchema>
+) {
+	await canAccessCollection(args.collectionId, userId);
+
+	const ext = args.filename.split('.').pop();
+	const key = `${randomUUID()}${ext ? '.' + ext : ''}`;
+
+	return await getFilePresignedUploadUrl(getAttachmentPath(args.collectionId, key));
+}
+
+async function confirmAttachment(userId: string, args: z.infer<typeof attachmentConfirmSchema>) {
+	await canAccessCollection(args.collectionId, userId);
+
+	const attachment = await prisma.collectionAttachment.create({
+		data: { ...args }
+	});
+
+	return { ...attachment, url: getAttachmentUrl(args.collectionId, args.key) };
+}
+
+export async function getDownloadAttachmentUrl(
+	userId: string,
+	args: z.infer<typeof downloadAttachmentSchema>
+) {
+	await canAccessCollection(args.collectionId, userId);
+
+	const attachment = await prisma.collectionAttachment.findUnique({
+		where: { key: args.key, collectionId: args.collectionId }
+	});
+
+	if (!attachment) throw new TRPCError({ code: 'BAD_REQUEST' });
+
+	const path = getAttachmentPath(attachment.collectionId, attachment.key);
+	const url = await getFilePresignedDownloadUrl(path, attachment.filename);
+
+	return { filename: attachment.filename, url };
+}
+
+async function orphanAttachment(userId: string, args: z.infer<typeof orphanAttachmentSchema>) {
+	await canAccessCollection(args.collectionId, userId);
+
+	await prisma.collectionAttachment.update({
+		where: { key: args.key },
+		data: { orphanedAt: new Date() }
+	});
+}
+
+async function canAccessCollection(collectionId: string, userId: string) {
+	const collection = await prisma.collection.findUnique({ where: { id: collectionId } });
+
+	if (!collection) throw new TRPCError({ code: 'BAD_REQUEST' });
+	if (collection.ownerId !== userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+
+	return collection;
+}
+
+export async function cleanupOrphanedAttachments() {
+	const GRACE_PERIOD_MS = 24 * 60 * 60 * 1000;
+	const cutoff = new Date(Date.now() - GRACE_PERIOD_MS);
+
+	const orphans = await prisma.collectionAttachment.findMany({
+		where: { orphanedAt: { lte: cutoff } }
+	});
+
+	for (const orphan of orphans) {
+		try {
+			await deleteFile(getAttachmentPath(orphan.collectionId, orphan.key));
+		} catch (err) {
+			console.error(`Failed to remove ${orphan.key} from MinIO`, err);
+			continue;
+		}
+
+		await prisma.collectionAttachment.delete({ where: { id: orphan.id } });
+	}
+
+	return { deleted: orphans.length };
+}
+
+function getAttachmentPath(cid: string, filename: string) {
+	return `collections/collection-${cid}/${filename}`;
+}
+
+function getAttachmentUrl(cid: string, key: string) {
+	return `/collections/${cid}/attachment/${key}`;
 }

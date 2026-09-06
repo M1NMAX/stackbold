@@ -223,7 +223,7 @@ export class PropertyState {
 	}
 }
 
-const PROPERTY_STATE_CTX_KEY = Symbol('PROPERTY_STATE_CTX_KEY');
+export const PROPERTY_STATE_CTX_KEY = Symbol('PROPERTY_STATE_CTX_KEY');
 
 export function setPropertyState(properties: () => PropertyWithOptions[]) {
 	return setContext(PROPERTY_STATE_CTX_KEY, new PropertyState(properties()));

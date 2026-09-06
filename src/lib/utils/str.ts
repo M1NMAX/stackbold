@@ -42,3 +42,15 @@ export function getTRPCErrorMsg(error: unknown) {
 export function escapeRegex(s: string) {
 	return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+export function normalizeUrl(url: string) {
+	const trimmed = url.trim();
+
+	if (!trimmed) return '';
+
+	if (/^https?:\/\//i.test(trimmed)) {
+		return trimmed;
+	}
+
+	return `https://${trimmed}`;
+}
