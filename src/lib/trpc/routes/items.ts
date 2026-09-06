@@ -204,7 +204,7 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 }
 
 async function batchItems(ids: string[]) {
-	// TODO: add property value injection
+	// TODO: add property values injection
 	return await prisma.item.findMany({ where: { id: { in: ids } } });
 }
 
