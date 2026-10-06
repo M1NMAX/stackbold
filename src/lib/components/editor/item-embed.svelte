@@ -1,4 +1,4 @@
-<script module lang="ts">
+<script lang="ts">
 	import { ViewType } from '@prisma/client';
 	import { PropertyValue, getPropertyState } from '$lib/components/property/index.js';
 	import { getItemState } from '../item';
@@ -22,16 +22,15 @@
 		hideEmptyGroups: null,
 		hideItemCounts: null
 	};
-</script>
 
-<script lang="ts">
 	type Props = {
 		id: string;
 		onClickItem: (id: string) => void;
+		onExit?: (direction: 'up' | 'down' | 'left' | 'right') => void;
 		autofocus?: boolean;
 	};
 
-	let { id, onClickItem, autofocus = false }: Props = $props();
+	let { id, onClickItem, onExit, autofocus = false }: Props = $props();
 	const itemState = getItemState();
 	const propertyState = getPropertyState();
 	const item = $derived(itemState.getItem(id));
@@ -52,6 +51,35 @@
 
 	function stopClick(e: MouseEvent) {
 		e.stopPropagation();
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		const el = e.currentTarget as HTMLInputElement;
+		const atStart = el.selectionStart === 0 && el.selectionEnd === 0;
+		const atEnd = el.selectionStart === el.value.length && el.selectionEnd === el.value.length;
+
+		switch (e.key) {
+			case 'ArrowUp':
+				e.preventDefault();
+				onExit?.('up');
+				break;
+			case 'ArrowDown':
+				e.preventDefault();
+				onExit?.('down');
+				break;
+			case 'ArrowLeft':
+				if (atStart) {
+					e.preventDefault();
+					onExit?.('left');
+				}
+				break;
+			case 'ArrowRight':
+				if (atEnd) {
+					e.preventDefault();
+					onExit?.('right');
+				}
+				break;
+		}
 	}
 
 	$effect(() => {
@@ -86,10 +114,12 @@
 			<input
 				bind:this={inputEl}
 				class="bg-transparent outline-none"
-				style="field-sizing: content;"
+				style="field-sizing: content; min-width: 1ch;"
+				data-item-name-input
 				value={nameValue}
 				oninput={handleNameInput}
 				onclick={stopClick}
+				onkeydown={handleKeydown}
 			/>
 		</div>
 		<div class="flex items-end flex-wrap gap-2 select-none" onclick={stopClick}>
