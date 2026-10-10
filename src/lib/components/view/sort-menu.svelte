@@ -71,7 +71,7 @@
 			<Label for={optId} compact hoverEffect>
 				<Icon />
 				<span>{option.label} </span>
-				<RadioGroupItem id={optId} value={optValue}></RadioGroupItem>
+				<RadioGroupItem id={optId} value={optValue} />
 			</Label>
 		{/each}
 	</RadioGroup>

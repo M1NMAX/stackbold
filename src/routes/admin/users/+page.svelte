@@ -195,7 +195,7 @@
 								{capitalizeFirstLetter(role)}
 							</span>
 
-							<RadioGroupItem {id} value={role}></RadioGroupItem>
+							<RadioGroupItem {id} value={role} />
 						</Label>
 					{/each}
 				</RadioGroup>

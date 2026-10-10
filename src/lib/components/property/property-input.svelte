@@ -17,7 +17,8 @@
 		formatNumber,
 		isPropertyNumerical,
 		separateMultiselectOptions,
-		joinMultiselectOptions
+		joinMultiselectOptions,
+		tm
 	} from '$lib/utils/index.js';
 	import debounce from 'debounce';
 	import {
@@ -37,10 +38,11 @@
 		buttonVariants,
 		Field,
 		Tooltip,
-		Badge
+		Badge,
+		Checkbox
 	} from '$lib/components/base/index.js';
 	import type { PropertyWithOptions } from '$lib/types.js';
-	import { autosizeTextarea,  } from '$lib/actions/index.js';
+	import { autosizeTextarea } from '$lib/actions/index.js';
 
 	type Props = {
 		property: PropertyWithOptions;
@@ -54,7 +56,6 @@
 	const wrapperState = new ModalState();
 	const toastState = getToastState();
 	const onchangeDebounced = debounce((v: string) => onchange(v), DEBOUNCE_INTERVAL);
-
 
 	// TODO: Input validation
 	function handleOnInput(e: Event) {
@@ -80,23 +81,13 @@
 		navigator.clipboard.writeText(value);
 		toastState.success(DEFAULT_COPY_TO_CLIPBOARD_MESSAGE);
 	}
-
-
 </script>
 
 {#if property.type === PropertyType.CHECKBOX}
-	<div
-		class="flex justify-between items-center py-1 px-1.5 gap-x-1 rounded-md bg-secondary/60 text-secondary-foreground"
-	>
-		<input
-			id={property.id}
-			type="checkbox"
-			checked={value === 'true'}
-			oninput={handleOnInput}
-			class="checkbox"
-		/>
+	<Field class={tm(property.type === PropertyType.CHECKBOX ? 'flex-row items-center px-1.5' : '')}>
+		<Checkbox id={property.id} checked={value === 'true'} oninput={handleOnInput} />
 		<Label for={property.id} name={property.name} compact />
-	</div>
+	</Field>
 {:else if property.type === PropertyType.SELECT}
 	<Field>
 		<Label for={property.id} name={property.name} icon={property.type.toLowerCase()} />
@@ -184,7 +175,7 @@
 				>
 					{#if value}
 						{@const formatted = fullDateFormat(parseDate(value).toDate(getLocalTimeZone()))}
-						<Badge >{formatted}</Badge>
+						<Badge>{formatted}</Badge>
 					{/if}
 				</span>
 			</Field>
@@ -241,11 +232,9 @@
 		/>
 	</Field>
 {:else}
-{@const taId = `property-${property.id}-input`}
-
+	{@const taId = `property-${property.id}-input`}
 	<Field>
 		<Label for={taId} name={property.name} icon={property.type.toLowerCase()} />
-
 		{#if property.type === PropertyType.TEXT}
 			<textarea
     			{@attach autosizeTextarea(taId)}

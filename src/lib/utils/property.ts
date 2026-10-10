@@ -62,9 +62,9 @@ export function getPropertyRefValue(refs: PropertyRef[], pid: string) {
 }
 
 export function getPropertyColor(property: PropertyWithOptions, value: string) {
-	if (!hasOptions(property.type)) return Color.GRAY;
+	if (!hasOptions(property.type)) return Color.SLATE;
 	const option = property.options.find((opt) => opt.id === value);
-	return option ? option.color : Color.GRAY;
+	return option ? option.color : Color.SLATE;
 }
 
 export function getOption(options: PropertyOption[], id: string) {

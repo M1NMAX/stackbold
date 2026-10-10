@@ -286,6 +286,8 @@
 			document.removeEventListener('keydown', handleKeydown);
 		};
 	});
+
+	let check = $state(true);
 </script>
 
 <PageContainer

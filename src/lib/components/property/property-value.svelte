@@ -42,6 +42,7 @@
 		Button,
 		Calendar,
 		HSeparator,
+		Checkbox,
 		Select,
 		Tooltip
 	} from '$lib/components/base/index.js';
@@ -80,7 +81,7 @@
 		await updPropertyRefDebounced(value);
 	}
 
-	async function handleCheckbox(e: Event) {
+	async function handleCheckboxChange(e: Event) {
 		const targetEl = e.target as HTMLInputElement;
 		if (targetEl.type !== 'checkbox') return;
 
@@ -173,14 +174,13 @@
 	<label
 		class={tm(
 			'flex justify-center',
-			!isTableView() &&
-				'inline-flex items-center justify-center gap-x-1.5 py-0.5 px-1 rounded-md text-sm font-semibold',
-			!isTableView() && THEME_COLORS[Color.GRAY]
+			!isTableView()
+				? `inline-flex items-center justify-center gap-x-1 py-0.5 px-1 rounded-md text-sm font-semibold ${THEME_COLORS[Color.SLATE]}`
+				: ''
 		)}
 	>
-		<input type="checkbox" class="checkbox" checked={value === 'true'} onchange={handleCheckbox} />
-
-		<span class={tm('font-semibold', isTableView() && 'sr-only')}>{property.name} </span>
+		<Checkbox checked={value == 'true'} onchange={handleCheckboxChange} class="border-secondary-foreground" />
+		<span class={tm('font-semibold', isTableView() ? 'sr-only' : '')}>{property.name} </span>
 	</label>
 {:else if property.type === PropertyType.SELECT && shouldShowTrigger()}
 	<Select
