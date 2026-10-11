@@ -173,9 +173,9 @@
 {:else if property.type === PropertyType.CHECKBOX}
 	<label
 		class={tm(
-			'flex justify-center',
+			'h-6 lg:h-5 flex items-center justify-center',
 			!isTableView()
-				? `inline-flex items-center justify-center gap-x-1 py-0.5 px-1 rounded-md text-sm font-semibold ${THEME_COLORS[Color.SLATE]}`
+				? `inline-flex items-center justify-center gap-x-1 py-0.5 px-1 rounded-sm text-sm font-semibold ${THEME_COLORS[Color.SLATE]}`
 				: ''
 		)}
 	>

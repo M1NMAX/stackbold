@@ -8,6 +8,7 @@ export interface ItemOptions {
 	HTMLAttributes: Record<string, any>;
 	context: Map<any, any>;
 	onClickItem: (id: string) => void;
+	createItem: () => Promise<string | null>;
 }
 
 declare module '@tiptap/core' {
@@ -33,7 +34,8 @@ export const ItemEmbedNode = Node.create<ItemOptions>({
 		return {
 			HTMLAttributes: {},
 			context: new Map(),
-			onClickItem: noop
+			onClickItem: noop,
+			createItem: async () => null
 		};
 	},
 
@@ -72,11 +74,48 @@ export const ItemEmbedNode = Node.create<ItemOptions>({
 			}
 		};
 
+		const onBackspace = () => {
+			const { editor } = this;
+			const { selection, doc } = editor.state;
+			if (!selection.empty || selection instanceof NodeSelection) return false;
+
+			const { $from } = selection;
+			if ($from.parentOffset !== 0) return false;
+
+			const before = $from.before($from.depth);
+			const nodeBefore = doc.resolve(before).nodeBefore;
+			if (nodeBefore?.type.name !== this.name) return false;
+
+			const itemPos = before - nodeBefore.nodeSize;
+
+			if ($from.parent.content.size === 0) {
+				editor.commands.deleteRange({ from: before, to: $from.after($from.depth) });
+			}
+			return focusOnNameInput(editor, itemPos, false);
+		};
+
+		const onDelete = () => {
+			const { editor } = this;
+			const { selection, doc } = editor.state;
+			if (!selection.empty || selection instanceof NodeSelection) return false;
+
+			const { $from } = selection;
+			if ($from.parentOffset !== $from.parent.content.size) return false;
+
+			const after = $from.after($from.depth);
+			const nodeAfter = doc.resolve(after).nodeAfter;
+			if (nodeAfter?.type.name !== this.name) return false;
+
+			return focusOnNameInput(editor, after, true);
+		};
+
 		return {
 			ArrowUp: () => tryEnter('up'),
 			ArrowDown: () => tryEnter('down'),
 			ArrowLeft: () => tryEnter('left'),
-			ArrowRight: () => tryEnter('right')
+			ArrowRight: () => tryEnter('right'),
+			Backspace: () => onBackspace(),
+			Delete: () => onDelete()
 		};
 	},
 
@@ -115,6 +154,37 @@ export const ItemEmbedNode = Node.create<ItemOptions>({
 				}
 			};
 
+			const deleteSelf = () => {
+				const pos = getPos();
+				if (typeof pos !== 'number') return;
+
+				editor
+					.chain()
+					.deleteRange({ from: pos, to: pos + node.nodeSize })
+					.run();
+
+				const nodeBefore = pos > 0 ? editor.state.doc.resolve(pos).nodeBefore : null;
+				if (nodeBefore?.type.name === this.name) {
+					focusOnNameInput(editor, pos - nodeBefore.nodeSize, false);
+					return;
+				}
+				if (!focusEditorFrom(editor, pos, -1)) focusEditorFrom(editor, pos, 1);
+			};
+
+			const insertItemBelow = async () => {
+				const newId = await this.options.createItem();
+				if (!newId) return;
+
+				const pos = getPos();
+				if (typeof pos !== 'number') return;
+
+				this.storage.pendingAutofocusId = newId;
+				editor
+					.chain()
+					.insertContentAt(pos + node.nodeSize, { type: this.name, attrs: { id: newId } })
+					.run();
+			};
+
 			const instance = mount(ItemEmbed, {
 				target: dom,
 				context: this.options.context,
@@ -124,7 +194,9 @@ export const ItemEmbedNode = Node.create<ItemOptions>({
 					},
 					autofocus,
 					onClickItem: this.options.onClickItem,
-					onExit: exitToEditor
+					onExit: exitToEditor,
+					onEnter: insertItemBelow,
+					onDelete: deleteSelf
 				}
 			});
 

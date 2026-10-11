@@ -26,11 +26,13 @@
 	type Props = {
 		id: string;
 		onClickItem: (id: string) => void;
-		onExit?: (direction: 'up' | 'down' | 'left' | 'right') => void;
+		onExit: (direction: 'up' | 'down' | 'left' | 'right') => void;
+		onEnter: () => void;
+		onDelete: () => void;
 		autofocus?: boolean;
 	};
 
-	let { id, onClickItem, onExit, autofocus = false }: Props = $props();
+	let { id, onClickItem, onExit, onEnter, onDelete, autofocus = false }: Props = $props();
 	const itemState = getItemState();
 	const propertyState = getPropertyState();
 	const item = $derived(itemState.getItem(id));
@@ -61,11 +63,11 @@
 		switch (e.key) {
 			case 'ArrowUp':
 				e.preventDefault();
-				onExit?.('up');
+				onExit('up');
 				break;
 			case 'ArrowDown':
 				e.preventDefault();
-				onExit?.('down');
+				onExit('down');
 				break;
 			case 'ArrowLeft':
 				if (atStart) {
@@ -76,7 +78,23 @@
 			case 'ArrowRight':
 				if (atEnd) {
 					e.preventDefault();
-					onExit?.('right');
+					onExit('right');
+				}
+				break;
+			case 'Enter':
+				if (e.isComposing) break;
+				e.preventDefault();
+				if (el.value === '') {
+					onExit('down');
+					break;
+				}
+				onEnter();
+				break;
+			case 'Backspace':
+				if (el.value === '') {
+					e.preventDefault();
+					updNameDebounce.clear();
+					onDelete();
 				}
 				break;
 		}

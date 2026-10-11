@@ -383,7 +383,7 @@
 					onDownload: onDownloadFile,
 					onDelete: onDeleteFile
 				}),
-				ItemEmbedNode.configure({ context, onClickItem }),
+				ItemEmbedNode.configure({ context, onClickItem, createItem }),
 				createCommandsExtension(commandRenderer, COMMANDS),
 				DragHandle.configure({
 					nested: true,
