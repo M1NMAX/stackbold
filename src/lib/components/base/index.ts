@@ -10,7 +10,6 @@ export { default as Button } from './button.svelte';
 export { default as Calendar } from './calendar.svelte';
 export { default as Card } from './card.svelte';
 export { default as Checkbox } from './checkbox.svelte';
-export { default as OldCheckbox } from './old-checkbox.svelte';
 export { default as Command } from './command.svelte';
 export { default as CommandItem } from './command-item.svelte';
 export { default as Dialog } from './dialog.svelte';
