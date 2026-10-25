@@ -348,7 +348,7 @@
 						</span>
 					{/if}
 
-					<Check class={tm('size-4', !option.isSelected && 'text-transparent')} />
+					<Check class={tm('size-4 text-primary', !option.isSelected && 'text-transparent')} />
 				</div>
 			{/each}
 		</div>

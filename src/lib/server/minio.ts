@@ -16,28 +16,19 @@ const minioClient = new Minio.Client({
 	secretKey: MINIO_SECRET_KEY
 });
 
-export async function getFilePresignedUploadUrl(filename: string) {
-	return minioClient.presignedPutObject(
-		APP_BUCKET,
-		filename,
-		DEFAULT_PRESIGNED_URL_UPLOAD_DURATION
-	);
+export async function getFilePresignedUploadUrl(path: string) {
+	return minioClient.presignedPutObject(APP_BUCKET, path, DEFAULT_PRESIGNED_URL_UPLOAD_DURATION);
 }
 
-export async function getFilePresignedDownloadUrl(filename: string) {
-	const downloadName = filename.split('/').pop() || filename;
-	return minioClient.presignedGetObject(
-		APP_BUCKET,
-		filename,
-		DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION,
-		{
-			'response-content-disposition': `attachment; filename="${downloadName}"`
-		}
-	);
+export async function getFilePresignedDownloadUrl(path: string, downloadName?: string) {
+	const filename = downloadName ? downloadName : path.split('/').pop() || path;
+	return minioClient.presignedGetObject(APP_BUCKET, path, DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION, {
+		'response-content-disposition': `attachment; filename="${filename}"`
+	});
 }
 
-export async function deleteFile(filename: string) {
-	return await minioClient.removeObject(APP_BUCKET, filename);
+export async function deleteFile(path: string) {
+	return await minioClient.removeObject(APP_BUCKET, path);
 }
 
 export async function listObjects(prefix: string, extra: string = '') {

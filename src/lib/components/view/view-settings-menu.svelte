@@ -16,17 +16,17 @@
 		Badge,
 		Button,
 		buttonVariants,
-		Checkbox,
 		HSeparator,
 		Label,
 		MenuTitle,
-		MockCheckbox,
+		Checkbox,
 		RadioGroup,
 		RadioGroupItem,
 		Switch,
 		Tooltip
 	} from '$lib/components/base/index.js';
 	import {
+		Color,
 		PropertyType,
 		SortType,
 		ViewType,
@@ -211,7 +211,7 @@
 		{#each propertyState.properties as property}
 			<Label for={property.id} compact hoverEffect>
 				<PropertyIcon key={property.type} />
-				<span> {property.name} </span>
+				<span class="grow"> {property.name} </span>
 				<Switch
 					id={property.id}
 					checked={isPropertyVisible(view, property.id)}
@@ -252,9 +252,8 @@
 					{#each [true, false] as value}
 						{@const filterMenuCheckboxId = useId('filter-menu-checkbox')}
 						<Label for={filterMenuCheckboxId} compact hoverEffect>
-							<MockCheckbox checked={value} />
-							<span> {value ? 'Checked' : 'Unchecked'} </span>
-							<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()}></RadioGroupItem>
+							<span class="grow"> {value ? 'Checked' : 'Unchecked'} </span>
+							<RadioGroupItem id={filterMenuCheckboxId} value={value.toString()} />
 						</Label>
 					{/each}
 				</RadioGroup>
@@ -262,21 +261,27 @@
 		{:else}
 			<div class="space-y-0.5">
 				{#each filterSelectedProperty.options as option}
-					<Checkbox
-						checked={isFilterSeletect(view.filters, {
-							id: filterSelectedProperty.id,
-							value: option.id
-						})}
-						onclick={() => {
-							onClickFilterOption(
-								filterSelectedProperty.id,
-								option.id,
-								filterSelectedProperty.type
-							);
-						}}
-					>
-						<Badge color={option.color}>{option.value}</Badge>
-					</Checkbox>
+					{@const id = `${filterSelectedProperty.id}-option-${option.id}`}
+
+					<Label for={id} compact hoverEffect>
+						<span class="grow">
+							<Badge color={option.color} text={option.value}></Badge>
+						</span>
+						<Checkbox
+							{id}
+							checked={isFilterSeletect(view.filters, {
+								id: filterSelectedProperty.id,
+								value: option.id
+							})}
+							onchange={() => {
+								onClickFilterOption(
+									filterSelectedProperty.id,
+									option.id,
+									filterSelectedProperty.type
+								);
+							}}
+						/>
+					</Label>
 				{/each}
 			</div>
 		{/if}
@@ -319,7 +324,7 @@
 				{#if view.type !== ViewType.BOARD}
 					<Label for="collection-group-by-none" compact hoverEffect>
 						<PropertyIcon key="none" />
-						<span>{VALUE_NONE}</span>
+						<span class="grow">{VALUE_NONE}</span>
 						<RadioGroupItem id="collection-group-by-none" value="" />
 					</Label>
 				{/if}
@@ -328,14 +333,14 @@
 					{@const id = useId(`group-by-${property.id}`)}
 					<Label for={id} compact hoverEffect>
 						<PropertyIcon key={property.type} />
-						<span> {property.name} </span>
+						<span class="grow"> {property.name} </span>
 						<RadioGroupItem {id} value={property.id} />
 					</Label>
 				{/each}
 			</RadioGroup>
 			<HSeparator />
 			<Label for={`view-${view.id}-hide-empty`} compact hoverEffect>
-				<span>Hide empty groups</span>
+				<span class="grow">Hide empty groups</span>
 				<Switch
 					id={`view-${view.id}-hide-empty`}
 					checked={view.hideEmptyGroups ?? false}
@@ -344,7 +349,7 @@
 			</Label>
 
 			<Label for={`view-${view.id}-hide-count`} compact hoverEffect>
-				<span>Hide items count</span>
+				<span class="grow">Hide items count</span>
 				<Switch
 					id={`view-${view.id}-hide-count`}
 					checked={view.hideItemCounts ?? false}
@@ -371,7 +376,7 @@
 
 {#snippet activeFilters()}
 	{#if view.filters.length > 0}
-		<p class="w-full text-xs font-semibold px-1 py-0.5">Active filters</p>
+		<p class="w-full text-xs font-semibold py-0.5 px-1">Active filters</p>
 		<div class="w-full flex flex-wrap gap-1 px-1 pb-0.5">
 			{#each view.filters as filter}
 				{@const property = getProperty(filter.id)}
@@ -381,11 +386,11 @@
 						<Button
 							theme="secondary"
 							variant="compact"
-							class="font-semibold"
+							class={tm('px-1 font-semibold', THEME_COLORS[Color.SLATE])}
 							onclick={() => clearFilter(filter.id)}
 						>
-							<MockCheckbox checked={value === 'true'} />
-							<span> {property.name} </span>
+							<PropertyIcon key={property.type} />
+							<span> {property.name}: {value === 'true' ? 'checked' : 'unchecked'} </span>
 							<X />
 						</Button>
 					{:else}
@@ -398,7 +403,8 @@
 									class={tm('px-1 font-semibold', THEME_COLORS[option.color])}
 									onclick={() => onClickFilterOption(filter.id, option.id, property.type)}
 								>
-									<span>{option.value}</span>
+									<PropertyIcon key={property.type} />
+									<span> {property.name}: {option.value}</span>
 									<X />
 								</Button>
 							{/if}
@@ -406,17 +412,16 @@
 					{/if}
 				{/if}
 			{/each}
-
-			<Button
-				theme="secondary"
-				variant="compact"
-				class="font-semibold"
-				onclick={() => clearAllFilter()}
-			>
-				Clear
-			</Button>
 		</div>
 
+		<!-- <Button
+			theme="secondary"
+			variant="compact"
+			class="font-semibold"
+			onclick={() => clearAllFilter()}
+		>
+			Clear
+		</Button> -->
 		<HSeparator />
 	{/if}
 {/snippet}

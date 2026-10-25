@@ -7,7 +7,7 @@
 		ItemListView,
 		ItemTableView
 	} from './index.js';
-	import { Accordion, AccordionItem, Badge, MockCheckbox } from '$lib/components/base/index.js';
+	import { Accordion, AccordionItem, Badge, Checkbox } from '$lib/components/base/index.js';
 	import { getOption, getPropertyColor } from '$lib/utils/index.js';
 	import { getPropertyState } from '$lib/components/property/index.js';
 	import type { PropertyWithOptions } from '$lib/types.js';
@@ -91,16 +91,15 @@
 
 {#snippet groupLabel(key: string, property: PropertyWithOptions, color: Color, count: number)}
 	<div class="grow flex items-center gap-2">
-		<Badge {color}>
-			{#if property.type === PropertyType.CHECKBOX}
-				<MockCheckbox checked={key === 'true'} />
-				{property.name}
-			{:else}
+		{#if property.type === PropertyType.CHECKBOX}
+			<Checkbox checked={key === 'true'} disabled />
+			{property.name}
+		{:else}
+			<Badge {color}>
 				{@const option = getOption(property.options, key)}
 				{option ? option.value : `No ${property.name}`}
-			{/if}
-		</Badge>
-
+			</Badge>
+		{/if}
 		{#if !view.hideItemCounts}
 			<span class="text-sm font-semibold"> {count} </span>
 		{/if}

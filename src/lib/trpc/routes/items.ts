@@ -50,7 +50,7 @@ const itemCreateSchema = z.object({
 });
 
 const itemUpdateSchema = itemCreateSchema
-	.extend({ id: z.string() })
+	.extend({ id: z.string(), isDone: z.boolean().optional() })
 	.partial({ name: true, collectionId: true });
 
 const refUpdateSchema = z.object({
@@ -67,6 +67,10 @@ const fileUploadSchema = z.object({
 
 export const items = createTRPCRouter({
 	list: protectedProcedure.input(itemListSchema).query(async ({ input }) => await listItems(input)),
+
+	batch: protectedProcedure
+		.input(z.array(z.string()))
+		.query(async ({ input }) => await batchItems(input)),
 
 	dashboard: protectedProcedure.query(
 		async ({ ctx: { userId } }) => await listDashboardItem(userId)
@@ -197,6 +201,11 @@ async function listItems(args: z.infer<typeof itemListSchema>) {
 	}
 
 	return sortItems(updItems, view.sorts, properties);
+}
+
+async function batchItems(ids: string[]) {
+	// TODO: add property values injection
+	return await prisma.item.findMany({ where: { id: { in: ids } } });
 }
 
 async function injectBundleRefsItems(items: Item[], properties: Property[]) {
