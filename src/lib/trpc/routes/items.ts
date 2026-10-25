@@ -50,7 +50,7 @@ const itemCreateSchema = z.object({
 });
 
 const itemUpdateSchema = itemCreateSchema
-	.extend({ id: z.string() })
+	.extend({ id: z.string(), isDone: z.boolean().optional() })
 	.partial({ name: true, collectionId: true });
 
 const refUpdateSchema = z.object({

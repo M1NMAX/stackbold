@@ -15,6 +15,7 @@ export class ItemState {
 
 	#pending = new Set<string>();
 	#inFlight = new Set<string>();
+	#loaded = new Set<string>();
 	#isFlushScheduled = false;
 
 	constructor(items: Item[]) {
@@ -22,7 +23,15 @@ export class ItemState {
 	}
 
 	#updItem(id: string, item: Item) {
-		this.items = this.items.map((it) => (it.id !== id ? it : item));
+		const idx = this.items.findIndex((i) => i.id === id);
+		if (idx === -1) return;
+		this.items[idx] = item;
+	}
+
+	#upsert(item: Item) {
+		const idx = this.items.findIndex((it) => it.id === item.id);
+		if (idx === -1) this.items.push(item);
+		else this.items[idx] = item;
 	}
 
 	#removeItem(id: string) {
@@ -34,6 +43,7 @@ export class ItemState {
 		return {
 			id,
 			name: '',
+			isDone: false,
 			collectionId: this.collectionId,
 			createdAt: date,
 			updatedAt: date,
@@ -55,7 +65,10 @@ export class ItemState {
 			trpc()
 				.items.batch.query(chunk)
 				.then((response) => {
-					response.forEach((item) => this.#updItem(item.id, item));
+					response.forEach((item) => {
+						this.#loaded.add(item.id);
+						this.#upsert(item);
+					});
 				})
 				.catch((error) => {
 					this.#toastState.error(getTRPCErrorMsg(error));
@@ -73,8 +86,14 @@ export class ItemState {
 	}
 
 	requestItem(id: string) {
-		const target = this.getItem(id);
-		if (!target) this.items.push(this.#addItemSkeleton(id));
+		const exists = !!this.getItem(id);
+		if (exists && this.#loaded.has(id)) return;
+
+		if (!exists) {
+			this.#loaded.delete(id);
+			this.items.push(this.#addItemSkeleton(id));
+		}
+
 		if (this.#pending.has(id) || this.#inFlight.has(id)) return;
 
 		this.#pending.add(id);
@@ -93,13 +112,15 @@ export class ItemState {
 				id: tmpId,
 				collectionId: args.collectionId,
 				name: args.name,
+				isDone: false,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				properties: []
 			});
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
-			this.#updItem(tmpId, createdItem);
+			this.#removeItem(tmpId);
+			this.#upsert(createdItem);
 			if (refresh) await this.refresh(this.viewShortId);
 			return createdItem.id;
 		} catch (error) {
@@ -126,8 +147,8 @@ export class ItemState {
 
 	async duplicateItem(id: string, refresh: boolean = false) {
 		try {
-			const createdItem = await trpc().items.duplicate.mutate(id);
-			this.items.push({ ...createdItem });
+			const item = await trpc().items.duplicate.mutate(id);
+			this.#upsert(item);
 			if (refresh) await this.refresh(this.viewShortId);
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
@@ -145,7 +166,7 @@ export class ItemState {
 			this.#toastState.success('Item deleted successfully');
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
-			this.items.push({ ...target });
+			this.#upsert(target);
 		}
 	}
 
@@ -196,7 +217,7 @@ export class ItemState {
 	}
 }
 
-export const ITEM_STATE_CTX_KEY = Symbol('ITEM_STATE_CTX_KEY');
+const ITEM_STATE_CTX_KEY = Symbol('ITEM_STATE_CTX_KEY');
 
 export function setItemState(items: () => Item[]) {
 	return setContext(ITEM_STATE_CTX_KEY, new ItemState(items()));

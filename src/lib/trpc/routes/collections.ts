@@ -44,6 +44,7 @@ const collectionCreateSchema = z.object({
 	isPinned: z.boolean().optional(),
 	description: z.string().optional(),
 	itemsOnly: z.boolean().optional(),
+	isTaskModeEnabled: z.boolean().optional(),
 	groupId: z.string().nullable().optional()
 });
 

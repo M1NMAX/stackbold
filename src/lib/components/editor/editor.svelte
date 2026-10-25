@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { onMount, onDestroy, mount, unmount, getContext } from 'svelte';
+	import { onMount, onDestroy, mount, unmount, getAllContexts } from 'svelte';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import { Editor, type JSONContent } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
 	import Placeholder from '@tiptap/extension-placeholder';
 	import Typography from '@tiptap/extension-typography';
-	import TaskList from '@tiptap/extension-task-list';
-	import TaskItem from '@tiptap/extension-task-item';
 	import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 	import DragHandle from '@tiptap/extension-drag-handle';
 	import { createLowlight, common } from 'lowlight';
@@ -25,8 +23,6 @@
 		createCommandList,
 		type UploadResult
 	} from './extensions/index.js';
-	import { ITEM_STATE_CTX_KEY } from '$lib/components/item/index.js';
-	import { PROPERTY_STATE_CTX_KEY } from '$lib/components/property/index.js';
 
 	type CommandMenuProps = {
 		items: CommandItem[];
@@ -66,10 +62,7 @@
 		onClickItem
 	}: Props = $props();
 
-	const context = new Map([
-		[ITEM_STATE_CTX_KEY, getContext(ITEM_STATE_CTX_KEY)],
-		[PROPERTY_STATE_CTX_KEY, getContext(PROPERTY_STATE_CTX_KEY)]
-	]);
+	const context = getAllContexts();
 
 	const PLACEHOLDER = "Write, type '/' for commands…";
 	const COMMANDS = createCommandList((() => onUploadFile)(), (() => createItem)());
@@ -374,8 +367,6 @@
 					}
 				}),
 				Typography,
-				TaskList,
-				TaskItem.configure({ nested: true }),
 				CodeBlockLowlight.configure({ lowlight }),
 				Attachment.configure({ onDownload: onDownloadFile, onDelete: onDeleteFile }),
 				ImageWithDelete.configure({

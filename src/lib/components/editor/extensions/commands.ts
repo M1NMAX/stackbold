@@ -61,11 +61,6 @@ export function createCommandList(
 			command: (editor) => editor.chain().focus().toggleOrderedList().run()
 		},
 		{
-			icon: 'todo',
-			title: 'To-do List',
-			command: (editor) => editor.chain().focus().toggleTaskList().run()
-		},
-		{
 			icon: 'quote',
 			title: 'Quote',
 			command: (editor) => editor.chain().focus().toggleBlockquote().run()
@@ -150,8 +145,6 @@ function matchByType(item: CommandItem, node: Node) {
 			return item.icon === 'bullet';
 		case 'orderedList':
 			return item.icon === 'ordered';
-		case 'taskList':
-			return item.icon === 'todo';
 		case 'blockquote':
 			return item.icon === 'quote';
 		case 'codeBlock':

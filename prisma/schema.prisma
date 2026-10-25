@@ -155,6 +155,7 @@ model Collection {
   updatedAt          DateTime               @updatedAt
   accessedAt         DateTime               @default(now())
   isPinned           Boolean                @default(true)
+  isTaskModeEnabled  Boolean                @default(false)
   description        String                 @default("")
   itemsOnly          Boolean                @default(false)
   isTemplate         Boolean                @default(false)
@@ -242,6 +243,7 @@ model PropertyOption {
 model Item {
   id           String        @id @default(auto()) @map("_id") @db.ObjectId
   name         String
+  isDone       Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   collection   Collection    @relation(fields: [collectionId], references: [id], onDelete: Cascade)

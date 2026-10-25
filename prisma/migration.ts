@@ -11,7 +11,9 @@ async function migrate() {
 
 	// await prisma.collection.updateMany({ data: { content: defaultContent } });
 	//
-	await prisma.collection.updateMany({ data: { itemsOnly: true } });
+	// await prisma.collection.updateMany({ data: { itemsOnly: true } });
+	// await prisma.collection.updateMany({ data: { isTaskModeEnabled: false } });
+	await prisma.item.updateMany({ data: { isDone: false } });
 }
 
 migrate()

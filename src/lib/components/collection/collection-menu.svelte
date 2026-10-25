@@ -5,6 +5,7 @@
 	import Scroll from '@lucide/svelte/icons/scroll';
 	import Star from '@lucide/svelte/icons/star';
 	import StarOff from '@lucide/svelte/icons/star-off';
+	import SquareCheckBig from '@lucide/svelte/icons/square-check-big';
 	import Layers from '@lucide/svelte/icons/layers';
 	import type { Collection } from '@prisma/client';
 	import { getDeleteModalState, ModalState } from '$lib/states/index.js';
@@ -13,7 +14,9 @@
 		AdaptiveWrapper,
 		Button,
 		buttonVariants,
-		HSeparator
+		HSeparator,
+		Label,
+		Switch
 	} from '$lib/components/base/index.js';
 
 	type Props = {
@@ -48,6 +51,14 @@
 		});
 	}
 
+	async function toggleTaskMode() {
+		wrapper.close();
+		await collectionState.updCollection({
+			id: collection.id,
+			isTaskModeEnabled: !collection.isTaskModeEnabled
+		});
+	}
+
 	async function deleteCollection() {
 		wrapper.close();
 		deleteModal.open({
@@ -67,6 +78,18 @@
 	{#snippet trigger()}
 		<Ellipsis />
 	{/snippet}
+
+	<Label for={`collection-task-mode-${collection.id}`} compact hoverEffect>
+		<SquareCheckBig />
+		<span class="grow"> Show item as task </span>
+		<Switch
+			id={`collection-task-mode-${collection.id}`}
+			checked={collection.isTaskModeEnabled}
+			onchange={() => toggleTaskMode()}
+		/>
+	</Label>
+
+	<HSeparator />
 
 	<Button theme="ghost" variant="menu" onclick={() => toggleFavState()}>
 		{#if collection.isPinned}

@@ -45,6 +45,7 @@ export class CollectionState {
 				accessedAt: new Date(),
 				icon: args.icon || DEFAULT_COLLECTION_ICON,
 				itemsOnly: args.itemsOnly || false,
+				isTaskModeEnabled: args.isTaskModeEnabled || false,
 				description: args.description || '',
 				isPinned: args.isPinned || true,
 				isTemplate: false,

@@ -79,7 +79,6 @@ import Heading3 from '@lucide/svelte/icons/heading-3';
 import Type from '@lucide/svelte/icons/type';
 import ListOrdered from '@lucide/svelte/icons/list-ordered';
 import ListBullet from '@lucide/svelte/icons/list';
-import ListTodo from '@lucide/svelte/icons/list-todo';
 import Quote from '@lucide/svelte/icons/quote';
 import Code from '@lucide/svelte/icons/code';
 import Minus from '@lucide/svelte/icons/minus';
@@ -199,7 +198,6 @@ export const EDITOR_ICONS: IconBundle = {
 	text: Type,
 	ordered: ListOrdered,
 	bullet: ListBullet,
-	todo: ListTodo,
 	quote: Quote,
 	code: Code,
 	divider: Minus,
