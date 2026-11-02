@@ -82,8 +82,8 @@ export const NEW_COLLECTION_NAME = 'New collection';
 export const NEW_GROUP_NAME = 'New group';
 
 export const APP_BUCKET = 'app';
-export const DEFAULT_PRESIGNED_URL_UPLOAD_DURATION = 60 * 60;
-export const DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION = 60 * 60;
+export const DEFAULT_PRESIGNED_URL_UPLOAD_DURATION = 5 * 60;
+export const DEFAULT_PRESIGNED_URL_DOWNLOAD_DURATION = 5 * 60;
 
 export const DATABASE_DEGRADED_MS = 200;
 export const STORAGE_DEGRADED_MS = 500;
@@ -177,4 +177,9 @@ export const TEMPLATE_CATEGORY_COLORS: Record<TemplateCategory, Color> = {
 	[TemplateCategory.PERSONAL_LIFE]: Color.ORANGE,
 	[TemplateCategory.FINANCE_SHOPPING]: Color.GREEN,
 	[TemplateCategory.HOBBIES_ENTERTAINMENT]: Color.YELLOW
+};
+
+export const DEFAULT_EDITOR_CONTENT = {
+	type: 'doc',
+	content: [{ type: 'paragraph' }]
 };

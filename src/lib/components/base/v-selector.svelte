@@ -95,7 +95,7 @@
 				<Icon />
 			{/if}
 			<span class="text-nowrap text-ellipsis overflow-hidden">{opt.label} </span>
-			<RadioGroupItem id={opt.id} value={opt.id} class={tm(inline && 'sr-only')}></RadioGroupItem>
+			<RadioGroupItem id={opt.id} value={opt.id} class={tm(inline && 'sr-only')} />
 		</Label>
 	{/each}
 {/snippet}

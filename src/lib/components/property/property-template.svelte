@@ -2,7 +2,7 @@
 	import { PropertyType, type Color } from '@prisma/client';
 	import { getOption, hasOptions, useId } from '$lib/utils/index.js';
 	import { PropertyIcon } from './index.js';
-	import { Badge, MockCheckbox, Tooltip } from '$lib/components/base/index.js';
+	import { Badge, Checkbox, Tooltip } from '$lib/components/base/index.js';
 	import type { PropertyWithOptions } from '$lib/types.js';
 
 	type Props = {
@@ -18,7 +18,7 @@
 
 <Badge id={tooltipId} {color} class="max-w-full text-ellipsis cursor-default">
 	{#if property.type === PropertyType.CHECKBOX}
-		<MockCheckbox checked={value === 'true'} />
+		<Checkbox checked={value === 'true'} interactive={false} />
 		{property.name}
 	{:else}
 		{@const result = hasOptions(property.type)

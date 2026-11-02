@@ -75,7 +75,7 @@
 				<Label for={view.id} compact hoverEffect>
 					<Icon />
 					<span class="text-nowrap text-ellipsis overflow-hidden">{view.name} </span>
-					<RadioGroupItem id={view.id} value={view.shortId.toString()}></RadioGroupItem>
+					<RadioGroupItem id={view.id} value={view.shortId.toString()} />
 				</Label>
 			{/each}
 		</RadioGroup>

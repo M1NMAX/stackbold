@@ -9,6 +9,7 @@
 		BreadcrumbItem,
 		Button,
 		buttonVariants,
+		Checkbox,
 		HSeparator
 	} from '$lib/components/base/index.js';
 	import { getItemState } from '$lib/components/item/index.js';
@@ -41,6 +42,8 @@
 	const collection = $derived(collectionState.getCollection(item.collectionId)!);
 	const view = $derived(viewState.getViewByShortId(viewState.viewShortId)!);
 
+	let isDone = $derived(item.isDone);
+
 	const menuState = new ModalState();
 	const deleteModal = getDeleteModalState();
 
@@ -66,6 +69,10 @@
 	async function forceItemRename() {
 		if (item.name.trim() !== '') return;
 		await updItem({ name: 'Untitled' });
+	}
+
+	async function toggleIsDone() {
+		await itemState.updItem({ id: item.id, isDone: !item.isDone });
 	}
 
 	async function duplicateItem() {
@@ -139,18 +146,26 @@
 	{/snippet}
 
 	{#snippet actionsRow()}
-		{#key isReady}
-			<textarea
-    			{@attach autosizeTextarea(`item-${item.id}-name`)}
-				name="name"
-				value={item.name}
-				oninput={handleUpdItemName}
-				spellcheck={false}
-				maxlength={MAX_ITEM_NAME_LENGTH}
-				placeholder="Name"
-				class="textarea ghost xl"
-			></textarea>
-		{/key}
+		<div class="w-full flex">
+			{#if collection.isTaskModeEnabled}
+				<div class="mt-1">
+					<Checkbox checked={isDone} onchange={() => toggleIsDone()} />
+				</div>
+			{/if}
+
+			{#key isReady}
+				<textarea
+				    {@attach autosizeTextarea(`item-${item.id}-name`)}
+					name="name"
+					value={item.name}
+					oninput={handleUpdItemName}
+					spellcheck={false}
+					maxlength={MAX_ITEM_NAME_LENGTH}
+					placeholder="Name"
+					class="textarea ghost xl"
+				></textarea>
+			{/key}
+		</div>
 	{/snippet}
 
 	{#key isReady}

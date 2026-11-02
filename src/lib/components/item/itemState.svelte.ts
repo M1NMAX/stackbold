@@ -13,23 +13,98 @@ export class ItemState {
 	collectionId = $state('');
 	viewShortId = $state(0);
 
+	#pending = new Set<string>();
+	#inFlight = new Set<string>();
+	#loaded = new Set<string>();
+	#isFlushScheduled = false;
+
 	constructor(items: Item[]) {
 		this.items = items;
 	}
 
 	#updItem(id: string, item: Item) {
-		this.items = this.items.map((it) => (it.id !== id ? it : item));
+		const idx = this.items.findIndex((i) => i.id === id);
+		if (idx === -1) return;
+		this.items[idx] = item;
+	}
+
+	#upsert(item: Item) {
+		const idx = this.items.findIndex((it) => it.id === item.id);
+		if (idx === -1) this.items.push(item);
+		else this.items[idx] = item;
 	}
 
 	#removeItem(id: string) {
 		this.items = this.items.filter((item) => item.id !== id);
 	}
 
+	#addItemSkeleton(id: string) {
+		const date = new Date();
+		return {
+			id,
+			name: '',
+			isDone: false,
+			collectionId: this.collectionId,
+			createdAt: date,
+			updatedAt: date,
+			properties: []
+		};
+	}
+
+	#flush = () => {
+		const ids = [...this.#pending];
+		this.#pending.clear();
+		this.#isFlushScheduled = false;
+		if (!ids.length) return;
+
+		const CHUNK = 150;
+		for (let i = 0; i < ids.length; i += CHUNK) {
+			const chunk = ids.slice(i, i + CHUNK);
+			chunk.forEach((id) => this.#inFlight.add(id));
+
+			trpc()
+				.items.batch.query(chunk)
+				.then((response) => {
+					response.forEach((item) => {
+						this.#loaded.add(item.id);
+						this.#upsert(item);
+					});
+				})
+				.catch((error) => {
+					this.#toastState.error(getTRPCErrorMsg(error));
+				})
+				.finally(() => {
+					chunk.forEach((id) => this.#inFlight.delete(id));
+				});
+		}
+	};
+
+	#scheduleFlush() {
+		if (this.#isFlushScheduled) return;
+		this.#isFlushScheduled = true;
+		setTimeout(this.#flush, 0);
+	}
+
+	requestItem(id: string) {
+		const exists = !!this.getItem(id);
+		if (exists && this.#loaded.has(id)) return;
+
+		if (!exists) {
+			this.#loaded.delete(id);
+			this.items.push(this.#addItemSkeleton(id));
+		}
+
+		if (this.#pending.has(id) || this.#inFlight.has(id)) return;
+
+		this.#pending.add(id);
+		this.#scheduleFlush();
+	}
+
 	getItem(id: string) {
 		return this.items.find((item) => item.id === id);
 	}
 
-	async createItem(args: RouterInputs['items']['create']) {
+	async createItem(args: RouterInputs['items']['create'], refresh: boolean = true) {
 		const tmpId = crypto.randomUUID();
 
 		try {
@@ -37,19 +112,23 @@ export class ItemState {
 				id: tmpId,
 				collectionId: args.collectionId,
 				name: args.name,
+				isDone: false,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 				properties: []
 			});
 
 			const createdItem = await trpc().items.create.mutate({ ...args });
-			this.#updItem(tmpId, createdItem);
-			await this.refresh(this.viewShortId);
+			this.#removeItem(tmpId);
+			this.#upsert(createdItem);
+			if (refresh) await this.refresh(this.viewShortId);
 			return createdItem.id;
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
 			this.#removeItem(tmpId);
 		}
+
+		return null;
 	}
 
 	async updItem(args: RouterInputs['items']['update'], refresh: boolean = false) {
@@ -68,8 +147,8 @@ export class ItemState {
 
 	async duplicateItem(id: string, refresh: boolean = false) {
 		try {
-			const createdItem = await trpc().items.duplicate.mutate(id);
-			this.items.push({ ...createdItem });
+			const item = await trpc().items.duplicate.mutate(id);
+			this.#upsert(item);
 			if (refresh) await this.refresh(this.viewShortId);
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
@@ -87,7 +166,7 @@ export class ItemState {
 			this.#toastState.success('Item deleted successfully');
 		} catch (error) {
 			this.#toastState.error(getTRPCErrorMsg(error));
-			this.items.push({ ...target });
+			this.#upsert(target);
 		}
 	}
 

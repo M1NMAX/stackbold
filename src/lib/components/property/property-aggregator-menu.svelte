@@ -57,13 +57,13 @@
 	<RadioGroup value={property.aggregator ?? ''} onchange={handleChange}>
 		<Label for="property-aggregator-menu-none" compact hoverEffect>
 			<span class="grow"> {VALUE_NONE}</span>
-			<RadioGroupItem id="property-aggregator-menu-none" value=""></RadioGroupItem>
+			<RadioGroupItem id="property-aggregator-menu-none" value="" />
 		</Label>
 		{#each PROPERTY_UNIVERSAL_AGGREGATORS as aggregator}
 			{@const aggregatorId = useId('property-aggregator-menu')}
 			<Label for={aggregatorId} compact hoverEffect>
 				<span class="grow"> {PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()]}</span>
-				<RadioGroupItem id={aggregatorId} value={aggregator.toString()}></RadioGroupItem>
+				<RadioGroupItem id={aggregatorId} value={aggregator.toString()} />
 			</Label>
 		{/each}
 
@@ -72,7 +72,7 @@
 				{@const aggregatorId = useId('property-aggregator-menu')}
 				<Label for={aggregatorId} compact hoverEffect>
 					<span class="grow"> {PROPERTY_AGGREGATOR_LABELS[aggregator.toLowerCase()]} </span>
-					<RadioGroupItem id={aggregatorId} value={aggregator.toString()}></RadioGroupItem>
+					<RadioGroupItem id={aggregatorId} value={aggregator.toString()} />
 				</Label>
 			{/each}
 		{/if}

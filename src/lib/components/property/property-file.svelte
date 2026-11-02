@@ -23,9 +23,7 @@
 	import { getToastState, ModalState } from '$lib/states/index.js';
 	import {
 		extractFilenameFromUrl,
-		isAudioFile,
-		isImageFile,
-		isVideoFile,
+		getIconKey,
 		joinFilesName,
 		separateMultiselectOptions,
 		tm,
@@ -126,12 +124,6 @@
 		} finally {
 			toastState.remove(tid);
 		}
-	}
-	function getIconKey(filename: string) {
-		if (isImageFile(filename)) return 'image';
-		else if (isVideoFile(filename)) return 'video';
-		else if (isAudioFile(filename)) return 'audio';
-		else return 'text';
 	}
 
 	$effect(() => {

@@ -4,7 +4,7 @@
 	import X from '@lucide/svelte/icons/x';
 	import Trash from '@lucide/svelte/icons/trash';
 	import { Aggregator, PropertyType, type Property } from '@prisma/client';
-	import { capitalizeFirstLetter, isPropertyNumerical, tm, useId } from '$lib/utils/index.js';
+	import { capitalizeFirstLetter, isPropertyNumerical, useId } from '$lib/utils/index.js';
 	import { getPropertyState, PropertyOption } from './index.js';
 	import {
 		DEBOUNCE_INTERVAL,
