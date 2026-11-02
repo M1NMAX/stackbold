@@ -156,40 +156,37 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class={tm(
-			'w-full flex items-start gap-x-2 p-1.5 hover:bg-secondary/60 cursor-pointer',
-			item.id === itemState.active && 'border-r-2 border-primary bg-secondary/80'
-		)}
-		onclick={() => onClickItem(id)}
+		data-active={item.id === itemState.active ? '' : undefined}
+		aria-current={item.id === itemState.active ? 'true' : undefined}
+		class="flex w-full cursor-pointer items-start gap-x-2 border-r-2 border-transparent p-1.5 transition-colors hover:bg-secondary/60 data-[active]:border-primary data-[active]:bg-secondary/80"
+		onclick={() => onClickItem(item.id)}
 	>
 		{#if isTaskModeEnabled}
-			<div class="mt-[1px]" onclick={stopClick}>
-				<Checkbox
-					checked={isDone}
-					onchange={() => toggleIsDone()}
-					class="border-secondary-foreground"
-				/>
+			<div class="flex h-6 shrink-0 items-center">
+				<Checkbox checked={isDone} onchange={toggleIsDone} onclick={stopClick} size="lg" />
 			</div>
 		{/if}
-		<div class="w-full flex flex-col gap-y-1">
-			<div class="w-full flex items-center gap-x-3">
-				<input
-					bind:this={inputEl}
-					class={tm(
-						'bg-transparent outline-none',
-						isTaskModeEnabled && isDone ? 'line-through decoration-primary decoration-2' : ''
-					)}
-					style="field-sizing: content; min-width: 1ch;"
-					data-item-name-input
-					value={displayName}
-					oninput={handleNameInput}
-					onfocus={handleFocus}
-					onblur={handleBlur}
-					onclick={stopClick}
-					onkeydown={handleKeydown}
-				/>
-			</div>
-			<div class="flex items-end flex-wrap gap-2 select-none" onclick={stopClick}>
+
+		<div class="flex min-w-0 flex-1 flex-col gap-y-1">
+			<input
+				bind:this={inputEl}
+				class={tm(
+					'h-6 max-w-full min-w-[1ch] self-start bg-transparent outline-none',
+					isTaskModeEnabled &&
+						isDone &&
+						'text-muted-foreground line-through decoration-primary decoration-2'
+				)}
+				style="field-sizing: content;"
+				data-item-name-input
+				value={displayName}
+				oninput={handleNameInput}
+				onfocus={handleFocus}
+				onblur={handleBlur}
+				onclick={stopClick}
+				onkeydown={handleKeydown}
+			/>
+
+			<div class="flex flex-wrap items-end gap-2 select-none" onclick={stopClick}>
 				{#each propertyState.properties as property (property.id)}
 					<PropertyValue {item} {property} view={VIEW} />
 				{/each}
